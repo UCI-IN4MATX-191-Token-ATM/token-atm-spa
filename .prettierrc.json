@@ -1,0 +1,28 @@
+{
+    "tabWidth": 4,
+    "singleQuote": true,
+    "arrowParens": "always",
+    "printWidth": 120,
+    "trailingComma": "none",
+    "semi": true,
+    "overrides": [
+        {
+            "files": "*.yml",
+            "options": {
+                "tabWidth": 2
+            }
+        },
+        {
+            "files": "*.html",
+            "options": {
+                "parser": "html"
+            }
+        },
+        {
+            "files": "*.component.html",
+            "options": {
+                "parser": "angular"
+            }
+        }
+    ]
+}
