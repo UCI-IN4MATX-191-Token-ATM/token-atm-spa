@@ -10,9 +10,10 @@ import { AppComponent } from './app.component';
 import { CenterDirective } from './directives/center.directive';
 import { LoginComponent } from './components/login/login.component';
 import { FormItemComponent } from './components/form-item/form-item.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
 
 @NgModule({
-    declarations: [AppComponent, CenterDirective, LoginComponent, FormItemComponent],
+    declarations: [AppComponent, CenterDirective, LoginComponent, FormItemComponent, DashboardComponent],
     imports: [BrowserModule, AppRoutingModule, FormsModule],
     providers: [NgbModule],
     bootstrap: [AppComponent]
