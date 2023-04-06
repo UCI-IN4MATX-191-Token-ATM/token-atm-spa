@@ -1,0 +1,15 @@
+<div class="form-item">
+    <div class="col-auto col-sm-3 text-center text-sm-end">
+        <label [for]="info.propertyID + uuid">{{ info.propertyName }}</label>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-4">
+        <input
+            [type]="info.propertyType"
+            class="form-control"
+            [id]="info.propertyID + uuid"
+            [placeholder]="info.inputPlaceholder"
+            [ngModel]="data"
+            (ngModelChange)="onDataChange($event)"
+        />
+    </div>
+</div>
