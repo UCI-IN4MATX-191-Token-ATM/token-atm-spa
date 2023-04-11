@@ -11,11 +11,13 @@ import { CenterDirective } from './directives/center.directive';
 import { LoginComponent } from './components/login/login.component';
 import { FormItemComponent } from './components/form-item/form-item.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { AxiosServiceFactory } from './services/axios.service';
+import { AxiosService } from './services/axios.service';
 
 @NgModule({
     declarations: [AppComponent, CenterDirective, LoginComponent, FormItemComponent, DashboardComponent],
     imports: [BrowserModule, AppRoutingModule, FormsModule],
-    providers: [NgbModule],
+    providers: [NgbModule, { provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService }],
     bootstrap: [AppComponent]
 })
 export class AppModule {}
