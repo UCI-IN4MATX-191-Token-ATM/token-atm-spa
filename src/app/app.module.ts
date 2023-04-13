@@ -13,11 +13,21 @@ import { FormItemComponent } from './components/form-item/form-item.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AxiosServiceFactory } from './services/axios.service';
 import { AxiosService } from './services/axios.service';
+import { CourseSelectionComponent } from './components/course-selection/course-selection.component';
+import { CourseInfoItemComponent } from './components/course-info-item/course-info-item.component';
 
 @NgModule({
-    declarations: [AppComponent, CenterDirective, LoginComponent, FormItemComponent, DashboardComponent],
-    imports: [BrowserModule, AppRoutingModule, FormsModule],
-    providers: [NgbModule, { provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService }],
+    declarations: [
+        AppComponent,
+        CenterDirective,
+        LoginComponent,
+        FormItemComponent,
+        DashboardComponent,
+        CourseSelectionComponent,
+        CourseInfoItemComponent
+    ],
+    imports: [BrowserModule, AppRoutingModule, FormsModule, NgbModule],
+    providers: [{ provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService }],
     bootstrap: [AppComponent]
 })
 export class AppModule {}
