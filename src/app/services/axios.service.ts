@@ -53,7 +53,7 @@ export class AxiosServiceFactory {
                 get(_, prop) {
                     if (typeof prop == 'symbol' || !AXIOS_METHODS.includes(prop)) return undefined;
                     return (...args: unknown[]) => {
-                        proxy(prop, ...args);
+                        return proxy(prop, ...args);
                     };
                 }
             }
