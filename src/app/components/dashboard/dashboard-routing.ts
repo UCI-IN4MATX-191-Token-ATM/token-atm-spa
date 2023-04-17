@@ -35,6 +35,17 @@ export const TOKEN_ATM_DASHBOARD_ROUTES: TokenATMDashboardRoute[] = [
     }
 ];
 
+const DEFAULT_ROUTING = 'process-request';
+
 export function getDashboardRoutes(): Routes {
-    return TOKEN_ATM_DASHBOARD_ROUTES;
+    return [
+        ...TOKEN_ATM_DASHBOARD_ROUTES.map((route: TokenATMDashboardRoute) => {
+            return { path: route.path, component: route.component };
+        }),
+        {
+            path: '',
+            redirectTo: DEFAULT_ROUTING,
+            pathMatch: 'full'
+        }
+    ];
 }
