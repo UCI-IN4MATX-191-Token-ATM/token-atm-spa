@@ -15,6 +15,9 @@ import { AxiosServiceFactory } from './services/axios.service';
 import { AxiosService } from './services/axios.service';
 import { CourseSelectionComponent } from './components/course-selection/course-selection.component';
 import { CourseInfoItemComponent } from './components/course-info-item/course-info-item.component';
+import { RequestProcessComponent } from './components/request-process/request-process.component';
+import { TokenOptionConfigurationComponent } from './components/token-option-configuration/token-option-configuration.component';
+import { StudentListComponent } from './components/student-list/student-list.component';
 
 @NgModule({
     declarations: [
@@ -24,7 +27,10 @@ import { CourseInfoItemComponent } from './components/course-info-item/course-in
         FormItemComponent,
         DashboardComponent,
         CourseSelectionComponent,
-        CourseInfoItemComponent
+        CourseInfoItemComponent,
+        RequestProcessComponent,
+        TokenOptionConfigurationComponent,
+        StudentListComponent
     ],
     imports: [BrowserModule, AppRoutingModule, FormsModule, NgbModule],
     providers: [{ provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService }],
