@@ -2,6 +2,7 @@ import { Component, Inject, OnDestroy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import type { Course } from 'app/data/course';
 import type { Subscription } from 'rxjs';
+import { CourseConfigurable, TokenATMDashboardRoute, TOKEN_ATM_DASHBOARD_ROUTES } from './dashboard-routing';
 
 @Component({
     selector: 'app-dashboard',
@@ -30,5 +31,14 @@ export class DashboardComponent implements OnDestroy {
     ngOnDestroy(): void {
         if (!this.courseSubscription) return;
         this.courseSubscription.unsubscribe();
+    }
+
+    get routes(): TokenATMDashboardRoute[] {
+        return TOKEN_ATM_DASHBOARD_ROUTES;
+    }
+
+    async onComponentActivate(component: CourseConfigurable) {
+        if (!this.course) return;
+        await component.configureCourse(this.course);
     }
 }
