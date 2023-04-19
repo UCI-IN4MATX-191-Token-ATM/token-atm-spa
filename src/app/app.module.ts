@@ -18,6 +18,7 @@ import { CourseInfoItemComponent } from './components/course-info-item/course-in
 import { RequestProcessComponent } from './components/request-process/request-process.component';
 import { TokenOptionConfigurationComponent } from './components/token-option-configuration/token-option-configuration.component';
 import { StudentListComponent } from './components/student-list/student-list.component';
+import { TokenCountAdjustmentComponent } from './components/token-count-adjustment/token-count-adjustment.component';
 
 @NgModule({
     declarations: [
@@ -30,7 +31,8 @@ import { StudentListComponent } from './components/student-list/student-list.com
         CourseInfoItemComponent,
         RequestProcessComponent,
         TokenOptionConfigurationComponent,
-        StudentListComponent
+        StudentListComponent,
+        TokenCountAdjustmentComponent
     ],
     imports: [BrowserModule, AppRoutingModule, FormsModule, NgbModule],
     providers: [{ provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService }],
