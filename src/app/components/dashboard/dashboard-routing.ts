@@ -4,6 +4,7 @@ import type { Routes } from '@angular/router';
 import { RequestProcessComponent } from '../request-process/request-process.component';
 import { TokenOptionConfigurationComponent } from '../token-option-configuration/token-option-configuration.component';
 import { StudentListComponent } from '../student-list/student-list.component';
+import { TokenCountAdjustmentComponent } from '../token-count-adjustment/token-count-adjustment.component';
 
 export interface CourseConfigurable {
     configureCourse(course: Course): Promise<void>;
@@ -34,9 +35,9 @@ export const TOKEN_ATM_DASHBOARD_ROUTES: TokenATMDashboardRoute[] = [
         component: StudentListComponent
     },
     {
-        name: 'Dev Test',
-        path: 'dev-test',
-        component: StudentListComponent // Placeholder
+        name: 'Dev Test', // Placeholder
+        path: 'dev-test', // TODO: Maybe use a keyboard shortcut to launch instead?
+        component: TokenCountAdjustmentComponent
     }
 ];
 
