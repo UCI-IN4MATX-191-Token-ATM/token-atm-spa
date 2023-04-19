@@ -32,6 +32,11 @@ export const TOKEN_ATM_DASHBOARD_ROUTES: TokenATMDashboardRoute[] = [
         name: 'Students',
         path: 'students',
         component: StudentListComponent
+    },
+    {
+        name: 'Dev Test',
+        path: 'dev-test',
+        component: StudentListComponent // Placeholder
     }
 ];
 
