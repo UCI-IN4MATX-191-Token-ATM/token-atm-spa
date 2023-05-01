@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { AxiosService, AxiosServiceFactory } from 'app/services/axios.service';
 
 import { RequestProcessComponent } from './request-process.component';
 
@@ -8,7 +10,9 @@ describe('RequestProcessComponent', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [RequestProcessComponent]
+            declarations: [RequestProcessComponent],
+            imports: [NgbModule],
+            providers: [{ provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService }]
         }).compileComponents();
 
         fixture = TestBed.createComponent(RequestProcessComponent);
