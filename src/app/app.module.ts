@@ -19,6 +19,15 @@ import { RequestProcessComponent } from './components/request-process/request-pr
 import { TokenOptionConfigurationComponent } from './components/token-option-configuration/token-option-configuration.component';
 import { StudentListComponent } from './components/student-list/student-list.component';
 import { TokenCountAdjustmentComponent } from './components/token-count-adjustment/token-count-adjustment.component';
+import {
+    REGISTERED_TOKEN_OPTION_RESOLVERS,
+    TOKEN_OPTION_RESOLVER_INJECTION_TOKEN
+} from './token-option-resolvers/token-option-resolver-registry';
+import {
+    REGISTERED_REQUEST_RESOLVERS,
+    REQUEST_RESOLVER_INJECT_TOKEN
+} from './request-resolvers/request-resolver-registry';
+import { REGISTERED_REQUEST_HANDLERS, REQUEST_HANDLER_INJECT_TOKEN } from './request-handlers/request-handler-registry';
 
 @NgModule({
     declarations: [
@@ -35,7 +44,24 @@ import { TokenCountAdjustmentComponent } from './components/token-count-adjustme
         TokenCountAdjustmentComponent
     ],
     imports: [BrowserModule, AppRoutingModule, FormsModule, NgbModule],
-    providers: [{ provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService }],
+    providers: [
+        { provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService },
+        ...REGISTERED_TOKEN_OPTION_RESOLVERS.map((cls) => ({
+            provide: TOKEN_OPTION_RESOLVER_INJECTION_TOKEN,
+            useClass: cls,
+            multi: true
+        })),
+        ...REGISTERED_REQUEST_RESOLVERS.map((cls) => ({
+            provide: REQUEST_RESOLVER_INJECT_TOKEN,
+            useClass: cls,
+            multi: true
+        })),
+        ...REGISTERED_REQUEST_HANDLERS.map((cls) => ({
+            provide: REQUEST_HANDLER_INJECT_TOKEN,
+            useClass: cls,
+            multi: true
+        }))
+    ],
     bootstrap: [AppComponent]
 })
 export class AppModule {}

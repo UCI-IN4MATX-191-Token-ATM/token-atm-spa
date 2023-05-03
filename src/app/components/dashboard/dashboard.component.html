@@ -14,5 +14,7 @@
             </ng-container>
         </ul>
     </div>
-    <router-outlet (activate)="onComponentActivate($event)"></router-outlet>
+    <div class="flex-grow-1">
+        <router-outlet (activate)="onComponentActivate($event)"></router-outlet>
+    </div>
 </div>
