@@ -25,7 +25,7 @@ export class RequestProcessComponent implements CourseConfigurable {
         this.configuration = await this.configurationManager.getTokenATMConfiguration(course);
     }
 
-    public async onStartRquestProcessing(): Promise<void> {
+    public async onStartRequestProcessing(): Promise<void> {
         if (!this.configuration) return;
         this.isReconfigureFinished = false;
         await this.requestProcessManagerService.startRequestProcessing(this.configuration);
