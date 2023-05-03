@@ -23,7 +23,7 @@ export abstract class TokenOption {
         this._tokenBalanceChange = data['token_balance_change'];
     }
 
-    public group(): TokenOptionGroup {
+    public get group(): TokenOptionGroup {
         return this._group;
     }
 

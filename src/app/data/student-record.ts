@@ -68,8 +68,8 @@ export class StudentRecord {
         if (!processedRequest.tokenOption) throw new Error('Invalid processed request');
         if (processedRequest.isApproved) this._tokenBalance += processedRequest.tokenOption.tokenBalanceChange;
         this._processedAttemptsMap.set(
-            processedRequest.tokenOption.id,
-            (this._processedAttemptsMap.get(processedRequest.tokenOption.id) ?? 0) + 1
+            processedRequest.tokenOption.group.id,
+            (this._processedAttemptsMap.get(processedRequest.tokenOption.group.id) ?? 0) + 1
         );
         this._processedRequests.push(processedRequest);
     }
