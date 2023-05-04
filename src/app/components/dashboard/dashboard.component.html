@@ -1,1 +1,20 @@
-<p id="hello">Hello Token ATM!</p>
+<!-- https://getbootstrap.com/docs/5.0/examples/sidebars/ -->
+<div class="d-flex">
+    <div id="sidebar" class="d-flex flex-column flex-shrink-0 align-items-center px-3 py-5 bg-light vh-100 me-0">
+        <p class="fs-1">Token ATM</p>
+        <!-- TODO: placeholder for identity information -->
+        <div style="height: 20rem"></div>
+        <ul class="nav nav-pills flex-column align-items-center">
+            <ng-container *ngFor="let route of routes">
+                <li class="nav-item">
+                    <span class="nav-link fs-4 text-dark" [routerLink]="route.path" routerLinkActive="fw-bold">{{
+                        route.name
+                    }}</span>
+                </li>
+            </ng-container>
+        </ul>
+    </div>
+    <div class="flex-grow-1">
+        <router-outlet (activate)="onComponentActivate($event)"></router-outlet>
+    </div>
+</div>

@@ -1,3 +1,4 @@
 #!/bin/bash
 
-# npm install -g typescript live-server
+npm install
+NG_FORCE_TTY=false ng config -g cli.completion.prompted true

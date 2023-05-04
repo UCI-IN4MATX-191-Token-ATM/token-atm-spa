@@ -1,0 +1,27 @@
+<div appCenter>
+    <ngb-toast *ngIf="loading; else courseSelectionPanel" [autohide]="false">
+        Token ATM is retrieving information from Canvas. Please wait...
+    </ngb-toast>
+    <ng-template #courseSelectionPanel
+        ><div class="container text-center align-items-center">
+            <h1 class="text-primary">Welcome to Token ATM</h1>
+            <p>Please select a course</p>
+            <h2 class="my-4">Courses you enrolled as a teacher</h2>
+            <div class="row gy-3">
+                <app-course-info-item
+                    class="col-auto"
+                    *ngFor="let course of coursesEnrolledAsTeacher"
+                    [course]="course"
+                ></app-course-info-item>
+            </div>
+            <h2 class="my-4">Courses you enrolled as a TA</h2>
+            <div class="row gy-3">
+                <app-course-info-item
+                    class="col-auto"
+                    *ngFor="let course of coursesEnrolledAsTA"
+                    [course]="course"
+                ></app-course-info-item>
+            </div>
+        </div>
+    </ng-template>
+</div>

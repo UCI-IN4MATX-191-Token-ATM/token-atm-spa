@@ -1,0 +1,10 @@
+<div appCenter>
+    <ngb-toast *ngIf="!configuration; else processPanel" [autohide]="false">
+        Token ATM is retrieving information from Canvas. Please wait...
+    </ngb-toast>
+    <ng-template #processPanel>
+        <button class="btn btn-primary btn-lg" [disabled]="isRunning" (click)="onStartRequestProcessing()">
+            Start Request Processing
+        </button>
+    </ng-template>
+</div>

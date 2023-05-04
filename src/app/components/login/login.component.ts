@@ -59,7 +59,7 @@ export class LoginComponent {
         );
         if (isCanvasCredentialValid && isQualtricsCredentialValid) {
             this.credentials = new TokenATMCredentials();
-            this.router.navigate(['/dashboard']);
+            this.router.navigate(['/select-course']);
             return;
         } else {
             // TODO: handle invalid credentials
