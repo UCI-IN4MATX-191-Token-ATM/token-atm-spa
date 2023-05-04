@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Student Information</title>
+        <style>
+            /* Style the information bar */
+            .info-bar {
+                display: flex;
+                justify-content: space-between;
+                background-color: lightgray;
+                padding: 10px;
+                font-weight: bold;
+            }
+
+            /* Style the student cards */
+            .student-card {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px;
+                border-bottom: 1px solid gray;
+            }
+
+            /* Style the search button */
+            .search-button {
+                float: right;
+                margin-top: 10px;
+                margin-right: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <button class="search-button">Search</button>
+        <div class="info-bar">
+            <div>Student Name</div>
+            <div>Token Balance</div>
+            <div>Manage Button</div>
+        </div>
+        <div>
+            <div class="student-card">
+                <div>Student 1</div>
+                <div>10</div>
+                <button>Manage</button>
+            </div>
+            <div class="student-card">
+                <div>Student 2</div>
+                <div>20</div>
+                <button>Manage</button>
+            </div>
+            <div class="student-card">
+                <div>Student 3</div>
+                <div>30</div>
+                <button>Manage</button>
+            </div>
+            <!-- Add more student cards as needed -->
+        </div>
+    </body>
+</html>
