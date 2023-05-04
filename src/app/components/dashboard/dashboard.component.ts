@@ -12,6 +12,9 @@ import { CourseConfigurable, TokenATMDashboardRoute, TOKEN_ATM_DASHBOARD_ROUTES 
 export class DashboardComponent implements OnDestroy {
     private courseSubscription: Subscription | undefined;
     course: Course | undefined;
+    avatarUrl: string | undefined;
+    name: string | undefined;
+    email: string | undefined;
 
     constructor(@Inject(Router) private router: Router) {
         this.courseSubscription = this.router.events.subscribe((event) => {
@@ -20,7 +23,19 @@ export class DashboardComponent implements OnDestroy {
             const course = this.router.getCurrentNavigation()?.extras.state;
             if (!course) return;
             this.configureCourse(course as Course);
+            this.configureUserInformation();
         });
+    }
+
+    private async configureUserInformation() {
+        // Retrieve user information from the API
+        const userResponse = await fetch('/api/user');
+        const { avatar_url, name, email } = await userResponse.json();
+
+        // Update component state with user information
+        this.avatarUrl = avatar_url;
+        this.name = name;
+        this.email = email;
     }
 
     private configureCourse(course: Course) {

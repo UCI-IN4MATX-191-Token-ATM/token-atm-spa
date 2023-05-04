@@ -3,6 +3,11 @@
     <div id="sidebar" class="d-flex flex-column flex-shrink-0 align-items-center px-3 py-5 bg-light vh-100 me-0">
         <p class="fs-1">Token ATM</p>
         <!-- TODO: placeholder for identity information -->
+        <div>
+            <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar">
+            <p *ngIf="name">{{ name }}</p>
+            <p *ngIf="email">{{ email }}</p>
+        </div>
         <div style="height: 20rem"></div>
         <ul class="nav nav-pills flex-column align-items-center">
             <ng-container *ngFor="let route of routes">
