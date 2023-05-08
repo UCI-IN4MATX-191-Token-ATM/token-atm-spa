@@ -3,6 +3,8 @@ import { NavigationEnd, Router } from '@angular/router';
 import type { Course } from 'app/data/course';
 import type { Subscription } from 'rxjs';
 import { CourseConfigurable, TokenATMDashboardRoute, TOKEN_ATM_DASHBOARD_ROUTES } from './dashboard-routing';
+import { CanvasService } from 'app/services/canvas.service';
+import { User } from 'app/data/user';
 
 @Component({
     selector: 'app-dashboard',
@@ -12,30 +14,30 @@ import { CourseConfigurable, TokenATMDashboardRoute, TOKEN_ATM_DASHBOARD_ROUTES 
 export class DashboardComponent implements OnDestroy {
     private courseSubscription: Subscription | undefined;
     course: Course | undefined;
-    avatarUrl: string | undefined;
+    user: User | undefined;
+    avatarUrl?: string;
     name: string | undefined;
     email: string | undefined;
 
-    constructor(@Inject(Router) private router: Router) {
+    constructor(@Inject(Router) private router: Router, @Inject(CanvasService) private canvasService: CanvasService) {
         this.courseSubscription = this.router.events.subscribe((event) => {
             if (!(event instanceof NavigationEnd)) return;
             if (!(event.url == '/dashboard')) return;
             const course = this.router.getCurrentNavigation()?.extras.state;
             if (!course) return;
             this.configureCourse(course as Course);
-            this.configureUserInformation();
+            const user = this.router.getCurrentNavigation()?.extras.state;
+            if (!course) return;
+            this.configureUserInformation(user as User);
         });
     }
 
-    private async configureUserInformation() {
+    private async configureUserInformation(user: User) {
         // Retrieve user information from the API
-        const userResponse = await fetch('/api/user');
-        const { avatar_url, name, email } = await userResponse.json();
-
-        // Update component state with user information
-        this.avatarUrl = avatar_url;
-        this.name = name;
-        this.email = email;
+        const getuser = await this.canvasService.getUserInformation(user.id);
+        this.name = getuser.name;
+        this.email = getuser.email;
+        this.avatarUrl = getuser.avatar_url;
     }
 
     private configureCourse(course: Course) {
