@@ -1,1 +1,87 @@
-<p>student-list works!</p>
+<div class="row m-5">
+    <div class="col-4 card">
+        <div class="card-body">
+            <h5 class="card-titile">Student Information</h5>
+            <div class="card-text">
+                <ul class="list-group list-group-flush my-auto">
+                    <li class="list-group-item">Canvas User ID: 12345</li>
+                    <li class="list-group-item">Name: Peter Anteater</li>
+                    <li class="list-group-item">Email: anteater@uci.edu</li>
+                    <li class="list-group-item">Current Token Balance: 2 tokens</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-4"></div>
+    <div class="col-4 card">
+        <div class="card-body">
+            <h5 class="card-titile">Token Balance Adjustment</h5>
+            <div class="card-text">
+                <form>
+                    <div class="mb-3">
+                        <label> Token Adjustment Count </label>
+                        <input type="number" class="form-control" value="0" />
+                    </div>
+                    <div class="mb-3">
+                        <label> Message </label>
+                        <textarea class="form-control" placeholder="Manual adjustment made by instructor"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 card my-5">
+        <div class="card-body">
+            <h5 class="card-titile">Request History</h5>
+            <div class="card-text">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Token Option Name</th>
+                            <th scope="col">Submitted Time</th>
+                            <th scope="col">Processed Time</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Token Balance Change</th>
+                            <th scope="col">Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Manual Adjustment</td>
+                            <td>May 9, 2023 5:10 PM</td>
+                            <td>May 9, 2023 5:10 PM</td>
+                            <td>Approved</td>
+                            <td>2</td>
+                            <td>In-Class Activity Participation</td>
+                        </tr>
+                        <tr>
+                            <td>Lab 1 Data Set</td>
+                            <td>May 7, 2023 2:40 PM</td>
+                            <td>May 7, 2023 6:24 PM</td>
+                            <td>Rejected</td>
+                            <td>0</td>
+                            <td>Insufficient Token Balance</td>
+                        </tr>
+                        <tr>
+                            <td>Lab Report 1 Resubmission</td>
+                            <td>May 5, 2023 10:32 AM</td>
+                            <td>May 5, 2023 5:15 PM</td>
+                            <td>Approved</td>
+                            <td>-1</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Feedback Survey Participation</td>
+                            <td>May 2, 2023 11:15 PM</td>
+                            <td>May 3, 2023 9:52 PM</td>
+                            <td>Approved</td>
+                            <td>1</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

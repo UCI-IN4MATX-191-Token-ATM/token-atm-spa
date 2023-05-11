@@ -1,1 +1,60 @@
-<p>token-option-configuration works!</p>
+<div class="m-5">
+    <ng-container *ngFor="let data of allData">
+        <div ngbAccordion class="mb-5">
+            <div ngbAccordionItem>
+                <h2 ngbAccordionHeader>
+                    <div>
+                        <button ngbAccordionButton>
+                            <span class="flex-grow-1">{{ data.name }}</span>
+                            <span class="bi bi-plus-circle danger text-success me-3"></span>
+                            <span class="bi bi-trash danger text-danger me-3"></span>
+                        </button>
+                    </div>
+                </h2>
+                <div ngbAccordionCollapse>
+                    <div ngbAccordionBody>
+                        <ng-template>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item" *ngFor="let option of data.options">
+                                    <span class="fs-4">{{ option.name }}</span>
+                                    <br />
+                                    <span class="fs-6 fw-light text-secondary"
+                                        >{{ option.type }} <span class="bi bi-dot"></span>
+                                        {{
+                                            (option.balanceChange > 0 ? 'Earn ' : 'Spend ') +
+                                                getAbsValue(option.balanceChange).toString() +
+                                                ' token' +
+                                                (getAbsValue(option.balanceChange) === 1 ? '' : 's')
+                                        }}</span
+                                    >
+                                </li>
+                            </ul>
+                        </ng-template>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--         
+        <div class="accordion" [id]="'#group' + data.uuid">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button
+                        class="accordion-button"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        [attr.data-bs-target]="'#content' + data.uuid"
+                    >
+                        Accordion Item #1
+                    </button>
+                </h2>
+                <div
+                    [id]="'#content' + data.uuid"
+                    class="accordion-collapse collapse show"
+                    [attr.data-bs-parent]="'#group' + data.uuid"
+                >
+                    {{ data.options[0]?.name }}
+                </div>
+            </div>
+        </div> -->
+    </ng-container>
+</div>

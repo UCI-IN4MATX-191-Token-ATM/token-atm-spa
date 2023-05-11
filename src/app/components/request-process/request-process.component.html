@@ -1,10 +1,23 @@
 <div appCenter>
-    <ngb-toast *ngIf="!configuration; else processPanel" [autohide]="false">
+    <!-- <ngb-toast *ngIf="!configuration; else processPanel" [autohide]="false">
         Token ATM is retrieving information from Canvas. Please wait...
-    </ngb-toast>
-    <ng-template #processPanel>
-        <button class="btn btn-primary btn-lg" [disabled]="isRunning" (click)="onStartRequestProcessing()">
-            Start Request Processing
-        </button>
-    </ng-template>
+    </ngb-toast> -->
+    <!-- <ng-template #processPanel>
+    </ng-template> -->
+    <div class="d-flex flex-column">
+        <button class="btn btn-danger btn-lg mx-auto">Stop Request Processing</button>
+        <!-- <div>
+            <ngb-progressbar
+                class="m-3"
+                type="success"
+                [showValue]="true"
+                [value]="77"
+                [striped]="true"
+            ></ngb-progressbar>
+        </div> -->
+        <div class="progress m-3">
+            <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 77%"></div>
+        </div>
+        <p>Processed 27 requests, 8 requests remaining (35 requests in total)</p>
+    </div>
 </div>

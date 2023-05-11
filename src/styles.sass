@@ -1,8 +1,16 @@
 /* You can add global styles to this file, and also import other style files */
 @import "bootstrap/scss/bootstrap"
+@import 'bootstrap/scss/_variables.scss'
+
 
 .form-item
     @extend .row
     @extend .justify-content-center
     @extend .align-items-center
     @extend .mb-2
+@page
+    size: 1500px 1200px
+
+.accordion-button
+    --bs-accordion-active-bg: #ffffff
+    --bs-accordion-active-color: #000000
