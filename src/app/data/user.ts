@@ -9,14 +9,14 @@ export class User {
         if (
             typeof data['id'] != 'string' ||
             typeof data['name'] != 'string' ||
-            (typeof data['email'] != 'undefined' && data['email'] != 'string') ||
-            (typeof data['_avatar_url'] != 'undefined' && data['_avatar_url'] != 'string')
+            (typeof data['email'] != 'undefined' && typeof data['email'] != 'string') ||
+            (typeof data['avatar_url'] != 'undefined' && typeof data['avatar_url'] != 'string')
         )
             throw new Error('Invalid data');
         this._id = data['id'];
         this._name = data['name'];
         this._email = data['email'];
-        this._avatar_url = data['email'];
+        this._avatar_url = data['avatar_url'];
     }
 
     public get id(): string {

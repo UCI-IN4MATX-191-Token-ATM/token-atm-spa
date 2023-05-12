@@ -4,7 +4,7 @@ import type { Course } from 'app/data/course';
 import type { Subscription } from 'rxjs';
 import { CourseConfigurable, TokenATMDashboardRoute, TOKEN_ATM_DASHBOARD_ROUTES } from './dashboard-routing';
 import { CanvasService } from 'app/services/canvas.service';
-import { User } from 'app/data/user';
+// import { User } from 'app/data/user';
 
 @Component({
     selector: 'app-dashboard',
@@ -14,7 +14,7 @@ import { User } from 'app/data/user';
 export class DashboardComponent implements OnDestroy {
     private courseSubscription: Subscription | undefined;
     course: Course | undefined;
-    user: User | undefined;
+    // user: User | undefined;
     avatarUrl?: string;
     name: string | undefined;
     email: string | undefined;
@@ -26,15 +26,15 @@ export class DashboardComponent implements OnDestroy {
             const course = this.router.getCurrentNavigation()?.extras.state;
             if (!course) return;
             this.configureCourse(course as Course);
-            const user = this.router.getCurrentNavigation()?.extras.state;
-            if (!course) return;
-            this.configureUserInformation(user as User);
+            // const user = this.router.getCurrentNavigation()?.extras.state;
+            // if (!course) return;
+            this.configureUserInformation('self');
         });
     }
 
-    private async configureUserInformation(user: User) {
+    private async configureUserInformation(userId: string) {
         // Retrieve user information from the API
-        const getuser = await this.canvasService.getUserInformation(user.id);
+        const getuser = await this.canvasService.getUserInformation(userId);
         this.name = getuser.name;
         this.email = getuser.email;
         this.avatarUrl = getuser.avatar_url;
