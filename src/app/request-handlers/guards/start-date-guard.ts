@@ -7,7 +7,7 @@ export class StartDateGuard extends RequestHandlerGuard {
     }
 
     public async check(onReject: (message: string) => Promise<void>): Promise<void> {
-        if (compareAsc(this.submittedDate, this.startDate))
+        if (compareAsc(this.submittedDate, this.startDate) == -1)
             onReject('Request is submitted earlier than the start date');
     }
 }
