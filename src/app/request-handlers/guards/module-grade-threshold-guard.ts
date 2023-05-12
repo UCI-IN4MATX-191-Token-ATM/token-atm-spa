@@ -18,8 +18,12 @@ export class ModuleGradeThresholdGuard extends RequestHandlerGuard {
             this.moduleId,
             this.studentId
         );
-        if (totalPoints != 0 && obtainedPoints / totalPoints <= this.gradeThreshold) {
-            onReject(`Module score ${obtainedPoints}/${totalPoints} (${(obtainedPoints / totalPoints).toFixed(2)})`);
+        if (totalPoints != 0 && obtainedPoints / totalPoints < this.gradeThreshold) {
+            onReject(
+                `Module score ${obtainedPoints}/${totalPoints} (${((obtainedPoints / totalPoints) * 100).toFixed(
+                    2
+                )}%) is lower than the threshold (${(this.gradeThreshold * 100).toFixed(2)}%).`
+            );
         }
     }
 }
