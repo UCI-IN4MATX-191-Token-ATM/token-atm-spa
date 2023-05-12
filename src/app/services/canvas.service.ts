@@ -8,6 +8,7 @@ import { PaginatedResult } from 'app/utils/paginated-result';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { parseISO } from 'date-fns';
 import { AxiosService } from './axios.service';
+import { User } from 'app/data/user';
 
 type QuizQuestionResponse = {
     id: string;
@@ -109,6 +110,10 @@ export class CanvasService {
         return content;
     }
 
+    public async getUserInformation(userId: string): Promise<User> {
+        const data = await this.apiRequest(`/api/v1/users/${userId}`);
+        return new User(data);
+    }
     public async getPageContentByName(courseId: string, pageName: string): Promise<string> {
         const response = await this.rawAPIRequest(`/api/v1/courses/${courseId}/pages`, {
             params: {
