@@ -9,8 +9,8 @@ export class RepeatRequestGuard extends RequestHandlerGuard {
     public async check(onReject: (message: string) => Promise<void>): Promise<void> {
         // TODO: handle withdraw
         for (const request of this.processedRequests) {
-            if (!request.tokenOption) return;
-            if (!request.isApproved) return;
+            if (!request.tokenOption) continue;
+            if (!request.isApproved) continue;
             if (this.tokenOption.id == request.tokenOption.id) {
                 onReject('There is already an approved request to this token option.');
                 return;
