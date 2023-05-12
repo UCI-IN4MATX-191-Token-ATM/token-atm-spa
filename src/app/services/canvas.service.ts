@@ -301,13 +301,18 @@ export class CanvasService {
         let obtainedPoints = 0,
             totalPoints = 0;
         const moduleItems = new PaginatedResult<ModuleItemInfo>(
-            await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules/${moduleId}/items`),
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules/${moduleId}/items`, {
+                params: {
+                    include: ['content_details']
+                }
+            }),
             async (url: string) => await this.paginatedRequestHandler(url),
             (data: unknown[]) => {
                 return data.map((entry: unknown) => new ModuleItemInfo(entry));
             }
         );
         for await (const moduleItem of moduleItems) {
+            if (!moduleItem.contentId) continue;
             totalPoints += moduleItem.pointsPossible;
             switch (moduleItem.type) {
                 case 'Assignment': {

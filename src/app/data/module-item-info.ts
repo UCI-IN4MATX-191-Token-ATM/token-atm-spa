@@ -2,7 +2,7 @@ export class ModuleItemInfo {
     private _id: string;
     private _moduleId: string;
     private _type: string;
-    private _contentId: string;
+    private _contentId?: string;
     private _pointsPossible?: number;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -11,7 +11,7 @@ export class ModuleItemInfo {
             typeof data['id'] != 'string' ||
             typeof data['module_id'] != 'string' ||
             typeof data['type'] != 'string' ||
-            typeof data['content_id'] != 'string' ||
+            (typeof data['content_id'] != 'undefined' && typeof data['content_id'] != 'string') ||
             (typeof data['content_details']?.['points_possible'] != 'undefined' &&
                 typeof data['content_details']?.['points_possible'] != 'number')
         )
@@ -35,7 +35,7 @@ export class ModuleItemInfo {
         return this._type;
     }
 
-    public get contentId(): string {
+    public get contentId(): string | undefined {
         return this._contentId;
     }
 
