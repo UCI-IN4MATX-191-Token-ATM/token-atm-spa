@@ -9,12 +9,62 @@
                     [(data)]="credentials[credentialID]"
                 ></app-form-item>
             </ng-container>
-            <button type="button" class="btn btn-primary" (click)="onSubmitCredential()">Login</button>
-            <p></p>
-            <p></p>
-            <button type="button" target="_blank" class="btn btn-secondary" (click)="openLink()">
-                Having trouble to find credential?
-            </button>
+            <div class="d-flex justify-content-center">
+                <input
+                    type="checkbox"
+                    [(ngModel)]="isSavingCredentials"
+                    name="isSavingCredentials"
+                    id="checkSaveCredentials"
+                />
+                <label for="checkSaveCredentials" class="ms-2">Save credentials</label>
+            </div>
+            <button type="button" class="btn btn-primary" (click)="onClickSubmitButton()">Login</button>
         </form>
+        <button type="button" target="_blank" class="btn btn-secondary mt-5" (click)="openLink()">
+            Having trouble to find credential?
+        </button>
     </div>
 </div>
+
+<ng-template #retrieveCredentialModal let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title">Unlock Credentials</h4>
+    </div>
+    <div class="modal-body">
+        <form>
+            <app-form-item [info]="getPasswordFormItemInfo()" [(data)]="password"></app-form-item>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <div class="d-flex flex-grow-1">
+            <button type="button" class="btn btn-outline-secondary me-2" (click)="modal.close('cancel')">Cancel</button>
+            <button type="button" class="btn btn-danger me-auto" (click)="modal.close('delete')">
+                Delete saved credentials
+            </button>
+            <button type="button" class="btn btn-primary" (click)="modal.close('unlock')">Unlock</button>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #storeCredentialModal let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title">Save Credentials</h4>
+    </div>
+    <div class="modal-body">
+        <p *ngIf="hasExistingCredentials()" class="text-danger">
+            Warning: Some credentials has already been saved. Saving new credentials will overwrite any previously saved
+            credentials.
+        </p>
+        <form>
+            <app-form-item [info]="getPasswordFormItemInfo()" [(data)]="password"></app-form-item>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <div class="d-flex flex-grow-1">
+            <button type="button" class="btn btn-outline-secondary me-auto" (click)="modal.close('cancel')">
+                Cancel
+            </button>
+            <button type="button" class="btn btn-primary" (click)="modal.close('store')">Save</button>
+        </div>
+    </div>
+</ng-template>

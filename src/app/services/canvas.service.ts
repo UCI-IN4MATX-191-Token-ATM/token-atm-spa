@@ -26,6 +26,10 @@ export class CanvasService {
 
     constructor(@Inject(AxiosService) private axiosService: AxiosService) {}
 
+    public hasCredentialConfigured(): boolean {
+        return this.#url != undefined && this.#accessToken != undefined;
+    }
+
     public async configureCredential(url: string, accessToken: string): Promise<boolean> {
         this.#url = url;
         this.#accessToken = accessToken;
