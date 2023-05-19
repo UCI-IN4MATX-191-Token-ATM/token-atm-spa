@@ -12,7 +12,7 @@ export class RepeatRequestGuard extends RequestHandlerGuard {
             if (!request.tokenOption) continue;
             if (!request.isApproved) continue;
             if (this.tokenOption.id == request.tokenOption.id) {
-                onReject('There is already an approved request to this token option.');
+                onReject('There is already an approved request for this token option.');
                 return;
             }
         }
