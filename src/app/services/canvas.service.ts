@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@angular/core';
 import { Course } from 'app/data/course';
+import { ModuleItemInfo } from 'app/data/module-item-info';
 import { QuizSubmission } from 'app/data/quiz-submission';
 import { Student } from 'app/data/student';
 import { SubmissionComment } from 'app/data/submission-comment';
@@ -298,5 +299,41 @@ export class CanvasService {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (data: any) => data.map((entry: any) => new Student(entry.user))
         );
+    }
+
+    public async getModuleScore(courseId: string, moduleId: string, studentId: string): Promise<[number, number]> {
+        let obtainedPoints = 0,
+            totalPoints = 0;
+        const moduleItems = new PaginatedResult<ModuleItemInfo>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules/${moduleId}/items`, {
+                params: {
+                    include: ['content_details']
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => {
+                return data.map((entry: unknown) => new ModuleItemInfo(entry));
+            }
+        );
+        for await (const moduleItem of moduleItems) {
+            if (!moduleItem.contentId) continue;
+            totalPoints += moduleItem.pointsPossible;
+            switch (moduleItem.type) {
+                case 'Assignment': {
+                    obtainedPoints += await this.getSingleSubmissionGrade(courseId, studentId, moduleItem.contentId, 0);
+                    break;
+                }
+                case 'Quiz': {
+                    obtainedPoints += await this.getSingleSubmissionGrade(
+                        courseId,
+                        studentId,
+                        await this.getAssignmentIdByQuizId(courseId, moduleItem.contentId),
+                        0
+                    );
+                    break;
+                }
+            }
+        }
+        return [obtainedPoints, totalPoints];
     }
 }
