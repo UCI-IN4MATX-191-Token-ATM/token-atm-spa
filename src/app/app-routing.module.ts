@@ -4,11 +4,18 @@ import { CourseSelectionComponent } from './components/course-selection/course-s
 import { getDashboardRoutes } from './components/dashboard/dashboard-routing';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { LoginComponent } from './components/login/login.component';
+import { AUTH_GUARD } from './utils/auth-guard';
 
 const routes: Routes = [
     { path: 'login', component: LoginComponent },
-    { path: 'dashboard', component: DashboardComponent, children: getDashboardRoutes() },
-    { path: 'select-course', component: CourseSelectionComponent },
+    {
+        path: 'dashboard',
+        component: DashboardComponent,
+        children: getDashboardRoutes(),
+        canActivate: [AUTH_GUARD],
+        canActivateChild: [AUTH_GUARD]
+    },
+    { path: 'select-course', component: CourseSelectionComponent, canActivate: [AUTH_GUARD] },
     { path: '', pathMatch: 'full', redirectTo: '/login' }
 ];
 
