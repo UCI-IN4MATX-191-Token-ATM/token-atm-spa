@@ -1,3 +1,4 @@
+import { fromUnixTime, getUnixTime } from 'date-fns';
 import { ProcessedRequest } from './processed-request';
 import type { Student } from './student';
 import type { TokenATMConfiguration } from './token-atm-configuration';
@@ -6,6 +7,7 @@ export class StudentRecord {
     private _configuration: TokenATMConfiguration;
     private _student: Student;
     private _commentId: string;
+    private _commentDate: Date;
     private _tokenBalance: number;
     private _processedAttemptsMap: Map<number, number>;
     private _processedRequests: ProcessedRequest[];
@@ -19,6 +21,7 @@ export class StudentRecord {
         data: any
     ) {
         if (
+            typeof data['comment_date'] != 'number' ||
             typeof data['processed_attempt_map'] != 'object' ||
             !Array.isArray(data['processed_attempt_map']) ||
             typeof data['processed_requests'] != 'object' ||
@@ -28,6 +31,7 @@ export class StudentRecord {
         this._configuration = configuration;
         this._student = student;
         this._commentId = commentId;
+        this._commentDate = fromUnixTime(data['comment_date']);
         this._tokenBalance = tokenBalance;
         this._processedAttemptsMap = new Map<number, number>();
         for (const entry of data['processed_attempt_map']) {
@@ -56,6 +60,14 @@ export class StudentRecord {
         this._commentId = commentId;
     }
 
+    public get commentDate(): Date {
+        return this._commentDate;
+    }
+
+    public set commentDate(commentDate: Date) {
+        this._commentDate = commentDate;
+    }
+
     public get tokenBalance(): number {
         return this._tokenBalance;
     }
@@ -80,6 +92,7 @@ export class StudentRecord {
 
     public toJSON(): unknown {
         return {
+            comment_date: getUnixTime(this.commentDate),
             processed_attempt_map: [...this._processedAttemptsMap.entries()].map((entry) => {
                 return {
                     token_option_group_id: entry[0],
