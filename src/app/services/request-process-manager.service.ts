@@ -87,6 +87,7 @@ export class RequestProcessManagerService {
                 this.finishRequestProcessing(progressUpdate);
                 return;
             }
+            const tmpAllRequests: TokenATMRequest<TokenOption>[] = [];
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             for (const [_, [tokenOptionGroup, quizSubmission]] of quizSubmissions) {
                 const requests: TokenATMRequest<TokenOption>[] = [];
@@ -116,8 +117,9 @@ export class RequestProcessManagerService {
                         return;
                     }
                 }
-                allRequests.push([studentRecord, requests]);
+                tmpAllRequests.push(...requests);
             }
+            allRequests.push([studentRecord, tmpAllRequests]);
         }
         let processedStudentCnt = 0,
             processedRequestCnt = 0;
