@@ -1,6 +1,9 @@
 <div class="form-item">
     <div class="col-auto col-sm-3 text-center text-sm-end">
         <label [for]="info.propertyID + uuid">{{ info.propertyName }}</label>
+        <span *ngIf="info.tooltip" class="d-inline-block ms-2" data-toggle="tooltip" title="{{ info.tooltip }}">
+            <i class="bi bi-question-circle"></i>
+        </span>
     </div>
     <div class="col-12 col-sm-6 col-lg-4">
         <input

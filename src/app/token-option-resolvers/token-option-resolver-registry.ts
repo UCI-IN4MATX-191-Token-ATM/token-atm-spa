@@ -2,9 +2,13 @@ import { Inject, Injectable, InjectionToken, Optional, Type } from '@angular/cor
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import type { TokenOption } from 'app/token-options/token-option';
 import { BasicTokenOptionResolver } from './basic-token-option-resolver';
+import { EarnByModuleTokenOptionResolver } from './earn-by-module-token-option-resolver';
 import type { TokenOptionResolver } from './token-option-resolver';
 
-export const REGISTERED_TOKEN_OPTION_RESOLVERS: Type<TokenOptionResolver<TokenOption>>[] = [BasicTokenOptionResolver];
+export const REGISTERED_TOKEN_OPTION_RESOLVERS: Type<TokenOptionResolver<TokenOption>>[] = [
+    BasicTokenOptionResolver,
+    EarnByModuleTokenOptionResolver
+];
 
 export const TOKEN_OPTION_RESOLVER_INJECTION_TOKEN = new InjectionToken<TokenOptionResolver<TokenOption>[]>(
     'TOKEN_OPTION_RESOLVERS'
