@@ -7,7 +7,8 @@ import { RequestHandlerRegistry } from 'app/request-handlers/request-handler-reg
 import { RequestResolverRegistry } from 'app/request-resolvers/request-resolver-registry';
 import type { TokenATMRequest } from 'app/requests/token-atm-request';
 import type { TokenOption } from 'app/token-options/token-option';
-import { DataConversionHelper } from 'app/utils/data-conversion-helper';
+import { compareAsc } from 'date-fns';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { CanvasService } from './canvas.service';
 import { RawRequestFetcherService } from './raw-request-fetcher.service';
 import { StudentRecordManagerService } from './student-record-manager.service';
@@ -17,6 +18,7 @@ import { StudentRecordManagerService } from './student-record-manager.service';
 })
 export class RequestProcessManagerService {
     private _isRunning = false;
+    private _isStopTriggered = false;
 
     constructor(
         @Inject(CanvasService) private canvasService: CanvasService,
@@ -26,30 +28,65 @@ export class RequestProcessManagerService {
         @Inject(RequestHandlerRegistry) private requestHandlerRegistry: RequestHandlerRegistry
     ) {}
 
-    public async startRequestProcessing(configuration: TokenATMConfiguration): Promise<void> {
+    public startRequestProcessing(configuration: TokenATMConfiguration): Observable<[number, string]> {
+        const result = new BehaviorSubject<[number, string]>([0, 'Request processing started']);
+        this.runRequestProcessing(configuration, result);
+        return result;
+    }
+
+    public stopRequestProcessing(): void {
+        if (!this.isRunning) return;
+        this._isStopTriggered = true;
+    }
+
+    private finishRequestProcessing(progressUpdate: BehaviorSubject<[number, string]>): void {
+        this._isRunning = false;
+        this._isStopTriggered = false;
+        progressUpdate.complete();
+    }
+
+    public async runRequestProcessing(
+        configuration: TokenATMConfiguration,
+        progressUpdate: BehaviorSubject<[number, string]>
+    ): Promise<void> {
         this._isRunning = true;
+        this._isStopTriggered = false;
         const quizSubmissionMap = new Map<string, Map<string, [TokenOptionGroup, QuizSubmission]>>();
         const assignmentIdMap = new Map<string, string>();
+        let submissionCnt = 0;
         for (const group of configuration.tokenOptionGroups) {
             assignmentIdMap.set(
                 group.quizId,
                 await this.canvasService.getAssignmentIdByQuizId(configuration.course.id, group.quizId)
             );
-            const submissions = await DataConversionHelper.convertAsyncIterableToList(
-                await this.canvasService.getQuizSubmissions(configuration.course.id, group.quizId)
-            );
-            for (const submission of submissions) {
+            for await (const submission of await this.canvasService.getQuizSubmissions(
+                configuration.course.id,
+                group.quizId
+            )) {
                 if (!quizSubmissionMap.has(submission.studentId))
                     quizSubmissionMap.set(submission.studentId, new Map<string, [TokenOptionGroup, QuizSubmission]>());
                 quizSubmissionMap.get(submission.studentId)?.set(group.quizId, [group, submission]);
+                submissionCnt++;
+                progressUpdate.next([0, `Gathering submissions: Gathered ${submissionCnt} submission(s)`]);
+                if (this._isStopTriggered) {
+                    this.finishRequestProcessing(progressUpdate);
+                    return;
+                }
             }
         }
         const allRequests: [StudentRecord, TokenATMRequest<TokenOption>[]][] = [];
+        let studentCnt = 0,
+            requestCnt = 0;
         for await (const student of await this.canvasService.getCourseStudentEnrollments(configuration.course.id)) {
             if (!quizSubmissionMap.has(student.id)) continue;
             const quizSubmissions = quizSubmissionMap.get(student.id);
             if (!quizSubmissions) continue;
+            studentCnt++;
             const studentRecord = await this.studentRecordManagerService.getStudentRecord(configuration, student);
+            if (this._isStopTriggered) {
+                this.finishRequestProcessing(progressUpdate);
+                return;
+            }
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             for (const [_, [tokenOptionGroup, quizSubmission]] of quizSubmissions) {
                 const requests: TokenATMRequest<TokenOption>[] = [];
@@ -69,12 +106,24 @@ export class RequestProcessManagerService {
                     requests.push(
                         await this.requestResolverRegistry.resolveRequest(tokenOptionGroup, quizSubmissionDetail)
                     );
+                    requestCnt++;
+                    progressUpdate.next([
+                        0,
+                        `Retreiving reqeussts: Retreived ${requestCnt} request(s) from ${studentCnt} student(s)`
+                    ]);
+                    if (this._isStopTriggered) {
+                        this.finishRequestProcessing(progressUpdate);
+                        return;
+                    }
                 }
                 allRequests.push([studentRecord, requests]);
             }
         }
+        let processedStudentCnt = 0,
+            processedRequestCnt = 0;
         for (const [studentRecord, requests] of allRequests) {
-            for (const request of requests) {
+            processedStudentCnt++;
+            for (const request of requests.sort((a, b) => compareAsc(a.submittedTime, b.submittedTime))) {
                 const processedRequest = await this.requestHandlerRegistry.handleRequest(
                     configuration,
                     studentRecord,
@@ -85,9 +134,20 @@ export class RequestProcessManagerService {
                     studentRecord,
                     processedRequest
                 );
+                processedRequestCnt++;
+                progressUpdate.next([
+                    (processedRequestCnt * 100) / requestCnt,
+                    `Processing reqeussts: Processed ${processedRequestCnt} request(s) for ${processedStudentCnt} student(s), ${
+                        requestCnt - processedRequestCnt
+                    } requests from ${studentCnt - processedStudentCnt + 1} student(s) remaining`
+                ]);
+                if (this._isStopTriggered) {
+                    this.finishRequestProcessing(progressUpdate);
+                    return;
+                }
             }
         }
-        this._isRunning = false;
+        this.finishRequestProcessing(progressUpdate);
     }
 
     public get isRunning(): boolean {
