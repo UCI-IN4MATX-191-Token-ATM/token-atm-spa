@@ -110,7 +110,7 @@ export class RequestProcessManagerService {
                     requestCnt++;
                     progressUpdate.next([
                         0,
-                        `Retreiving reqeussts: Retreived ${requestCnt} request(s) from ${studentCnt} student(s)`
+                        `Retreiving requests: Retreived ${requestCnt} request(s) from ${studentCnt} student(s)`
                     ]);
                     if (this._isStopTriggered) {
                         this.finishRequestProcessing(progressUpdate);
@@ -139,7 +139,7 @@ export class RequestProcessManagerService {
                 processedRequestCnt++;
                 progressUpdate.next([
                     (processedRequestCnt * 100) / requestCnt,
-                    `Processing reqeussts: Processed ${processedRequestCnt} request(s) for ${processedStudentCnt} student(s), ${
+                    `Processing requests: Processed ${processedRequestCnt} request(s) for ${processedStudentCnt} student(s), ${
                         requestCnt - processedRequestCnt
                     } requests from ${studentCnt - processedStudentCnt + 1} student(s) remaining`
                 ]);
