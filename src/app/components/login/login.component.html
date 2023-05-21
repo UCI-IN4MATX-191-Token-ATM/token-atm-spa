@@ -1,7 +1,7 @@
 <div appCenter>
     <div class="container text-center">
         <h1 class="text-primary">Welcome to Token ATM</h1>
-        <p>Please provide your login credential</p>
+        <p>Please provide your login credentials</p>
         <form>
             <ng-container *ngFor="let credentialID of getCredentialIDList()">
                 <app-form-item
@@ -21,7 +21,7 @@
             <button type="button" class="btn btn-primary" (click)="onClickSubmitButton()">Login</button>
         </form>
         <button type="button" target="_blank" class="btn btn-secondary mt-5" (click)="openLink()">
-            Having trouble to find credential?
+            Having trouble to finding your credentials?
         </button>
     </div>
 </div>
@@ -52,7 +52,7 @@
     </div>
     <div class="modal-body">
         <p *ngIf="hasExistingCredentials()" class="text-danger">
-            Warning: Some credentials has already been saved. Saving new credentials will overwrite any previously saved
+            Warning: Some credentials have already been saved. Saving new credentials will overwrite the previously saved
             credentials.
         </p>
         <form>
