@@ -67,7 +67,10 @@ export class RequestProcessManagerService {
                     quizSubmissionMap.set(submission.studentId, new Map<string, [TokenOptionGroup, QuizSubmission]>());
                 quizSubmissionMap.get(submission.studentId)?.set(group.quizId, [group, submission]);
                 submissionCnt++;
-                progressUpdate.next([0, `Gathering submissions: Gathered ${submissionCnt} submission(s)`]);
+                progressUpdate.next([
+                    0,
+                    `Gathering submissions: Gathered ${this.countAndNoun(submissionCnt, 'submission')}`
+                ]);
                 if (this._isStopTriggered) {
                     this.finishRequestProcessing(progressUpdate);
                     return;
@@ -110,7 +113,9 @@ export class RequestProcessManagerService {
                     requestCnt++;
                     progressUpdate.next([
                         0,
-                        `Retreiving requests: Retreived ${requestCnt} request(s) from ${studentCnt} student(s)`
+                        `Retreiving requests: Retreived` +
+                            ` ${this.countAndNoun(requestCnt, 'request')}` +
+                            ` from ${this.countAndNoun(studentCnt, 'student')}`
                     ]);
                     if (this._isStopTriggered) {
                         this.finishRequestProcessing(progressUpdate);
@@ -139,9 +144,7 @@ export class RequestProcessManagerService {
                 processedRequestCnt++;
                 progressUpdate.next([
                     (processedRequestCnt * 100) / requestCnt,
-                    `Processing requests: Processed ${processedRequestCnt} request(s) for ${processedStudentCnt} student(s), ${
-                        requestCnt - processedRequestCnt
-                    } requests from ${studentCnt - processedStudentCnt + 1} student(s) remaining`
+                    this.progressString(requestCnt, studentCnt, processedRequestCnt, processedStudentCnt)
                 ]);
                 if (this._isStopTriggered) {
                     this.finishRequestProcessing(progressUpdate);
@@ -150,6 +153,31 @@ export class RequestProcessManagerService {
             }
         }
         this.finishRequestProcessing(progressUpdate);
+    }
+
+    private countAndNoun(count: number, noun: string) {
+        const pluralize = (word: string, count: number): string => {
+            return word + (count == 1 ? '' : 's');
+        };
+        return `${count} ${pluralize(noun, count)}`;
+    }
+
+    private progressString(
+        requestCnt: number,
+        studentCnt: number,
+        processedRequestCnt: number,
+        processedStudentCnt: number
+    ): string {
+        const countAndNoun = this.countAndNoun;
+        const template = (rC: number, sC: number, pRC: number, pSC: number): string => {
+            return (
+                `Processing Requests: Processed ${countAndNoun(pRC, 'request')}` +
+                ` for ${countAndNoun(pSC, 'student')},` +
+                ` ${countAndNoun(rC - pRC, 'request')} from` +
+                ` ${countAndNoun(sC - pSC + 1, 'student')} remaining`
+            );
+        };
+        return template(requestCnt, studentCnt, processedRequestCnt, processedStudentCnt);
     }
 
     public get isRunning(): boolean {
