@@ -52,8 +52,8 @@
     </div>
     <div class="modal-body">
         <p *ngIf="hasExistingCredentials()" class="text-danger">
-            Warning: Some credentials have already been saved. Saving new credentials will overwrite the previously saved
-            credentials.
+            Warning: Some credentials have already been saved. Saving new credentials will overwrite the previously
+            saved credentials.
         </p>
         <form>
             <app-form-item [info]="getPasswordFormItemInfo()" [(data)]="password"></app-form-item>
