@@ -84,7 +84,7 @@ export class RequestProcessManagerService {
             if (!quizSubmissionMap.has(student.id)) continue;
             const quizSubmissions = quizSubmissionMap.get(student.id);
             if (!quizSubmissions) continue;
-            studentCnt++;
+            let hasPendingRequest = false;
             const studentRecord = await this.studentRecordManagerService.getStudentRecord(configuration, student);
             if (this._isStopTriggered) {
                 this.finishRequestProcessing(progressUpdate);
@@ -93,7 +93,6 @@ export class RequestProcessManagerService {
             const tmpAllRequests: TokenATMRequest<TokenOption>[] = [];
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             for (const [_, [tokenOptionGroup, quizSubmission]] of quizSubmissions) {
-                const requests: TokenATMRequest<TokenOption>[] = [];
                 for (
                     let curAttempt = studentRecord.getProcessedAttempts(tokenOptionGroup.id) + 1;
                     curAttempt <= quizSubmission.attempt;
@@ -107,9 +106,13 @@ export class RequestProcessManagerService {
                         curAttempt,
                         assignmentIdMap.get(tokenOptionGroup.quizId)
                     );
-                    requests.push(
+                    tmpAllRequests.push(
                         await this.requestResolverRegistry.resolveRequest(tokenOptionGroup, quizSubmissionDetail)
                     );
+                    if (!hasPendingRequest) {
+                        hasPendingRequest = true;
+                        studentCnt++;
+                    }
                     requestCnt++;
                     progressUpdate.next([
                         0,
@@ -122,9 +125,8 @@ export class RequestProcessManagerService {
                         return;
                     }
                 }
-                tmpAllRequests.push(...requests);
             }
-            allRequests.push([studentRecord, tmpAllRequests]);
+            if (hasPendingRequest) allRequests.push([studentRecord, tmpAllRequests]);
         }
         let processedStudentCnt = 0,
             processedRequestCnt = 0;
