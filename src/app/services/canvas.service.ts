@@ -647,7 +647,7 @@ export class CanvasService {
                     quiz_type: quizType,
                     assignment_group_id: assignmentGroupId,
                     allowed_attempts: -1,
-                    published: true
+                    published: false
                 }
             }
         });
@@ -664,17 +664,22 @@ export class CanvasService {
         quizId: string,
         published = true,
         notifyUpdate = false
-    ): Promise<string> {
-        const result = await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`, {
-            method: 'put',
-            data: {
-                quiz: {
-                    published: published,
-                    notify_of_update: notifyUpdate
+    ): Promise<boolean> {
+        try {
+            await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`, {
+                method: 'put',
+                data: {
+                    quiz: {
+                        published: published,
+                        notify_of_update: notifyUpdate
+                    }
                 }
-            }
-        });
-        return result.id;
+            });
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
+            return false;
+        }
+        return true;
     }
 
     public async modifyQuiz(

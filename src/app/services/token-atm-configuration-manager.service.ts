@@ -82,8 +82,10 @@ export class TokenATMConfigurationManagerService {
     public async updateTokenOptionGroup(tokenOptionGroup: TokenOptionGroup): Promise<boolean> {
         const courseId = tokenOptionGroup.configuration.course.id,
             quizId = tokenOptionGroup.quizId;
-        const canUnpublish = await this.canvasService.canQuizUnpublished(courseId, quizId);
-        if (canUnpublish) await this.canvasService.changeQuizPublishState(courseId, quizId, false);
+        let canUnpublish = false;
+        if (tokenOptionGroup.isPublished) canUnpublish = await this.canvasService.canQuizUnpublished(courseId, quizId);
+        if (tokenOptionGroup.isPublished && canUnpublish)
+            canUnpublish = await this.canvasService.changeQuizPublishState(courseId, quizId, false);
         await this.canvasService.clearQuizQuestions(courseId, quizId);
         await this.canvasService.modifyQuiz(courseId, quizId, tokenOptionGroup.name, tokenOptionGroup.description);
         const question = new MultipleChoiceQuestion(
@@ -101,8 +103,9 @@ export class TokenATMConfigurationManagerService {
         await this.canvasService.createQuizQuestions(courseId, quizId, [question]);
         // TODO: support rendering multiple quiz questions
         await this.saveConfiguration(tokenOptionGroup.configuration);
-        if (canUnpublish) await this.canvasService.changeQuizPublishState(courseId, quizId, true);
-        return canUnpublish;
+        if (tokenOptionGroup.isPublished && canUnpublish)
+            await this.canvasService.changeQuizPublishState(courseId, quizId, true);
+        return !tokenOptionGroup.isPublished || canUnpublish;
     }
 
     public async addNewTokenOptionGroup(
@@ -126,7 +129,7 @@ export class TokenATMConfigurationManagerService {
         if (moduleId == undefined) moduleId = await this.getModuleId(tokenOptionGroup.configuration);
         await this.canvasService.addModuleItem(courseId, moduleId, 'Quiz', quizId);
         await this.updateTokenOptionGroup(tokenOptionGroup);
-        await this.canvasService.changeQuizPublishState(courseId, quizId, true);
+        if (tokenOptionGroup.isPublished) await this.canvasService.changeQuizPublishState(courseId, quizId, true);
     }
 
     public async deleteTokenOptionGroup(
@@ -138,7 +141,39 @@ export class TokenATMConfigurationManagerService {
         if (deleteFromConfiguration) await this.saveConfiguration(tokenOptionGroup.configuration);
     }
 
-    public async deleteGeneratedContent(configuration: TokenATMConfiguration) {
+    public async publishTokenOptionGroup(tokenOptionGroup: TokenOptionGroup) {
+        if (tokenOptionGroup.isPublished) return;
+        await this.canvasService.changeQuizPublishState(
+            tokenOptionGroup.configuration.course.id,
+            tokenOptionGroup.quizId,
+            true
+        );
+        tokenOptionGroup.isPublished = true;
+        await this.saveConfiguration(tokenOptionGroup.configuration);
+    }
+
+    public async unpublishTokenOptionGroup(tokenOptionGroup: TokenOptionGroup): Promise<boolean> {
+        if (!tokenOptionGroup.isPublished) {
+            if (
+                !(await this.canvasService.canQuizUnpublished(
+                    tokenOptionGroup.configuration.course.id,
+                    tokenOptionGroup.quizId
+                ))
+            )
+                return false;
+        }
+        const result = await this.canvasService.changeQuizPublishState(
+            tokenOptionGroup.configuration.course.id,
+            tokenOptionGroup.quizId,
+            false
+        );
+        if (!result) return false;
+        tokenOptionGroup.isPublished = false;
+        await this.saveConfiguration(tokenOptionGroup.configuration);
+        return true;
+    }
+
+    public async deleteGeneratedContent(configuration: TokenATMConfiguration): Promise<void> {
         await this.canvasService.deleteAssignmentGroup(
             configuration.course.id,
             await this.getAssignmentGroupId(configuration)

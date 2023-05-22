@@ -7,6 +7,7 @@ export class TokenOptionGroup {
     private _id: number;
     private _quizId: string;
     private _description: string;
+    private _isPublished: boolean;
     private _tokenOptions: TokenOption[];
 
     constructor(
@@ -22,6 +23,7 @@ export class TokenOptionGroup {
             typeof data['id'] != 'number' ||
             typeof data['quiz_id'] != 'string' ||
             (typeof data['description'] != 'undefined' && typeof data['description'] != 'string') ||
+            typeof data['is_published'] != 'boolean' ||
             typeof data['token_options'] != 'object' ||
             !Array.isArray(data['token_options'])
         )
@@ -30,6 +32,7 @@ export class TokenOptionGroup {
         this._id = data['id'];
         this._quizId = data['quiz_id'];
         this._description = data['description'] ?? '';
+        this._isPublished = data['is_published'];
         this._tokenOptions = data['token_options'].map((entry) => tokenOptionResolver(this, entry));
     }
 
@@ -57,6 +60,14 @@ export class TokenOptionGroup {
         return this._description;
     }
 
+    public get isPublished(): boolean {
+        return this._isPublished;
+    }
+
+    public set isPublished(isPublished: boolean) {
+        this._isPublished = isPublished;
+    }
+
     public get tokenOptions(): TokenOption[] {
         return this._tokenOptions;
     }
@@ -77,6 +88,7 @@ export class TokenOptionGroup {
             id: this.id,
             quiz_id: this.quizId,
             description: this.description,
+            is_published: this.isPublished,
             token_options: this.tokenOptions.map((entry) => entry.toJSON())
         };
     }

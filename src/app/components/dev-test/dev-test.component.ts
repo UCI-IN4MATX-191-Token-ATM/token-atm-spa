@@ -51,6 +51,7 @@ export class DevTestComponent {
                     id: configuration.getFreeTokenOptionGroupId(),
                     quiz_id: '',
                     description: `Just a test <b>token option group</b> ${configuration.tokenOptionGroups.length}`,
+                    is_published: false,
                     token_options: []
                 },
                 configuration.tokenOptionResolver
@@ -75,7 +76,7 @@ export class DevTestComponent {
         );
         const result = await this.manager.updateTokenOptionGroup(group);
         console.log('Add token option finished!');
-        if (!result) console.log('unpublish failed. Need manual update');
+        if (!result) console.log('auto update failed. Need manual update');
     }
 
     async onDeleteFirstTokenOptionGroup(): Promise<void> {
@@ -95,6 +96,20 @@ export class DevTestComponent {
         group.deleteTokenOption(group.tokenOptions[0]);
         const result = await this.manager.updateTokenOptionGroup(group);
         console.log('Delete first token option finished!');
-        if (!result) console.log('unpublish failed. Need manual update');
+        if (!result) console.log('auto update failed. Need manual update');
+    }
+
+    async onChangeLastTokenOptionGroupPublishState(): Promise<void> {
+        if (!this.course) return;
+        const configuration = await this.manager.getTokenATMConfiguration(this.course);
+        const group = configuration.tokenOptionGroups[configuration.tokenOptionGroups.length - 1];
+        if (!group) throw new Error('No token option group in the configuration!');
+        if (group.isPublished) {
+            const result = await this.manager.unpublishTokenOptionGroup(group);
+            console.log('Unpublish operation attempted. Result: ', result);
+        } else {
+            await this.manager.publishTokenOptionGroup(group);
+            console.log('Token option group published!');
+        }
     }
 }

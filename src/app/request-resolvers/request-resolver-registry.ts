@@ -43,7 +43,8 @@ export class RequestResolverRegistry {
             if (tokenOption.prompt != quizSubmissionDetail.answers[0]) continue;
             return this.getRequestResolver(tokenOption.type).resolve(tokenOption, quizSubmissionDetail);
         }
-        // TODO: handle empty answer request (should be invalid)
+        // TODO: handle empty answer request (should be reject)
+        // TODO: handle unrecognized request (could be outdated, should be rejected)
         throw new Error('Invalid request');
     }
 }
