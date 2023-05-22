@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy } from '@angular/core';
+import { Component, Inject, isDevMode, OnDestroy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import type { Course } from 'app/data/course';
 import type { Subscription } from 'rxjs';
@@ -51,7 +51,7 @@ export class DashboardComponent implements OnDestroy {
     }
 
     get routes(): TokenATMDashboardRoute[] {
-        return TOKEN_ATM_DASHBOARD_ROUTES;
+        return TOKEN_ATM_DASHBOARD_ROUTES.filter((route) => isDevMode() || !route.isDev);
     }
 
     async onComponentActivate(component: CourseConfigurable) {

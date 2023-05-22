@@ -6,9 +6,10 @@ import { Student } from 'app/data/student';
 import { SubmissionComment } from 'app/data/submission-comment';
 import { PaginatedResult } from 'app/utils/paginated-result';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { parseISO } from 'date-fns';
+import { formatISO, parseISO } from 'date-fns';
 import { AxiosService } from './axios.service';
 import { User } from 'app/data/user';
+import type { QuizQuestion } from 'app/quiz-questions/quiz-question';
 
 type QuizQuestionResponse = {
     id: string;
@@ -118,7 +119,57 @@ export class CanvasService {
         const data = await this.apiRequest(`/api/v1/users/${userId}`);
         return new User(data);
     }
-    public async getPageContentByName(courseId: string, pageName: string): Promise<string> {
+
+    public async deletePage(courseId: string, pageId: string): Promise<void> {
+        await this.apiRequest(`/api/v1/courses/${courseId}/pages/${pageId}`, {
+            method: 'delete'
+        });
+    }
+
+    public async createPage(
+        courseId: string,
+        pageTitle: string,
+        pageContent: string,
+        editingRoles = 'teachers',
+        notifyUpdate = false,
+        published = false
+    ): Promise<string> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/pages`, {
+            method: 'post',
+            data: {
+                wiki_page: {
+                    title: pageTitle,
+                    body: pageContent,
+                    editing_roles: editingRoles,
+                    notify_of_update: notifyUpdate,
+                    published: published
+                }
+            }
+        });
+        return data.page_id;
+    }
+
+    public async modifyPage(
+        courseId: string,
+        pageId: string,
+        pageContent: string,
+        notifyUpdate = false,
+        published = false
+    ): Promise<string> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/pages/${pageId}`, {
+            method: 'put',
+            data: {
+                wiki_page: {
+                    body: pageContent,
+                    notify_of_update: notifyUpdate,
+                    published: published
+                }
+            }
+        });
+        return data.page_id;
+    }
+
+    public async getPageIdByName(courseId: string, pageName: string): Promise<string> {
         const response = await this.rawAPIRequest(`/api/v1/courses/${courseId}/pages`, {
             params: {
                 search_term: pageName
@@ -127,7 +178,11 @@ export class CanvasService {
         if (!Array.isArray(response.data)) throw new Error('Page fetch error');
         if (response.data.length == 0) throw new Error('Page not found'); // TODO: redirect to creation
         if (response.data.length > 1) throw new Error('Multiple pages found'); // TODO: redirect to duplication handling
-        const content = await this.getPageContentById(courseId, response.data[0]['page_id']);
+        return response.data[0]['page_id'];
+    }
+
+    public async getPageContentByName(courseId: string, pageName: string): Promise<string> {
+        const content = await this.getPageContentById(courseId, await this.getPageIdByName(courseId, pageName));
         return content;
     }
 
@@ -412,5 +467,271 @@ export class CanvasService {
             }
         }
         return [obtainedPoints, totalPoints];
+    }
+
+    public async createAssignment(
+        courseId: string,
+        assignmentGroupId: string,
+        assignmentName: string,
+        description = ''
+    ): Promise<string> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/assignments`, {
+            method: 'post',
+            data: {
+                assignment: {
+                    name: assignmentName,
+                    submission_types: ['none'],
+                    notify_of_update: false,
+                    points_possible: 0,
+                    description: description,
+                    assignment_group_id: assignmentGroupId,
+                    published: true
+                }
+            }
+        });
+        return data.id;
+    }
+
+    public async deleteAssignment(courseId: string, assignmentId: string): Promise<void> {
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`, {
+            method: 'delete'
+        });
+    }
+
+    public async createModule(courseId: string, moduleName: string): Promise<string> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/modules`, {
+            method: 'post',
+            data: {
+                module: {
+                    name: moduleName
+                }
+            }
+        });
+        return data.id;
+    }
+
+    public async publishModule(courseId: string, moduleId: string): Promise<string> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/modules/${moduleId}`, {
+            method: 'put',
+            data: {
+                module: {
+                    published: true
+                }
+            }
+        });
+        return data.id;
+    }
+
+    public async deleteModule(courseId: string, moduleId: string, deleteAllModuleItems = false): Promise<void> {
+        if (deleteAllModuleItems) {
+            const moduleItems = new PaginatedResult<ModuleItemInfo>(
+                await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules/${moduleId}/items`, {
+                    params: {
+                        include: ['content_details']
+                    }
+                }),
+                async (url: string) => await this.paginatedRequestHandler(url),
+                (data: unknown[]) => {
+                    return data.map((entry: unknown) => new ModuleItemInfo(entry));
+                }
+            );
+            for await (const moduleItem of moduleItems) {
+                if (!moduleItem.contentId) continue;
+                switch (moduleItem.type) {
+                    case 'Assignment': {
+                        this.deleteAssignment(courseId, moduleItem.contentId);
+                        break;
+                    }
+                    case 'Quiz': {
+                        await this.deleteQuiz(courseId, moduleItem.contentId);
+                        break;
+                    }
+                }
+            }
+        }
+        await this.apiRequest(`/api/v1/courses/${courseId}/modules/${moduleId}`, {
+            method: 'delete'
+        });
+    }
+
+    public async getModuleIdByName(courseId: string, moduleName: string) {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/modules`, {
+            params: {
+                search_term: moduleName
+            }
+        });
+
+        if (!Array.isArray(data)) throw new Error('Module fetch error');
+        if (data.length == 0) throw new Error('Module not found');
+        if (data.length > 1) throw new Error('Multiple modules found');
+        return data[0].id;
+    }
+
+    public async addModuleItem(
+        courseId: string,
+        moduleId: string,
+        type: 'Assignment' | 'Quiz',
+        contentId: string
+    ): Promise<string> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/modules/${moduleId}/items`, {
+            method: 'post',
+            data: {
+                module_item: {
+                    type: type,
+                    content_id: contentId
+                }
+            }
+        });
+        return data.id;
+    }
+
+    public async getAssignmentGroupIdByName(courseId: string, assignmentGroupName: string) {
+        const assignmentGroups = new PaginatedResult<[string, string]>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignment_groups`),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (data: any) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                return data.map((entry: any) => [entry.id, entry.name]);
+            }
+        );
+        let result: string | undefined = undefined;
+        for await (const [id, name] of assignmentGroups) {
+            if (name != assignmentGroupName) continue;
+            if (result == undefined) {
+                result = id;
+                continue;
+            }
+            throw new Error('Multiple assignment groups found');
+        }
+        if (result == undefined) throw new Error('No assignment group found');
+        return result;
+    }
+
+    public async deleteAssignmentGroup(courseId: string, assignmentGroupId: string): Promise<void> {
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignment_groups/${assignmentGroupId}`, {
+            method: 'delete'
+        });
+    }
+
+    public async createAssignmentGroup(courseId: string, assignmentGroupName: string): Promise<string> {
+        const result = await this.apiRequest(`/api/v1/courses/${courseId}/assignment_groups`, {
+            method: 'post',
+            data: {
+                name: assignmentGroupName,
+                group_weight: 0
+            }
+        });
+        return result.id;
+    }
+
+    public async deleteQuiz(courseId: string, quizId: string): Promise<void> {
+        await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`, {
+            method: 'delete'
+        });
+    }
+
+    public async createQuiz(
+        courseId: string,
+        assignmentGroupId: string,
+        title: string,
+        description?: string,
+        quizType = 'graded_survey'
+    ): Promise<string> {
+        const result = await this.apiRequest(`/api/v1/courses/${courseId}/quizzes`, {
+            method: 'post',
+            data: {
+                quiz: {
+                    title: title,
+                    description: description,
+                    quiz_type: quizType,
+                    assignment_group_id: assignmentGroupId,
+                    allowed_attempts: -1,
+                    published: true
+                }
+            }
+        });
+        return result.id;
+    }
+
+    public async canQuizUnpublished(courseId: string, quizId: string) {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`);
+        return data.unpublishable;
+    }
+
+    public async changeQuizPublishState(
+        courseId: string,
+        quizId: string,
+        published = true,
+        notifyUpdate = false
+    ): Promise<string> {
+        const result = await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`, {
+            method: 'put',
+            data: {
+                quiz: {
+                    published: published,
+                    notify_of_update: notifyUpdate
+                }
+            }
+        });
+        return result.id;
+    }
+
+    public async modifyQuiz(
+        courseId: string,
+        quizId: string,
+        title?: string,
+        description?: string,
+        notifyUpdate = false
+    ): Promise<string> {
+        const result = await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`, {
+            method: 'put',
+            data: {
+                quiz: {
+                    title: title,
+                    description: description,
+                    notify_of_update: notifyUpdate
+                }
+            }
+        });
+        return result.id;
+    }
+
+    public async changeQuizLockDate(courseId: string, quizId: string, lockDate: Date | null): Promise<void> {
+        await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`, {
+            method: 'put',
+            data: {
+                quiz: {
+                    lock_at: lockDate == null ? null : formatISO(lockDate)
+                }
+            }
+        });
+    }
+
+    public async clearQuizQuestions(courseId: string, quizId: string): Promise<void> {
+        const quizQuestionIds = new PaginatedResult<string>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions`),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                return data.map((entry: any) => entry.id);
+            }
+        );
+        for await (const questionId of quizQuestionIds) {
+            await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions/${questionId}`, {
+                method: 'delete'
+            });
+        }
+    }
+
+    public async createQuizQuestions(courseId: string, quizId: string, quizQuestions: QuizQuestion[]): Promise<void> {
+        for (const quizQuestion of quizQuestions) {
+            await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions`, {
+                method: 'post',
+                data: {
+                    question: quizQuestion.toJSON()
+                }
+            });
+        }
     }
 }

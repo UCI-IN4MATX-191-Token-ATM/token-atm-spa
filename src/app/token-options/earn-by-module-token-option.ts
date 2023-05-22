@@ -1,5 +1,5 @@
 import type { TokenOptionGroup } from 'app/data/token-option-group';
-import { fromUnixTime } from 'date-fns';
+import { fromUnixTime, getUnixTime } from 'date-fns';
 import { TokenOption } from './token-option';
 
 export class EarnByModuleTokenOption extends TokenOption {
@@ -38,5 +38,15 @@ export class EarnByModuleTokenOption extends TokenOption {
 
     public get gradeThreshold(): number {
         return this._gradeThreshold;
+    }
+
+    public override toJSON(): object {
+        return {
+            ...super.toJSON(),
+            module_name: this.moduleName,
+            module_id: this.moduleId,
+            start_time: getUnixTime(this.startTime),
+            grade_threshold: this.gradeThreshold
+        };
     }
 }

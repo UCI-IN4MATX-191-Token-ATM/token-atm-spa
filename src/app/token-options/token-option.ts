@@ -5,6 +5,7 @@ export abstract class TokenOption {
     private _type: string;
     private _id: number;
     private _name: string;
+    private _description: string;
     private _tokenBalanceChange: number;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -14,12 +15,14 @@ export abstract class TokenOption {
             typeof data['type'] != 'string' ||
             typeof data['id'] != 'number' ||
             typeof data['name'] != 'string' ||
+            (typeof data['description'] != 'undefined' && typeof data['description'] != 'string') ||
             typeof data['token_balance_change'] != 'number'
         )
             throw new Error('Invalid data');
         this._type = data['type'];
         this._id = data['id'];
         this._name = data['name'];
+        this._description = data['description'] ?? '';
         this._tokenBalanceChange = data['token_balance_change'];
     }
 
@@ -39,11 +42,25 @@ export abstract class TokenOption {
         return this._name;
     }
 
+    public get description(): string {
+        return this._description;
+    }
+
     public get tokenBalanceChange(): number {
         return this._tokenBalanceChange;
     }
 
     public get prompt(): string {
         return 'Request for ' + this.name;
+    }
+
+    public toJSON(): object {
+        return {
+            type: this.type,
+            id: this.id,
+            name: this.name,
+            description: this.description,
+            token_balance_change: this.tokenBalanceChange
+        };
     }
 }
