@@ -313,6 +313,22 @@ export class CanvasService {
         return new SubmissionComment(data);
     }
 
+    public async gradeSubmission(
+        courseId: string,
+        studentId: string,
+        assignmentId: string,
+        score: number
+    ): Promise<void> {
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`, {
+            method: 'put',
+            data: {
+                submission: {
+                    posted_grade: score.toString()
+                }
+            }
+        });
+    }
+
     public async gradeSubmissionWithPostingComment(
         courseId: string,
         studentId: string,
