@@ -98,6 +98,7 @@ export class StudentRecordManagerService {
         studentRecord: StudentRecord,
         processedRequest: ProcessedRequest
     ) {
+        const oldTokenBalance = studentRecord.tokenBalance;
         studentRecord.logProcessedRequest(processedRequest);
         // generate a new comment
         this.canvasService.postComment(
@@ -109,7 +110,9 @@ export class StudentRecordManagerService {
             }\nSubmitted at: ${format(processedRequest.submitTime, 'MMM dd, yyyy kk:mm:ss')}\nProcessed at: ${format(
                 processedRequest.processTime,
                 'MMM dd, yyyy kk:mm:ss'
-            )}${processedRequest.message != '' ? `\nMessage: ${processedRequest.message}` : ''}`
+            )}\nToken Balance Change: ${oldTokenBalance} -> ${studentRecord.tokenBalance}${
+                processedRequest.message != '' ? `\nMessage: ${processedRequest.message}` : ''
+            }`
         );
         await this.writeStudentRecordToCanvas(configuration, studentRecord);
     }

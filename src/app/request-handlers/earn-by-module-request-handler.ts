@@ -41,7 +41,8 @@ export class EarnByModuleRequestHandler extends RequestHandler<EarnByModuleToken
             is_approved: !guardExecutor.isRejected,
             submit_time: getUnixTime(request.submittedTime),
             process_time: getUnixTime(new Date()),
-            message: guardExecutor.message
+            message: guardExecutor.message,
+            token_balance_change: guardExecutor.isRejected ? 0 : request.tokenOption.tokenBalanceChange
         });
     }
     public get type(): string {

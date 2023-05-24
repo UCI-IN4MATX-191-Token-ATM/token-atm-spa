@@ -1,0 +1,83 @@
+<div appCenter>
+    <ngb-toast *ngIf="!studentRecord; else studentRecordPanel" [autohide]="false">
+        Token ATM is retrieving information from Canvas. Please wait...
+    </ngb-toast>
+    <ng-template #studentRecordPanel>
+        <div class="d-flex flex-column">
+            <div><button (click)="onGoBack()" class="btn btn-outline-primary mb-1 ms-5">Back</button></div>
+            <ng-container *ngIf="studentRecord">
+                <div class="row m-5">
+                    <div class="col-4 card">
+                        <div class="card-body">
+                            <h5 class="card-titile">Student Information</h5>
+                            <div class="card-text">
+                                <ul class="list-group list-group-flush my-auto">
+                                    <li class="list-group-item">Canvas User ID: {{ studentRecord.student.id }}</li>
+                                    <li class="list-group-item">Name: {{ studentRecord.student.name }}</li>
+                                    <li *ngIf="studentRecord.student.email !== ''" class="list-group-item">
+                                        Email: {{ studentRecord.student.email }}
+                                    </li>
+                                    <li class="list-group-item">
+                                        Current Token Balance: {{ studentRecord.tokenBalance }}
+                                        {{ studentRecord.tokenBalance === 1 ? 'token' : 'tokens' }}
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4"></div>
+                    <div class="col-4 card">
+                        <div class="card-body">
+                            <h5 class="card-titile">Token Balance Adjustment</h5>
+                            <div class="card-text">
+                                <div class="mb-3">
+                                    <label> Token Adjustment Count </label>
+                                    <input
+                                        type="number"
+                                        class="form-control"
+                                        value="0"
+                                        [(ngModel)]="tokenAdjustmentCount"
+                                    />
+                                </div>
+                                <div class="mb-3">
+                                    <label> Message </label>
+                                    <textarea class="form-control" [(ngModel)]="tokenAdjustmentMessage"></textarea>
+                                </div>
+                                <button class="btn btn-primary" (click)="onAddManualChange()">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 card my-5">
+                        <div class="card-body">
+                            <h5 class="card-titile">Request History</h5>
+                            <div class="card-text">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Token Option Name</th>
+                                            <th scope="col">Submitted Time</th>
+                                            <th scope="col">Processed Time</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Token Balance Change</th>
+                                            <th scope="col">Message</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let processedRequest of studentRecord.processedRequests.reverse()">
+                                            <td>{{ processedRequest.tokenOptionName }}</td>
+                                            <td>{{ formatDate(processedRequest.submitTime) }}</td>
+                                            <td>{{ formatDate(processedRequest.processTime) }}</td>
+                                            <td>{{ processedRequest.isApproved ? 'Approved' : 'Rejected' }}</td>
+                                            <td>{{ processedRequest.tokenBalanceChange }}</td>
+                                            <td>{{ processedRequest.message }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ng-container>
+        </div>
+    </ng-template>
+</div>

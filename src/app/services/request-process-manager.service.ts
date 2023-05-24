@@ -80,6 +80,7 @@ export class RequestProcessManagerService {
         const allRequests: [StudentRecord, TokenATMRequest<TokenOption>[]][] = [];
         let studentCnt = 0,
             requestCnt = 0;
+        // TODO: change the API endpoint to get the email
         for await (const student of await this.canvasService.getCourseStudentEnrollments(configuration.course.id)) {
             if (!quizSubmissionMap.has(student.id)) continue;
             const quizSubmissions = quizSubmissionMap.get(student.id);

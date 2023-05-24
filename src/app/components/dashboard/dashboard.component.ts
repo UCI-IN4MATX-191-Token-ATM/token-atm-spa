@@ -4,7 +4,6 @@ import type { Course } from 'app/data/course';
 import type { Subscription } from 'rxjs';
 import { CourseConfigurable, TokenATMDashboardRoute, TOKEN_ATM_DASHBOARD_ROUTES } from './dashboard-routing';
 import { CanvasService } from 'app/services/canvas.service';
-// import { User } from 'app/data/user';
 
 @Component({
     selector: 'app-dashboard',
@@ -14,7 +13,6 @@ import { CanvasService } from 'app/services/canvas.service';
 export class DashboardComponent implements OnDestroy {
     private courseSubscription: Subscription | undefined;
     course: Course | undefined;
-    // user: User | undefined;
     avatarUrl?: string;
     name: string | undefined;
     email: string | undefined;
@@ -26,8 +24,6 @@ export class DashboardComponent implements OnDestroy {
             const course = this.router.getCurrentNavigation()?.extras.state;
             if (!course) return;
             this.configureCourse(course as Course);
-            // const user = this.router.getCurrentNavigation()?.extras.state;
-            // if (!course) return;
             this.configureUserInformation('self');
         });
     }
@@ -42,7 +38,6 @@ export class DashboardComponent implements OnDestroy {
 
     private configureCourse(course: Course) {
         this.course = course;
-        // TODO: retrieve other information and display
     }
 
     ngOnDestroy(): void {
@@ -54,8 +49,10 @@ export class DashboardComponent implements OnDestroy {
         return TOKEN_ATM_DASHBOARD_ROUTES.filter((route) => isDevMode() || !route.isDev);
     }
 
-    async onComponentActivate(component: CourseConfigurable) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async onComponentActivate(component: any) {
         if (!this.course) return;
-        await component.configureCourse(this.course);
+        if ('configureCourse' in component && typeof component['configureCourse'] == 'function')
+            await (component as CourseConfigurable).configureCourse(this.course);
     }
 }

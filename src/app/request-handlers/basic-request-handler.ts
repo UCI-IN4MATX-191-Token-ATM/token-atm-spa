@@ -26,7 +26,8 @@ export class BasicRequestHandler extends RequestHandler<BasicTokenOption, BasicR
             is_approved: true,
             submit_time: getUnixTime(request.submittedTime),
             process_time: getUnixTime(new Date()),
-            message: 'This basic request is approved.'
+            message: 'This basic request is approved.',
+            token_balance_change: request.tokenOption.tokenBalanceChange
         });
     }
 

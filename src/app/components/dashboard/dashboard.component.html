@@ -12,9 +12,12 @@
         <ul class="nav nav-pills flex-column align-items-center">
             <ng-container *ngFor="let route of routes">
                 <li class="nav-item">
-                    <span class="nav-link fs-4 text-dark" [routerLink]="route.path" routerLinkActive="fw-bold">{{
-                        route.name
-                    }}</span>
+                    <span
+                        class="nav-link fs-4 text-dark is-link"
+                        [routerLink]="route.path"
+                        routerLinkActive="fw-bold"
+                        >{{ route.name }}</span
+                    >
                 </li>
             </ng-container>
         </ul>

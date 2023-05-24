@@ -1,0 +1,37 @@
+<ng-container *ngIf="onResolve">
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">{{ heading }}</h4>
+        <button
+            type="button"
+            class="btn-close close pull-right"
+            aria-label="Close"
+            (click)="onResolve(false)"
+            [disabled]="disableButton"
+        >
+            <span aria-hidden="true" class="visually-hidden">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body message">
+        {{ message }}
+    </div>
+    <div class="modal-footer">
+        <button
+            type="button"
+            class="btn btn-outline-secondary me-4"
+            (click)="onResolve(false)"
+            [disabled]="disableButton"
+        >
+            {{ noText }}
+        </button>
+        <button
+            type="button"
+            class="btn"
+            (click)="onResolve(true)"
+            [class.btn-danger]="isDanger"
+            [class.btn-primary]="!isDanger"
+            [disabled]="disableButton"
+        >
+            {{ yesText }}
+        </button>
+    </div>
+</ng-container>
