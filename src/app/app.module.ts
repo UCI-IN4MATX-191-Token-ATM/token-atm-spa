@@ -28,6 +28,11 @@ import {
 } from './request-resolvers/request-resolver-registry';
 import { REGISTERED_REQUEST_HANDLERS, REQUEST_HANDLER_INJECT_TOKEN } from './request-handlers/request-handler-registry';
 import { DevTestComponent } from './components/dev-test/dev-test.component';
+import { TokenOptionGroupDisplayComponent } from './components/token-option-group-display/token-option-group-display.component';
+import { TokenOptionDisplayComponent } from './components/token-option-display/token-option-display.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { CollapseModule } from 'ngx-bootstrap/collapse';
 
 @NgModule({
     declarations: [
@@ -41,9 +46,19 @@ import { DevTestComponent } from './components/dev-test/dev-test.component';
         RequestProcessComponent,
         TokenOptionConfigurationComponent,
         StudentListComponent,
-        DevTestComponent
+        DevTestComponent,
+        TokenOptionGroupDisplayComponent,
+        TokenOptionDisplayComponent
     ],
-    imports: [BrowserModule, AppRoutingModule, FormsModule, NgbModule],
+    imports: [
+        BrowserModule,
+        AppRoutingModule,
+        FormsModule,
+        NgbModule,
+        BsDropdownModule.forRoot(),
+        BrowserAnimationsModule,
+        CollapseModule.forRoot()
+    ],
     providers: [
         { provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService },
         ...REGISTERED_TOKEN_OPTION_RESOLVERS.map((cls) => ({

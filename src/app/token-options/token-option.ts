@@ -34,6 +34,8 @@ export abstract class TokenOption {
         return this._type;
     }
 
+    public abstract get descriptiveName(): string;
+
     public get id(): number {
         return this._id;
     }
