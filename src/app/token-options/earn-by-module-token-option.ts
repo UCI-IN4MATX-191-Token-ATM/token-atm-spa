@@ -28,6 +28,10 @@ export class EarnByModuleTokenOption extends TokenOption {
         return this._moduleName;
     }
 
+    public get descriptiveName(): string {
+        return 'Earn Tokens by Passing Canvas Module';
+    }
+
     public get moduleId(): string {
         return this._moduleId;
     }

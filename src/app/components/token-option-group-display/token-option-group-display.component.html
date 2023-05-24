@@ -1,0 +1,47 @@
+<ng-container *ngIf="group">
+    <div
+        class="d-flex border border-secondary border-2 rounded align-items-center"
+        (mouseenter)="hovering = true"
+        (mouseleave)="hovering = false"
+    >
+        <div class="d-inline flex-grow-1 mx-2" (click)="isCollapsed = !isCollapsed">
+            <i class="bi" [class.bi-caret-down-fill]="!isCollapsed" [class.bi-caret-right-fill]="isCollapsed"></i>
+            <span class="fs-3">{{ group.name }}</span>
+        </div>
+        <ng-container>
+            <span
+                class="bi fs-5 mx-3"
+                [class.bi-check-circle]="group.isPublished"
+                [class.bi-slash-circle]="!group.isPublished"
+            ></span>
+            <span class="bi bi-plus-circle text-success fs-5 mx-3"></span>
+            <div class="btn-group" dropdown>
+                <span class="bi bi-three-dots-vertical fs-5 mx-3" dropdownToggle></span>
+                <ul class="dropdown-menu dropdown-menu-left border-dark text-center" *dropdownMenu>
+                    <li>
+                        <span><i class="bi bi-pencil-fill me-2"></i>Rename</span>
+                    </li>
+                    <li class="divider dropdown-divider"></li>
+                    <li>
+                        <span class="text-danger"><i class="bi bi-trash-fill me-2"></i>Delete</span>
+                    </li>
+                </ul>
+            </div>
+        </ng-container>
+    </div>
+    <div [collapse]="isCollapsed" [isAnimated]="true" class="mx-2 border border-dark rounded disable-top-border">
+        <ng-container *ngIf="group.tokenOptions.length > 0; else emptyPrompt">
+            <ul class="list-group list-group-flush m-1">
+                <li class="list-group-item" *ngFor="let option of group.tokenOptions">
+                    <app-token-option-display [option]="option"></app-token-option-display>
+                </li>
+            </ul>
+        </ng-container>
+        <ng-template #emptyPrompt>
+            <p class="text-center">
+                No token options here. Click <span class="bi bi-plus-circle text-success"></span> on the top-right
+                corner of the token option group to create new token options.
+            </p>
+        </ng-template>
+    </div>
+</ng-container>

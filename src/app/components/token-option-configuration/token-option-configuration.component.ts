@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import type { Course } from 'app/data/course';
+import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
+import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
 
 @Component({
@@ -9,9 +11,14 @@ import type { CourseConfigurable } from '../dashboard/dashboard-routing';
 })
 export class TokenOptionConfigurationComponent implements CourseConfigurable {
     course?: Course;
+    configuration?: TokenATMConfiguration;
+    constructor(
+        @Inject(TokenATMConfigurationManagerService)
+        private configurationManagerService: TokenATMConfigurationManagerService
+    ) {}
 
     async configureCourse(course: Course): Promise<void> {
-        // TODO: configure course for token option configuration
         this.course = course;
+        this.configuration = await this.configurationManagerService.getTokenATMConfiguration(this.course);
     }
 }

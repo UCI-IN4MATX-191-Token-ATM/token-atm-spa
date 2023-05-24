@@ -1,1 +1,7 @@
-<p>token-option-configuration works!</p>
+<ng-container *ngIf="configuration">
+    <div class="container mt-3">
+        <div *ngFor="let group of configuration.tokenOptionGroups" class="mb-5">
+            <app-token-option-group-display [group]="group"></app-token-option-group-display>
+        </div>
+    </div>
+</ng-container>
