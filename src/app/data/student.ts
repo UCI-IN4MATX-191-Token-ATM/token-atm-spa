@@ -8,7 +8,7 @@ export class Student {
         if (
             typeof data['id'] != 'string' ||
             typeof data['name'] != 'string' ||
-            (typeof data['email'] != 'undefined' && data['email'] != 'string')
+            (typeof data['email'] != 'undefined' && typeof data['email'] != 'string')
         )
             throw new Error('Invalid data');
         this._id = data['id'];

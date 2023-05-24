@@ -5,6 +5,7 @@ import { QuizSubmission } from 'app/data/quiz-submission';
 import { Student } from 'app/data/student';
 import { SubmissionComment } from 'app/data/submission-comment';
 import { PaginatedResult } from 'app/utils/paginated-result';
+import { PaginatedView } from 'app/utils/paginated-view';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { formatISO, parseISO } from 'date-fns';
 import { AxiosService } from './axios.service';
@@ -17,6 +18,11 @@ type QuizQuestionResponse = {
         id: string;
         text: string;
     }[];
+};
+
+type StudentGradeInfo = {
+    user_id: string;
+    score: number;
 };
 
 @Injectable({
@@ -467,6 +473,52 @@ export class CanvasService {
             }
         }
         return [obtainedPoints, totalPoints];
+    }
+    public async getCourseStudents(courseId: string, dataPerPage = 50): Promise<PaginatedView<Student>> {
+        return new PaginatedView(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/users`, {
+                params: {
+                    enrollment_type: ['student'],
+                    enrollment_state: ['active'],
+                    per_page: dataPerPage
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (data: any) => data.map((entry: any) => new Student(entry))
+        );
+    }
+
+    public async getStudentsGrades(
+        courseId: string,
+        assignmentId: string,
+        studentIds: string[]
+    ): Promise<Map<string, number>> {
+        // https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.for_students
+        const result = new PaginatedResult<StudentGradeInfo>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/students/submissions`, {
+                params: {
+                    student_ids: studentIds,
+                    assignment_ids: [assignmentId],
+                    enrollment_state: 'active'
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (data: any) =>
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                data.map((entry: any) => {
+                    return {
+                        user_id: entry['user_id'],
+                        score: entry['score'] ?? 0
+                    };
+                })
+        );
+        const grades = new Map<string, number>();
+        for await (const gradeInfo of result) {
+            grades.set(gradeInfo.user_id, gradeInfo.score);
+        }
+        return grades;
     }
 
     public async createAssignment(
