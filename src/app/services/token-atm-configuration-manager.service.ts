@@ -276,5 +276,4 @@ export class TokenATMConfigurationManagerService {
     }
 
     // TODO: support reordering of token option groups and token options
-    // TODO: support unpublished token option group
 }
