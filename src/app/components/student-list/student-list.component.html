@@ -44,8 +44,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let student of students">
-                        <td (click)="navigateToStudent(student)" class="is-link">{{ student.name }}</td>
+                    <tr *ngFor="let student of students" (click)="navigateToStudent(student)" class="is-link">
+                        <td>{{ student.name }}</td>
                         <td>{{ student.email }}</td>
                         <td>{{ studentGrades.get(student.id) ?? 0 }}</td>
                     </tr>

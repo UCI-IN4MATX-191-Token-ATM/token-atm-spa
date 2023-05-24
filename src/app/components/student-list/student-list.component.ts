@@ -53,6 +53,7 @@ export class StudentListComponent implements CourseConfigurable {
 
     private async getStudentGrades(): Promise<void> {
         if (!this.course || !this.configuration || !this.students) return;
+        this.studentGrades = undefined;
         this.studentGrades = await this.canvasService.getStudentsGrades(
             this.course.id,
             this.configuration.logAssignmentId,
