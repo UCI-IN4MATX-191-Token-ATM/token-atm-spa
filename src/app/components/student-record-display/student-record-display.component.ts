@@ -38,6 +38,8 @@ export class StudentRecordDisplayComponent {
 
     async onAddManualChange(): Promise<void> {
         if (!this.configuration || !this.studentRecord) return;
+        if (this.tokenAdjustmentCount == null) return;
+        if (this.tokenAdjustmentMessage == null) this.tokenAdjustmentMessage = '';
         const [modalRef, result] = await this.modalConfirmationService.createConfirmationModal(
             `Do you really want to change student token balance by ${
                 this.tokenAdjustmentCount.toString() +
