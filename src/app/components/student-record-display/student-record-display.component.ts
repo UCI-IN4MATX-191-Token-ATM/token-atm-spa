@@ -27,6 +27,8 @@ export class StudentRecordDisplayComponent {
 
     public async configureStudent(configuration: TokenATMConfiguration, student: Student): Promise<void> {
         this.studentRecord = undefined;
+        this.tokenAdjustmentCount = 0;
+        this.tokenAdjustmentMessage = '';
         this.configuration = configuration;
         this.student = student;
         this.studentRecord = await this.recordManagerService.getStudentRecord(this.configuration, this.student);
@@ -64,9 +66,9 @@ export class StudentRecordDisplayComponent {
                     token_balance_change: this.tokenAdjustmentCount
                 })
             );
+            this.tokenAdjustmentCount = 0;
+            this.tokenAdjustmentMessage = '';
         }
-        this.tokenAdjustmentCount = 0;
-        this.tokenAdjustmentMessage = '';
         modalRef.hide();
     }
 
