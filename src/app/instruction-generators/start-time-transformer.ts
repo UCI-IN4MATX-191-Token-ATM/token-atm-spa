@@ -14,7 +14,7 @@ export class StartTimeTransformer extends TokenOptionInstructionTransformer<HasS
     public process(tokenOptions: TokenOption[]): string[] {
         return tokenOptions.map((tokenOption) => {
             const convertedObject = this.validate(tokenOption);
-            return convertedObject == undefined ? '' : format(convertedObject.startTime, 'MMM dd, YYYY kk:mm:ss');
+            return convertedObject == undefined ? '' : format(convertedObject.startTime, 'MMM dd, yyyy kk:mm:ss');
         });
     }
 
