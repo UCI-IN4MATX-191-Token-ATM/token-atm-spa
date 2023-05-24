@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import type { Course } from 'app/data/course';
 import { TokenOptionGroup } from 'app/data/token-option-group';
+import { CanvasService } from 'app/services/canvas.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import { BasicTokenOption } from 'app/token-options/basic-token-option';
 
@@ -12,7 +13,10 @@ import { BasicTokenOption } from 'app/token-options/basic-token-option';
 export class DevTestComponent {
     course?: Course;
 
-    constructor(@Inject(TokenATMConfigurationManagerService) private manager: TokenATMConfigurationManagerService) {}
+    constructor(
+        @Inject(TokenATMConfigurationManagerService) private manager: TokenATMConfigurationManagerService,
+        @Inject(CanvasService) private canvasService: CanvasService
+    ) {}
 
     async configureCourse(course: Course): Promise<void> {
         this.course = course;
@@ -20,7 +24,7 @@ export class DevTestComponent {
 
     async onRegenerateContent(): Promise<void> {
         if (!this.course) return;
-        await this.manager.regenrateContent(await this.manager.getTokenATMConfiguration(this.course));
+        await this.manager.regenerateContent(await this.manager.getTokenATMConfiguration(this.course));
         console.log('Regeneration finished!');
     }
 
@@ -111,5 +115,26 @@ export class DevTestComponent {
             await this.manager.publishTokenOptionGroup(group);
             console.log('Token option group published!');
         }
+    }
+
+    async onResetStudentRecord(): Promise<void> {
+        if (!this.course) return;
+        const configuration = await this.manager.getTokenATMConfiguration(this.course);
+        for await (const student of await this.canvasService.getCourseStudentEnrollments(this.course.id)) {
+            this.canvasService.gradeSubmission(this.course.id, student.id, configuration.logAssignmentId, 0);
+            for (const submissionComment of await this.canvasService.getSubmissionComments(
+                this.course.id,
+                student.id,
+                configuration.logAssignmentId
+            )) {
+                await this.canvasService.deleteComment(
+                    this.course.id,
+                    student.id,
+                    configuration.logAssignmentId,
+                    submissionComment.id
+                );
+            }
+        }
+        console.log('Deletion finished!');
     }
 }

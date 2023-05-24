@@ -270,11 +270,10 @@ export class TokenATMConfigurationManagerService {
         return configuration;
     }
 
-    public async regenrateContent(configuration: TokenATMConfiguration): Promise<void> {
+    public async regenerateContent(configuration: TokenATMConfiguration): Promise<void> {
         await this.deleteGeneratedContent(configuration);
         await this.generateContent(configuration);
     }
 
     // TODO: support reordering of token option groups and token options
-    // TODO: support unpublished token option group
 }
