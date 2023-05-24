@@ -19,6 +19,11 @@ type QuizQuestionResponse = {
     }[];
 };
 
+type StudentGradeInfo = {
+    user_id: string;
+    score: number;
+};
+
 @Injectable({
     providedIn: 'root'
 })
@@ -352,7 +357,35 @@ export class CanvasService {
         );
     }
 
-    // public async getStudentsGrades(courseId: string, assignmentId: string, studentIds: string[]): Promise<number[]> {
-    //     // https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.for_students
-    // }
+    public async getStudentsGrades(
+        courseId: string,
+        assignmentId: string,
+        studentIds: string[]
+    ): Promise<Map<string, number>> {
+        // https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.for_students
+        const result = new PaginatedResult<StudentGradeInfo>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/students/submissions`, {
+                params: {
+                    student_ids: studentIds,
+                    assignment_ids: [assignmentId],
+                    enrollment_state: 'active'
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (data: any) =>
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                data.map((entry: any) => {
+                    return {
+                        user_id: entry['user_id'],
+                        score: entry['score'] ?? 0
+                    };
+                })
+        );
+        const grades = new Map<string, number>();
+        for await (const gradeInfo of result) {
+            grades.set(gradeInfo.user_id, gradeInfo.score);
+        }
+        return grades;
+    }
 }

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
     <head>
         <title>Student Information</title>
@@ -52,7 +52,59 @@
                 <div>30</div>
                 <button>Manage</button>
             </div>
-            <!-- Add more student cards as needed -->
         </div>
     </body>
-</html>
+</html> -->
+<div appCenter *ngIf="students && studentGrades" class="flex-column">
+    <div class="d-flex align-self-stretch mx-5">
+        <button class="btn btn-outline-info" [disabled]="!students.hasPrevPage() || isFetchingInfo" (click)="prev()">
+            Prev
+        </button>
+        <div ngbDropdown class="d-inline-block mx-auto">
+            <button type="button" class="btn btn-outline-primary" ngbDropdownToggle>Select Number of Students</button>
+            <div ngbDropdownMenu>
+                <button
+                    ngbDropdownItem
+                    *ngFor="let possiblePageCnt of POSSIBLE_PAGE_CNTS"
+                    (click)="changePageSize(possiblePageCnt)"
+                    [class.active]="possiblePageCnt === pageCnt"
+                >
+                    {{ possiblePageCnt }}
+                </button>
+            </div>
+        </div>
+        <button class="btn btn-outline-info" [disabled]="!students.hasNextPage() || isFetchingInfo" (click)="next()">
+            Next
+        </button>
+    </div>
+    <div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Email</th>
+                    <th>Token Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let student of students">
+                    <td>{{ student.name }}</td>
+                    <td>{{ student.email }}</td>
+                    <td>{{ studentGrades.get(student.id) ?? 0 }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="d-flex align-self-stretch mx-5">
+        <button
+            class="btn btn-outline-info me-auto"
+            [disabled]="!students.hasPrevPage() || isFetchingInfo"
+            (click)="prev()"
+        >
+            Prev
+        </button>
+        <button class="btn btn-outline-info" [disabled]="!students.hasNextPage() || isFetchingInfo" (click)="next()">
+            Next
+        </button>
+    </div>
+</div>
