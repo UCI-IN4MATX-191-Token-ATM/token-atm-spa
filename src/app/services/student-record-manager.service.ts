@@ -3,7 +3,7 @@ import type { ProcessedRequest } from 'app/data/processed-request';
 import type { Student } from 'app/data/student';
 import { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
-import { compareAsc, fromUnixTime, getUnixTime } from 'date-fns';
+import { compareAsc, format, fromUnixTime, getUnixTime } from 'date-fns';
 import { CanvasService } from './canvas.service';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -22,14 +22,7 @@ export class StudentRecordManagerService {
         const courseId = configuration.course.id,
             studentId = studentRecord.student.id,
             assignmentId = configuration.logAssignmentId;
-        if (studentRecord.commentId != '') {
-            await this.canvasService.deleteSubmissionComment(
-                courseId,
-                studentId,
-                assignmentId,
-                studentRecord.commentId
-            );
-        }
+        const oldCommentId = studentRecord.commentId;
         const newSubmissionComment = await this.canvasService.gradeSubmissionWithPostingComment(
             courseId,
             studentId,
@@ -48,6 +41,9 @@ export class StudentRecordManagerService {
             newSubmissionComment.id,
             StudentRecordManagerService.PROMPT + (await configuration.encryptStudentRecord(studentRecord))
         );
+        if (oldCommentId != '') {
+            await this.canvasService.deleteSubmissionComment(courseId, studentId, assignmentId, oldCommentId);
+        }
         return studentRecord;
     }
 
@@ -68,6 +64,7 @@ export class StudentRecordManagerService {
             tokenBalance = await this.canvasService.getSingleSubmissionGrade(courseId, studentId, assignmentId);
         }
         for (const submissionComment of submissionComments.reverse()) {
+            if (!submissionComment.content.startsWith(StudentRecordManagerService.PROMPT)) continue;
             let data;
             try {
                 data = (await configuration.decryptStudentRecord(
@@ -102,6 +99,18 @@ export class StudentRecordManagerService {
         processedRequest: ProcessedRequest
     ) {
         studentRecord.logProcessedRequest(processedRequest);
+        // generate a new comment
+        this.canvasService.postComment(
+            configuration.course.id,
+            studentRecord.student.id,
+            configuration.logAssignmentId,
+            `Your request to ${processedRequest.tokenOptionName} has been processed.\nResult: ${
+                processedRequest.isApproved ? 'Approved' : 'Rejected'
+            }\nSubmitted at: ${format(processedRequest.submitTime, 'MMM dd, yyyy kk:mm:ss')}\nProcessed at: ${format(
+                processedRequest.processTime,
+                'MMM dd, yyyy kk:mm:ss'
+            )}${processedRequest.message != '' ? `\nMessage: ${processedRequest.message}` : ''}`
+        );
         await this.writeStudentRecordToCanvas(configuration, studentRecord);
     }
 }
