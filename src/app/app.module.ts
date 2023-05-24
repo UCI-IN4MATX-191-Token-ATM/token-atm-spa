@@ -27,6 +27,7 @@ import {
     REQUEST_RESOLVER_INJECT_TOKEN
 } from './request-resolvers/request-resolver-registry';
 import { REGISTERED_REQUEST_HANDLERS, REQUEST_HANDLER_INJECT_TOKEN } from './request-handlers/request-handler-registry';
+import { DevTestComponent } from './components/dev-test/dev-test.component';
 
 @NgModule({
     declarations: [
@@ -39,7 +40,8 @@ import { REGISTERED_REQUEST_HANDLERS, REQUEST_HANDLER_INJECT_TOKEN } from './req
         CourseInfoItemComponent,
         RequestProcessComponent,
         TokenOptionConfigurationComponent,
-        StudentListComponent
+        StudentListComponent,
+        DevTestComponent
     ],
     imports: [BrowserModule, AppRoutingModule, FormsModule, NgbModule],
     providers: [
