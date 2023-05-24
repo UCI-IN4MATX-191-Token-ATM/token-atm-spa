@@ -3,55 +3,97 @@ import type { ProcessedRequest } from 'app/data/processed-request';
 import type { Student } from 'app/data/student';
 import { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
+import { compareAsc, fromUnixTime, getUnixTime } from 'date-fns';
 import { CanvasService } from './canvas.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({
     providedIn: 'root'
 })
 export class StudentRecordManagerService {
+    public static PROMPT = 'Please ignore the characters below:\n';
+
     constructor(@Inject(CanvasService) private canvasService: CanvasService) {}
+
+    private async writeStudentRecordToCanvas(
+        configuration: TokenATMConfiguration,
+        studentRecord: StudentRecord
+    ): Promise<StudentRecord> {
+        const courseId = configuration.course.id,
+            studentId = studentRecord.student.id,
+            assignmentId = configuration.logAssignmentId;
+        if (studentRecord.commentId != '') {
+            await this.canvasService.deleteSubmissionComment(
+                courseId,
+                studentId,
+                assignmentId,
+                studentRecord.commentId
+            );
+        }
+        const newSubmissionComment = await this.canvasService.gradeSubmissionWithPostingComment(
+            courseId,
+            studentId,
+            assignmentId,
+            studentRecord.tokenBalance,
+            uuidv4()
+        );
+        studentRecord.commentId = newSubmissionComment.id;
+        studentRecord.commentDate = newSubmissionComment.created_at;
+        // Avoid duplicate Date signature
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await this.canvasService.modifyComment(
+            courseId,
+            studentId,
+            assignmentId,
+            newSubmissionComment.id,
+            StudentRecordManagerService.PROMPT + (await configuration.encryptStudentRecord(studentRecord))
+        );
+        return studentRecord;
+    }
 
     public async getStudentRecord(
         configuration: TokenATMConfiguration,
         student: Student,
         tokenBalanceMap?: Map<string, number>
     ): Promise<StudentRecord> {
-        const submissionComments = await this.canvasService.getSubmissionComments(
-            configuration.course.id,
-            student.id,
-            configuration.logAssignmentId
-        );
+        const courseId = configuration.course.id,
+            studentId = student.id,
+            assignmentId = configuration.logAssignmentId;
+        const submissionComments = await this.canvasService.getSubmissionComments(courseId, studentId, assignmentId);
         let tokenBalance = 0;
         if (tokenBalanceMap && tokenBalanceMap.has(student.id)) {
             const result = tokenBalanceMap.get(student.id);
             if (result) tokenBalance = result;
         } else {
-            tokenBalance = await this.canvasService.getSingleSubmissionGrade(
-                configuration.course.id,
-                student.id,
-                configuration.logAssignmentId
-            );
+            tokenBalance = await this.canvasService.getSingleSubmissionGrade(courseId, studentId, assignmentId);
         }
-        // TODO: initialize the student record if not found
-        // TODO: verify the authencity of the comment
-        return submissionComments.length == 0
-            ? new StudentRecord(configuration, student, '', tokenBalance, {
-                  processed_attempt_map: [],
-                  processed_requests: []
-              })
-            : new StudentRecord(
-                  configuration,
-                  student,
-                  submissionComments[submissionComments.length - 1]?.id ?? '',
-                  tokenBalance,
-                  JSON.parse(
-                      submissionComments[submissionComments.length - 1]?.content ??
-                          JSON.stringify({
-                              processed_attempt_map: [],
-                              processed_requests: []
-                          })
-                  )
-              );
+        for (const submissionComment of submissionComments.reverse()) {
+            let data;
+            try {
+                data = (await configuration.decryptStudentRecord(
+                    submissionComment.content.split('\n')[1] as string
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                )) as any;
+            } catch (err: unknown) {
+                await this.canvasService.deleteComment(courseId, studentId, assignmentId, submissionComment.id);
+                continue;
+            }
+            if (
+                typeof data['comment_date'] != 'number' ||
+                compareAsc(fromUnixTime(data['comment_date']), submissionComment.created_at) != 0
+            ) {
+                await this.canvasService.deleteComment(courseId, studentId, assignmentId, submissionComment.id);
+                continue;
+            }
+            return new StudentRecord(configuration, student, submissionComment.id, tokenBalance, data);
+        }
+        let studentRecord = new StudentRecord(configuration, student, '', tokenBalance, {
+            comment_date: getUnixTime(new Date()),
+            processed_attempt_map: [],
+            processed_requests: []
+        });
+        studentRecord = await this.writeStudentRecordToCanvas(configuration, studentRecord);
+        return studentRecord;
     }
 
     public async logProcessedRequest(
@@ -59,21 +101,7 @@ export class StudentRecordManagerService {
         studentRecord: StudentRecord,
         processedRequest: ProcessedRequest
     ) {
-        if (studentRecord.commentId != '')
-            await this.canvasService.deleteSubmissionComment(
-                configuration.course.id,
-                studentRecord.student.id,
-                configuration.logAssignmentId,
-                studentRecord.commentId
-            );
         studentRecord.logProcessedRequest(processedRequest);
-        const newCommentId = await this.canvasService.gradeSubmissionWithPostingComment(
-            configuration.course.id,
-            studentRecord.student.id,
-            configuration.logAssignmentId,
-            studentRecord.tokenBalance,
-            JSON.stringify(studentRecord)
-        );
-        studentRecord.commentId = newCommentId;
+        await this.writeStudentRecordToCanvas(configuration, studentRecord);
     }
 }

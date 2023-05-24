@@ -14,9 +14,16 @@ export class TokenATMConfigurationManagerService {
     ) {}
 
     public async getTokenATMConfiguration(course: Course): Promise<TokenATMConfiguration> {
-        const pageContent = await this.canvasService.getPageContentByName(course.id, 'Token ATM Configuration');
-        const config = JSON.parse(pageContent.substring(3, pageContent.length - 4));
-        return new TokenATMConfiguration(course, config, (group, data) => {
+        let pageContent = await this.canvasService.getPageContentByName(course.id, 'Token ATM Configuration');
+        pageContent = pageContent.substring(3, pageContent.length - 4);
+        let secureContent = await this.canvasService.getPageContentByName(
+            course.id,
+            'Token ATM Encryption Key (PLEASE DO NOT PUBLISH IT)'
+        );
+        secureContent = secureContent.substring(3, secureContent.length - 4);
+        const config = JSON.parse(pageContent),
+            secureConfig = JSON.parse(secureContent);
+        return new TokenATMConfiguration(course, config, secureConfig, (group, data) => {
             return this.tokenOptionResolverRegistry.resolveTokenOption(group, data);
         });
     }

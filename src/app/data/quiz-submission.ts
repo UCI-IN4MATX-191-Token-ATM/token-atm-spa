@@ -10,13 +10,15 @@ export class QuizSubmission {
             typeof data['id'] != 'string' ||
             typeof data['quiz_id'] != 'string' ||
             typeof data['user_id'] != 'string' ||
-            typeof data['attempt'] != 'number'
+            typeof data['attempt'] != 'number' ||
+            typeof data['workflow_state'] != 'string'
         )
             throw new Error('Invalid data');
         this._id = data['id'];
         this._quizId = data['quiz_id'];
         this._studentId = data['user_id'];
         this._attempt = data['attempt'];
+        if (data['workflow_state'] == 'untaken') this._attempt--;
     }
 
     public get id(): string {

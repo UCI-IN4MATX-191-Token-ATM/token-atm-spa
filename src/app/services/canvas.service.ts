@@ -192,13 +192,79 @@ export class CanvasService {
         );
     }
 
+    public async postComment(
+        courseId: string,
+        studentId: string,
+        assignmentId: string,
+        comment: string
+    ): Promise<SubmissionComment> {
+        const data = await this.apiRequest(
+            `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`,
+            {
+                method: 'put',
+                data: {
+                    comment: {
+                        text_comment: comment
+                    }
+                }
+            }
+        );
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const submissionComments = data.submission_comments as any[];
+        for (let i = submissionComments.length - 1; i >= 0; i--) {
+            let result;
+            try {
+                result = new SubmissionComment(submissionComments[i]);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (err: any) {
+                continue;
+            }
+            if (result.content != comment) continue;
+            return result;
+        }
+        throw new Error('Comment creation failed');
+    }
+
+    public async deleteComment(
+        courseId: string,
+        studentId: string,
+        assignmentId: string,
+        commentId: string
+    ): Promise<void> {
+        await this.apiRequest(
+            `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}/comments/${commentId}`,
+            {
+                method: 'delete'
+            }
+        );
+    }
+
+    public async modifyComment(
+        courseId: string,
+        studentId: string,
+        assignmentId: string,
+        commentId: string,
+        comment: string
+    ): Promise<SubmissionComment> {
+        const data = await this.apiRequest(
+            `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}/comments/${commentId}`,
+            {
+                method: 'put',
+                data: {
+                    comment: comment
+                }
+            }
+        );
+        return new SubmissionComment(data);
+    }
+
     public async gradeSubmissionWithPostingComment(
         courseId: string,
         studentId: string,
         assignmentId: string,
         score: number,
         newComment: string
-    ): Promise<string> {
+    ): Promise<SubmissionComment> {
         const data = await this.apiRequest(
             `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`,
             {
@@ -215,7 +281,18 @@ export class CanvasService {
         );
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const submissionComments = data.submission_comments as any[];
-        return submissionComments[submissionComments.length - 1].id ?? '';
+        for (let i = submissionComments.length - 1; i >= 0; i--) {
+            let result;
+            try {
+                result = new SubmissionComment(submissionComments[i]);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (err: any) {
+                continue;
+            }
+            if (result.content != newComment) continue;
+            return result;
+        }
+        throw new Error('Comment creation failed');
     }
 
     public async getAssignmentIdByQuizId(courseId: string, quizId: string): Promise<string> {

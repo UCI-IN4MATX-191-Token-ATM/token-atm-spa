@@ -3,8 +3,23 @@
         Token ATM is retrieving information from Canvas. Please wait...
     </ngb-toast>
     <ng-template #processPanel>
-        <button class="btn btn-primary btn-lg" [disabled]="isRunning" (click)="onStartRequestProcessing()">
-            Start Request Processing
-        </button>
+        <div class="d-flex flex-column align-items-center">
+            <button
+                class="btn btn-primary btn-lg mx-auto"
+                [disabled]="isRunning"
+                (click)="isProcessingRequest ? onStopRequestProcessing() : onStartRequestProcessing()"
+                [class.btn-danger]="isProcessingRequest"
+            >
+                {{ isProcessingRequest ? 'Stop Request Processing' : 'Start Request Processing' }}
+            </button>
+            <div *ngIf="progress !== undefined" class="progress m-3 mx-auto" [style.width]="'30rem'">
+                <div
+                    class="progress-bar progress-bar-striped bg-success"
+                    role="progressbar"
+                    [style.width]="progress.toString() + '%'"
+                ></div>
+            </div>
+            <p *ngIf="message">{{ message }}</p>
+        </div>
     </ng-template>
 </div>
