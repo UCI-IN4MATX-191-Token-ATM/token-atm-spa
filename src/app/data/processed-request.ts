@@ -8,6 +8,7 @@ export class ProcessedRequest {
     private _tokenOptionId: number;
     private _tokenOption?: TokenOption;
     private _tokenOptionName: string;
+    private _tokenOptionGroupId?: number;
     private _student: Student;
     private _isApproved: boolean;
     private _submitTime: Date;
@@ -20,6 +21,7 @@ export class ProcessedRequest {
         if (
             typeof data['token_option_id'] != 'number' ||
             typeof data['token_option_name'] != 'string' ||
+            (typeof data['token_option_group_id'] != 'undefined' && typeof data['token_option_group_id'] != 'number') ||
             typeof data['is_approved'] != 'boolean' ||
             (typeof data['message'] != 'undefined' && typeof data['message'] != 'string') ||
             typeof data['submit_time'] != 'number' ||
@@ -31,6 +33,7 @@ export class ProcessedRequest {
         this._tokenOptionId = data['token_option_id'];
         this._tokenOption = configuration.getTokenOptionById(data['token_option_id']);
         this._tokenOptionName = data['token_option_name'];
+        this._tokenOptionGroupId = data['token_option_group_id'];
         this._student = student;
         this._isApproved = data['is_approved'];
         this._submitTime = fromUnixTime(data['submit_time']);
@@ -49,6 +52,10 @@ export class ProcessedRequest {
 
     public get tokenOptionName(): string {
         return this._tokenOptionName;
+    }
+
+    public get tokenOptionGroupId(): number | undefined {
+        return this._tokenOptionGroupId;
     }
 
     public get student(): Student {
@@ -79,6 +86,7 @@ export class ProcessedRequest {
         return {
             token_option_id: this._tokenOptionId,
             token_option_name: this.tokenOptionName,
+            token_option_group_id: this.tokenOptionGroupId,
             is_approved: this.isApproved,
             submit_time: getUnixTime(this.submitTime),
             process_time: getUnixTime(this.processTime),

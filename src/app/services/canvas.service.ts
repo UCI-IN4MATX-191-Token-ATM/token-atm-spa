@@ -437,6 +437,7 @@ export class CanvasService {
             submissionDate = parseISO(submission.submitted_at);
             const submissionData = submission.submission_data;
             for (const answer of submissionData) {
+                if (answer.answer_id == undefined) continue;
                 const textAnswer = questionOptions.get(answer.question_id)?.get(answer.answer_id);
                 if (!textAnswer) continue;
                 questionAnswers.set(answer.question_id, textAnswer);

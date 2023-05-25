@@ -38,6 +38,7 @@ export class EarnByModuleRequestHandler extends RequestHandler<EarnByModuleToken
         return new ProcessedRequest(configuration, request.student, {
             token_option_id: request.tokenOption.id,
             token_option_name: request.tokenOption.name,
+            token_option_group_id: request.tokenOption.group.id,
             is_approved: !guardExecutor.isRejected,
             submit_time: getUnixTime(request.submittedTime),
             process_time: getUnixTime(new Date()),

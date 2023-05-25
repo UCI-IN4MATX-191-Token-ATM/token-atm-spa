@@ -10,7 +10,12 @@ export class BasicRequestResolver extends RequestResolver<BasicTokenOption, Basi
         tokenOption: BasicTokenOption,
         quizSubmissionDetail: QuizSubmissionDetail
     ): Promise<BasicRequest> {
-        return new BasicRequest(tokenOption, quizSubmissionDetail.student, quizSubmissionDetail.submittedTime);
+        return new BasicRequest(
+            tokenOption,
+            quizSubmissionDetail.student,
+            quizSubmissionDetail.submittedTime,
+            quizSubmissionDetail
+        );
     }
     public get type(): string {
         return 'basic';

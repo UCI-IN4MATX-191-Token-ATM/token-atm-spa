@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
+import { ProcessedRequest } from 'app/data/processed-request';
 import type { QuizSubmission } from 'app/data/quiz-submission';
 import type { Student } from 'app/data/student';
 import type { StudentRecord } from 'app/data/student-record';
@@ -8,7 +9,7 @@ import { RequestHandlerRegistry } from 'app/request-handlers/request-handler-reg
 import { RequestResolverRegistry } from 'app/request-resolvers/request-resolver-registry';
 import type { TokenATMRequest } from 'app/requests/token-atm-request';
 import type { TokenOption } from 'app/token-options/token-option';
-import { compareAsc, format } from 'date-fns';
+import { compareAsc, format, getUnixTime } from 'date-fns';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { CanvasService } from './canvas.service';
 import { RawRequestFetcherService } from './raw-request-fetcher.service';
@@ -103,25 +104,29 @@ export class RequestProcessManagerService {
                     return;
                 }
                 for (const request of requests) {
-                    let processedRequest;
-                    try {
-                        processedRequest = await this.requestHandlerRegistry.handleRequest(
-                            configuration,
-                            studentRecord,
-                            request
-                        );
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    } catch (err: any) {
-                        progressUpdate.error([
-                            `Encounter an error when handling request to ${
-                                request.tokenOption.name
-                            } submitted at ${format(request.submittedTime, 'MMM dd, yyyy kk:mm:ss')} by student ${
-                                student.name + (student.email == '' ? '' : `(${student.email})`)
-                            }`,
-                            err
-                        ]);
-                        this.finishRequestProcessing(progressUpdate, false);
-                        return;
+                    let processedRequest = undefined;
+                    if (request instanceof ProcessedRequest) {
+                        processedRequest = request;
+                    } else {
+                        try {
+                            processedRequest = await this.requestHandlerRegistry.handleRequest(
+                                configuration,
+                                studentRecord,
+                                request
+                            );
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        } catch (err: any) {
+                            progressUpdate.error([
+                                `Encounter an error when handling request to ${
+                                    processedRequest ? processedRequest.tokenOptionName : request.tokenOption.name
+                                } submitted at ${format(request.submittedTime, 'MMM dd, yyyy kk:mm:ss')} by student ${
+                                    student.name + (student.email == '' ? '' : `(${student.email})`)
+                                }`,
+                                err
+                            ]);
+                            this.finishRequestProcessing(progressUpdate, false);
+                            return;
+                        }
                     }
                     try {
                         await this.studentRecordManagerService.logProcessedRequest(
@@ -133,8 +138,8 @@ export class RequestProcessManagerService {
                     } catch (err: any) {
                         progressUpdate.error([
                             `Encounter an error when logging request to ${
-                                request.tokenOption.name
-                            } submitted at ${format(request.submittedTime, 'MMM dd, yyyy kk:mm:ss')} by student ${
+                                processedRequest.tokenOptionName
+                            } submitted at ${format(processedRequest.submitTime, 'MMM dd, yyyy kk:mm:ss')} by student ${
                                 student.name + (student.email == '' ? '' : `(${student.email})`)
                             }`,
                             err
@@ -200,9 +205,9 @@ export class RequestProcessManagerService {
         student: Student,
         quizSubmissions: IterableIterator<[TokenOptionGroup, QuizSubmission]>,
         assignmentIdMap: Map<string, string>
-    ): Promise<[StudentRecord, TokenATMRequest<TokenOption>[]]> {
+    ): Promise<[StudentRecord, (TokenATMRequest<TokenOption> | ProcessedRequest)[]]> {
         const studentRecord = await this.studentRecordManagerService.getStudentRecord(configuration, student);
-        const requests: TokenATMRequest<TokenOption>[] = [];
+        const requests: (TokenATMRequest<TokenOption> | ProcessedRequest)[] = [];
         if (this._isStopTriggered) {
             return [studentRecord, requests];
         }
@@ -221,11 +226,34 @@ export class RequestProcessManagerService {
                     assignmentIdMap.get(group.quizId)
                 );
                 if (this._isStopTriggered) return [studentRecord, requests];
-                requests.push(await this.requestResolverRegistry.resolveRequest(group, quizSubmissionDetail));
+                const request = await this.requestResolverRegistry.resolveRequest(group, quizSubmissionDetail);
+                if (!request) {
+                    requests.push(
+                        new ProcessedRequest(configuration, student, {
+                            token_option_id: -1,
+                            token_option_name: 'An Unrecognized Token Option',
+                            token_option_group_id: group.id,
+                            is_approved: false,
+                            message:
+                                'The token option you made a request to cannot be recognized. That token option might be deleted or moved, or you might submitted the quiz without selecting an option in Question 1',
+                            submit_time: getUnixTime(quizSubmissionDetail.submittedTime),
+                            process_time: getUnixTime(new Date()),
+                            token_balance_change: 0
+                        })
+                    );
+                } else requests.push(request);
                 if (this._isStopTriggered) return [studentRecord, requests];
             }
         }
-        return [studentRecord, requests.sort((a, b) => compareAsc(a.submittedTime, b.submittedTime))];
+        return [studentRecord, requests.sort((a, b) => compareAsc(this.getSubmitTime(a), this.getSubmitTime(b)))];
+    }
+
+    public getSubmitTime(request: ProcessedRequest | TokenATMRequest<TokenOption>) {
+        if (request instanceof ProcessedRequest) {
+            return request.submitTime;
+        } else {
+            return request.submittedTime;
+        }
     }
 
     private countAndNoun(count: number, noun: string) {

@@ -23,6 +23,7 @@ export class BasicRequestHandler extends RequestHandler<BasicTokenOption, BasicR
         return new ProcessedRequest(configuration, studentRecord.student, {
             token_option_id: request.tokenOption.id,
             token_option_name: request.tokenOption.name,
+            token_option_group_id: request.tokenOption.group.id,
             is_approved: true,
             submit_time: getUnixTime(request.submittedTime),
             process_time: getUnixTime(new Date()),
