@@ -18,6 +18,8 @@ export class RequestProcessComponent implements CourseConfigurable {
     isStopRequested = false;
     progress?: number;
     message?: string;
+    individualProgress?: number;
+    individualMessage?: string;
 
     constructor(
         @Inject(TokenATMConfigurationManagerService) private configurationManager: TokenATMConfigurationManagerService,
@@ -42,8 +44,13 @@ export class RequestProcessComponent implements CourseConfigurable {
         this.isStopRequested = false;
         this.requestProcessManagerService.startRequestProcessing(this.configuration).subscribe({
             next: ([progress, message]: [progress: number, message: string]) => {
-                this.progress = progress;
-                this.message = message;
+                if (progress <= -1) {
+                    this.individualProgress = Math.abs(progress + 1) * 100;
+                    this.individualMessage = message;
+                } else {
+                    this.progress = progress;
+                    this.message = message;
+                }
             },
             complete: () => {
                 this.onRequestProcessingComplete();
@@ -59,6 +66,8 @@ export class RequestProcessComponent implements CourseConfigurable {
     public async onRequestProcessingComplete(recogfiure = true): Promise<void> {
         this.progress = undefined;
         this.message = undefined;
+        this.individualProgress = undefined;
+        this.individualMessage = undefined;
         if (this.course && recogfiure) await this.configureCourse(this.course);
         this.isStopRequested = false;
         this.isReconfigureFinished = true;

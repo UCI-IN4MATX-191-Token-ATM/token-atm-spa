@@ -4,6 +4,8 @@ import { TokenOptionGroup } from 'app/data/token-option-group';
 import { CanvasService } from 'app/services/canvas.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import { BasicTokenOption } from 'app/token-options/basic-token-option';
+import { EarnByModuleTokenOption } from 'app/token-options/earn-by-module-token-option';
+import { getUnixTime } from 'date-fns';
 
 @Component({
     selector: 'app-dev-test',
@@ -136,5 +138,92 @@ export class DevTestComponent {
             }
         }
         console.log('Deletion finished!');
+    }
+
+    async onMyOperation(): Promise<void> {
+        if (!this.course) return;
+        const configuration = await this.manager.getTokenATMConfiguration(this.course);
+        const group = new TokenOptionGroup(
+            configuration,
+            {
+                name: 'Pass Module',
+                id: configuration.nextFreeTokenOptionGroupId,
+                quiz_id: '',
+                description: 'Pass module with a specific grade threshold to get tokens!',
+                is_published: true,
+                token_options: []
+            },
+            configuration.tokenOptionResolver
+        );
+        await this.manager.addNewTokenOptionGroup(group);
+        group.addTokenOption(
+            new EarnByModuleTokenOption(group, {
+                type: 'earn-by-module',
+                id: configuration.nextFreeTokenOptionId,
+                name: `getting tokens by passing module 1`,
+                description: `Passing Module 1 with a score no less than 70% of the total score`,
+                token_balance_change: 1,
+                module_name: 'Module 1',
+                module_id: '12612114',
+                start_time: getUnixTime(new Date()),
+                grade_threshold: 0.7
+            })
+        );
+        group.addTokenOption(
+            new EarnByModuleTokenOption(group, {
+                type: 'earn-by-module',
+                id: configuration.nextFreeTokenOptionId,
+                name: `getting tokens by passing module 2`,
+                description: `Passing Module 1 with a score no less than 80% of the total score`,
+                token_balance_change: 2,
+                module_name: 'Module 2',
+                module_id: '12612167',
+                start_time: getUnixTime(new Date()),
+                grade_threshold: 0.8
+            })
+        );
+        await this.manager.updateTokenOptionGroup(group);
+        const basicGroup = new TokenOptionGroup(
+            configuration,
+            {
+                name: 'Basic Token Options (Testing)',
+                id: configuration.nextFreeTokenOptionGroupId,
+                quiz_id: '',
+                description: 'Test Token ATM with these basic token options whose requests are always get approved!',
+                is_published: true,
+                token_options: []
+            },
+            configuration.tokenOptionResolver
+        );
+        await this.manager.addNewTokenOptionGroup(basicGroup);
+        basicGroup.addTokenOption(
+            new BasicTokenOption(group, {
+                type: 'basic',
+                id: configuration.nextFreeTokenOptionId,
+                name: `basic token option 1`,
+                description: `Just a test <b>token option</b>`,
+                token_balance_change: 100
+            })
+        );
+        basicGroup.addTokenOption(
+            new BasicTokenOption(group, {
+                type: 'basic',
+                id: configuration.nextFreeTokenOptionId,
+                name: `basic token option 2`,
+                description: `Just a test <b>token option</b>`,
+                token_balance_change: 0.5
+            })
+        );
+        basicGroup.addTokenOption(
+            new BasicTokenOption(group, {
+                type: 'basic',
+                id: configuration.nextFreeTokenOptionId,
+                name: `basic token option 3`,
+                description: `Just a test <b>token option</b>`,
+                token_balance_change: -100
+            })
+        );
+        await this.manager.updateTokenOptionGroup(basicGroup);
+        console.log('Completed!');
     }
 }

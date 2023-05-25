@@ -20,6 +20,14 @@
                 ></div>
             </div>
             <p *ngIf="message">{{ message }}</p>
+            <div *ngIf="individualProgress !== undefined" class="progress m-3 mx-auto" [style.width]="'30rem'">
+                <div
+                    class="progress-bar progress-bar-striped bg-success"
+                    role="progressbar"
+                    [style.width]="individualProgress.toString() + '%'"
+                ></div>
+            </div>
+            <p *ngIf="individualMessage">{{ individualMessage }}</p>
         </div>
     </ng-template>
 </div>

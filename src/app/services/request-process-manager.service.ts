@@ -77,6 +77,7 @@ export class RequestProcessManagerService {
                 if (!quizSubmissionMap.has(student.id)) {
                     continue;
                 }
+                let individualProcessedRequestCnt = 0;
                 processedStudentCnt++;
                 const quizSubmissions = quizSubmissionMap.get(student.id);
                 if (!quizSubmissions) continue;
@@ -85,6 +86,7 @@ export class RequestProcessManagerService {
                     [studentRecord, requests] = await this.resolveRequestsForStudent(
                         configuration,
                         student,
+                        progressUpdate,
                         quizSubmissions.values(),
                         assignmentIdMap
                     );
@@ -148,9 +150,17 @@ export class RequestProcessManagerService {
                         return;
                     }
                     processedRequestCnt++;
+                    individualProcessedRequestCnt++;
                     progressUpdate.next([
                         (processedStudentCnt * 100) / totalStudentCnt,
                         this.progressString(totalStudentCnt, processedRequestCnt, processedStudentCnt)
+                    ]);
+                    progressUpdate.next([
+                        -1 - individualProcessedRequestCnt / requests.length,
+                        `Processed ${this.countAndNoun(
+                            individualProcessedRequestCnt,
+                            'request'
+                        )} for the current student, ${this.countAndNoun(requests.length, 'request')} remaining`
                     ]);
                     if (this._isStopTriggered) {
                         this.finishRequestProcessing(progressUpdate);
@@ -203,6 +213,7 @@ export class RequestProcessManagerService {
     private async resolveRequestsForStudent(
         configuration: TokenATMConfiguration,
         student: Student,
+        progressUpdate: BehaviorSubject<[number, string]>,
         quizSubmissions: IterableIterator<[TokenOptionGroup, QuizSubmission]>,
         assignmentIdMap: Map<string, string>
     ): Promise<[StudentRecord, (TokenATMRequest<TokenOption> | ProcessedRequest)[]]> {
@@ -211,6 +222,7 @@ export class RequestProcessManagerService {
         if (this._isStopTriggered) {
             return [studentRecord, requests];
         }
+        let requestCnt = 0;
         for (const [group, quizSubmission] of quizSubmissions) {
             for (
                 let curAttempt = studentRecord.getProcessedAttempts(group.id) + 1;
@@ -242,6 +254,11 @@ export class RequestProcessManagerService {
                         })
                     );
                 } else requests.push(request);
+                requestCnt++;
+                progressUpdate.next([
+                    -1,
+                    `Resolving Requests: Resolved ${this.countAndNoun(requestCnt, 'request')} for the current student`
+                ]);
                 if (this._isStopTriggered) return [studentRecord, requests];
             }
         }
