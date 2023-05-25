@@ -1,110 +1,75 @@
-<!-- <!DOCTYPE html>
-<html>
-    <head>
-        <title>Student Information</title>
-        <style>
-            /* Style the information bar */
-            .info-bar {
-                display: flex;
-                justify-content: space-between;
-                background-color: lightgray;
-                padding: 10px;
-                font-weight: bold;
-            }
-
-            /* Style the student cards */
-            .student-card {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 10px;
-                border-bottom: 1px solid gray;
-            }
-
-            /* Style the search button */
-            .search-button {
-                float: right;
-                margin-top: 10px;
-                margin-right: 10px;
-            }
-        </style>
-    </head>
-    <body>
-        <button class="search-button">Search</button>
-        <div class="info-bar">
-            <div>Student Name</div>
-            <div>Token Balance</div>
-            <div>Manage Button</div>
+<div *ngIf="!students || !studentGrades; else studentListPanel" appCenter>
+    <ngb-toast [autohide]="false"> Token ATM is retrieving information from Canvas. Please wait... </ngb-toast>
+</div>
+<ng-template #studentListPanel>
+    <div *ngIf="students && studentGrades" class="flex-column m-5" [class.is-hidden]="isShowingIndividualStudent">
+        <div class="d-flex align-self-stretch mx-5">
+            <button
+                class="btn btn-outline-info"
+                [disabled]="!students.hasPrevPage() || isFetchingInfo"
+                (click)="prev()"
+            >
+                Prev
+            </button>
+            <div ngbDropdown class="d-inline-block mx-auto">
+                <button type="button" class="btn btn-outline-primary" ngbDropdownToggle>
+                    Select Number of Students
+                </button>
+                <div ngbDropdownMenu>
+                    <button
+                        ngbDropdownItem
+                        *ngFor="let possiblePageCnt of POSSIBLE_PAGE_CNTS"
+                        (click)="changePageSize(possiblePageCnt)"
+                        [class.active]="possiblePageCnt === pageCnt"
+                    >
+                        {{ possiblePageCnt }}
+                    </button>
+                </div>
+            </div>
+            <button
+                class="btn btn-outline-info"
+                [disabled]="!students.hasNextPage() || isFetchingInfo"
+                (click)="next()"
+            >
+                Next
+            </button>
         </div>
         <div>
-            <div class="student-card">
-                <div>Student 1</div>
-                <div>10</div>
-                <button>Manage</button>
-            </div>
-            <div class="student-card">
-                <div>Student 2</div>
-                <div>20</div>
-                <button>Manage</button>
-            </div>
-            <div class="student-card">
-                <div>Student 3</div>
-                <div>30</div>
-                <button>Manage</button>
-            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Email</th>
+                        <th>Token Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let student of students" (click)="navigateToStudent(student)" class="is-link">
+                        <td>{{ student.name }}</td>
+                        <td>{{ student.email }}</td>
+                        <td>{{ studentGrades.get(student.id) ?? 0 }}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-    </body>
-</html> -->
-<div appCenter *ngIf="students && studentGrades" class="flex-column">
-    <div class="d-flex align-self-stretch mx-5">
-        <button class="btn btn-outline-info" [disabled]="!students.hasPrevPage() || isFetchingInfo" (click)="prev()">
-            Prev
-        </button>
-        <div ngbDropdown class="d-inline-block mx-auto">
-            <button type="button" class="btn btn-outline-primary" ngbDropdownToggle>Select Number of Students</button>
-            <div ngbDropdownMenu>
-                <button
-                    ngbDropdownItem
-                    *ngFor="let possiblePageCnt of POSSIBLE_PAGE_CNTS"
-                    (click)="changePageSize(possiblePageCnt)"
-                    [class.active]="possiblePageCnt === pageCnt"
-                >
-                    {{ possiblePageCnt }}
-                </button>
-            </div>
+        <div class="d-flex align-self-stretch mx-5">
+            <button
+                class="btn btn-outline-info me-auto"
+                [disabled]="!students.hasPrevPage() || isFetchingInfo"
+                (click)="prev()"
+            >
+                Prev
+            </button>
+            <button
+                class="btn btn-outline-info"
+                [disabled]="!students.hasNextPage() || isFetchingInfo"
+                (click)="next()"
+            >
+                Next
+            </button>
         </div>
-        <button class="btn btn-outline-info" [disabled]="!students.hasNextPage() || isFetchingInfo" (click)="next()">
-            Next
-        </button>
     </div>
-    <div>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Student</th>
-                    <th>Email</th>
-                    <th>Token Balance</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let student of students">
-                    <td>{{ student.name }}</td>
-                    <td>{{ student.email }}</td>
-                    <td>{{ studentGrades.get(student.id) ?? 0 }}</td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="m-5" [class.is-hidden]="!isShowingIndividualStudent">
+        <app-student-record-display #individaulStudentRecordDisplay (goBack)="onGoBack()"></app-student-record-display>
     </div>
-    <div class="d-flex align-self-stretch mx-5">
-        <button
-            class="btn btn-outline-info me-auto"
-            [disabled]="!students.hasPrevPage() || isFetchingInfo"
-            (click)="prev()"
-        >
-            Prev
-        </button>
-        <button class="btn btn-outline-info" [disabled]="!students.hasNextPage() || isFetchingInfo" (click)="next()">
-            Next
-        </button>
-    </div>
-</div>
+</ng-template>

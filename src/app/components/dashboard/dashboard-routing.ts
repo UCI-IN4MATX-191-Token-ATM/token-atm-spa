@@ -1,4 +1,3 @@
-import type { Component, Type } from '@angular/core';
 import type { Course } from 'app/data/course';
 import type { Route, Routes } from '@angular/router';
 import { RequestProcessComponent } from '../request-process/request-process.component';
@@ -6,6 +5,7 @@ import { TokenOptionConfigurationComponent } from '../token-option-configuration
 import { StudentListComponent } from '../student-list/student-list.component';
 import { DEV_GUARD } from 'app/utils/dev-guard';
 import { DevTestComponent } from '../dev-test/dev-test.component';
+import type { Component, Type } from '@angular/core';
 
 export interface CourseConfigurable {
     configureCourse(course: Course): Promise<void>;
@@ -15,7 +15,6 @@ type CourseConfigurableComponent = CourseConfigurable & Component;
 
 export type TokenATMDashboardRouteSpecific = {
     name: string;
-    path: string;
     component: Type<CourseConfigurableComponent>;
     isDev?: boolean;
 };
@@ -54,7 +53,9 @@ export function getDashboardRoutes(): Routes {
         ...TOKEN_ATM_DASHBOARD_ROUTES.map((route: TokenATMDashboardRoute) => {
             return {
                 ...route,
-                name: undefined
+                name: undefined,
+                isDev: undefined,
+                hidden: undefined
             };
         }),
         {

@@ -12,14 +12,19 @@
         <ul class="nav nav-pills flex-column align-items-center">
             <ng-container *ngFor="let route of routes">
                 <li class="nav-item">
-                    <span class="nav-link fs-4 text-dark" [routerLink]="route.path" routerLinkActive="fw-bold">{{
-                        route.name
-                    }}</span>
+                    <span
+                        class="nav-link fs-4 text-dark is-link"
+                        [routerLink]="route.path"
+                        routerLinkActive="fw-bold"
+                        >{{ route.name }}</span
+                    >
                 </li>
             </ng-container>
         </ul>
     </div>
-    <div class="flex-grow-1 overflow-auto dashboard-component-container">
-        <router-outlet (activate)="onComponentActivate($event)"></router-outlet>
+    <div class="overflow-auto vh-100 flex-grow-1">
+        <div class="flex-grow-1 dashboard-component-container">
+            <router-outlet (activate)="onComponentActivate($event)"></router-outlet>
+        </div>
     </div>
 </div>

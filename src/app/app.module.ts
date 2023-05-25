@@ -33,6 +33,9 @@ import { TokenOptionDisplayComponent } from './components/token-option-display/t
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { CollapseModule } from 'ngx-bootstrap/collapse';
+import { StudentRecordDisplayComponent } from './components/student-record-display/student-record-display.component';
+import { ConfirmationModalComponent } from './components/confirmation-modal/confirmation-modal.component';
+import { ModalModule } from 'ngx-bootstrap/modal';
 
 @NgModule({
     declarations: [
@@ -48,7 +51,9 @@ import { CollapseModule } from 'ngx-bootstrap/collapse';
         StudentListComponent,
         DevTestComponent,
         TokenOptionGroupDisplayComponent,
-        TokenOptionDisplayComponent
+        TokenOptionDisplayComponent,
+        StudentRecordDisplayComponent,
+        ConfirmationModalComponent
     ],
     imports: [
         BrowserModule,
@@ -57,7 +62,8 @@ import { CollapseModule } from 'ngx-bootstrap/collapse';
         NgbModule,
         BsDropdownModule.forRoot(),
         BrowserAnimationsModule,
-        CollapseModule.forRoot()
+        CollapseModule.forRoot(),
+        ModalModule.forRoot()
     ],
     providers: [
         { provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService },

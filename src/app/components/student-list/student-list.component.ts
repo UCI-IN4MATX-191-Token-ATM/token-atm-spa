@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ViewChild } from '@angular/core';
 import type { Course } from 'app/data/course';
 import type { Student } from 'app/data/student';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
@@ -6,6 +6,7 @@ import { CanvasService } from 'app/services/canvas.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import type { PaginatedView } from 'app/utils/paginated-view';
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
+import type { StudentRecordDisplayComponent } from '../student-record-display/student-record-display.component';
 
 @Component({
     selector: 'app-student-list',
@@ -23,6 +24,9 @@ export class StudentListComponent implements CourseConfigurable {
     studentGrades?: Map<string, number>;
     isFetchingInfo = false;
     pageCnt: number = this.DEFAULT_PAGE_CNT;
+    isShowingIndividualStudent = false;
+    @ViewChild('individaulStudentRecordDisplay')
+    individaulStudentRecordDisplay?: StudentRecordDisplayComponent;
 
     constructor(
         @Inject(CanvasService) private canvasService: CanvasService,
@@ -49,6 +53,7 @@ export class StudentListComponent implements CourseConfigurable {
 
     private async getStudentGrades(): Promise<void> {
         if (!this.course || !this.configuration || !this.students) return;
+        this.studentGrades = undefined;
         this.studentGrades = await this.canvasService.getStudentsGrades(
             this.course.id,
             this.configuration.logAssignmentId,
@@ -71,22 +76,14 @@ export class StudentListComponent implements CourseConfigurable {
         await this.getStudentGrades();
         this.isFetchingInfo = false;
     }
+
+    navigateToStudent(student: Student): void {
+        if (!this.configuration || !this.individaulStudentRecordDisplay) return;
+        this.isShowingIndividualStudent = true;
+        this.individaulStudentRecordDisplay.configureStudent(this.configuration, student);
+    }
+
+    onGoBack() {
+        this.isShowingIndividualStudent = false;
+    }
 }
-
-//TODO Dropdown menu for page size
-//two buttons to change page
-//
-
-//     constructor(@Inject(CanvasService) private canvasService: CanvasService) {}
-
-//     ngOnInit() {
-//         this.loading = true;
-//         this.fetchCourses().then(() => {
-//             this.loading = false;
-//         });
-//     }
-
-//     private async fetchCourses() {
-//         this.coursesEnrolledAsTeacher = await DataConversionHelper.convertAsyncIterableToList(
-//             await this.canvasService.getCourses('student', 'active')
-//         );

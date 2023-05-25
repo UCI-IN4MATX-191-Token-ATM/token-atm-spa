@@ -12,6 +12,7 @@ export class ProcessedRequest {
     private _isApproved: boolean;
     private _submitTime: Date;
     private _processTime: Date;
+    private _tokenBalanceChange: number;
     private _message?: string;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,7 +23,8 @@ export class ProcessedRequest {
             typeof data['is_approved'] != 'boolean' ||
             (typeof data['message'] != 'undefined' && typeof data['message'] != 'string') ||
             typeof data['submit_time'] != 'number' ||
-            typeof data['process_time'] != 'number'
+            typeof data['process_time'] != 'number' ||
+            typeof data['token_balance_change'] != 'number'
         )
             throw new Error('Invalid data');
         this._configuration = configuration;
@@ -34,6 +36,7 @@ export class ProcessedRequest {
         this._submitTime = fromUnixTime(data['submit_time']);
         this._processTime = fromUnixTime(data['process_time']);
         this._message = data['message'];
+        this._tokenBalanceChange = data['token_balance_change'];
     }
 
     public get configuration(): TokenATMConfiguration {
@@ -68,6 +71,10 @@ export class ProcessedRequest {
         return this._message ?? '';
     }
 
+    public get tokenBalanceChange(): number {
+        return this._tokenBalanceChange;
+    }
+
     public toJSON(): unknown {
         return {
             token_option_id: this._tokenOptionId,
@@ -75,7 +82,8 @@ export class ProcessedRequest {
             is_approved: this.isApproved,
             submit_time: getUnixTime(this.submitTime),
             process_time: getUnixTime(this.processTime),
-            message: this._message
+            message: this.message,
+            token_balance_change: this.tokenBalanceChange
         };
     }
 }
