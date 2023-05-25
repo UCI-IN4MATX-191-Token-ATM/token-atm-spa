@@ -22,7 +22,9 @@
             </ng-container>
         </ul>
     </div>
-    <div class="flex-grow-1 overflow-auto dashboard-component-container">
-        <router-outlet (activate)="onComponentActivate($event)"></router-outlet>
+    <div class="overflow-auto vh-100 flex-grow-1">
+        <div class="flex-grow-1 dashboard-component-container">
+            <router-outlet (activate)="onComponentActivate($event)"></router-outlet>
+        </div>
     </div>
 </div>
