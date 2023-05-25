@@ -2,7 +2,7 @@
     <ngb-toast [autohide]="false"> Token ATM is retrieving information from Canvas. Please wait... </ngb-toast>
 </div>
 <ng-template #studentListPanel>
-    <div appCenter *ngIf="students && studentGrades" class="flex-column" [class.is-hidden]="isShowingIndividualStudent">
+    <div *ngIf="students && studentGrades" class="flex-column m-5" [class.is-hidden]="isShowingIndividualStudent">
         <div class="d-flex align-self-stretch mx-5">
             <button
                 class="btn btn-outline-info"
@@ -69,7 +69,7 @@
             </button>
         </div>
     </div>
-    <div appCenter [class.is-hidden]="!isShowingIndividualStudent">
+    <div class="m-5" [class.is-hidden]="!isShowingIndividualStudent">
         <app-student-record-display #individaulStudentRecordDisplay (goBack)="onGoBack()"></app-student-record-display>
     </div>
 </ng-template>
