@@ -3,7 +3,7 @@ import { ProcessedRequest } from 'app/data/processed-request';
 import type { Student } from 'app/data/student';
 import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
-import { ModalConfirmationService } from 'app/services/modal-confirmation.service';
+import { ModalManagerService } from 'app/services/modal-manager.service';
 import { StudentRecordManagerService } from 'app/services/student-record-manager.service';
 import { format, getUnixTime } from 'date-fns';
 
@@ -22,7 +22,7 @@ export class StudentRecordDisplayComponent {
 
     constructor(
         @Inject(StudentRecordManagerService) private recordManagerService: StudentRecordManagerService,
-        @Inject(ModalConfirmationService) private modalConfirmationService: ModalConfirmationService
+        @Inject(ModalManagerService) private modalManagerService: ModalManagerService
     ) {}
 
     public async configureStudent(configuration: TokenATMConfiguration, student: Student): Promise<void> {
@@ -42,7 +42,7 @@ export class StudentRecordDisplayComponent {
         if (!this.configuration || !this.studentRecord) return;
         if (this.tokenAdjustmentCount == null) return;
         if (this.tokenAdjustmentMessage == null) this.tokenAdjustmentMessage = '';
-        const [modalRef, result] = await this.modalConfirmationService.createConfirmationModal(
+        const [modalRef, result] = await this.modalManagerService.createConfirmationModal(
             `Do you really want to change student token balance by ${
                 this.tokenAdjustmentCount.toString() +
                 (this.tokenAdjustmentMessage == ''

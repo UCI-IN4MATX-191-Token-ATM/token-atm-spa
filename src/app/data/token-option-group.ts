@@ -73,6 +73,7 @@ export class TokenOptionGroup {
     }
 
     public addTokenOption(tokenOption: TokenOption): void {
+        this.configuration.updateNextFreeTokenOptionId(tokenOption.id);
         this._tokenOptions.push(tokenOption);
     }
 

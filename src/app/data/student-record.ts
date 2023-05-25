@@ -78,10 +78,10 @@ export class StudentRecord {
 
     public logProcessedRequest(processedRequest: ProcessedRequest) {
         this._tokenBalance += processedRequest.tokenBalanceChange;
-        if (processedRequest.tokenOption) {
+        if (processedRequest.tokenOptionGroupId != undefined) {
             this._processedAttemptsMap.set(
-                processedRequest.tokenOption.group.id,
-                (this._processedAttemptsMap.get(processedRequest.tokenOption.group.id) ?? 0) + 1
+                processedRequest.tokenOptionGroupId,
+                (this._processedAttemptsMap.get(processedRequest.tokenOptionGroupId) ?? 0) + 1
             );
         }
         this._processedRequests.push(processedRequest);

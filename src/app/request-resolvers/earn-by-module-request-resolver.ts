@@ -10,7 +10,12 @@ export class EarnByModuleRequestResolver extends RequestResolver<EarnByModuleTok
         tokenOption: EarnByModuleTokenOption,
         quizSubmissionDetail: QuizSubmissionDetail
     ): Promise<EarnByModuleRequest> {
-        return new EarnByModuleRequest(tokenOption, quizSubmissionDetail.student, quizSubmissionDetail.submittedTime);
+        return new EarnByModuleRequest(
+            tokenOption,
+            quizSubmissionDetail.student,
+            quizSubmissionDetail.submittedTime,
+            quizSubmissionDetail
+        );
     }
     public get type(): string {
         return 'earn-by-module';

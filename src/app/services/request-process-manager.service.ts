@@ -1,5 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
+import { ProcessedRequest } from 'app/data/processed-request';
 import type { QuizSubmission } from 'app/data/quiz-submission';
+import type { Student } from 'app/data/student';
 import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
@@ -7,7 +9,7 @@ import { RequestHandlerRegistry } from 'app/request-handlers/request-handler-reg
 import { RequestResolverRegistry } from 'app/request-resolvers/request-resolver-registry';
 import type { TokenATMRequest } from 'app/requests/token-atm-request';
 import type { TokenOption } from 'app/token-options/token-option';
-import { compareAsc } from 'date-fns';
+import { compareAsc, format, getUnixTime } from 'date-fns';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { CanvasService } from './canvas.service';
 import { RawRequestFetcherService } from './raw-request-fetcher.service';
@@ -39,10 +41,13 @@ export class RequestProcessManagerService {
         this._isStopTriggered = true;
     }
 
-    private finishRequestProcessing(progressUpdate: BehaviorSubject<[number, string]>): void {
+    private finishRequestProcessing(
+        progressUpdate: BehaviorSubject<[number, string]>,
+        completeObservable = true
+    ): void {
         this._isRunning = false;
         this._isStopTriggered = false;
-        progressUpdate.complete();
+        if (completeObservable) progressUpdate.complete();
     }
 
     public async runRequestProcessing(
@@ -51,6 +56,134 @@ export class RequestProcessManagerService {
     ): Promise<void> {
         this._isRunning = true;
         this._isStopTriggered = false;
+        let quizSubmissionMap, assignmentIdMap;
+        try {
+            [quizSubmissionMap, assignmentIdMap] = await this.gatherQuizSubmissions(configuration, progressUpdate);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
+            progressUpdate.error(["Encounter an error when gathering students' quiz submissions", err]);
+            this.finishRequestProcessing(progressUpdate, false);
+            return;
+        }
+        if (this._isStopTriggered) {
+            this.finishRequestProcessing(progressUpdate);
+            return;
+        }
+        const totalStudentCnt = quizSubmissionMap.size;
+        let processedStudentCnt = 0,
+            processedRequestCnt = 0;
+        try {
+            for await (const student of await this.canvasService.getCourseStudentEnrollments(configuration.course.id)) {
+                if (!quizSubmissionMap.has(student.id)) {
+                    continue;
+                }
+                let individualProcessedRequestCnt = 0;
+                processedStudentCnt++;
+                const quizSubmissions = quizSubmissionMap.get(student.id);
+                if (!quizSubmissions) continue;
+                let studentRecord, requests;
+                try {
+                    [studentRecord, requests] = await this.resolveRequestsForStudent(
+                        configuration,
+                        student,
+                        progressUpdate,
+                        quizSubmissions.values(),
+                        assignmentIdMap
+                    );
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                } catch (err: any) {
+                    progressUpdate.error([
+                        `Encounter an error when resolving requests for student ${
+                            student.name + (student.email == '' ? '' : `(${student.email})`)
+                        }`,
+                        err
+                    ]);
+                    this.finishRequestProcessing(progressUpdate, false);
+                    return;
+                }
+                if (this._isStopTriggered) {
+                    this.finishRequestProcessing(progressUpdate);
+                    return;
+                }
+                for (const request of requests) {
+                    let processedRequest = undefined;
+                    if (request instanceof ProcessedRequest) {
+                        processedRequest = request;
+                    } else {
+                        try {
+                            processedRequest = await this.requestHandlerRegistry.handleRequest(
+                                configuration,
+                                studentRecord,
+                                request
+                            );
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        } catch (err: any) {
+                            progressUpdate.error([
+                                `Encounter an error when handling request to ${
+                                    processedRequest ? processedRequest.tokenOptionName : request.tokenOption.name
+                                } submitted at ${format(request.submittedTime, 'MMM dd, yyyy kk:mm:ss')} by student ${
+                                    student.name + (student.email == '' ? '' : `(${student.email})`)
+                                }`,
+                                err
+                            ]);
+                            this.finishRequestProcessing(progressUpdate, false);
+                            return;
+                        }
+                    }
+                    try {
+                        await this.studentRecordManagerService.logProcessedRequest(
+                            configuration,
+                            studentRecord,
+                            processedRequest
+                        );
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    } catch (err: any) {
+                        progressUpdate.error([
+                            `Encounter an error when logging request to ${
+                                processedRequest.tokenOptionName
+                            } submitted at ${format(processedRequest.submitTime, 'MMM dd, yyyy kk:mm:ss')} by student ${
+                                student.name + (student.email == '' ? '' : `(${student.email})`)
+                            }`,
+                            err
+                        ]);
+                        this.finishRequestProcessing(progressUpdate, false);
+                        return;
+                    }
+                    processedRequestCnt++;
+                    individualProcessedRequestCnt++;
+                    progressUpdate.next([
+                        (processedStudentCnt * 100) / totalStudentCnt,
+                        this.progressString(totalStudentCnt, processedRequestCnt, processedStudentCnt)
+                    ]);
+                    progressUpdate.next([
+                        -1 - individualProcessedRequestCnt / requests.length,
+                        `Processed ${this.countAndNoun(
+                            individualProcessedRequestCnt,
+                            'request'
+                        )} for the current student, ${this.countAndNoun(
+                            requests.length - individualProcessedRequestCnt,
+                            'request'
+                        )} remaining`
+                    ]);
+                    if (this._isStopTriggered) {
+                        this.finishRequestProcessing(progressUpdate);
+                        return;
+                    }
+                }
+            }
+            this.finishRequestProcessing(progressUpdate);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
+            progressUpdate.error(['Encounter an error when traversing the student list', err]);
+            this.finishRequestProcessing(progressUpdate, false);
+            return;
+        }
+    }
+
+    private async gatherQuizSubmissions(
+        configuration: TokenATMConfiguration,
+        progressUpdate: BehaviorSubject<[number, string]>
+    ): Promise<[Map<string, Map<string, [TokenOptionGroup, QuizSubmission]>>, Map<string, string>]> {
         const quizSubmissionMap = new Map<string, Map<string, [TokenOptionGroup, QuizSubmission]>>();
         const assignmentIdMap = new Map<string, string>();
         let submissionCnt = 0;
@@ -72,90 +205,75 @@ export class RequestProcessManagerService {
                     `Gathering submissions: Gathered ${this.countAndNoun(submissionCnt, 'submission')}`
                 ]);
                 if (this._isStopTriggered) {
-                    this.finishRequestProcessing(progressUpdate);
-                    return;
+                    return [quizSubmissionMap, assignmentIdMap];
                 }
             }
         }
-        const allRequests: [StudentRecord, TokenATMRequest<TokenOption>[]][] = [];
-        let studentCnt = 0,
-            requestCnt = 0;
-        // TODO: change the API endpoint to get the email
-        for await (const student of await this.canvasService.getCourseStudentEnrollments(configuration.course.id)) {
-            if (!quizSubmissionMap.has(student.id)) continue;
-            const quizSubmissions = quizSubmissionMap.get(student.id);
-            if (!quizSubmissions) continue;
-            let hasPendingRequest = false;
-            const studentRecord = await this.studentRecordManagerService.getStudentRecord(configuration, student);
-            if (this._isStopTriggered) {
-                this.finishRequestProcessing(progressUpdate);
-                return;
-            }
-            const tmpAllRequests: TokenATMRequest<TokenOption>[] = [];
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            for (const [_, [tokenOptionGroup, quizSubmission]] of quizSubmissions) {
-                for (
-                    let curAttempt = studentRecord.getProcessedAttempts(tokenOptionGroup.id) + 1;
-                    curAttempt <= quizSubmission.attempt;
-                    curAttempt++
-                ) {
-                    const quizSubmissionDetail = await this.rawRequestFetcherService.fetchRawRequest(
-                        configuration,
-                        tokenOptionGroup,
-                        student,
-                        quizSubmission.id,
-                        curAttempt,
-                        assignmentIdMap.get(tokenOptionGroup.quizId)
-                    );
-                    tmpAllRequests.push(
-                        await this.requestResolverRegistry.resolveRequest(tokenOptionGroup, quizSubmissionDetail)
-                    );
-                    if (!hasPendingRequest) {
-                        hasPendingRequest = true;
-                        studentCnt++;
-                    }
-                    requestCnt++;
-                    progressUpdate.next([
-                        0,
-                        `Retreiving requests: Retreived` +
-                            ` ${this.countAndNoun(requestCnt, 'request')}` +
-                            ` from ${this.countAndNoun(studentCnt, 'student')}`
-                    ]);
-                    if (this._isStopTriggered) {
-                        this.finishRequestProcessing(progressUpdate);
-                        return;
-                    }
-                }
-            }
-            if (hasPendingRequest) allRequests.push([studentRecord, tmpAllRequests]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return [quizSubmissionMap, assignmentIdMap];
+    }
+
+    private async resolveRequestsForStudent(
+        configuration: TokenATMConfiguration,
+        student: Student,
+        progressUpdate: BehaviorSubject<[number, string]>,
+        quizSubmissions: IterableIterator<[TokenOptionGroup, QuizSubmission]>,
+        assignmentIdMap: Map<string, string>
+    ): Promise<[StudentRecord, (TokenATMRequest<TokenOption> | ProcessedRequest)[]]> {
+        const studentRecord = await this.studentRecordManagerService.getStudentRecord(configuration, student);
+        const requests: (TokenATMRequest<TokenOption> | ProcessedRequest)[] = [];
+        if (this._isStopTriggered) {
+            return [studentRecord, requests];
         }
-        let processedStudentCnt = 0,
-            processedRequestCnt = 0;
-        for (const [studentRecord, requests] of allRequests) {
-            processedStudentCnt++;
-            for (const request of requests.sort((a, b) => compareAsc(a.submittedTime, b.submittedTime))) {
-                const processedRequest = await this.requestHandlerRegistry.handleRequest(
+        let requestCnt = 0;
+        for (const [group, quizSubmission] of quizSubmissions) {
+            for (
+                let curAttempt = studentRecord.getProcessedAttempts(group.id) + 1;
+                curAttempt <= quizSubmission.attempt;
+                curAttempt++
+            ) {
+                const quizSubmissionDetail = await this.rawRequestFetcherService.fetchRawRequest(
                     configuration,
-                    studentRecord,
-                    request
+                    group,
+                    student,
+                    quizSubmission.id,
+                    curAttempt,
+                    assignmentIdMap.get(group.quizId)
                 );
-                await this.studentRecordManagerService.logProcessedRequest(
-                    configuration,
-                    studentRecord,
-                    processedRequest
-                );
-                processedRequestCnt++;
+                if (this._isStopTriggered) return [studentRecord, requests];
+                const request = await this.requestResolverRegistry.resolveRequest(group, quizSubmissionDetail);
+                if (!request) {
+                    requests.push(
+                        new ProcessedRequest(configuration, student, {
+                            token_option_id: -1,
+                            token_option_name: 'An Unrecognized Token Option',
+                            token_option_group_id: group.id,
+                            is_approved: false,
+                            message:
+                                'The token option you made a request to cannot be recognized. That token option might be deleted or moved, or you might have submitted the quiz without selecting an option in Question 1',
+                            submit_time: getUnixTime(quizSubmissionDetail.submittedTime),
+                            process_time: getUnixTime(new Date()),
+                            token_balance_change: 0
+                        })
+                    );
+                } else requests.push(request);
+                requestCnt++;
                 progressUpdate.next([
-                    (processedRequestCnt * 100) / requestCnt,
-                    this.progressString(requestCnt, studentCnt, processedRequestCnt, processedStudentCnt)
+                    -1,
+                    `Resolving Requests: Resolved ${this.countAndNoun(requestCnt, 'request')} for the current student`
                 ]);
-                if (this._isStopTriggered) {
-                    this.finishRequestProcessing(progressUpdate);
-                    return;
-                }
+                if (this._isStopTriggered) return [studentRecord, requests];
             }
         }
-        this.finishRequestProcessing(progressUpdate);
+        return [studentRecord, requests.sort((a, b) => compareAsc(this.getSubmitTime(a), this.getSubmitTime(b)))];
+    }
+
+    public getSubmitTime(request: ProcessedRequest | TokenATMRequest<TokenOption>) {
+        if (request instanceof ProcessedRequest) {
+            return request.submitTime;
+        } else {
+            return request.submittedTime;
+        }
     }
 
     private countAndNoun(count: number, noun: string) {
@@ -165,22 +283,16 @@ export class RequestProcessManagerService {
         return `${count} ${pluralize(noun, count)}`;
     }
 
-    private progressString(
-        requestCnt: number,
-        studentCnt: number,
-        processedRequestCnt: number,
-        processedStudentCnt: number
-    ): string {
+    private progressString(studentCnt: number, processedRequestCnt: number, processedStudentCnt: number): string {
         const countAndNoun = this.countAndNoun;
-        const template = (rC: number, sC: number, pRC: number, pSC: number): string => {
+        const template = (sC: number, pRC: number, pSC: number): string => {
             return (
                 `Processing Requests: Processed ${countAndNoun(pRC, 'request')}` +
                 ` for ${countAndNoun(pSC, 'student')},` +
-                ` ${countAndNoun(rC - pRC, 'request')} from` +
                 ` ${countAndNoun(sC - pSC + 1, 'student')} remaining`
             );
         };
-        return template(requestCnt, studentCnt, processedRequestCnt, processedStudentCnt);
+        return template(studentCnt, processedRequestCnt, processedStudentCnt);
     }
 
     public get isRunning(): boolean {
