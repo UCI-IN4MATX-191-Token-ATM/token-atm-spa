@@ -235,7 +235,7 @@ export class RequestProcessManagerService {
                             token_option_group_id: group.id,
                             is_approved: false,
                             message:
-                                'The token option you made a request to cannot be recognized. That token option might be deleted or moved, or you might submitted the quiz without selecting an option in Question 1',
+                                'The token option you made a request to cannot be recognized. That token option might be deleted or moved, or you might have submitted the quiz without selecting an option in Question 1',
                             submit_time: getUnixTime(quizSubmissionDetail.submittedTime),
                             process_time: getUnixTime(new Date()),
                             token_balance_change: 0
