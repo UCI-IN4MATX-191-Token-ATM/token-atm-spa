@@ -46,7 +46,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 card my-5">
+                <div class="col-12 card my-5" *ngIf="processedRequests">
                     <div class="card-body">
                         <h5 class="card-titile">Request History</h5>
                         <div class="card-text overflow-auto">
@@ -62,7 +62,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr *ngFor="let processedRequest of studentRecord.processedRequests.reverse()">
+                                    <tr *ngFor="let processedRequest of processedRequests">
                                         <td>{{ processedRequest.tokenOptionName }}</td>
                                         <td>{{ formatDate(processedRequest.submitTime) }}</td>
                                         <td>{{ formatDate(processedRequest.processTime) }}</td>
