@@ -160,7 +160,10 @@ export class RequestProcessManagerService {
                         `Processed ${this.countAndNoun(
                             individualProcessedRequestCnt,
                             'request'
-                        )} for the current student, ${this.countAndNoun(requests.length, 'request')} remaining`
+                        )} for the current student, ${this.countAndNoun(
+                            requests.length - individualProcessedRequestCnt,
+                            'request'
+                        )} remaining`
                     ]);
                     if (this._isStopTriggered) {
                         this.finishRequestProcessing(progressUpdate);
