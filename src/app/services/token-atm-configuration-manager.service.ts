@@ -87,7 +87,12 @@ export class TokenATMConfigurationManagerService {
         if (tokenOptionGroup.isPublished && canUnpublish)
             canUnpublish = await this.canvasService.changeQuizPublishState(courseId, quizId, false);
         await this.canvasService.clearQuizQuestions(courseId, quizId);
-        await this.canvasService.modifyQuiz(courseId, quizId, tokenOptionGroup.name, tokenOptionGroup.description);
+        await this.canvasService.modifyQuiz(
+            courseId,
+            quizId,
+            TokenATMConfigurationManagerService.TOKEN_ATM_QUIZ_PREFIX + tokenOptionGroup.name,
+            tokenOptionGroup.description
+        );
         const question = new MultipleChoiceQuestion(
             'Choose a token option',
             new HTMLTableGenerator([
