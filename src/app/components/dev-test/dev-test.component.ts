@@ -52,7 +52,7 @@ export class DevTestComponent {
                 configuration,
                 {
                     name: 'Test Token Option Group ' + configuration.tokenOptionGroups.length.toString(),
-                    id: configuration.getFreeTokenOptionGroupId(),
+                    id: configuration.nextFreeTokenOptionGroupId,
                     quiz_id: '',
                     description: `Just a test <b>token option group</b> ${configuration.tokenOptionGroups.length}`,
                     is_published: false,
@@ -72,7 +72,7 @@ export class DevTestComponent {
         group.addTokenOption(
             new BasicTokenOption(group, {
                 type: 'basic',
-                id: configuration.getFreeTokenOptionId(),
+                id: configuration.nextFreeTokenOptionId,
                 name: `Test Token Option ${group.tokenOptions.length}`,
                 description: `Just a test <b>token option</b> ${group.tokenOptions.length}`,
                 token_balance_change: group.tokenOptions.length

@@ -36,6 +36,7 @@ import { CollapseModule } from 'ngx-bootstrap/collapse';
 import { StudentRecordDisplayComponent } from './components/student-record-display/student-record-display.component';
 import { ConfirmationModalComponent } from './components/confirmation-modal/confirmation-modal.component';
 import { ModalModule } from 'ngx-bootstrap/modal';
+import { NotificationModalComponent } from './components/notification-modal/notification-modal.component';
 
 @NgModule({
     declarations: [
@@ -53,7 +54,8 @@ import { ModalModule } from 'ngx-bootstrap/modal';
         TokenOptionGroupDisplayComponent,
         TokenOptionDisplayComponent,
         StudentRecordDisplayComponent,
-        ConfirmationModalComponent
+        ConfirmationModalComponent,
+        NotificationModalComponent
     ],
     imports: [
         BrowserModule,

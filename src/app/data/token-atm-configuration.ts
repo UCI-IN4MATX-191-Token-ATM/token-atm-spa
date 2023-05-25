@@ -13,6 +13,8 @@ export class TokenATMConfiguration {
     private _uid: string;
     private _suffix: string;
     private _description: string;
+    private _nextFreeTokenOptionGroupId: number;
+    private _nextFreeTokenOptionId: number;
     private _tokenOptionGroups: TokenOptionGroup[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _tokenOptionResolver: (group: TokenOptionGroup, data: any) => TokenOption;
@@ -35,6 +37,10 @@ export class TokenATMConfiguration {
             typeof data['uid'] != 'string' ||
             (typeof data['suffix'] != 'undefined' && typeof data['suffix'] != 'string') ||
             (typeof data['description'] != 'undefined' && typeof data['description'] != 'string') ||
+            (typeof data['next_free_token_option_group_id'] != 'undefined' &&
+                typeof data['next_free_token_option_group_id'] != 'number') ||
+            (typeof data['next_free_token_option_id'] != 'undefined' &&
+                typeof data['next_free_token_option_id'] != 'number') ||
             typeof data['token_option_groups'] != 'object' ||
             !Array.isArray(data['token_option_groups']) ||
             typeof secureConfig['password'] != 'string' ||
@@ -51,6 +57,27 @@ export class TokenATMConfiguration {
         this._tokenOptionGroups = data['token_option_groups'].map(
             (entry) => new TokenOptionGroup(this, entry, tokenOptionResolver)
         );
+        this._nextFreeTokenOptionGroupId =
+            data['next_free_token_option_group_id'] ?? this.locateNextFreeTokenOptionGroupId();
+        this._nextFreeTokenOptionId = data['next_free_token_option_id'] ?? this.locateNextFreeTokenOptionId();
+    }
+
+    private locateNextFreeTokenOptionGroupId() {
+        let result = 1;
+        for (const group of this._tokenOptionGroups) {
+            result = Math.max(result, group.id);
+        }
+        return result + 1;
+    }
+
+    private locateNextFreeTokenOptionId() {
+        let result = 1;
+        for (const group of this._tokenOptionGroups) {
+            for (const option of group.tokenOptions) {
+                result = Math.max(result, option.id);
+            }
+        }
+        return result + 1;
     }
 
     public get course(): Course {
@@ -98,8 +125,13 @@ export class TokenATMConfiguration {
         return undefined;
     }
 
-    public addTokenOptionGroup(group: TokenOptionGroup) {
+    public addTokenOptionGroup(group: TokenOptionGroup): void {
+        this._nextFreeTokenOptionGroupId = Math.max(this._nextFreeTokenOptionGroupId, group.id) + 1;
         this._tokenOptionGroups.push(group);
+    }
+
+    public updateNextFreeTokenOptionId(usedTokenOptionId: number): void {
+        this._nextFreeTokenOptionId = Math.max(this._nextFreeTokenOptionId, usedTokenOptionId) + 1;
     }
 
     public deleteTokenOptionGroup(group: TokenOptionGroup) {
@@ -108,23 +140,12 @@ export class TokenATMConfiguration {
         this._tokenOptionGroups.splice(index, 1);
     }
 
-    public getFreeTokenOptionGroupId(): number {
-        const usedIds = new Set(this.tokenOptionGroups.map((entry) => entry.id));
-        for (let id = 0; ; id++) {
-            if (!usedIds.has(id)) return id;
-        }
+    public get nextFreeTokenOptionGroupId(): number {
+        return this._nextFreeTokenOptionGroupId;
     }
 
-    public getFreeTokenOptionId(): number {
-        const usedIds = new Set();
-        for (const group of this.tokenOptionGroups) {
-            for (const tokenOption of group.tokenOptions) {
-                usedIds.add(tokenOption.id);
-            }
-        }
-        for (let id = 0; ; id++) {
-            if (!usedIds.has(id)) return id;
-        }
+    public get nextFreeTokenOptionId(): number {
+        return this._nextFreeTokenOptionId;
     }
 
     public toJSON(): object {
@@ -133,6 +154,8 @@ export class TokenATMConfiguration {
             uid: this.uid,
             suffix: this.suffix,
             description: this.description,
+            next_free_token_option_group_id: this.nextFreeTokenOptionGroupId,
+            next_free_token_option_id: this.nextFreeTokenOptionId,
             token_option_groups: this.tokenOptionGroups.map((entry) => entry.toJSON())
         };
     }

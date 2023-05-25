@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import type { Course } from 'app/data/course';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
+import { ModalManagerService } from 'app/services/modal-manager.service';
 import { RequestProcessManagerService } from 'app/services/request-process-manager.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
@@ -20,7 +21,8 @@ export class RequestProcessComponent implements CourseConfigurable {
 
     constructor(
         @Inject(TokenATMConfigurationManagerService) private configurationManager: TokenATMConfigurationManagerService,
-        @Inject(RequestProcessManagerService) private requestProcessManagerService: RequestProcessManagerService
+        @Inject(RequestProcessManagerService) private requestProcessManagerService: RequestProcessManagerService,
+        @Inject(ModalManagerService) private modalManagerService: ModalManagerService
     ) {}
 
     async configureCourse(course: Course): Promise<void> {
@@ -45,14 +47,19 @@ export class RequestProcessComponent implements CourseConfigurable {
             },
             complete: () => {
                 this.onRequestProcessingComplete();
+            },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            error: async ([message, err]: [message: string, err: any]) => {
+                await this.modalManagerService.createNotificationModal(message + `\nError message: ${err.toString()}`);
+                this.onRequestProcessingComplete(false);
             }
         });
     }
 
-    public async onRequestProcessingComplete(): Promise<void> {
+    public async onRequestProcessingComplete(recogfiure = true): Promise<void> {
         this.progress = undefined;
         this.message = undefined;
-        if (this.course) await this.configureCourse(this.course);
+        if (this.course && recogfiure) await this.configureCourse(this.course);
         this.isStopRequested = false;
         this.isReconfigureFinished = true;
     }

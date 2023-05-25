@@ -11,6 +11,7 @@ import { formatISO, parseISO } from 'date-fns';
 import { AxiosService } from './axios.service';
 import { User } from 'app/data/user';
 import type { QuizQuestion } from 'app/quiz-questions/quiz-question';
+import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 
 type QuizQuestionResponse = {
     id: string;
@@ -176,15 +177,23 @@ export class CanvasService {
     }
 
     public async getPageIdByName(courseId: string, pageName: string): Promise<string> {
-        const response = await this.rawAPIRequest(`/api/v1/courses/${courseId}/pages`, {
-            params: {
-                search_term: pageName
-            }
-        });
-        if (!Array.isArray(response.data)) throw new Error('Page fetch error');
-        if (response.data.length == 0) throw new Error('Page not found'); // TODO: redirect to creation
-        if (response.data.length > 1) throw new Error('Multiple pages found'); // TODO: redirect to duplication handling
-        return response.data[0]['page_id'];
+        let pageIds = await DataConversionHelper.convertAsyncIterableToList<[string, string]>(
+            new PaginatedResult<[string, string]>(
+                await this.rawAPIRequest(`/api/v1/courses/${courseId}/pages`, {
+                    params: {
+                        search_term: pageName,
+                        per_page: 100
+                    }
+                }),
+                async (url: string) => await this.paginatedRequestHandler(url),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (data) => data.map((entry: any) => [entry.page_id, entry.title])
+            )
+        );
+        pageIds = pageIds.filter((entry) => entry[1] == pageName);
+        if (pageIds.length == 0) throw new Error('Page not found'); // TODO: redirect to creation
+        if (pageIds.length > 1) throw new Error('Multiple pages found'); // TODO: redirect to duplication handling
+        return pageIds[0]?.[0] as string;
     }
 
     public async getPageContentByName(courseId: string, pageName: string): Promise<string> {
@@ -442,16 +451,17 @@ export class CanvasService {
     }
 
     public async getCourseStudentEnrollments(courseId: string): Promise<PaginatedResult<Student>> {
-        return new PaginatedResult(
-            await this.rawAPIRequest(`/api/v1/courses/${courseId}/enrollments`, {
+        return new PaginatedResult<Student>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/users`, {
                 params: {
-                    per_page: 100,
-                    type: 'StudentEnrollment'
+                    enrollment_type: ['student'],
+                    enrollment_state: ['active'],
+                    per_page: 100
                 }
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (data: any) => data.map((entry: any) => new Student(entry.user))
+            (data: any) => data.map((entry: any) => new Student(entry))
         );
     }
 
@@ -461,7 +471,8 @@ export class CanvasService {
         const moduleItems = new PaginatedResult<ModuleItemInfo>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules/${moduleId}/items`, {
                 params: {
-                    include: ['content_details']
+                    include: ['content_details'],
+                    per_page: 100
                 }
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
@@ -516,7 +527,8 @@ export class CanvasService {
                 params: {
                     student_ids: studentIds,
                     assignment_ids: [assignmentId],
-                    enrollment_state: 'active'
+                    enrollment_state: 'active',
+                    per_page: 100
                 }
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
@@ -595,7 +607,8 @@ export class CanvasService {
             const moduleItems = new PaginatedResult<ModuleItemInfo>(
                 await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules/${moduleId}/items`, {
                     params: {
-                        include: ['content_details']
+                        include: ['content_details'],
+                        per_page: 100
                     }
                 }),
                 async (url: string) => await this.paginatedRequestHandler(url),
@@ -655,7 +668,11 @@ export class CanvasService {
 
     public async getAssignmentGroupIdByName(courseId: string, assignmentGroupName: string) {
         const assignmentGroups = new PaginatedResult<[string, string]>(
-            await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignment_groups`),
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignment_groups`, {
+                params: {
+                    per_page: 100
+                }
+            }),
             async (url: string) => await this.paginatedRequestHandler(url),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (data: any) => {
@@ -783,7 +800,11 @@ export class CanvasService {
 
     public async clearQuizQuestions(courseId: string, quizId: string): Promise<void> {
         const quizQuestionIds = new PaginatedResult<string>(
-            await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions`),
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions`, {
+                params: {
+                    per_page: 100
+                }
+            }),
             async (url: string) => await this.paginatedRequestHandler(url),
             (data: unknown[]) => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
