@@ -75,6 +75,31 @@ export class CanvasService {
         });
     }
 
+    private async safeGuardForAssignment(courseId: string, assignmentId: string): Promise<void> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`);
+        if (!data.name.includes('Token ATM')) throw new Error('Safe guard for assignment is violated!');
+    }
+
+    private async safeGuardForQuiz(courseId: string, quizId: string): Promise<void> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`);
+        if (!data.title.includes('Token ATM')) throw new Error('Safe guard for quiz is violated!');
+    }
+
+    private async safeGuardForAssignmentGroup(courseId: string, assignmentGroupId: string): Promise<void> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/assignment_groups/${assignmentGroupId}`);
+        if (!data.name.includes('Token ATM')) throw new Error('Safe guard for assignment group is violated!');
+    }
+
+    private async safeGuardForModule(courseId: string, moduleId: string): Promise<void> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/modules/${moduleId}`);
+        if (!data.name.includes('Token ATM')) throw new Error('Safe guard for module is violated!');
+    }
+
+    private async safeGuardForPage(courseId: string, pageId: string): Promise<void> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/pages/${pageId}`);
+        if (!data.title.includes('Token ATM')) throw new Error('Safe guard for page is violated!');
+    }
+
     public async getCourses(
         enrollmentType: 'teacher' | 'ta' = 'teacher',
         enrollmentState: 'active' | 'invited_or_pending' = 'active'
@@ -128,6 +153,7 @@ export class CanvasService {
     }
 
     public async deletePage(courseId: string, pageId: string): Promise<void> {
+        await this.safeGuardForPage(courseId, pageId);
         await this.apiRequest(`/api/v1/courses/${courseId}/pages/${pageId}`, {
             method: 'delete'
         });
@@ -163,6 +189,7 @@ export class CanvasService {
         notifyUpdate = false,
         published = false
     ): Promise<string> {
+        await this.safeGuardForPage(courseId, pageId);
         const data = await this.apiRequest(`/api/v1/courses/${courseId}/pages/${pageId}`, {
             method: 'put',
             data: {
@@ -248,6 +275,7 @@ export class CanvasService {
         assignmentId: string,
         commentId: string
     ): Promise<void> {
+        await this.safeGuardForAssignment(courseId, assignmentId);
         await this.apiRequest(
             `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}/comments/${commentId}`,
             {
@@ -262,6 +290,7 @@ export class CanvasService {
         assignmentId: string,
         comment: string
     ): Promise<SubmissionComment> {
+        await this.safeGuardForAssignment(courseId, assignmentId);
         const data = await this.apiRequest(
             `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`,
             {
@@ -295,6 +324,7 @@ export class CanvasService {
         assignmentId: string,
         commentId: string
     ): Promise<void> {
+        await this.safeGuardForAssignment(courseId, assignmentId);
         await this.apiRequest(
             `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}/comments/${commentId}`,
             {
@@ -310,6 +340,7 @@ export class CanvasService {
         commentId: string,
         comment: string
     ): Promise<SubmissionComment> {
+        await this.safeGuardForAssignment(courseId, assignmentId);
         const data = await this.apiRequest(
             `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}/comments/${commentId}`,
             {
@@ -328,6 +359,7 @@ export class CanvasService {
         assignmentId: string,
         score: number
     ): Promise<void> {
+        await this.safeGuardForAssignment(courseId, assignmentId);
         await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`, {
             method: 'put',
             data: {
@@ -345,6 +377,7 @@ export class CanvasService {
         score: number,
         newComment: string
     ): Promise<SubmissionComment> {
+        await this.safeGuardForAssignment(courseId, assignmentId);
         const data = await this.apiRequest(
             `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`,
             {
@@ -574,6 +607,7 @@ export class CanvasService {
     }
 
     public async deleteAssignment(courseId: string, assignmentId: string): Promise<void> {
+        await this.safeGuardForAssignment(courseId, assignmentId);
         await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`, {
             method: 'delete'
         });
@@ -592,6 +626,7 @@ export class CanvasService {
     }
 
     public async publishModule(courseId: string, moduleId: string): Promise<string> {
+        await this.safeGuardForModule(courseId, moduleId);
         const data = await this.apiRequest(`/api/v1/courses/${courseId}/modules/${moduleId}`, {
             method: 'put',
             data: {
@@ -604,6 +639,7 @@ export class CanvasService {
     }
 
     public async deleteModule(courseId: string, moduleId: string, deleteAllModuleItems = false): Promise<void> {
+        await this.safeGuardForModule(courseId, moduleId);
         if (deleteAllModuleItems) {
             const moduleItems = new PaginatedResult<ModuleItemInfo>(
                 await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules/${moduleId}/items`, {
@@ -621,10 +657,12 @@ export class CanvasService {
                 if (!moduleItem.contentId) continue;
                 switch (moduleItem.type) {
                     case 'Assignment': {
+                        await this.safeGuardForAssignment(courseId, moduleItem.contentId);
                         this.deleteAssignment(courseId, moduleItem.contentId);
                         break;
                     }
                     case 'Quiz': {
+                        await this.safeGuardForQuiz(courseId, moduleItem.contentId);
                         await this.deleteQuiz(courseId, moduleItem.contentId);
                         break;
                     }
@@ -655,6 +693,7 @@ export class CanvasService {
         type: 'Assignment' | 'Quiz',
         contentId: string
     ): Promise<string> {
+        await this.safeGuardForModule(courseId, moduleId);
         const data = await this.apiRequest(`/api/v1/courses/${courseId}/modules/${moduleId}/items`, {
             method: 'post',
             data: {
@@ -695,6 +734,7 @@ export class CanvasService {
     }
 
     public async deleteAssignmentGroup(courseId: string, assignmentGroupId: string): Promise<void> {
+        await this.safeGuardForAssignmentGroup(courseId, assignmentGroupId);
         await this.apiRequest(`/api/v1/courses/${courseId}/assignment_groups/${assignmentGroupId}`, {
             method: 'delete'
         });
@@ -712,6 +752,7 @@ export class CanvasService {
     }
 
     public async deleteQuiz(courseId: string, quizId: string): Promise<void> {
+        await this.safeGuardForQuiz(courseId, quizId);
         await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`, {
             method: 'delete'
         });
@@ -751,6 +792,7 @@ export class CanvasService {
         published = true,
         notifyUpdate = false
     ): Promise<boolean> {
+        await this.safeGuardForQuiz(courseId, quizId);
         try {
             await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`, {
                 method: 'put',
@@ -775,6 +817,7 @@ export class CanvasService {
         description?: string,
         notifyUpdate = false
     ): Promise<string> {
+        await this.safeGuardForQuiz(courseId, quizId);
         const result = await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`, {
             method: 'put',
             data: {
@@ -789,6 +832,7 @@ export class CanvasService {
     }
 
     public async changeQuizLockDate(courseId: string, quizId: string, lockDate: Date | null): Promise<void> {
+        await this.safeGuardForQuiz(courseId, quizId);
         await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`, {
             method: 'put',
             data: {
@@ -800,6 +844,7 @@ export class CanvasService {
     }
 
     public async clearQuizQuestions(courseId: string, quizId: string): Promise<void> {
+        await this.safeGuardForQuiz(courseId, quizId);
         const quizQuestionIds = new PaginatedResult<string>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions`, {
                 params: {
@@ -820,6 +865,7 @@ export class CanvasService {
     }
 
     public async createQuizQuestions(courseId: string, quizId: string, quizQuestions: QuizQuestion[]): Promise<void> {
+        await this.safeGuardForQuiz(courseId, quizId);
         for (const quizQuestion of quizQuestions) {
             await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions`, {
                 method: 'post',
