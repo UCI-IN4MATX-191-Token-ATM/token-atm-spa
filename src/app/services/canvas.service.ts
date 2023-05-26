@@ -657,12 +657,10 @@ export class CanvasService {
                 if (!moduleItem.contentId) continue;
                 switch (moduleItem.type) {
                     case 'Assignment': {
-                        await this.safeGuardForAssignment(courseId, moduleItem.contentId);
                         this.deleteAssignment(courseId, moduleItem.contentId);
                         break;
                     }
                     case 'Quiz': {
-                        await this.safeGuardForQuiz(courseId, moduleItem.contentId);
                         await this.deleteQuiz(courseId, moduleItem.contentId);
                         break;
                     }
@@ -773,7 +771,7 @@ export class CanvasService {
                     description: description,
                     quiz_type: quizType,
                     assignment_group_id: assignmentGroupId,
-                    allowed_attempts: -1,
+                    allowed_attempts: 100, // TODO: temporarily apply a constraint for quiz submission attempt before implementing student record pagination
                     published: false
                 }
             }
