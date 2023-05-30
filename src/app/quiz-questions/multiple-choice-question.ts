@@ -19,13 +19,9 @@ export class MultipleChoiceQuestion extends QuizQuestion {
     public override toJSON(): object {
         const answers = this.options.map((optionText) => {
             return {
-                answer_text: optionText,
-                answer_weight: 0
+                answer_text: optionText
             };
         });
-        if (answers[0]) {
-            answers[0].answer_weight = 100;
-        }
         return {
             ...super.toJSON(),
             answers: answers

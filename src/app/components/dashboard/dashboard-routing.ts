@@ -6,6 +6,7 @@ import { StudentListComponent } from '../student-list/student-list.component';
 import { DEV_GUARD } from 'app/utils/dev-guard';
 import { DevTestComponent } from '../dev-test/dev-test.component';
 import type { Component, Type } from '@angular/core';
+import { ConfigurationComponent } from '../configuration/configuration.component';
 
 export interface CourseConfigurable {
     configureCourse(course: Course): Promise<void>;
@@ -36,6 +37,11 @@ export const TOKEN_ATM_DASHBOARD_ROUTES: TokenATMDashboardRoute[] = [
         name: 'Students',
         path: 'students',
         component: StudentListComponent
+    },
+    {
+        name: 'Configuration',
+        path: 'configuration',
+        component: ConfigurationComponent
     },
     {
         name: 'Dev-Test',

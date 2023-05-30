@@ -1,5 +1,6 @@
 import type { TokenATMConfiguration } from './token-atm-configuration';
 import type { TokenOption } from '../token-options/token-option';
+import { Base64 } from 'js-base64';
 
 export class TokenOptionGroup {
     private _configuration: TokenATMConfiguration;
@@ -31,7 +32,7 @@ export class TokenOptionGroup {
         this._name = data['name'];
         this._id = data['id'];
         this._quizId = data['quiz_id'];
-        this._description = data['description'] ?? '';
+        this._description = data['description'] ? Base64.decode(data['description']) : '';
         this._isPublished = data['is_published'];
         this._tokenOptions = data['token_options'].map((entry) => tokenOptionResolver(this, entry));
     }
@@ -88,7 +89,7 @@ export class TokenOptionGroup {
             name: this.name,
             id: this.id,
             quiz_id: this.quizId,
-            description: this.description,
+            description: Base64.encode(this.description),
             is_published: this.isPublished,
             token_options: this.tokenOptions.map((entry) => entry.toJSON())
         };

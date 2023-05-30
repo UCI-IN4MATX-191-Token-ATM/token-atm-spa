@@ -77,27 +77,31 @@ export class CanvasService {
 
     private async safeGuardForAssignment(courseId: string, assignmentId: string): Promise<void> {
         const data = await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`);
-        if (!data.name.includes('Token ATM')) throw new Error('Safe guard for assignment is violated!');
+        if (!data.name.includes('Token ATM') || data.id != assignmentId)
+            throw new Error('Safe guard for assignment is violated!');
     }
 
     private async safeGuardForQuiz(courseId: string, quizId: string): Promise<void> {
         const data = await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`);
-        if (!data.title.includes('Token ATM')) throw new Error('Safe guard for quiz is violated!');
+        if (!data.title.includes('Token ATM') || data.id != quizId) throw new Error('Safe guard for quiz is violated!');
     }
 
     private async safeGuardForAssignmentGroup(courseId: string, assignmentGroupId: string): Promise<void> {
         const data = await this.apiRequest(`/api/v1/courses/${courseId}/assignment_groups/${assignmentGroupId}`);
-        if (!data.name.includes('Token ATM')) throw new Error('Safe guard for assignment group is violated!');
+        if (!data.name.includes('Token ATM') || data.id != assignmentGroupId)
+            throw new Error('Safe guard for assignment group is violated!');
     }
 
     private async safeGuardForModule(courseId: string, moduleId: string): Promise<void> {
         const data = await this.apiRequest(`/api/v1/courses/${courseId}/modules/${moduleId}`);
-        if (!data.name.includes('Token ATM')) throw new Error('Safe guard for module is violated!');
+        if (!data.name.includes('Token ATM') || data.id != moduleId)
+            throw new Error('Safe guard for module is violated!');
     }
 
     private async safeGuardForPage(courseId: string, pageId: string): Promise<void> {
         const data = await this.apiRequest(`/api/v1/courses/${courseId}/pages/${pageId}`);
-        if (!data.title.includes('Token ATM')) throw new Error('Safe guard for page is violated!');
+        if (!data.title.includes('Token ATM') || data.page_id != pageId)
+            throw new Error('Safe guard for page is violated!');
     }
 
     public async getCourses(
@@ -772,6 +776,7 @@ export class CanvasService {
                     quiz_type: quizType,
                     assignment_group_id: assignmentGroupId,
                     allowed_attempts: 100, // TODO: temporarily apply a constraint for quiz submission attempt before implementing student record pagination
+                    points_possible: 0,
                     published: false
                 }
             }

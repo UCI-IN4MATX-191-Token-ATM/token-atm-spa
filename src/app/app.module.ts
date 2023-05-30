@@ -37,6 +37,7 @@ import { StudentRecordDisplayComponent } from './components/student-record-displ
 import { ConfirmationModalComponent } from './components/confirmation-modal/confirmation-modal.component';
 import { ModalModule } from 'ngx-bootstrap/modal';
 import { NotificationModalComponent } from './components/notification-modal/notification-modal.component';
+import { ConfigurationComponent } from './components/configuration/configuration.component';
 
 @NgModule({
     declarations: [
@@ -55,7 +56,8 @@ import { NotificationModalComponent } from './components/notification-modal/noti
         TokenOptionDisplayComponent,
         StudentRecordDisplayComponent,
         ConfirmationModalComponent,
-        NotificationModalComponent
+        NotificationModalComponent,
+        ConfigurationComponent
     ],
     imports: [
         BrowserModule,

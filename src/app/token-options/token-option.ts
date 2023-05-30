@@ -1,3 +1,4 @@
+import { Base64 } from 'js-base64';
 import type { TokenOptionGroup } from '../data/token-option-group';
 
 export abstract class TokenOption {
@@ -22,7 +23,7 @@ export abstract class TokenOption {
         this._type = data['type'];
         this._id = data['id'];
         this._name = data['name'];
-        this._description = data['description'] ?? '';
+        this._description = data['description'] ? Base64.decode(data['description']) : '';
         this._tokenBalanceChange = data['token_balance_change'];
     }
 
@@ -61,7 +62,7 @@ export abstract class TokenOption {
             type: this.type,
             id: this.id,
             name: this.name,
-            description: this.description,
+            description: Base64.encode(this.description),
             token_balance_change: this.tokenBalanceChange
         };
     }
