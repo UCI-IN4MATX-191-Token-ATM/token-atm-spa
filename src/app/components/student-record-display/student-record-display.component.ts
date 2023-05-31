@@ -75,8 +75,8 @@ export class StudentRecordDisplayComponent {
     onGoBack(): void {
         this.goBack.next();
     }
+
     get processedRequests(): ProcessedRequest[] | undefined {
-        if (!this.studentRecord) return undefined;
-        return this.studentRecord.processedRequests.reverse();
+        return this.studentRecord?.processedRequests.slice(0).reverse();
     }
 }

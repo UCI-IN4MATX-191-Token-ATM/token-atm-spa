@@ -1,0 +1,26 @@
+<div *ngIf="!course; else configurationPanel" appCenter>
+    <ngb-toast [autohide]="false"> Token ATM is retrieving information from Canvas. Please wait... </ngb-toast>
+</div>
+<ng-template #configurationPanel>
+    <div appCenter class="flex-column">
+        <button class="btn btn-primary my-3" (click)="onCreateTestingConfiguration()" [disabled]="isProcessing">
+            Create Testing Configuration
+        </button>
+        <button class="btn btn-danger my-3" (click)="onDeleteAll()" [disabled]="isProcessing">
+            Delete All Token-ATM related content
+        </button>
+    </div>
+</ng-template>
+
+<ng-template #moduleNameModal>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Provide course preparation module name</h4>
+    </div>
+    <div class="modal-body">
+        <label for="renameText">The name of the course preparation module:</label>
+        <input type="text" class="form-control" id="renameText" [(ngModel)]="moduleName" />
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-primary mx-2" (click)="onInputModuleName()">Submit</button>
+    </div>
+</ng-template>

@@ -37,10 +37,8 @@ export class TokenATMConfiguration {
             typeof data['uid'] != 'string' ||
             (typeof data['suffix'] != 'undefined' && typeof data['suffix'] != 'string') ||
             (typeof data['description'] != 'undefined' && typeof data['description'] != 'string') ||
-            (typeof data['next_free_token_option_group_id'] != 'undefined' &&
-                typeof data['next_free_token_option_group_id'] != 'number') ||
-            (typeof data['next_free_token_option_id'] != 'undefined' &&
-                typeof data['next_free_token_option_id'] != 'number') ||
+            typeof data['next_free_token_option_group_id'] != 'number' ||
+            typeof data['next_free_token_option_id'] != 'number' ||
             typeof data['token_option_groups'] != 'object' ||
             !Array.isArray(data['token_option_groups']) ||
             typeof secureConfig['password'] != 'string' ||
@@ -50,7 +48,7 @@ export class TokenATMConfiguration {
         this._logAssignmentId = data['log_assignment_id'];
         this._uid = data['uid'];
         this._suffix = data['suffix'] ?? '';
-        this._description = data['description'] ?? '';
+        this._description = data['description'] ? Base64.decode(data['description']) : '';
         this.#encryptionPassword = secureConfig['password'];
         this.#encryptionSalt = Base64.toUint8Array(secureConfig['salt']);
         this._tokenOptionResolver = tokenOptionResolver;
@@ -153,7 +151,7 @@ export class TokenATMConfiguration {
             log_assignment_id: this.logAssignmentId,
             uid: this.uid,
             suffix: this.suffix,
-            description: this.description,
+            description: Base64.encode(this.description),
             next_free_token_option_group_id: this.nextFreeTokenOptionGroupId,
             next_free_token_option_id: this.nextFreeTokenOptionId,
             token_option_groups: this.tokenOptionGroups.map((entry) => entry.toJSON())

@@ -12,6 +12,7 @@ import { MultipleChoiceQuestion } from 'app/quiz-questions/multiple-choice-quest
 import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-option-resolver-registry';
 import { Base64 } from 'js-base64';
 import { CanvasService } from './canvas.service';
+import HTMLParse from 'html-dom-parser';
 
 @Injectable({
     providedIn: 'root'
@@ -29,9 +30,20 @@ export class TokenATMConfigurationManagerService {
         @Inject(TokenOptionResolverRegistry) private tokenOptionResolverRegistry: TokenOptionResolverRegistry
     ) {}
 
+    private resolvePageContent(rawData: string): string {
+        const data = HTMLParse(rawData);
+        for (const entry of data) {
+            if (entry.type != 'tag' || entry.name != 'p') continue;
+            if (entry.children[0]?.type != 'text') continue;
+            if (typeof entry.children[0]?.data != 'string') continue;
+            return entry.children[0]?.data;
+        }
+        throw new Error('Page resolve fails');
+    }
+
     private async readConfigurationFromPage(course: Course, pageName: string): Promise<string> {
         let pageContent = await this.canvasService.getPageContentByName(course.id, pageName);
-        pageContent = pageContent.substring(3, pageContent.length - 4);
+        pageContent = this.resolvePageContent(pageContent);
         return pageContent;
     }
 
@@ -186,7 +198,10 @@ export class TokenATMConfigurationManagerService {
         await this.canvasService.deleteModule(configuration.course.id, await this.getModuleId(configuration));
         await this.canvasService.deletePage(
             configuration.course.id,
-            TokenATMConfigurationManagerService.TOKEN_ATM_SECURE_CONFIGURATION_PAGE_NAME
+            await this.canvasService.getPageIdByName(
+                configuration.course.id,
+                TokenATMConfigurationManagerService.TOKEN_ATM_SECURE_CONFIGURATION_PAGE_NAME
+            )
         );
     }
 
@@ -255,7 +270,9 @@ export class TokenATMConfigurationManagerService {
                     .join('')
                     .toUpperCase(),
                 suffix: suffix,
-                description: description,
+                description: Base64.encode(description),
+                next_free_token_option_group_id: 1,
+                next_free_token_option_id: 1,
                 token_option_groups: []
             },
             {

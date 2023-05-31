@@ -6,6 +6,7 @@ import { TokenATMConfigurationManagerService } from 'app/services/token-atm-conf
 import { BasicTokenOption } from 'app/token-options/basic-token-option';
 import { EarnByModuleTokenOption } from 'app/token-options/earn-by-module-token-option';
 import { getUnixTime } from 'date-fns';
+import { Base64 } from 'js-base64';
 
 @Component({
     selector: 'app-dev-test',
@@ -56,7 +57,9 @@ export class DevTestComponent {
                     name: 'Test Token Option Group ' + configuration.tokenOptionGroups.length.toString(),
                     id: configuration.nextFreeTokenOptionGroupId,
                     quiz_id: '',
-                    description: `Just a test <b>token option group</b> ${configuration.tokenOptionGroups.length}`,
+                    description: Base64.encode(
+                        `Just a test <b>token option group</b> ${configuration.tokenOptionGroups.length}`
+                    ),
                     is_published: false,
                     token_options: []
                 },
@@ -76,7 +79,7 @@ export class DevTestComponent {
                 type: 'basic',
                 id: configuration.nextFreeTokenOptionId,
                 name: `Test Token Option ${group.tokenOptions.length}`,
-                description: `Just a test <b>token option</b> ${group.tokenOptions.length}`,
+                description: Base64.encode(`Just a test <b>token option</b> ${group.tokenOptions.length}`),
                 token_balance_change: group.tokenOptions.length
             })
         );
@@ -149,7 +152,7 @@ export class DevTestComponent {
                 name: 'Pass Module',
                 id: configuration.nextFreeTokenOptionGroupId,
                 quiz_id: '',
-                description: 'Pass module with a specific grade threshold to get tokens!',
+                description: Base64.encode('Pass module with a specific grade threshold to get tokens!'),
                 is_published: true,
                 token_options: []
             },
@@ -161,7 +164,7 @@ export class DevTestComponent {
                 type: 'earn-by-module',
                 id: configuration.nextFreeTokenOptionId,
                 name: `getting tokens by passing module 1`,
-                description: `Passing Module 1 with a score no less than 70% of the total score`,
+                description: Base64.encode(`Passing Module 1 with a score no less than 70% of the total score`),
                 token_balance_change: 1,
                 module_name: 'Module 1',
                 module_id: '12612114',
@@ -174,7 +177,7 @@ export class DevTestComponent {
                 type: 'earn-by-module',
                 id: configuration.nextFreeTokenOptionId,
                 name: `getting tokens by passing module 2`,
-                description: `Passing Module 1 with a score no less than 80% of the total score`,
+                description: Base64.encode(`Passing Module 1 with a score no less than 80% of the total score`),
                 token_balance_change: 2,
                 module_name: 'Module 2',
                 module_id: '12612167',
@@ -189,7 +192,9 @@ export class DevTestComponent {
                 name: 'Basic Token Options (Testing)',
                 id: configuration.nextFreeTokenOptionGroupId,
                 quiz_id: '',
-                description: 'Test Token ATM with these basic token options whose requests are always get approved!',
+                description: Base64.encode(
+                    'Test Token ATM with these basic token options whose requests are always get approved!'
+                ),
                 is_published: true,
                 token_options: []
             },
@@ -201,7 +206,7 @@ export class DevTestComponent {
                 type: 'basic',
                 id: configuration.nextFreeTokenOptionId,
                 name: `basic token option 1`,
-                description: `Just a test <b>token option</b>`,
+                description: Base64.encode(`Just a test <b>token option</b>`),
                 token_balance_change: 100
             })
         );
@@ -210,7 +215,7 @@ export class DevTestComponent {
                 type: 'basic',
                 id: configuration.nextFreeTokenOptionId,
                 name: `basic token option 2`,
-                description: `Just a test <b>token option</b>`,
+                description: Base64.encode(`Just a test <b>token option</b>`),
                 token_balance_change: 0.5
             })
         );
@@ -219,7 +224,7 @@ export class DevTestComponent {
                 type: 'basic',
                 id: configuration.nextFreeTokenOptionId,
                 name: `basic token option 3`,
-                description: `Just a test <b>token option</b>`,
+                description: Base64.encode(`Just a test <b>token option</b>`),
                 token_balance_change: -100
             })
         );
