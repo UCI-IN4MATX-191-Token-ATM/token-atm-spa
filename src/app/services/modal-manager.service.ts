@@ -39,6 +39,18 @@ export class ModalManagerService {
         return [modalRef, result];
     }
 
+    public async createConfirmationModalWithoutRef(
+        message: string,
+        heading = 'Confirmation',
+        isDanger = false,
+        noText = 'Cancel',
+        yesText = 'Yes'
+    ): Promise<boolean> {
+        const [modalRef, result] = await this.createConfirmationModal(message, heading, isDanger, noText, yesText);
+        modalRef.hide();
+        return result;
+    }
+
     public async createNotificationModal(message: string, heading = 'Notification'): Promise<void> {
         let modalResolve: () => void;
         const promise = new Promise<void>((resolve) => {

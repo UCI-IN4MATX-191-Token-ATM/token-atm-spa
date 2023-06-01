@@ -1,0 +1,33 @@
+<div class="modal-header">
+    <h4 class="modal-title pull-left">{{ isEditing ? 'Edit' : 'Create' }} Token Option Group</h4>
+    <button type="button" class="btn-close close pull-right" aria-label="Close" (click)="modalRef?.hide()">
+        <span aria-hidden="true" class="visually-hidden">&times;</span>
+    </button>
+</div>
+<div class="modal-body">
+    <app-number-input-field label="Group ID" [initValue]="groupId" [isReadOnly]="true"></app-number-input-field>
+    <app-string-input-field
+        #groupNameComp
+        label="Group Name"
+        [initValue]="groupName"
+        [validator]="groupNameValidator"
+    ></app-string-input-field>
+    <app-string-textarea-field
+        #groupDescriptionComp
+        label="Group Description"
+        [initValue]="groupDescription"
+        [rows]="4"
+    ></app-string-textarea-field>
+</div>
+<div class="modal-footer">
+    <button
+        type="button"
+        class="btn mx-2"
+        [class.btn-outline-success]="!isEditing"
+        [class.btn-outline-primary]="isEditing"
+        (click)="isEditing ? onSave() : onCreate()"
+        [disabled]="isProcessing"
+    >
+        {{ isEditing ? 'Save' : 'Create' }}
+    </button>
+</div>

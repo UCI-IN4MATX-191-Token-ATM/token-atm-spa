@@ -1,0 +1,12 @@
+<div class="m-3">
+    <label [for]="'input' + fieldId" class="form-label">{{ label }}</label>
+    <input
+        type="string"
+        class="form-control"
+        id="'input' + fieldId"
+        [(ngModel)]="value"
+        [readonly]="readonly"
+        [disabled]="readonly"
+    />
+    <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
+</div>

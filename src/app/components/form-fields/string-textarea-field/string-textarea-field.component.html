@@ -1,0 +1,12 @@
+<div class="m-3">
+    <label [for]="'textarea' + fieldId" class="form-label">{{ label }}</label>
+    <textarea
+        class="form-control"
+        id="'textarea' + fieldId"
+        [(ngModel)]="value"
+        [rows]="rows"
+        [readonly]="readonly"
+        [disabled]="readonly"
+    ></textarea>
+    <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
+</div>
