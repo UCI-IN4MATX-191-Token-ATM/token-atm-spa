@@ -4,6 +4,11 @@
 <ng-template #tokenOptionPanel>
     <ng-container *ngIf="configuration">
         <div class="container mt-3">
+            <div class="row align-items-end mb-2">
+                <button class="col-auto btn btn-outline-success ms-auto" (click)="onCreateTokenOptionGroup()">
+                    New Token Option Group
+                </button>
+            </div>
             <div *ngFor="let group of configuration.tokenOptionGroups" class="mb-5">
                 <app-token-option-group-display [group]="group"></app-token-option-group-display>
             </div>
