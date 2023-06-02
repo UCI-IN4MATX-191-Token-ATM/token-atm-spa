@@ -1,19 +1,12 @@
 export class SubmissionComment {
     private _id: string;
     private _content: string;
-    private _created_at: Date;
+    private _createdAt: Date;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(data: any) {
-        if (
-            typeof data['id'] != 'string' ||
-            typeof data['comment'] != 'string' ||
-            typeof data['created_at'] != 'string'
-        )
-            throw new Error('Invalid data');
-        this._id = data['id'];
-        this._content = data['comment'];
-        this._created_at = new Date(data['created_at']);
+    constructor(id: string, content: string, createdAt: Date) {
+        this._id = id;
+        this._content = content;
+        this._createdAt = createdAt;
     }
 
     public get id(): string {
@@ -24,7 +17,18 @@ export class SubmissionComment {
         return this._content;
     }
 
-    public get created_at(): Date {
-        return this._created_at;
+    public get createdAt(): Date {
+        return this._createdAt;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public static deserialize(data: any): SubmissionComment {
+        if (
+            typeof data['id'] != 'string' ||
+            typeof data['comment'] != 'string' ||
+            typeof data['created_at'] != 'string'
+        )
+            throw new Error('Invalid data');
+        return new SubmissionComment(data['id'], data['comment'], new Date(data['created_at']));
     }
 }

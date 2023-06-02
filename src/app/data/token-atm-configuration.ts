@@ -24,58 +24,29 @@ export class TokenATMConfiguration {
 
     constructor(
         course: Course,
+        logAssignmentId: string,
+        uid: string,
+        suffix: string,
+        description: string,
+        nextFreeTokenOptionGroupId: number,
+        nextFreeTokenOptionId: number,
+        tokenOptionGroups: TokenOptionGroup[],
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        secureConfig: any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        tokenOptionResolver: (group: TokenOptionGroup, data: any) => TokenOption
+        tokenOptionResolver: (group: TokenOptionGroup, data: any) => TokenOption,
+        encryptionPassword: string,
+        encryptionSalt: Uint8Array
     ) {
         this._course = course;
-        if (
-            typeof data['log_assignment_id'] != 'string' ||
-            typeof data['uid'] != 'string' ||
-            (typeof data['suffix'] != 'undefined' && typeof data['suffix'] != 'string') ||
-            (typeof data['description'] != 'undefined' && typeof data['description'] != 'string') ||
-            typeof data['next_free_token_option_group_id'] != 'number' ||
-            typeof data['next_free_token_option_id'] != 'number' ||
-            typeof data['token_option_groups'] != 'object' ||
-            !Array.isArray(data['token_option_groups']) ||
-            typeof secureConfig['password'] != 'string' ||
-            typeof secureConfig['salt'] != 'string'
-        )
-            throw new Error('Invalid data');
-        this._logAssignmentId = data['log_assignment_id'];
-        this._uid = data['uid'];
-        this._suffix = data['suffix'] ?? '';
-        this._description = data['description'] ? Base64.decode(data['description']) : '';
-        this.#encryptionPassword = secureConfig['password'];
-        this.#encryptionSalt = Base64.toUint8Array(secureConfig['salt']);
+        this._logAssignmentId = logAssignmentId;
+        this._uid = uid;
+        this._suffix = suffix;
+        this._description = description;
+        this._nextFreeTokenOptionGroupId = nextFreeTokenOptionGroupId;
+        this._nextFreeTokenOptionId = nextFreeTokenOptionId;
+        this._tokenOptionGroups = tokenOptionGroups;
         this._tokenOptionResolver = tokenOptionResolver;
-        this._tokenOptionGroups = data['token_option_groups'].map(
-            (entry) => new TokenOptionGroup(this, entry, tokenOptionResolver)
-        );
-        this._nextFreeTokenOptionGroupId =
-            data['next_free_token_option_group_id'] ?? this.locateNextFreeTokenOptionGroupId();
-        this._nextFreeTokenOptionId = data['next_free_token_option_id'] ?? this.locateNextFreeTokenOptionId();
-    }
-
-    private locateNextFreeTokenOptionGroupId() {
-        let result = 1;
-        for (const group of this._tokenOptionGroups) {
-            result = Math.max(result, group.id);
-        }
-        return result + 1;
-    }
-
-    private locateNextFreeTokenOptionId() {
-        let result = 1;
-        for (const group of this._tokenOptionGroups) {
-            for (const option of group.tokenOptions) {
-                result = Math.max(result, option.id);
-            }
-        }
-        return result + 1;
+        this.#encryptionPassword = encryptionPassword;
+        this.#encryptionSalt = encryptionSalt;
     }
 
     public get course(): Course {
@@ -104,6 +75,10 @@ export class TokenATMConfiguration {
 
     public get tokenOptionGroups(): TokenOptionGroup[] {
         return this._tokenOptionGroups;
+    }
+
+    protected set tokenOptionGroups(tokenOptionGroups: TokenOptionGroup[]) {
+        this._tokenOptionGroups = tokenOptionGroups;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -191,5 +166,46 @@ export class TokenATMConfiguration {
             CryptoHelper.AES_IV_LENGTH
         );
         return decompress(JSON.parse(await CryptoHelper.decryptAES(this.#encryptionKey, data, iv)));
+    }
+
+    public static deserialize(
+        course: Course,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data: any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        secureConfig: any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        tokenOptionResolver: (group: TokenOptionGroup, data: any) => TokenOption
+    ): TokenATMConfiguration {
+        if (
+            typeof data['log_assignment_id'] != 'string' ||
+            typeof data['uid'] != 'string' ||
+            (typeof data['suffix'] != 'undefined' && typeof data['suffix'] != 'string') ||
+            (typeof data['description'] != 'undefined' && typeof data['description'] != 'string') ||
+            typeof data['next_free_token_option_group_id'] != 'number' ||
+            typeof data['next_free_token_option_id'] != 'number' ||
+            typeof data['token_option_groups'] != 'object' ||
+            !Array.isArray(data['token_option_groups']) ||
+            typeof secureConfig['password'] != 'string' ||
+            typeof secureConfig['salt'] != 'string'
+        )
+            throw new Error('Invalid data');
+        const configuration = new TokenATMConfiguration(
+            course,
+            data['log_assignment_id'],
+            data['uid'],
+            data['suffix'] ?? '',
+            data['description'] ? Base64.decode(data['description']) : '',
+            data['next_free_token_option_group_id'],
+            data['next_free_token_option_id'],
+            [],
+            tokenOptionResolver,
+            secureConfig['password'],
+            Base64.toUint8Array(secureConfig['salt'])
+        );
+        configuration.tokenOptionGroups = data['token_option_groups'].map((entry) =>
+            TokenOptionGroup.deserialize(configuration, entry)
+        );
+        return configuration;
     }
 }

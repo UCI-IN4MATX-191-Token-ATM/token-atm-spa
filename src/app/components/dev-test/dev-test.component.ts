@@ -5,8 +5,6 @@ import { CanvasService } from 'app/services/canvas.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import { BasicTokenOption } from 'app/token-options/basic-token-option';
 import { EarnByModuleTokenOption } from 'app/token-options/earn-by-module-token-option';
-import { getUnixTime } from 'date-fns';
-import { Base64 } from 'js-base64';
 
 @Component({
     selector: 'app-dev-test',
@@ -53,17 +51,12 @@ export class DevTestComponent {
         await this.manager.addNewTokenOptionGroup(
             new TokenOptionGroup(
                 configuration,
-                {
-                    name: 'Test Token Option Group ' + configuration.tokenOptionGroups.length.toString(),
-                    id: configuration.nextFreeTokenOptionGroupId,
-                    quiz_id: '',
-                    description: Base64.encode(
-                        `Just a test <b>token option group</b> ${configuration.tokenOptionGroups.length}`
-                    ),
-                    is_published: false,
-                    token_options: []
-                },
-                configuration.tokenOptionResolver
+                'Test Token Option Group ' + configuration.tokenOptionGroups.length.toString(),
+                configuration.nextFreeTokenOptionGroupId,
+                '',
+                `Just a test <b>token option group</b> ${configuration.tokenOptionGroups.length}`,
+                false,
+                []
             )
         );
         console.log('Add token option group finished');
@@ -75,13 +68,14 @@ export class DevTestComponent {
         const group = configuration.tokenOptionGroups[configuration.tokenOptionGroups.length - 1];
         if (!group) throw new Error('No token option group in the configuration!');
         group.addTokenOption(
-            new BasicTokenOption(group, {
-                type: 'basic',
-                id: configuration.nextFreeTokenOptionId,
-                name: `Test Token Option ${group.tokenOptions.length}`,
-                description: Base64.encode(`Just a test <b>token option</b> ${group.tokenOptions.length}`),
-                token_balance_change: group.tokenOptions.length
-            })
+            new BasicTokenOption(
+                group,
+                'basic',
+                configuration.nextFreeTokenOptionId,
+                `Test Token Option ${group.tokenOptions.length}`,
+                `Just a test <b>token option</b> ${group.tokenOptions.length}`,
+                group.tokenOptions.length
+            )
         );
         const result = await this.manager.updateTokenOptionGroup(group);
         console.log('Add token option finished!');
@@ -148,85 +142,82 @@ export class DevTestComponent {
         const configuration = await this.manager.getTokenATMConfiguration(this.course);
         const group = new TokenOptionGroup(
             configuration,
-            {
-                name: 'Pass Module',
-                id: configuration.nextFreeTokenOptionGroupId,
-                quiz_id: '',
-                description: Base64.encode('Pass module with a specific grade threshold to get tokens!'),
-                is_published: true,
-                token_options: []
-            },
-            configuration.tokenOptionResolver
+            'Pass Module',
+            configuration.nextFreeTokenOptionGroupId,
+            '',
+            'Pass module with a specific grade threshold to get tokens!',
+            true,
+            []
         );
         await this.manager.addNewTokenOptionGroup(group);
         group.addTokenOption(
-            new EarnByModuleTokenOption(group, {
-                type: 'earn-by-module',
-                id: configuration.nextFreeTokenOptionId,
-                name: `getting tokens by passing module 1`,
-                description: Base64.encode(`Passing Module 1 with a score no less than 70% of the total score`),
-                token_balance_change: 1,
-                module_name: 'Module 1',
-                module_id: '12612114',
-                start_time: getUnixTime(new Date()),
-                grade_threshold: 0.7
-            })
+            new EarnByModuleTokenOption(
+                group,
+                'earn-by-module',
+                configuration.nextFreeTokenOptionId,
+                `getting tokens by passing module 1`,
+                `Passing Module 1 with a score no less than 70% of the total score`,
+                1,
+                'Module 1',
+                '12612114',
+                new Date(),
+                0.7
+            )
         );
         group.addTokenOption(
-            new EarnByModuleTokenOption(group, {
-                type: 'earn-by-module',
-                id: configuration.nextFreeTokenOptionId,
-                name: `getting tokens by passing module 2`,
-                description: Base64.encode(`Passing Module 1 with a score no less than 80% of the total score`),
-                token_balance_change: 2,
-                module_name: 'Module 2',
-                module_id: '12612167',
-                start_time: getUnixTime(new Date()),
-                grade_threshold: 0.8
-            })
+            new EarnByModuleTokenOption(
+                group,
+                'earn-by-module',
+                configuration.nextFreeTokenOptionId,
+                `getting tokens by passing module 2`,
+                `Passing Module 1 with a score no less than 80% of the total score`,
+                2,
+                'Module 2',
+                '12612167',
+                new Date(),
+                0.8
+            )
         );
         await this.manager.updateTokenOptionGroup(group);
         const basicGroup = new TokenOptionGroup(
             configuration,
-            {
-                name: 'Basic Token Options (Testing)',
-                id: configuration.nextFreeTokenOptionGroupId,
-                quiz_id: '',
-                description: Base64.encode(
-                    'Test Token ATM with these basic token options whose requests are always get approved!'
-                ),
-                is_published: true,
-                token_options: []
-            },
-            configuration.tokenOptionResolver
+            'Basic Token Options (Testing)',
+            configuration.nextFreeTokenOptionGroupId,
+            '',
+            'Test Token ATM with these basic token options whose requests are always get approved!',
+            true,
+            []
         );
         await this.manager.addNewTokenOptionGroup(basicGroup);
         basicGroup.addTokenOption(
-            new BasicTokenOption(group, {
-                type: 'basic',
-                id: configuration.nextFreeTokenOptionId,
-                name: `basic token option 1`,
-                description: Base64.encode(`Just a test <b>token option</b>`),
-                token_balance_change: 100
-            })
+            new BasicTokenOption(
+                group,
+                'basic',
+                configuration.nextFreeTokenOptionId,
+                `basic token option 1`,
+                `Just a test <b>token option</b>`,
+                100
+            )
         );
         basicGroup.addTokenOption(
-            new BasicTokenOption(group, {
-                type: 'basic',
-                id: configuration.nextFreeTokenOptionId,
-                name: `basic token option 2`,
-                description: Base64.encode(`Just a test <b>token option</b>`),
-                token_balance_change: 0.5
-            })
+            new BasicTokenOption(
+                group,
+                'basic',
+                configuration.nextFreeTokenOptionId,
+                `basic token option 2`,
+                `Just a test <b>token option</b>`,
+                0.5
+            )
         );
         basicGroup.addTokenOption(
-            new BasicTokenOption(group, {
-                type: 'basic',
-                id: configuration.nextFreeTokenOptionId,
-                name: `basic token option 3`,
-                description: Base64.encode(`Just a test <b>token option</b>`),
-                token_balance_change: -100
-            })
+            new BasicTokenOption(
+                group,
+                'basic',
+                configuration.nextFreeTokenOptionId,
+                `basic token option 3`,
+                `Just a test <b>token option</b>`,
+                -100
+            )
         );
         await this.manager.updateTokenOptionGroup(basicGroup);
         console.log('Completed!');

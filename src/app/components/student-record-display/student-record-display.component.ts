@@ -5,7 +5,7 @@ import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { StudentRecordManagerService } from 'app/services/student-record-manager.service';
-import { format, getUnixTime } from 'date-fns';
+import { format } from 'date-fns';
 
 @Component({
     selector: 'app-student-record-display',
@@ -52,19 +52,21 @@ export class StudentRecordDisplayComponent {
         );
         if (result) {
             if (modalRef.content) modalRef.content.disableButton = true;
-            const nowTime = getUnixTime(new Date());
+            const nowTime = new Date();
             await this.recordManagerService.logProcessedRequest(
                 this.configuration,
                 this.studentRecord,
-                new ProcessedRequest(this.configuration, this.studentRecord.student, {
-                    token_option_id: -1,
-                    token_option_name: 'Manual Adjustment',
-                    is_approved: true,
-                    message: this.tokenAdjustmentMessage,
-                    submit_time: nowTime,
-                    process_time: nowTime,
-                    token_balance_change: this.tokenAdjustmentCount
-                })
+                new ProcessedRequest(
+                    this.configuration,
+                    -1,
+                    'Manual Adjustment',
+                    this.studentRecord.student,
+                    true,
+                    nowTime,
+                    nowTime,
+                    this.tokenAdjustmentCount,
+                    this.tokenAdjustmentMessage
+                )
             );
             this.tokenAdjustmentCount = 0;
             this.tokenAdjustmentMessage = '';

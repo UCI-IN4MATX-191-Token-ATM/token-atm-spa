@@ -7,7 +7,7 @@ import { TokenOptionResolver } from './token-option-resolver';
 export class BasicTokenOptionResolver extends TokenOptionResolver<BasicTokenOption> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public resolve(group: TokenOptionGroup, data: any): BasicTokenOption {
-        return new BasicTokenOption(group, data);
+        return BasicTokenOption.deserialize(group, data);
     }
     public get type(): string {
         return 'basic';

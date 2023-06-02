@@ -33,7 +33,7 @@ export class DashboardComponent implements OnDestroy {
         const getuser = await this.canvasService.getUserInformation(userId);
         this.name = getuser.name;
         this.email = getuser.email;
-        this.avatarUrl = getuser.avatar_url;
+        this.avatarUrl = getuser.avatarURL;
     }
 
     private configureCourse(course: Course) {

@@ -10,7 +10,6 @@ import { StartTimeTransformer } from 'app/instruction-generators/start-time-tran
 import { TokenBalanceChangeTransformer } from 'app/instruction-generators/token-balance-change-transformer';
 import { MultipleChoiceQuestion } from 'app/quiz-questions/multiple-choice-question';
 import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-option-resolver-registry';
-import { Base64 } from 'js-base64';
 import { CanvasService } from './canvas.service';
 import HTMLParse from 'html-dom-parser';
 
@@ -86,7 +85,7 @@ export class TokenATMConfigurationManagerService {
         );
         const config = JSON.parse(pageContent),
             secureConfig = JSON.parse(secureContent);
-        return new TokenATMConfiguration(course, config, secureConfig, (group, data) => {
+        return TokenATMConfiguration.deserialize(course, config, secureConfig, (group, data) => {
             return this.tokenOptionResolverRegistry.resolveTokenOption(group, data);
         });
     }
@@ -274,26 +273,22 @@ export class TokenATMConfigurationManagerService {
     ): Promise<TokenATMConfiguration> {
         const configuration = new TokenATMConfiguration(
             course,
-            {
-                log_assignment_id: '',
-                // https://stackoverflow.com/a/47496558
-                uid: [...Array(8)]
-                    .map(() => Math.random().toString(36)[2])
-                    .join('')
-                    .toUpperCase(),
-                suffix: suffix,
-                description: Base64.encode(description),
-                next_free_token_option_group_id: 1,
-                next_free_token_option_id: 1,
-                token_option_groups: []
-            },
-            {
-                password: [...Array(32)].map(() => Math.random().toString(36)[2]).join(''),
-                salt: Base64.fromUint8Array(window.crypto.getRandomValues(new Uint8Array(32)))
-            },
+            '',
+            // https://stackoverflow.com/a/47496558
+            [...Array(8)]
+                .map(() => Math.random().toString(36)[2])
+                .join('')
+                .toUpperCase(),
+            suffix,
+            description,
+            1,
+            1,
+            [],
             (group, data) => {
                 return this.tokenOptionResolverRegistry.resolveTokenOption(group, data);
-            }
+            },
+            [...Array(32)].map(() => Math.random().toString(36)[2]).join(''),
+            window.crypto.getRandomValues(new Uint8Array(32))
         );
         await this.canvasService.createPage(
             course.id,

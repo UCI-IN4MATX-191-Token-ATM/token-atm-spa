@@ -5,22 +5,12 @@ export class ModuleItemInfo {
     private _contentId?: string;
     private _pointsPossible?: number;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(data: any) {
-        if (
-            typeof data['id'] != 'string' ||
-            typeof data['module_id'] != 'string' ||
-            typeof data['type'] != 'string' ||
-            (typeof data['content_id'] != 'undefined' && typeof data['content_id'] != 'string') ||
-            (typeof data['content_details']?.['points_possible'] != 'undefined' &&
-                typeof data['content_details']?.['points_possible'] != 'number')
-        )
-            throw new Error('Invalid data');
-        this._id = data['id'];
-        this._moduleId = data['module_id'];
-        this._type = data['type'];
-        this._contentId = data['content_id'];
-        this._pointsPossible = data['content_details']?.['points_possible'];
+    constructor(id: string, moduleId: string, type: string, contentId?: string, pointsPossible?: number) {
+        this._id = id;
+        this._moduleId = moduleId;
+        this._type = type;
+        this._contentId = contentId;
+        this._pointsPossible = pointsPossible;
     }
 
     public get id(): string {
@@ -41,5 +31,25 @@ export class ModuleItemInfo {
 
     public get pointsPossible(): number {
         return this._pointsPossible ?? 0;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public static deserialize(data: any): ModuleItemInfo {
+        if (
+            typeof data['id'] != 'string' ||
+            typeof data['module_id'] != 'string' ||
+            typeof data['type'] != 'string' ||
+            (typeof data['content_id'] != 'undefined' && typeof data['content_id'] != 'string') ||
+            (typeof data['content_details']?.['points_possible'] != 'undefined' &&
+                typeof data['content_details']?.['points_possible'] != 'number')
+        )
+            throw new Error('Invalid data');
+        return new ModuleItemInfo(
+            data['id'],
+            data['module_id'],
+            data['type'],
+            data['content_id'],
+            data['content_details']?.['points_possible']
+        );
     }
 }

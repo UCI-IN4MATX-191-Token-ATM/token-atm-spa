@@ -3,7 +3,7 @@ import type { ProcessedRequest } from 'app/data/processed-request';
 import type { Student } from 'app/data/student';
 import { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
-import { compareAsc, format, fromUnixTime, getUnixTime } from 'date-fns';
+import { compareAsc, format, fromUnixTime } from 'date-fns';
 import { CanvasService } from './canvas.service';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -31,7 +31,7 @@ export class StudentRecordManagerService {
             uuidv4()
         );
         studentRecord.commentId = newSubmissionComment.id;
-        studentRecord.commentDate = newSubmissionComment.created_at;
+        studentRecord.commentDate = newSubmissionComment.createdAt;
         // Avoid duplicate Date signature
         await new Promise((resolve) => setTimeout(resolve, 1000));
         await this.canvasService.modifyComment(
@@ -77,18 +77,22 @@ export class StudentRecordManagerService {
             }
             if (
                 typeof data['comment_date'] != 'number' ||
-                compareAsc(fromUnixTime(data['comment_date']), submissionComment.created_at) != 0
+                compareAsc(fromUnixTime(data['comment_date']), submissionComment.createdAt) != 0
             ) {
                 await this.canvasService.deleteComment(courseId, studentId, assignmentId, submissionComment.id);
                 continue;
             }
-            return new StudentRecord(configuration, student, submissionComment.id, tokenBalance, data);
+            return StudentRecord.deserialize(configuration, student, submissionComment.id, tokenBalance, data);
         }
-        let studentRecord = new StudentRecord(configuration, student, '', tokenBalance, {
-            comment_date: getUnixTime(new Date()),
-            processed_attempt_map: [],
-            processed_requests: []
-        });
+        let studentRecord = new StudentRecord(
+            configuration,
+            student,
+            '',
+            new Date(),
+            tokenBalance,
+            new Map<number, number>(),
+            []
+        );
         studentRecord = await this.writeStudentRecordToCanvas(configuration, studentRecord);
         return studentRecord;
     }
@@ -107,8 +111,8 @@ export class StudentRecordManagerService {
             configuration.logAssignmentId,
             `Your request to ${processedRequest.tokenOptionName} has been processed.\nResult: ${
                 processedRequest.isApproved ? 'Approved' : 'Rejected'
-            }\nSubmitted at: ${format(processedRequest.submitTime, 'MMM dd, yyyy kk:mm:ss')}\nProcessed at: ${format(
-                processedRequest.processTime,
+            }\nSubmitted at: ${format(processedRequest.submittedTime, 'MMM dd, yyyy kk:mm:ss')}\nProcessed at: ${format(
+                processedRequest.processedTime,
                 'MMM dd, yyyy kk:mm:ss'
             )}\nToken Balance Change: ${oldTokenBalance} -> ${studentRecord.tokenBalance}${
                 processedRequest.message != '' ? `\nMessage: ${processedRequest.message}` : ''

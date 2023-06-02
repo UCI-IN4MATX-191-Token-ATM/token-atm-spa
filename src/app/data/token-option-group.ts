@@ -13,28 +13,20 @@ export class TokenOptionGroup {
 
     constructor(
         configuration: TokenATMConfiguration,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        tokenOptionResolver: (group: TokenOptionGroup, data: any) => TokenOption
+        name: string,
+        id: number,
+        quizId: string,
+        description: string,
+        isPublished: boolean,
+        tokenOptions: TokenOption[]
     ) {
         this._configuration = configuration;
-        if (
-            typeof data['name'] != 'string' ||
-            typeof data['id'] != 'number' ||
-            typeof data['quiz_id'] != 'string' ||
-            (typeof data['description'] != 'undefined' && typeof data['description'] != 'string') ||
-            typeof data['is_published'] != 'boolean' ||
-            typeof data['token_options'] != 'object' ||
-            !Array.isArray(data['token_options'])
-        )
-            throw new Error('Invalid data');
-        this._name = data['name'];
-        this._id = data['id'];
-        this._quizId = data['quiz_id'];
-        this._description = data['description'] ? Base64.decode(data['description']) : '';
-        this._isPublished = data['is_published'];
-        this._tokenOptions = data['token_options'].map((entry) => tokenOptionResolver(this, entry));
+        this._name = name;
+        this._id = id;
+        this._quizId = quizId;
+        this._description = description;
+        this._isPublished = isPublished;
+        this._tokenOptions = tokenOptions;
     }
 
     public get configuration(): TokenATMConfiguration {
@@ -81,6 +73,10 @@ export class TokenOptionGroup {
         return this._tokenOptions;
     }
 
+    protected set tokenOptions(tokenOptions: TokenOption[]) {
+        this._tokenOptions = tokenOptions;
+    }
+
     public addTokenOption(tokenOption: TokenOption): void {
         this.configuration.updateNextFreeTokenOptionId(tokenOption.id);
         this._tokenOptions.push(tokenOption);
@@ -101,5 +97,30 @@ export class TokenOptionGroup {
             is_published: this.isPublished,
             token_options: this.tokenOptions.map((entry) => entry.toJSON())
         };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public static deserialize(configuration: TokenATMConfiguration, data: any): TokenOptionGroup {
+        if (
+            typeof data['name'] != 'string' ||
+            typeof data['id'] != 'number' ||
+            typeof data['quiz_id'] != 'string' ||
+            (typeof data['description'] != 'undefined' && typeof data['description'] != 'string') ||
+            typeof data['is_published'] != 'boolean' ||
+            typeof data['token_options'] != 'object' ||
+            !Array.isArray(data['token_options'])
+        )
+            throw new Error('Invalid data');
+        const group = new TokenOptionGroup(
+            configuration,
+            data['name'],
+            data['id'],
+            data['quiz_id'],
+            data['description'] ? Base64.decode(data['description']) : '',
+            data['is_published'],
+            []
+        );
+        group.tokenOptions = data['token_options'].map((entry) => configuration.tokenOptionResolver(group, entry));
+        return group;
     }
 }

@@ -2,7 +2,6 @@ import { Component, Inject, Input, ViewChild } from '@angular/core';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
-import { Base64 } from 'js-base64';
 import type { BsModalRef } from 'ngx-bootstrap/modal';
 import type { StringInputFieldComponent } from '../form-fields/string-input-field/string-input-field.component';
 import type { StringTextareaFieldComponent } from '../form-fields/string-textarea-field/string-textarea-field.component';
@@ -79,18 +78,7 @@ export class TokenOptionGroupManagementComponent {
         }
         const [name, description] = result;
         await this.managerService.addNewTokenOptionGroup(
-            new TokenOptionGroup(
-                this._configuration,
-                {
-                    name: name,
-                    id: this.groupId,
-                    quiz_id: '',
-                    description: Base64.encode(description),
-                    is_published: false,
-                    token_options: []
-                },
-                this._configuration.tokenOptionResolver
-            )
+            new TokenOptionGroup(this._configuration, name, this.groupId, '', description, false, [])
         );
         this.isProcessing = false;
         this.modalRef?.hide();

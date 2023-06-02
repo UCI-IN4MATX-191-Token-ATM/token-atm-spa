@@ -138,7 +138,7 @@ export class CanvasService {
                         course.term = termInfoMap.get(course['enrollment_term_id']);
                     }
                 }
-                return processedData.map((entry: unknown) => new Course(entry));
+                return processedData.map((entry: unknown) => Course.deserialize(entry));
             }
         );
     }
@@ -153,7 +153,7 @@ export class CanvasService {
 
     public async getUserInformation(userId: string): Promise<User> {
         const data = await this.apiRequest(`/api/v1/users/${userId}`);
-        return new User(data);
+        return User.deserialize(data);
     }
 
     public async deletePage(courseId: string, pageId: string): Promise<void> {
@@ -241,7 +241,7 @@ export class CanvasService {
         return new PaginatedResult(
             response,
             async (url: string) => await this.paginatedRequestHandler(url),
-            (data) => data.quiz_submissions.map((entry: unknown) => new QuizSubmission(entry))
+            (data) => data.quiz_submissions.map((entry: unknown) => QuizSubmission.deserialize(entry))
         );
     }
 
@@ -258,7 +258,7 @@ export class CanvasService {
                 }
             }
         );
-        return data.submission_comments.map((entry: unknown) => new SubmissionComment(entry));
+        return data.submission_comments.map((entry: unknown) => SubmissionComment.deserialize(entry));
     }
 
     public async getSingleSubmissionGrade(
@@ -311,7 +311,7 @@ export class CanvasService {
         for (let i = submissionComments.length - 1; i >= 0; i--) {
             let result;
             try {
-                result = new SubmissionComment(submissionComments[i]);
+                result = SubmissionComment.deserialize(submissionComments[i]);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
                 continue;
@@ -354,7 +354,7 @@ export class CanvasService {
                 }
             }
         );
-        return new SubmissionComment(data);
+        return SubmissionComment.deserialize(data);
     }
 
     public async gradeSubmission(
@@ -401,7 +401,7 @@ export class CanvasService {
         for (let i = submissionComments.length - 1; i >= 0; i--) {
             let result;
             try {
-                result = new SubmissionComment(submissionComments[i]);
+                result = SubmissionComment.deserialize(submissionComments[i]);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
                 continue;
@@ -499,7 +499,7 @@ export class CanvasService {
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (data: any) => data.map((entry: any) => new Student(entry))
+            (data: any) => data.map((entry: any) => Student.deserialize(entry))
         );
     }
 
@@ -515,7 +515,7 @@ export class CanvasService {
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
             (data: unknown[]) => {
-                return data.map((entry: unknown) => new ModuleItemInfo(entry));
+                return data.map((entry: unknown) => ModuleItemInfo.deserialize(entry));
             }
         );
         for await (const moduleItem of moduleItems) {
@@ -550,7 +550,7 @@ export class CanvasService {
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (data: any) => data.map((entry: any) => new Student(entry))
+            (data: any) => data.map((entry: any) => Student.deserialize(entry))
         );
     }
 
@@ -654,7 +654,7 @@ export class CanvasService {
                 }),
                 async (url: string) => await this.paginatedRequestHandler(url),
                 (data: unknown[]) => {
-                    return data.map((entry: unknown) => new ModuleItemInfo(entry));
+                    return data.map((entry: unknown) => ModuleItemInfo.deserialize(entry));
                 }
             );
             for await (const moduleItem of moduleItems) {

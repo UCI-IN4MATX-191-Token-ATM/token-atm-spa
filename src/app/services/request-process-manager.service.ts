@@ -9,7 +9,7 @@ import { RequestHandlerRegistry } from 'app/request-handlers/request-handler-reg
 import { RequestResolverRegistry } from 'app/request-resolvers/request-resolver-registry';
 import type { TokenATMRequest } from 'app/requests/token-atm-request';
 import type { TokenOption } from 'app/token-options/token-option';
-import { compareAsc, format, getUnixTime } from 'date-fns';
+import { compareAsc, format } from 'date-fns';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { CanvasService } from './canvas.service';
 import { RawRequestFetcherService } from './raw-request-fetcher.service';
@@ -141,9 +141,10 @@ export class RequestProcessManagerService {
                         progressUpdate.error([
                             `Encounter an error when logging request to ${
                                 processedRequest.tokenOptionName
-                            } submitted at ${format(processedRequest.submitTime, 'MMM dd, yyyy kk:mm:ss')} by student ${
-                                student.name + (student.email == '' ? '' : `(${student.email})`)
-                            }`,
+                            } submitted at ${format(
+                                processedRequest.submittedTime,
+                                'MMM dd, yyyy kk:mm:ss'
+                            )} by student ${student.name + (student.email == '' ? '' : `(${student.email})`)}`,
                             err
                         ]);
                         this.finishRequestProcessing(progressUpdate, false);
@@ -244,17 +245,18 @@ export class RequestProcessManagerService {
                 const request = await this.requestResolverRegistry.resolveRequest(group, quizSubmissionDetail);
                 if (!request) {
                     requests.push(
-                        new ProcessedRequest(configuration, student, {
-                            token_option_id: -1,
-                            token_option_name: 'An Unrecognized Token Option',
-                            token_option_group_id: group.id,
-                            is_approved: false,
-                            message:
-                                'The token option you made a request to cannot be recognized. That token option might be deleted or moved, or you might have submitted the quiz without selecting an option in Question 1',
-                            submit_time: getUnixTime(quizSubmissionDetail.submittedTime),
-                            process_time: getUnixTime(new Date()),
-                            token_balance_change: 0
-                        })
+                        new ProcessedRequest(
+                            configuration,
+                            -1,
+                            'An Unrecognized Token Option',
+                            student,
+                            false,
+                            quizSubmissionDetail.submittedTime,
+                            new Date(),
+                            0,
+                            'The token option you made a request to cannot be recognized. That token option might be deleted or moved, or you might have submitted the quiz without selecting an option in Question 1',
+                            group.id
+                        )
                     );
                 } else requests.push(request);
                 requestCnt++;
@@ -270,7 +272,7 @@ export class RequestProcessManagerService {
 
     public getSubmitTime(request: ProcessedRequest | TokenATMRequest<TokenOption>) {
         if (request instanceof ProcessedRequest) {
-            return request.submitTime;
+            return request.submittedTime;
         } else {
             return request.submittedTime;
         }

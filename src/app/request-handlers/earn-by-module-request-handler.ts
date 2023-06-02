@@ -5,7 +5,6 @@ import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import type { EarnByModuleRequest } from 'app/requests/earn-by-module-request';
 import { CanvasService } from 'app/services/canvas.service';
 import type { EarnByModuleTokenOption } from 'app/token-options/earn-by-module-token-option';
-import { getUnixTime } from 'date-fns';
 import { ModuleGradeThresholdGuard } from './guards/module-grade-threshold-guard';
 import { RepeatRequestGuard } from './guards/repeat-request-guard';
 import { RequestHandlerGuardExecutor } from './guards/request-handler-guard-executor';
@@ -35,17 +34,20 @@ export class EarnByModuleRequestHandler extends RequestHandler<EarnByModuleToken
             new RepeatRequestGuard(request.tokenOption, studentRecord.processedRequests)
         ]);
         await guardExecutor.check();
-        return new ProcessedRequest(configuration, request.student, {
-            token_option_id: request.tokenOption.id,
-            token_option_name: request.tokenOption.name,
-            token_option_group_id: request.tokenOption.group.id,
-            is_approved: !guardExecutor.isRejected,
-            submit_time: getUnixTime(request.submittedTime),
-            process_time: getUnixTime(new Date()),
-            message: guardExecutor.message,
-            token_balance_change: guardExecutor.isRejected ? 0 : request.tokenOption.tokenBalanceChange
-        });
+        return new ProcessedRequest(
+            configuration,
+            request.tokenOption.id,
+            request.tokenOption.name,
+            request.student,
+            !guardExecutor.isRejected,
+            request.submittedTime,
+            new Date(),
+            guardExecutor.isRejected ? 0 : request.tokenOption.tokenBalanceChange,
+            guardExecutor.message,
+            request.tokenOption.group.id
+        );
     }
+
     public get type(): string {
         return 'earn-by-module';
     }

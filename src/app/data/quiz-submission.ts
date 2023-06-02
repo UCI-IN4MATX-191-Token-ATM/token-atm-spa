@@ -4,21 +4,11 @@ export class QuizSubmission {
     private _studentId: string;
     private _attempt: number;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(data: any) {
-        if (
-            typeof data['id'] != 'string' ||
-            typeof data['quiz_id'] != 'string' ||
-            typeof data['user_id'] != 'string' ||
-            typeof data['attempt'] != 'number' ||
-            typeof data['workflow_state'] != 'string'
-        )
-            throw new Error('Invalid data');
-        this._id = data['id'];
-        this._quizId = data['quiz_id'];
-        this._studentId = data['user_id'];
-        this._attempt = data['attempt'];
-        if (data['workflow_state'] == 'untaken') this._attempt--;
+    constructor(id: string, quizId: string, studentId: string, attempt: number) {
+        this._id = id;
+        this._quizId = quizId;
+        this._studentId = studentId;
+        this._attempt = attempt;
     }
 
     public get id(): string {
@@ -35,5 +25,23 @@ export class QuizSubmission {
 
     public get attempt(): number {
         return this._attempt;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public static deserialize(data: any): QuizSubmission {
+        if (
+            typeof data['id'] != 'string' ||
+            typeof data['quiz_id'] != 'string' ||
+            typeof data['user_id'] != 'string' ||
+            typeof data['attempt'] != 'number' ||
+            typeof data['workflow_state'] != 'string'
+        )
+            throw new Error('Invalid data');
+        return new QuizSubmission(
+            data['id'],
+            data['quiz_id'],
+            data['user_id'],
+            data['attempt'] - (data['workflow_state'] == 'untaken' ? 1 : 0)
+        );
     }
 }
