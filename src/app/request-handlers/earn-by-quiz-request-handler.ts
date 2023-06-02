@@ -24,14 +24,14 @@ export class EarnByQuizRequestHandler extends RequestHandler<EarnByQuizTokenOpti
     ): Promise<ProcessedRequest> {
         const guardExecutor = new RequestHandlerGuardExecutor([
             new StartDateGuard(request.submittedTime, request.tokenOption.startTime),
+            new RepeatRequestGuard(request.tokenOption, studentRecord.processedRequests),
             new QuizGradeThresholdGuard(
                 configuration.course.id,
                 request.tokenOption.quizId,
                 request.student.id,
                 request.tokenOption.gradeThreshold,
                 this.canvasService
-            ),
-            new RepeatRequestGuard(request.tokenOption, studentRecord.processedRequests)
+            )
         ]);
         await guardExecutor.check();
         return new ProcessedRequest(

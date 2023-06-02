@@ -56,7 +56,7 @@ export class EarnByQuizTokenOption extends TokenOption {
             ...super.toJSON(),
             quiz_name: this.quizName,
             quiz_id: this.quizId,
-            start_time: getUnixTime(this._startTime),
+            start_time: getUnixTime(this.startTime),
             grade_threshold: this.gradeThreshold
         };
     }

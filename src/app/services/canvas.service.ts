@@ -13,6 +13,7 @@ import { User } from 'app/data/user';
 import type { QuizQuestion } from 'app/quiz-questions/quiz-question';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import { Quiz } from 'app/data/quiz';
+import { AssignmentOverride } from 'app/utils/assignment-override';
 
 type QuizQuestionResponse = {
     id: string;
@@ -883,5 +884,62 @@ export class CanvasService {
     public async getQuiz(courseId: string, quizId: string): Promise<Quiz> {
         const data = await this.apiRequest(`/v1/courses/${courseId}/quizzes/${quizId}`);
         return Quiz.deserialize(data);
+    }
+
+    public async getAssignmentOverrideByTitle(
+        courseId: string,
+        assignmentId: string,
+        overrideTitle: string
+    ): Promise<AssignmentOverride | undefined> {
+        const data = new PaginatedResult<AssignmentOverride>(
+            await this.rawAPIRequest(`/v1/courses/${courseId}/assignments/${assignmentId}/overrides`),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => data.map((entry) => AssignmentOverride.deserialize(entry))
+        );
+        for await (const override of data) {
+            if (override.title == overrideTitle) {
+                return override;
+            }
+        }
+        return undefined;
+    }
+
+    public async createAssignmentOverride(
+        courseId: string,
+        assignmentId: string,
+        title: string,
+        studentIds: string[],
+        lockDate: Date
+    ): Promise<void> {
+        await this.apiRequest(`/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
+            method: 'post',
+            data: {
+                assignment_override: {
+                    student_ids: studentIds,
+                    title: title,
+                    lock_at: formatISO(lockDate)
+                }
+            }
+        });
+    }
+
+    public async updateAssignmentOverride(
+        courseId: string,
+        assignmentId: string,
+        overrideId: string,
+        title: string,
+        studentIds: string[],
+        lockDate: Date
+    ): Promise<void> {
+        await this.apiRequest(`/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${overrideId}`, {
+            method: 'put',
+            data: {
+                assignment_override: {
+                    student_ids: studentIds,
+                    title: title,
+                    lock_at: formatISO(lockDate)
+                }
+            }
+        });
     }
 }

@@ -24,14 +24,14 @@ export class EarnByModuleRequestHandler extends RequestHandler<EarnByModuleToken
     ): Promise<ProcessedRequest> {
         const guardExecutor = new RequestHandlerGuardExecutor([
             new StartDateGuard(request.submittedTime, request.tokenOption.startTime),
+            new RepeatRequestGuard(request.tokenOption, studentRecord.processedRequests),
             new ModuleGradeThresholdGuard(
                 configuration.course.id,
                 request.tokenOption.moduleId,
                 studentRecord.student.id,
                 request.tokenOption.gradeThreshold,
                 this.canvasService
-            ),
-            new RepeatRequestGuard(request.tokenOption, studentRecord.processedRequests)
+            )
         ]);
         await guardExecutor.check();
         return new ProcessedRequest(

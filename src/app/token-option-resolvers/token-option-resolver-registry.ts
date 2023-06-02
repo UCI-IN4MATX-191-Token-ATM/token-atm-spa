@@ -4,12 +4,14 @@ import type { TokenOption } from 'app/token-options/token-option';
 import { BasicTokenOptionResolver } from './basic-token-option-resolver';
 import { EarnByModuleTokenOptionResolver } from './earn-by-module-token-option-resolver';
 import { EarnByQuizTokenOptionResolver } from './earn-by-quiz-token-option-resolver';
+import { SpendForAssignmentResubmissionTokenOptionResolver } from './spend-for-assignment-resubmission-token-option-resolver';
 import type { TokenOptionResolver } from './token-option-resolver';
 
 export const REGISTERED_TOKEN_OPTION_RESOLVERS: Type<TokenOptionResolver<TokenOption>>[] = [
     BasicTokenOptionResolver,
     EarnByModuleTokenOptionResolver,
-    EarnByQuizTokenOptionResolver
+    EarnByQuizTokenOptionResolver,
+    SpendForAssignmentResubmissionTokenOptionResolver
 ];
 
 export const TOKEN_OPTION_RESOLVER_INJECTION_TOKEN = new InjectionToken<TokenOptionResolver<TokenOption>[]>(
