@@ -8,6 +8,7 @@ import { EarnByModuleRequestResolver } from './earn-by-module-request-resolver';
 import { EarnByQuizRequestResolver } from './earn-by-quiz-request-resolver';
 import type { RequestResolver } from './request-resolver';
 import { SpendForAssignmentResubmissionRequestResolver } from './spend-for-assignment-resubmission-request-resolver';
+import { SpendForLabDataRequestResolver } from './spend-for-lab-data-request-resolver';
 
 type GenericRequestResolver = RequestResolver<TokenOption, TokenATMRequest<TokenOption>>;
 
@@ -15,7 +16,8 @@ export const REGISTERED_REQUEST_RESOLVERS: Type<GenericRequestResolver>[] = [
     BasicRequestResolver,
     EarnByModuleRequestResolver,
     EarnByQuizRequestResolver,
-    SpendForAssignmentResubmissionRequestResolver
+    SpendForAssignmentResubmissionRequestResolver,
+    SpendForLabDataRequestResolver
 ];
 
 export const REQUEST_RESOLVER_INJECT_TOKEN = new InjectionToken<GenericRequestResolver[]>('REQUEST_RESOLVERS');

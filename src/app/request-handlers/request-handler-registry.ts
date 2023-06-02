@@ -9,6 +9,7 @@ import { EarnByModuleRequestHandler } from './earn-by-module-request-handler';
 import { EarnByQuizRequestHandler } from './earn-by-quiz-request-handler';
 import type { RequestHandler } from './request-handlers';
 import { SpendForAssignmentResubmissionRequestHandler } from './spend-for-assignment-resubmission-request-handler';
+import { SpendForLabDataRequestHandler } from './spend-for-lab-data-request-handler';
 
 type GenericRequestHandler = RequestHandler<TokenOption, TokenATMRequest<TokenOption>>;
 
@@ -16,7 +17,8 @@ export const REGISTERED_REQUEST_HANDLERS: Type<GenericRequestHandler>[] = [
     BasicRequestHandler,
     EarnByModuleRequestHandler,
     EarnByQuizRequestHandler,
-    SpendForAssignmentResubmissionRequestHandler
+    SpendForAssignmentResubmissionRequestHandler,
+    SpendForLabDataRequestHandler
 ];
 
 export const REQUEST_HANDLER_INJECT_TOKEN = new InjectionToken<GenericRequestHandler[]>('REQUEST_HANDLERS');

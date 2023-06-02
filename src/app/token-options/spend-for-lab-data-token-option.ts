@@ -2,9 +2,9 @@ import type { TokenOptionGroup } from 'app/data/token-option-group';
 import { fromUnixTime, getUnixTime } from 'date-fns';
 import { TokenOption } from './token-option';
 
-export class SpendForAssignmentResubmissionTokenOption extends TokenOption {
-    private _assignmentName: string;
-    private _assignmentId: string;
+export class SpendForLabDataTokenOption extends TokenOption {
+    private _quizName: string;
+    private _quizId: string;
     private _startTime: Date;
     private _endTime: Date;
     private _newDueTime: Date;
@@ -16,34 +16,34 @@ export class SpendForAssignmentResubmissionTokenOption extends TokenOption {
         name: string,
         description: string,
         tokenBalanceChange: number,
-        assignmentName: string,
-        assignmentId: string,
+        quizName: string,
+        quizId: string,
         startTime: Date,
         endTime: Date,
         newDueTime: Date
     ) {
         super(group, type, id, name, description, tokenBalanceChange);
-        this._assignmentName = assignmentName;
-        this._assignmentId = assignmentId;
+        this._quizName = quizName;
+        this._quizId = quizId;
         this._startTime = startTime;
         this._endTime = endTime;
         this._newDueTime = newDueTime;
     }
 
     public get descriptiveName(): string {
-        return 'Spend Tokens for Assignment Resubmission';
+        return 'Spend Tokens for Lab Data';
     }
 
-    public get assignmentName(): string {
-        return this._assignmentName;
+    public get quizName(): string {
+        return this._quizName;
     }
 
-    public get assignmentId(): string {
-        return this._assignmentId;
+    public get quizId(): string {
+        return this._quizId;
     }
 
-    public set assignmentId(assignmentId: string) {
-        this._assignmentId = assignmentId;
+    public set quizId(quizId: string) {
+        this._quizId = quizId;
     }
 
     public get startTime(): Date {
@@ -61,22 +61,22 @@ export class SpendForAssignmentResubmissionTokenOption extends TokenOption {
     public override toJSON(): object {
         return {
             ...super.toJSON(),
-            assignment_name: this.assignmentName,
-            assignment_id: this.assignmentId,
+            quiz_name: this.quizName,
+            quiz_id: this.quizId,
             start_time: getUnixTime(this.startTime),
             end_time: getUnixTime(this.endTime),
             new_due_time: getUnixTime(this.newDueTime)
         };
     }
 
-    protected static resolveSpendForAssignmentResubmissionTokenOption(
+    protected static resolveSpendForLabDataTokenOption(
         group: TokenOptionGroup,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: any
-    ): ConstructorParameters<typeof SpendForAssignmentResubmissionTokenOption> {
+    ): ConstructorParameters<typeof SpendForLabDataTokenOption> {
         if (
-            typeof data['assignment_name'] != 'string' ||
-            typeof data['assignment_id'] != 'string' ||
+            typeof data['quiz_name'] != 'string' ||
+            typeof data['quiz_id'] != 'string' ||
             typeof data['start_time'] != 'number' ||
             typeof data['end_time'] != 'number' ||
             typeof data['new_due_time'] != 'number'
@@ -84,8 +84,8 @@ export class SpendForAssignmentResubmissionTokenOption extends TokenOption {
             throw new Error('Invalid data');
         return [
             ...super.resolveTokenOption(group, data),
-            data['assignment_name'],
-            data['assignment_id'],
+            data['quiz_name'],
+            data['quiz_id'],
             fromUnixTime(data['start_time']),
             fromUnixTime(data['end_time']),
             fromUnixTime(data['new_due_time'])
@@ -93,9 +93,7 @@ export class SpendForAssignmentResubmissionTokenOption extends TokenOption {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public static deserialize(group: TokenOptionGroup, data: any): SpendForAssignmentResubmissionTokenOption {
-        return new SpendForAssignmentResubmissionTokenOption(
-            ...this.resolveSpendForAssignmentResubmissionTokenOption(group, data)
-        );
+    public static deserialize(group: TokenOptionGroup, data: any): SpendForLabDataTokenOption {
+        return new SpendForLabDataTokenOption(...this.resolveSpendForLabDataTokenOption(group, data));
     }
 }
