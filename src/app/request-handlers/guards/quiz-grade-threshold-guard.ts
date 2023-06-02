@@ -16,8 +16,8 @@ export class QuizGradeThresholdGuard extends RequestHandlerGuard {
         const quiz = await this.canvasService.getQuiz(this.courseId, this.quizId);
         const grade = await this.canvasService.getSingleSubmissionGrade(
             this.courseId,
-            quiz.assignmentId,
-            this.studentId
+            this.studentId,
+            quiz.assignmentId
         );
         if (quiz.pointsPossible != 0 && grade / quiz.pointsPossible < this.gradeThreshold) {
             onReject(

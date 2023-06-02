@@ -12,6 +12,7 @@ import type { TokenOption } from 'app/token-options/token-option';
 import { compareAsc, format } from 'date-fns';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { CanvasService } from './canvas.service';
+import { QualtricsService } from './qualtrics.service';
 import { RawRequestFetcherService } from './raw-request-fetcher.service';
 import { StudentRecordManagerService } from './student-record-manager.service';
 
@@ -27,7 +28,8 @@ export class RequestProcessManagerService {
         @Inject(RawRequestFetcherService) private rawRequestFetcherService: RawRequestFetcherService,
         @Inject(RequestResolverRegistry) private requestResolverRegistry: RequestResolverRegistry,
         @Inject(StudentRecordManagerService) private studentRecordManagerService: StudentRecordManagerService,
-        @Inject(RequestHandlerRegistry) private requestHandlerRegistry: RequestHandlerRegistry
+        @Inject(RequestHandlerRegistry) private requestHandlerRegistry: RequestHandlerRegistry,
+        @Inject(QualtricsService) private qualtricsService: QualtricsService
     ) {}
 
     public startRequestProcessing(configuration: TokenATMConfiguration): Observable<[number, string]> {
@@ -47,6 +49,7 @@ export class RequestProcessManagerService {
     ): void {
         this._isRunning = false;
         this._isStopTriggered = false;
+        this.qualtricsService.clearCache();
         if (completeObservable) progressUpdate.complete();
     }
 
@@ -56,6 +59,7 @@ export class RequestProcessManagerService {
     ): Promise<void> {
         this._isRunning = true;
         this._isStopTriggered = false;
+        this.qualtricsService.clearCache();
         let quizSubmissionMap, assignmentIdMap;
         try {
             [quizSubmissionMap, assignmentIdMap] = await this.gatherQuizSubmissions(configuration, progressUpdate);

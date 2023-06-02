@@ -882,7 +882,7 @@ export class CanvasService {
     }
 
     public async getQuiz(courseId: string, quizId: string): Promise<Quiz> {
-        const data = await this.apiRequest(`/v1/courses/${courseId}/quizzes/${quizId}`);
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`);
         return Quiz.deserialize(data);
     }
 
@@ -892,7 +892,7 @@ export class CanvasService {
         overrideTitle: string
     ): Promise<AssignmentOverride | undefined> {
         const data = new PaginatedResult<AssignmentOverride>(
-            await this.rawAPIRequest(`/v1/courses/${courseId}/assignments/${assignmentId}/overrides`),
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`),
             async (url: string) => await this.paginatedRequestHandler(url),
             (data: unknown[]) => data.map((entry) => AssignmentOverride.deserialize(entry))
         );
@@ -911,7 +911,7 @@ export class CanvasService {
         studentIds: string[],
         lockDate: Date
     ): Promise<void> {
-        await this.apiRequest(`/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
             method: 'post',
             data: {
                 assignment_override: {
@@ -931,7 +931,7 @@ export class CanvasService {
         studentIds: string[],
         lockDate: Date
     ): Promise<void> {
-        await this.apiRequest(`/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${overrideId}`, {
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${overrideId}`, {
             method: 'put',
             data: {
                 assignment_override: {

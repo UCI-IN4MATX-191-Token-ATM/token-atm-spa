@@ -10,8 +10,8 @@ export abstract class TokenOptionInstructionTransformer<S> {
     public hasValidTokenOption(tokenOptions: TokenOption[]): boolean {
         if (tokenOptions.length == 0) return false;
         for (const tokenOption of tokenOptions) {
-            if (this.validate(tokenOption) == undefined) return false;
+            if (this.validate(tokenOption) != undefined) return true;
         }
-        return true;
+        return false;
     }
 }

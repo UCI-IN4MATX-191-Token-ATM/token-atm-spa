@@ -3,7 +3,7 @@ import type { Course } from 'app/data/course';
 import { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import { DescriptionTransformer } from 'app/instruction-generators/description-transformer';
-import { DueTimeTransformer } from 'app/instruction-generators/due-time-transformer';
+import { EndTimeTransformer } from 'app/instruction-generators/end-time-transformer';
 import { HTMLTableGenerator } from 'app/instruction-generators/html-table-generator';
 import { NameTransformer } from 'app/instruction-generators/name-transformer';
 import { StartTimeTransformer } from 'app/instruction-generators/start-time-transformer';
@@ -12,6 +12,7 @@ import { MultipleChoiceQuestion } from 'app/quiz-questions/multiple-choice-quest
 import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-option-resolver-registry';
 import { CanvasService } from './canvas.service';
 import HTMLParse from 'html-dom-parser';
+import { NewDueTimeTransformer } from 'app/instruction-generators/new-due-time-transformer';
 
 @Injectable({
     providedIn: 'root'
@@ -120,7 +121,8 @@ export class TokenATMConfigurationManagerService {
             new HTMLTableGenerator([
                 new NameTransformer(),
                 new StartTimeTransformer(),
-                new DueTimeTransformer(),
+                new EndTimeTransformer(),
+                new NewDueTimeTransformer(),
                 new TokenBalanceChangeTransformer(),
                 new DescriptionTransformer()
             ]).process(tokenOptionGroup.tokenOptions),

@@ -5,6 +5,11 @@ import { CanvasService } from 'app/services/canvas.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import { BasicTokenOption } from 'app/token-options/basic-token-option';
 import { EarnByModuleTokenOption } from 'app/token-options/earn-by-module-token-option';
+import { EarnByQuizTokenOption } from 'app/token-options/earn-by-quiz-token-option';
+import { EarnBySurveyTokenOption } from 'app/token-options/earn-by-survey-token-option';
+import { SpendForAssignmentResubmissionTokenOption } from 'app/token-options/spend-for-assignment-resubmission-token-option';
+import { SpendForLabDataTokenOption } from 'app/token-options/spend-for-lab-data-token-option';
+import { addMonths, addYears } from 'date-fns';
 
 @Component({
     selector: 'app-dev-test',
@@ -137,7 +142,7 @@ export class DevTestComponent {
         console.log('Deletion finished!');
     }
 
-    async onMyOperation(): Promise<void> {
+    async onPopulateICSExpoConfiguration(): Promise<void> {
         if (!this.course) return;
         const configuration = await this.manager.getTokenATMConfiguration(this.course);
         const group = new TokenOptionGroup(
@@ -220,6 +225,96 @@ export class DevTestComponent {
             )
         );
         await this.manager.updateTokenOptionGroup(basicGroup);
+        console.log('Completed!');
+    }
+
+    async onMyOperation(): Promise<void> {
+        if (!this.course) return;
+        const configuration = await this.manager.getTokenATMConfiguration(this.course);
+        const group = new TokenOptionGroup(
+            configuration,
+            'New Feature Testing',
+            configuration.nextFreeTokenOptionGroupId,
+            '',
+            'Testing new features',
+            true,
+            []
+        );
+        await this.manager.addNewTokenOptionGroup(group);
+        group.addTokenOption(
+            new EarnByQuizTokenOption(
+                group,
+                'earn-by-quiz',
+                configuration.nextFreeTokenOptionId,
+                'Earn by Quiz Testing',
+                'Just a description',
+                10,
+                'Argument Driven Inquiry (ADI) Quiz',
+                '14478031',
+                new Date(),
+                0.5
+            )
+        );
+        group.addTokenOption(
+            new SpendForAssignmentResubmissionTokenOption(
+                group,
+                'spend-for-assignment-resubmission',
+                configuration.nextFreeTokenOptionId,
+                'Spend for Assignment Resubmission Testing',
+                'Just a description',
+                -1,
+                'Test Locked Assignment',
+                '38096634',
+                new Date(),
+                addMonths(new Date(), 1),
+                addYears(new Date(), 1)
+            )
+        );
+        group.addTokenOption(
+            new SpendForLabDataTokenOption(
+                group,
+                'spend-for-lab-data',
+                configuration.nextFreeTokenOptionId,
+                'Spend for Lab Data Testing',
+                'Just a description',
+                -2,
+                'Test Lab Data Quiz',
+                '14544887',
+                new Date(),
+                addMonths(new Date(), 1),
+                addYears(new Date(), 1)
+            )
+        );
+        group.addTokenOption(
+            new SpendForLabDataTokenOption(
+                group,
+                'spend-for-lab-data',
+                configuration.nextFreeTokenOptionId,
+                'Expire Test',
+                'Just make it expired',
+                -2,
+                'Test Lab Data Quiz',
+                '14544887',
+                new Date(),
+                new Date(),
+                addYears(new Date(), 1)
+            )
+        );
+        group.addTokenOption(
+            new EarnBySurveyTokenOption(
+                group,
+                'earn-by-survey',
+                configuration.nextFreeTokenOptionId,
+                'Earn by Taking Qualtrics Survey Testing',
+                'Just a description',
+                10,
+                'SV_aVQu2sEgpSgSkBw',
+                'Email',
+                new Date(),
+                addMonths(new Date(), 1)
+            )
+        );
+        await this.manager.updateTokenOptionGroup(group);
         console.log('Completed!');
     }
 }
