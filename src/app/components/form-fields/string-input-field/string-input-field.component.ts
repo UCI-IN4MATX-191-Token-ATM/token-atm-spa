@@ -7,7 +7,7 @@ import { v4 } from 'uuid';
     templateUrl: './string-input-field.component.html',
     styleUrls: ['./string-input-field.component.sass']
 })
-export class StringInputFieldComponent implements FormField<string> {
+export class StringInputFieldComponent implements FormField<string, string> {
     fieldId = v4();
     @Input() label = '';
     value = '';

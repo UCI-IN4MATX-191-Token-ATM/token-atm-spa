@@ -1,6 +1,6 @@
-export interface FormField<T> {
+export interface FormField<S, T> {
     set isReadOnly(isReadOnly: boolean);
-    set initValue(initValue: T);
+    set initValue(initValue: S);
     set validator(validator: (value: T) => string | undefined);
     getValue(): Promise<T>;
     validate(): Promise<boolean>;

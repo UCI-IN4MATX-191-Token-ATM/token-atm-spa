@@ -12,6 +12,7 @@ import { AxiosService } from './axios.service';
 import { User } from 'app/data/user';
 import type { QuizQuestion } from 'app/quiz-questions/quiz-question';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
+import { Quiz } from 'app/data/quiz';
 
 type QuizQuestionResponse = {
     id: string;
@@ -877,5 +878,10 @@ export class CanvasService {
                 }
             });
         }
+    }
+
+    public async getQuiz(courseId: string, quizId: string): Promise<Quiz> {
+        const data = await this.apiRequest(`/v1/courses/${courseId}/quizzes/${quizId}`);
+        return Quiz.deserialize(data);
     }
 }

@@ -5,13 +5,15 @@ import type { TokenATMRequest } from 'app/requests/token-atm-request';
 import type { TokenOption } from 'app/token-options/token-option';
 import { BasicRequestResolver } from './basic-request-resolver';
 import { EarnByModuleRequestResolver } from './earn-by-module-request-resolver';
+import { EarnByQuizRequestResolver } from './earn-by-quiz-request-resolver';
 import type { RequestResolver } from './request-resolver';
 
 type GenericRequestResolver = RequestResolver<TokenOption, TokenATMRequest<TokenOption>>;
 
 export const REGISTERED_REQUEST_RESOLVERS: Type<GenericRequestResolver>[] = [
     BasicRequestResolver,
-    EarnByModuleRequestResolver
+    EarnByModuleRequestResolver,
+    EarnByQuizRequestResolver
 ];
 
 export const REQUEST_RESOLVER_INJECT_TOKEN = new InjectionToken<GenericRequestResolver[]>('REQUEST_RESOLVERS');
