@@ -1,0 +1,20 @@
+<ng-container *ngIf="group">
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Create Token Option</h4>
+        <button type="button" class="btn-close close pull-right" aria-label="Close" (click)="modalRef?.hide()">
+            <span aria-hidden="true" class="visually-hidden">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body message">
+        <p>The type of the token option to be created:</p>
+        <select class="form-select" [(ngModel)]="selectedOption">
+            <option *ngFor="let option of options; let i = index" [ngValue]="option[0]" [selected]="i === 0">
+                {{ option[1] }}
+            </option>
+        </select>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary me-4" (click)="modalRef?.hide()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="onNextStep()">Next Step</button>
+    </div>
+</ng-container>

@@ -3,6 +3,7 @@ import type { TokenOptionGroup } from 'app/data/token-option-group';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import { BsModalService } from 'ngx-bootstrap/modal';
+import { CreateTokenOptionModalComponent } from '../create-token-option-modal/create-token-option-modal.component';
 import { TokenOptionGroupManagementComponent } from '../token-option-group-management/token-option-group-management.component';
 
 @Component({
@@ -25,6 +26,16 @@ export class TokenOptionGroupDisplayComponent {
     onEditGroup(): void {
         if (!this.group) return;
         const modalRef = this.modalService.show(TokenOptionGroupManagementComponent, {
+            initialState: {
+                group: this.group
+            }
+        });
+        if (modalRef.content) modalRef.content.modalRef = modalRef;
+    }
+
+    async onCreateTokenOption(): Promise<void> {
+        if (!this.group) return;
+        const modalRef = this.modalService.show(CreateTokenOptionModalComponent, {
             initialState: {
                 group: this.group
             }

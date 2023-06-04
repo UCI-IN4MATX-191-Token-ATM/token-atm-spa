@@ -41,8 +41,6 @@ export abstract class TokenOption {
         this._type = type;
     }
 
-    public abstract get descriptiveName(): string;
-
     public get id(): number {
         return this._id;
     }
@@ -55,7 +53,7 @@ export abstract class TokenOption {
         return this._name;
     }
 
-    protected set name(name: string) {
+    public set name(name: string) {
         this._name = name;
     }
 
@@ -63,7 +61,7 @@ export abstract class TokenOption {
         return this._description;
     }
 
-    protected set description(description: string) {
+    public set description(description: string) {
         this._description = description;
     }
 
@@ -71,7 +69,7 @@ export abstract class TokenOption {
         return this._tokenBalanceChange;
     }
 
-    protected set tokenBalanceChange(tokenBalanceChange: number) {
+    public set tokenBalanceChange(tokenBalanceChange: number) {
         this._tokenBalanceChange = tokenBalanceChange;
     }
 

@@ -1,13 +1,15 @@
 <ng-container *ngIf="option">
-    <span class="fs-4">{{ option.name }}</span>
-    <br />
-    <span class="fs-6 fw-light text-secondary"
-        >{{ option.descriptiveName }} <span class="bi bi-dot"></span>
-        {{
-            (option.tokenBalanceChange > 0 ? 'Earn ' : 'Spend ') +
-                getAbsValue(option.tokenBalanceChange).toString() +
-                ' token' +
-                (getAbsValue(option.tokenBalanceChange) === 1 ? '' : 's')
-        }}</span
-    >
+    <div class="is-link" (click)="onViewTokenOption()">
+        <span class="fs-4">{{ option.name }}</span>
+        <br />
+        <span class="fs-6 fw-light text-secondary"
+            >{{ descriptiveName }} <span class="bi bi-dot"></span>
+            {{
+                (option.tokenBalanceChange > 0 ? 'Earn ' : 'Spend ') +
+                    getAbsValue(option.tokenBalanceChange).toString() +
+                    ' token' +
+                    (getAbsValue(option.tokenBalanceChange) === 1 ? '' : 's')
+            }}</span
+        >
+    </div>
 </ng-container>

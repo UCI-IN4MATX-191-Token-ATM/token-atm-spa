@@ -14,6 +14,8 @@ import type { QuizQuestion } from 'app/quiz-questions/quiz-question';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import { Quiz } from 'app/data/quiz';
 import { AssignmentOverride } from 'app/utils/assignment-override';
+import { CanvasModule } from 'app/data/canvas-module';
+import { Assignment } from 'app/data/assignment';
 
 type QuizQuestionResponse = {
     id: string;
@@ -678,17 +680,31 @@ export class CanvasService {
         });
     }
 
-    public async getModuleIdByName(courseId: string, moduleName: string) {
-        const data = await this.apiRequest(`/api/v1/courses/${courseId}/modules`, {
-            params: {
-                search_term: moduleName
+    public async getModuleIdByName(courseId: string, moduleName: string): Promise<string> {
+        // TODO: Retrieve paginated result to avoid too many similar name
+        const modules = new PaginatedResult(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules`, {
+                params: {
+                    search_term: moduleName,
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => {
+                return data.map((entry: unknown) => CanvasModule.deserialize(entry));
             }
-        });
-
-        if (!Array.isArray(data)) throw new Error('Module fetch error');
-        if (data.length == 0) throw new Error('Module not found');
-        if (data.length > 1) throw new Error('Multiple modules found');
-        return data[0].id;
+        );
+        let result: string | undefined = undefined;
+        for await (const module of modules) {
+            if (module.name != moduleName) continue;
+            if (result == undefined) {
+                result = module.id;
+                continue;
+            }
+            throw new Error('Multiple modules found');
+        }
+        if (result == undefined) throw new Error('Module not found');
+        return result;
     }
 
     public async addModuleItem(
@@ -941,5 +957,53 @@ export class CanvasService {
                 }
             }
         });
+    }
+
+    public async getQuizIdByName(courseId: string, quizName: string) {
+        const quizzes = new PaginatedResult<Quiz>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes`, {
+                params: {
+                    search_term: quizName,
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => data.map((entry) => Quiz.deserialize(entry))
+        );
+        let result: string | undefined = undefined;
+        for await (const quiz of quizzes) {
+            if (quiz.title != quizName) continue;
+            if (result == undefined) {
+                result = quiz.id;
+            } else {
+                throw new Error('Multiple quizzes found');
+            }
+        }
+        if (!result) throw new Error('Quiz not found');
+        return result;
+    }
+
+    public async getAssignmentIdByName(courseId: string, assignmentName: string) {
+        const assignments = new PaginatedResult<Assignment>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments`, {
+                params: {
+                    search_term: assignmentName,
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => data.map((entry) => Assignment.deserialize(entry))
+        );
+        let result: string | undefined = undefined;
+        for await (const assignment of assignments) {
+            if (assignment.name != assignmentName) continue;
+            if (result == undefined) {
+                result = assignment.id;
+            } else {
+                throw new Error('Multiple assignments found');
+            }
+        }
+        if (!result) throw new Error('Assignment not found');
+        return result;
     }
 }

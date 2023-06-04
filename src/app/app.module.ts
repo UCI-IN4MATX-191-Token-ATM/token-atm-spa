@@ -42,6 +42,17 @@ import { TokenOptionGroupManagementComponent } from './components/token-option-g
 import { StringInputFieldComponent } from './components/form-fields/string-input-field/string-input-field.component';
 import { StringTextareaFieldComponent } from './components/form-fields/string-textarea-field/string-textarea-field.component';
 import { NumberInputFieldComponent } from './components/form-fields/number-input-field/number-input-field.component';
+import { TokenOptionManagementComponent } from './components/token-option-management/token-option-management.component';
+import { EarnByQuizTokenOptionFieldComponent } from './components/form-fields/token-option-fields/earn-by-quiz-token-option-field/earn-by-quiz-token-option-field.component';
+import { DateTimeFieldComponent } from './components/form-fields/date-time-field/date-time-field.component';
+import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
+import { TimepickerModule } from 'ngx-bootstrap/timepicker';
+import { EarnBySurveyTokenOptionFieldComponent } from './components/form-fields/token-option-fields/earn-by-survey-token-option-field/earn-by-survey-token-option-field.component';
+import { BasicTokenOptionFieldComponent } from './components/form-fields/token-option-fields/basic-token-option-field/basic-token-option-field.component';
+import { EarnByModuleTokenOptionFieldComponent } from './components/form-fields/token-option-fields/earn-by-module-token-option-field/earn-by-module-token-option-field.component';
+import { CreateTokenOptionModalComponent } from './components/create-token-option-modal/create-token-option-modal.component';
+import { SpendForLabDataTokenOptionFieldComponent } from './components/form-fields/token-option-fields/spend-for-lab-data-token-option-field/spend-for-lab-data-token-option-field.component';
+import { SpendForAssignmentResubmissionTokenOptionFieldComponent } from './components/form-fields/token-option-fields/spend-for-assignment-resubmission-token-option-field/spend-for-assignment-resubmission-token-option-field.component';
 
 @NgModule({
     declarations: [
@@ -65,7 +76,16 @@ import { NumberInputFieldComponent } from './components/form-fields/number-input
         TokenOptionGroupManagementComponent,
         StringInputFieldComponent,
         StringTextareaFieldComponent,
-        NumberInputFieldComponent
+        NumberInputFieldComponent,
+        TokenOptionManagementComponent,
+        EarnByQuizTokenOptionFieldComponent,
+        DateTimeFieldComponent,
+        EarnBySurveyTokenOptionFieldComponent,
+        BasicTokenOptionFieldComponent,
+        EarnByModuleTokenOptionFieldComponent,
+        CreateTokenOptionModalComponent,
+        SpendForLabDataTokenOptionFieldComponent,
+        SpendForAssignmentResubmissionTokenOptionFieldComponent
     ],
     imports: [
         BrowserModule,
@@ -75,7 +95,9 @@ import { NumberInputFieldComponent } from './components/form-fields/number-input
         BsDropdownModule.forRoot(),
         BrowserAnimationsModule,
         CollapseModule.forRoot(),
-        ModalModule.forRoot()
+        ModalModule.forRoot(),
+        BsDatepickerModule.forRoot(),
+        TimepickerModule.forRoot()
     ],
     providers: [
         { provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService },

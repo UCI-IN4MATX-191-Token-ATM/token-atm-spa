@@ -1,16 +1,22 @@
 export class Quiz {
     private _id: string;
+    private _title: string;
     private _assignmentId: string;
     private _pointsPossible: number;
 
-    constructor(id: string, assignmentId: string, pointsPossible: number) {
+    constructor(id: string, title: string, assignmentId: string, pointsPossible: number) {
         this._id = id;
+        this._title = title;
         this._assignmentId = assignmentId;
         this._pointsPossible = pointsPossible;
     }
 
     public get id(): string {
         return this._id;
+    }
+
+    public get title(): string {
+        return this._title;
     }
 
     public get assignmentId(): string {
@@ -25,10 +31,11 @@ export class Quiz {
     public static deserialize(data: any): Quiz {
         if (
             typeof data['id'] != 'string' ||
+            typeof data['title'] != 'string' ||
             typeof data['assignment_id'] != 'string' ||
             typeof data['points_possible'] != 'number'
         )
             throw new Error('Invalid data');
-        return new Quiz(data['id'], data['assignment_id'], data['points_possible']);
+        return new Quiz(data['id'], data['title'], data['assignment_id'], data['points_possible']);
     }
 }

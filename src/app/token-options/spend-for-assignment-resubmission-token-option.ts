@@ -30,12 +30,12 @@ export class SpendForAssignmentResubmissionTokenOption extends TokenOption {
         this._newDueTime = newDueTime;
     }
 
-    public get descriptiveName(): string {
-        return 'Spend Tokens for Assignment Resubmission';
-    }
-
     public get assignmentName(): string {
         return this._assignmentName;
+    }
+
+    public set assignmentName(assignmentName: string) {
+        this._assignmentName = assignmentName;
     }
 
     public get assignmentId(): string {
@@ -50,12 +50,24 @@ export class SpendForAssignmentResubmissionTokenOption extends TokenOption {
         return this._startTime;
     }
 
+    public set startTime(startTime: Date) {
+        this._startTime = startTime;
+    }
+
     public get endTime(): Date {
         return this._endTime;
     }
 
+    public set endTime(endTime: Date) {
+        this._endTime = endTime;
+    }
+
     public get newDueTime(): Date {
         return this._newDueTime;
+    }
+
+    public set newDueTime(newDueTime: Date) {
+        this._newDueTime = newDueTime;
     }
 
     public override toJSON(): object {
