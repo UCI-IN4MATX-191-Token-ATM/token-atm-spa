@@ -1,5 +1,5 @@
 import type { TokenOption } from 'app/token-options/token-option';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { TokenOptionInstructionTransformer } from './token-option-instruction-transformer';
 
 type HasStartTime = {
@@ -20,6 +20,6 @@ export class StartTimeTransformer extends TokenOptionInstructionTransformer<HasS
 
     public validate(tokenOption: TokenOption): HasStartTime | undefined {
         const value = (tokenOption as unknown as HasStartTime).startTime;
-        return value == undefined ? undefined : (tokenOption as unknown as HasStartTime);
+        return value != undefined && isValid(value) ? (tokenOption as unknown as HasStartTime) : undefined;
     }
 }

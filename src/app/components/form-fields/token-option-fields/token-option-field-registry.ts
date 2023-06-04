@@ -6,6 +6,8 @@ import { EarnBySurveyTokenOptionFieldComponent } from './earn-by-survey-token-op
 import { SpendForAssignmentResubmissionTokenOptionFieldComponent } from './spend-for-assignment-resubmission-token-option-field/spend-for-assignment-resubmission-token-option-field.component';
 import { SpendForLabDataTokenOptionFieldComponent } from './spend-for-lab-data-token-option-field/spend-for-lab-data-token-option-field.component';
 import type { TokenOptionField } from './token-option-field';
+import { WithdrawAssignmentResubmissionOptionFieldComponent } from './withdraw-assignment-resubmission-option-field/withdraw-assignment-resubmission-option-field.component';
+import { WithdrawLabDataTokenOptionFieldComponent } from './withdraw-lab-data-token-option-field/withdraw-lab-data-token-option-field.component';
 
 @Injectable({
     providedIn: 'root'
@@ -19,7 +21,9 @@ export class TokenOptionFieldRegistry {
         'earn-by-module': EarnByModuleTokenOptionFieldComponent,
         'earn-by-survey': EarnBySurveyTokenOptionFieldComponent,
         'spend-for-lab-data': SpendForLabDataTokenOptionFieldComponent,
-        'spend-for-assignment-resubmission': SpendForAssignmentResubmissionTokenOptionFieldComponent
+        'spend-for-assignment-resubmission': SpendForAssignmentResubmissionTokenOptionFieldComponent,
+        'withdraw-assignment-resubmission': WithdrawAssignmentResubmissionOptionFieldComponent,
+        'withdraw-lab-data': WithdrawLabDataTokenOptionFieldComponent
     };
 
     public getComponentType(tokenOptionType: string): Type<TokenOptionField> | undefined {

@@ -11,6 +11,8 @@ import { EarnBySurveyRequestHandler } from './earn-by-survey-request-handler';
 import type { RequestHandler } from './request-handlers';
 import { SpendForAssignmentResubmissionRequestHandler } from './spend-for-assignment-resubmission-request-handler';
 import { SpendForLabDataRequestHandler } from './spend-for-lab-data-request-handler';
+import { WithdrawAssignmentResubmissionRequestHandler } from './withdraw-assignment-resubmission-request-handler';
+import { WithdrawLabDataRequestHandler } from './withdraw-lab-data-request-handler';
 
 type GenericRequestHandler = RequestHandler<TokenOption, TokenATMRequest<TokenOption>>;
 
@@ -20,7 +22,9 @@ export const REGISTERED_REQUEST_HANDLERS: Type<GenericRequestHandler>[] = [
     EarnByQuizRequestHandler,
     SpendForAssignmentResubmissionRequestHandler,
     SpendForLabDataRequestHandler,
-    EarnBySurveyRequestHandler
+    EarnBySurveyRequestHandler,
+    WithdrawAssignmentResubmissionRequestHandler,
+    WithdrawLabDataRequestHandler
 ];
 
 export const REQUEST_HANDLER_INJECT_TOKEN = new InjectionToken<GenericRequestHandler[]>('REQUEST_HANDLERS');

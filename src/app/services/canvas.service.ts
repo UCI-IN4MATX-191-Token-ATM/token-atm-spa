@@ -16,6 +16,7 @@ import { Quiz } from 'app/data/quiz';
 import { AssignmentOverride } from 'app/utils/assignment-override';
 import { CanvasModule } from 'app/data/canvas-module';
 import { Assignment } from 'app/data/assignment';
+import { AssignmentSubmission } from 'app/data/assignment-submission';
 
 type QuizQuestionResponse = {
     id: string;
@@ -926,17 +927,19 @@ export class CanvasService {
         title: string,
         studentIds: string[],
         lockDate: Date
-    ): Promise<void> {
-        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
-            method: 'post',
-            data: {
-                assignment_override: {
-                    student_ids: studentIds,
-                    title: title,
-                    lock_at: formatISO(lockDate)
+    ): Promise<AssignmentOverride> {
+        return AssignmentOverride.deserialize(
+            await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
+                method: 'post',
+                data: {
+                    assignment_override: {
+                        student_ids: studentIds,
+                        title: title,
+                        lock_at: formatISO(lockDate)
+                    }
                 }
-            }
-        });
+            })
+        );
     }
 
     public async updateAssignmentOverride(
@@ -946,17 +949,91 @@ export class CanvasService {
         title: string,
         studentIds: string[],
         lockDate: Date
-    ): Promise<void> {
-        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${overrideId}`, {
-            method: 'put',
-            data: {
-                assignment_override: {
-                    student_ids: studentIds,
-                    title: title,
-                    lock_at: formatISO(lockDate)
+    ): Promise<AssignmentOverride> {
+        return AssignmentOverride.deserialize(
+            await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${overrideId}`, {
+                method: 'put',
+                data: {
+                    assignment_override: {
+                        student_ids: studentIds,
+                        title: title,
+                        lock_at: formatISO(lockDate)
+                    }
                 }
-            }
+            })
+        );
+    }
+
+    public async deleteAssignmentOverride(courseId: string, assignmentId: string, overrideId: string): Promise<void> {
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${overrideId}`, {
+            method: 'delete'
         });
+    }
+
+    public async addStudentToAssignmentOverrideByOverrideTitle(
+        courseId: string,
+        assignmentId: string,
+        overrideTitle: string,
+        studentId: string,
+        lockDate: Date
+    ): Promise<[AssignmentOverride, boolean]> {
+        const override = await this.getAssignmentOverrideByTitle(courseId, assignmentId, overrideTitle);
+        if (!override) {
+            return [
+                await this.createAssignmentOverride(courseId, assignmentId, overrideTitle, [studentId], lockDate),
+                true
+            ];
+        }
+        if (override.studentIds.includes(studentId)) return [override, false];
+        override.studentIds.push(studentId);
+        return [
+            await this.updateAssignmentOverride(
+                courseId,
+                assignmentId,
+                override.id,
+                overrideTitle,
+                override.studentIds,
+                lockDate
+            ),
+            true
+        ];
+    }
+
+    public async removeStudentFromAssignmentOverrideByOverrideTitle(
+        courseId: string,
+        assignmentId: string,
+        overrideTitle: string,
+        studentId: string,
+        lockDate: Date
+    ): Promise<boolean> {
+        const override = await this.getAssignmentOverrideByTitle(courseId, assignmentId, overrideTitle);
+        if (!override || !override.studentIds.includes(studentId)) {
+            return false;
+        }
+        if (override.studentIds.length == 1) {
+            await this.deleteAssignmentOverride(courseId, assignmentId, override.id);
+            return true;
+        }
+        override.studentIds.splice(override.studentIds.indexOf(studentId), 1);
+        await this.updateAssignmentOverride(
+            courseId,
+            assignmentId,
+            override.id,
+            overrideTitle,
+            override.studentIds,
+            lockDate
+        );
+        return true;
+    }
+
+    public async getAssignmentSubmission(
+        courseId: string,
+        assignmentId: string,
+        studentId: string
+    ): Promise<AssignmentSubmission> {
+        return AssignmentSubmission.deserialize(
+            await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`)
+        );
     }
 
     public async getQuizIdByName(courseId: string, quizName: string) {

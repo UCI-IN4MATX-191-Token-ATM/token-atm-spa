@@ -3,8 +3,8 @@ import type { TokenOption } from 'app/token-options/token-option';
 import { WithdrawTokenOption } from 'app/token-options/withdraw-token-option';
 import { RequestHandlerGuard } from './request-handler-guard';
 
-export class RepeatRequestGuard extends RequestHandlerGuard {
-    constructor(private tokenOption: TokenOption, private processedRequests: ProcessedRequest[]) {
+export class HasApprovedRequestGuard extends RequestHandlerGuard {
+    constructor(private withdrawTokenOption: TokenOption, private processedRequests: ProcessedRequest[]) {
         super();
     }
     public async check(onReject: (message: string) => Promise<void>): Promise<void> {
@@ -12,15 +12,15 @@ export class RepeatRequestGuard extends RequestHandlerGuard {
         for (const request of this.processedRequests) {
             if (!request.tokenOption) continue;
             if (!request.isApproved) continue;
-            if (this.tokenOption.id == request.tokenOption.id) {
+            if (this.withdrawTokenOption.id == request.tokenOption.id) {
                 count++;
             } else if (
                 request.tokenOption instanceof WithdrawTokenOption &&
-                request.tokenOption.withdrawTokenOptionId == this.tokenOption.id
+                request.tokenOption.withdrawTokenOptionId == this.withdrawTokenOption.id
             ) {
                 count--;
             }
         }
-        if (count != 0) onReject('There is already an approved request for this token option.');
+        if (count == 0) onReject('There is no request to withdraw.');
     }
 }
