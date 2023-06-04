@@ -23,6 +23,7 @@
                 class="col-auto"
                 *ngFor="let course of coursesAsTeacher"
                 [course]="course"
+                (selectCourse)="onSelectCourse($event)"
             ></app-course-info-item>
         </div>
         <h2 class="my-4">Courses you’re enrolled in as a TA</h2>
@@ -31,6 +32,7 @@
                 class="col-auto"
                 *ngFor="let course of coursesAsTA"
                 [course]="course"
+                (selectCourse)="onSelectCourse($event)"
             ></app-course-info-item>
         </div>
     </div>

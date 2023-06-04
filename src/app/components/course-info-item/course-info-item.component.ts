@@ -1,5 +1,4 @@
-import { Component, Inject, Input } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import type { Course } from 'app/data/course';
 
 @Component({
@@ -9,11 +8,10 @@ import type { Course } from 'app/data/course';
 })
 export class CourseInfoItemComponent {
     @Input() course: Course | undefined;
+    @Output() selectCourse = new EventEmitter<Course>();
 
-    constructor(@Inject(Router) private router: Router) {}
-
-    onSelectCourse() {
+    onSelectCourse(): void {
         if (!this.course) return;
-        this.router.navigateByUrl('/dashboard', { state: this.course });
+        this.selectCourse.emit(this.course);
     }
 }

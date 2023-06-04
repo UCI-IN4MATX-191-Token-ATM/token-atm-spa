@@ -1,8 +1,12 @@
 import { Component, Inject, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import type { Course } from 'app/data/course';
 import { FormItemInfo } from 'app/data/form-item-info';
 import { CanvasService } from 'app/services/canvas.service';
+import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
+import { BsModalService } from 'ngx-bootstrap/modal';
+import { CreateConfigurationModalComponent } from '../create-configuration-modal/create-configuration-modal.component';
 
 @Component({
     selector: 'app-course-selection',
@@ -20,7 +24,13 @@ export class CourseSelectionComponent implements OnInit {
     termItemInfo = new FormItemInfo('termName', 'Search for Term', 'text');
     termName = '';
 
-    constructor(@Inject(CanvasService) private canvasService: CanvasService) {}
+    constructor(
+        @Inject(CanvasService) private canvasService: CanvasService,
+        @Inject(Router) private router: Router,
+        @Inject(TokenATMConfigurationManagerService)
+        private configurationManagerService: TokenATMConfigurationManagerService,
+        @Inject(BsModalService) private modalService: BsModalService
+    ) {}
 
     ngOnInit() {
         this.loading = true;
@@ -60,5 +70,37 @@ export class CourseSelectionComponent implements OnInit {
                 course.name.toLowerCase().indexOf(this.courseName.toLowerCase()) != -1 &&
                 course.term.toLowerCase().indexOf(this.termName.toLowerCase()) != -1
         );
+    }
+
+    async onSelectCourse(course: Course): Promise<void> {
+        // TODO-Now
+        this.loading = true;
+        try {
+            await this.configurationManagerService.getTokenATMConfiguration(course);
+            this.router.navigateByUrl('/dashboard', { state: course });
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
+            let promiseResolve;
+            const promise = new Promise<boolean>((resolve) => {
+                promiseResolve = resolve;
+            });
+            const modalRef = this.modalService.show(CreateConfigurationModalComponent, {
+                initialState: {
+                    onResolve: promiseResolve,
+                    course: course
+                },
+                class: 'modal-lg',
+                backdrop: 'static',
+                keyboard: false
+            });
+            const result = await promise;
+            if (!result) {
+                this.loading = false;
+                modalRef.hide();
+            } else {
+                modalRef.hide();
+                this.router.navigateByUrl('/dashboard', { state: course });
+            }
+        }
     }
 }
