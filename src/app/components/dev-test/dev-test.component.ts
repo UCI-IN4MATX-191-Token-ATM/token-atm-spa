@@ -282,7 +282,8 @@ export class DevTestComponent {
                 '14544887',
                 new Date(),
                 addMonths(new Date(), 1),
-                addYears(new Date(), 1)
+                addYears(new Date(), 1),
+                []
             )
         );
         group.addTokenOption(
@@ -297,7 +298,8 @@ export class DevTestComponent {
                 '14544887',
                 new Date(),
                 new Date(),
-                addYears(new Date(), 1)
+                addYears(new Date(), 1),
+                []
             )
         );
         group.addTokenOption(

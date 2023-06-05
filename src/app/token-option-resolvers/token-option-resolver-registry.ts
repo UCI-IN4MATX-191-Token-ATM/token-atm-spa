@@ -7,9 +7,11 @@ import { EarnByQuizTokenOptionResolver } from './earn-by-quiz-token-option-resol
 import { EarnBySurveyTokenOptionResolver } from './earn-by-survey-token-option-resolver';
 import { SpendForAssignmentResubmissionTokenOptionResolver } from './spend-for-assignment-resubmission-token-option-resolver';
 import { SpendForLabDataTokenOptionResolver } from './spend-for-lab-data-token-option-resolver';
+import { SpendForLabSwitchTokenOptionResolver } from './spend-for-lab-switch-token-option-resolver';
 import type { TokenOptionResolver } from './token-option-resolver';
 import { WithdrawAssignmentResubmissionTokenOptionResolver } from './withdraw-assignment-resubmission-token-option-resolver';
 import { WithdrawLabDataTokenOptionResolver } from './withdraw-lab-data-token-option-resolver';
+import { WithdrawLabSwitchTokenOptionResolver } from './withdraw-lab-switch-token-option-resolver';
 
 export const REGISTERED_TOKEN_OPTION_RESOLVERS: Type<TokenOptionResolver<TokenOption>>[] = [
     BasicTokenOptionResolver,
@@ -19,7 +21,9 @@ export const REGISTERED_TOKEN_OPTION_RESOLVERS: Type<TokenOptionResolver<TokenOp
     SpendForLabDataTokenOptionResolver,
     EarnBySurveyTokenOptionResolver,
     WithdrawAssignmentResubmissionTokenOptionResolver,
-    WithdrawLabDataTokenOptionResolver
+    WithdrawLabDataTokenOptionResolver,
+    SpendForLabSwitchTokenOptionResolver,
+    WithdrawLabSwitchTokenOptionResolver
 ];
 
 export const TOKEN_OPTION_RESOLVER_INJECTION_TOKEN = new InjectionToken<TokenOptionResolver<TokenOption>[]>(

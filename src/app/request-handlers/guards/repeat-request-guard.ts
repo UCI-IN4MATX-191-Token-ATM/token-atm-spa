@@ -18,7 +18,7 @@ export class RepeatRequestGuard extends RequestHandlerGuard {
                 request.tokenOption instanceof WithdrawTokenOption &&
                 request.tokenOption.withdrawTokenOptionId == this.tokenOption.id
             ) {
-                count--;
+                if (count > 0) count--;
             }
         }
         if (count != 0) onReject('There is already an approved request for this token option.');

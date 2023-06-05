@@ -8,6 +8,7 @@ export class SpendForLabDataTokenOption extends TokenOption {
     private _startTime: Date;
     private _endTime: Date;
     private _newDueTime: Date;
+    private _excludeTokenOptionIds: number[];
 
     constructor(
         group: TokenOptionGroup,
@@ -20,7 +21,8 @@ export class SpendForLabDataTokenOption extends TokenOption {
         quizId: string,
         startTime: Date,
         endTime: Date,
-        newDueTime: Date
+        newDueTime: Date,
+        excludeTokenOptionIds: number[]
     ) {
         super(group, type, id, name, description, tokenBalanceChange);
         this._quizName = quizName;
@@ -28,6 +30,7 @@ export class SpendForLabDataTokenOption extends TokenOption {
         this._startTime = startTime;
         this._endTime = endTime;
         this._newDueTime = newDueTime;
+        this._excludeTokenOptionIds = excludeTokenOptionIds;
     }
 
     public get quizName(): string {
@@ -70,6 +73,14 @@ export class SpendForLabDataTokenOption extends TokenOption {
         this._newDueTime = newDueTime;
     }
 
+    public get excludeTokenOptionIds(): number[] {
+        return this._excludeTokenOptionIds;
+    }
+
+    public set excludeTokenOptionIds(excludeTokenOptionIds: number[]) {
+        this._excludeTokenOptionIds = excludeTokenOptionIds;
+    }
+
     public override toJSON(): object {
         return {
             ...super.toJSON(),
@@ -77,7 +88,8 @@ export class SpendForLabDataTokenOption extends TokenOption {
             quiz_id: this.quizId,
             start_time: getUnixTime(this.startTime),
             end_time: getUnixTime(this.endTime),
-            new_due_time: getUnixTime(this.newDueTime)
+            new_due_time: getUnixTime(this.newDueTime),
+            exclude_token_option_ids: this._excludeTokenOptionIds
         };
     }
 
@@ -91,16 +103,24 @@ export class SpendForLabDataTokenOption extends TokenOption {
             typeof data['quiz_id'] != 'string' ||
             typeof data['start_time'] != 'number' ||
             typeof data['end_time'] != 'number' ||
-            typeof data['new_due_time'] != 'number'
+            typeof data['new_due_time'] != 'number' ||
+            (typeof data['exclude_token_option_ids'] != 'undefined' &&
+                typeof data['exclude_token_option_ids'] != 'object') ||
+            (typeof data['exclude_token_option_ids'] == 'object' && !Array.isArray(data['exclude_token_option_ids']))
         )
             throw new Error('Invalid data');
+        if (data['exclude_token_option_ids'] != undefined)
+            for (const id of data['exclude_token_option_ids']) {
+                if (typeof id != 'number') throw new Error('Invalid data');
+            }
         return [
             ...super.resolveTokenOption(group, data),
             data['quiz_name'],
             data['quiz_id'],
             fromUnixTime(data['start_time']),
             fromUnixTime(data['end_time']),
-            fromUnixTime(data['new_due_time'])
+            fromUnixTime(data['new_due_time']),
+            data['exclude_token_option_ids'] ?? []
         ];
     }
 

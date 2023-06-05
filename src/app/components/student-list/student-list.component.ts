@@ -1,10 +1,14 @@
 import { Component, Inject, ViewChild } from '@angular/core';
 import type { Course } from 'app/data/course';
+import { FormItemInfo } from 'app/data/form-item-info';
 import type { Student } from 'app/data/student';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { CanvasService } from 'app/services/canvas.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import type { PaginatedView } from 'app/utils/paginated-view';
+import { BsModalService } from 'ngx-bootstrap/modal';
+import { firstValueFrom } from 'rxjs';
+import { BatchTokenBalanceAdjustmentModalComponent } from '../batch-token-balance-adjustment-modal/batch-token-balance-adjustment-modal.component';
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
 import type { StudentRecordDisplayComponent } from '../student-record-display/student-record-display.component';
 
@@ -28,26 +32,55 @@ export class StudentListComponent implements CourseConfigurable {
     @ViewChild('individaulStudentRecordDisplay')
     individaulStudentRecordDisplay?: StudentRecordDisplayComponent;
 
+    studentItemInfo = new FormItemInfo('studentSearchTerm', 'Search for Students', 'text');
+    studentSearchTerm = '';
+
     constructor(
         @Inject(CanvasService) private canvasService: CanvasService,
         @Inject(TokenATMConfigurationManagerService)
-        private tokenATMConfigurationManagerService: TokenATMConfigurationManagerService
+        private tokenATMConfigurationManagerService: TokenATMConfigurationManagerService,
+        @Inject(BsModalService) private modalService: BsModalService
     ) {}
+
+    async batchImport(): Promise<void> {
+        if (!this.configuration) return;
+        const modalRef = this.modalService.show(BatchTokenBalanceAdjustmentModalComponent, {
+            initialState: {
+                configuration: this.configuration
+            },
+            backdrop: 'static',
+            keyboard: false
+        });
+        if (modalRef.content) modalRef.content.modalRef = modalRef;
+        if (modalRef.onHide) {
+            await firstValueFrom(modalRef.onHide);
+            await this.refreshStudentList(this.studentSearchTerm);
+        }
+    }
 
     async configureCourse(course: Course): Promise<void> {
         this.course = course;
         this.configuration = await this.tokenATMConfigurationManagerService.getTokenATMConfiguration(this.course);
-        await this.refreshStudentList();
+        await this.refreshStudentList(this.studentSearchTerm);
+    }
+
+    async search(): Promise<void> {
+        await this.refreshStudentList(this.studentSearchTerm);
+    }
+
+    async clearSearch(): Promise<void> {
+        this.studentSearchTerm = '';
+        await this.refreshStudentList(this.studentSearchTerm);
     }
 
     async changePageSize(size: number): Promise<void> {
         this.pageCnt = size;
-        await this.refreshStudentList();
+        await this.refreshStudentList(this.studentSearchTerm);
     }
 
-    private async refreshStudentList(): Promise<void> {
+    private async refreshStudentList(searchTerm?: string): Promise<void> {
         if (!this.course) return;
-        this.students = await this.canvasService.getCourseStudents(this.course.id, this.pageCnt);
+        this.students = await this.canvasService.getCourseStudents(this.course.id, this.pageCnt, searchTerm);
         await this.getStudentGrades();
     }
 

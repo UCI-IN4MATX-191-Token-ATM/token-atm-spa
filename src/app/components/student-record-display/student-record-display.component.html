@@ -48,7 +48,12 @@
                 </div>
                 <div class="col-12 card my-5" *ngIf="processedRequests">
                     <div class="card-body">
-                        <h5 class="card-titile">Request History</h5>
+                        <div class="m-2">
+                            <h5 class="card-titile d-inline mx-2">Request History</h5>
+                            <button class="btn btn-primary" (click)="onCreateProcessedRequest()">
+                                Make Request on Student's Behalf
+                            </button>
+                        </div>
                         <div class="card-text overflow-auto">
                             <table class="table table-striped">
                                 <thead>

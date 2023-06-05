@@ -2,6 +2,24 @@
     <ngb-toast [autohide]="false"> Token ATM is retrieving information from Canvas. Please wait... </ngb-toast>
 </div>
 <ng-template #studentListPanel>
+    <div
+        class="d-flex align-items-center justify-content-center mx-5 mt-5 mb-3"
+        [class.is-hidden]="isShowingIndividualStudent"
+    >
+        <button class="btn btn-primary" (click)="batchImport()">
+            Import CSV for Batch Manual Token Balance Change
+        </button>
+    </div>
+    <div class="row align-items-center justify-content-center m-5" [class.is-hidden]="isShowingIndividualStudent">
+        <label class="col-auto d-inline">Search for Students</label>
+        <div class="col-4">
+            <input class="form-control mx-2" type="text" [(ngModel)]="studentSearchTerm" />
+        </div>
+        <button class="col-auto btn btn-primary mx-2" (click)="search()" [disabled]="isFetchingInfo">Search</button>
+        <button class="col-auto btn btn-outline-danger mx-2" (click)="clearSearch()" [disabled]="isFetchingInfo">
+            Clear
+        </button>
+    </div>
     <div *ngIf="students && studentGrades" class="flex-column m-5" [class.is-hidden]="isShowingIndividualStudent">
         <div class="d-flex align-self-stretch mx-5">
             <button

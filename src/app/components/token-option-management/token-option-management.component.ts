@@ -71,7 +71,8 @@ export class TokenOptionManagementComponent {
         const tokenOption = await this.componentRef.instance.getValue();
         const group = this._value as TokenOptionGroup;
         group.addTokenOption(tokenOption);
-        await this.configurationManagerService.updateTokenOptionGroup(group);
+        const result = await this.configurationManagerService.updateTokenOptionGroup(group);
+        if (!result) await this.notifyUpdateFailure();
         this.isProcessing = false;
         this.modalRef?.hide();
     }
@@ -84,9 +85,16 @@ export class TokenOptionManagementComponent {
             return;
         }
         const tokenOption = await this.componentRef.instance.getValue();
-        await this.configurationManagerService.updateTokenOptionGroup(tokenOption.group);
+        const result = await this.configurationManagerService.updateTokenOptionGroup(tokenOption.group);
+        if (!result) await this.notifyUpdateFailure();
         this.isProcessing = false;
         this.modalRef?.hide();
+    }
+
+    private async notifyUpdateFailure(): Promise<void> {
+        await this.modalManagerService.createNotificationModal(
+            'Auto update failed. Some students have already taken the quiz that corresponds to the token option group this token option belongs to. Please clicks the "Save It Now" button in the quiz management page on Canvas.'
+        );
     }
 
     async onDelete(): Promise<void> {
@@ -104,7 +112,8 @@ export class TokenOptionManagementComponent {
         if (confirmationRef.content) confirmationRef.content.disableButton = true;
         const group = option.group;
         group.deleteTokenOption(option);
-        await this.configurationManagerService.updateTokenOptionGroup(group);
+        const updateResult = await this.configurationManagerService.updateTokenOptionGroup(group);
+        if (!updateResult) await this.notifyUpdateFailure();
         confirmationRef.hide();
         this.isProcessing = false;
         this.modalRef?.hide();

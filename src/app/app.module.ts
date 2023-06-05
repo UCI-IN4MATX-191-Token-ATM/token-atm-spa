@@ -56,6 +56,10 @@ import { SpendForAssignmentResubmissionTokenOptionFieldComponent } from './compo
 import { WithdrawLabDataTokenOptionFieldComponent } from './components/form-fields/token-option-fields/withdraw-lab-data-token-option-field/withdraw-lab-data-token-option-field.component';
 import { WithdrawAssignmentResubmissionOptionFieldComponent } from './components/form-fields/token-option-fields/withdraw-assignment-resubmission-option-field/withdraw-assignment-resubmission-option-field.component';
 import { CreateConfigurationModalComponent } from './components/create-configuration-modal/create-configuration-modal.component';
+import { SpendForLabSwitchTokenOptionFieldComponent } from './components/form-fields/token-option-fields/spend-for-lab-switch-token-option-field/spend-for-lab-switch-token-option-field.component';
+import { WithdrawLabSwitchTokenOptionFieldComponent } from './components/form-fields/token-option-fields/withdraw-lab-switch-token-option-field/withdraw-lab-switch-token-option-field.component';
+import { PickTokenOptionModalComponent } from './components/pick-token-option-modal/pick-token-option-modal.component';
+import { BatchTokenBalanceAdjustmentModalComponent } from './components/batch-token-balance-adjustment-modal/batch-token-balance-adjustment-modal.component';
 
 @NgModule({
     declarations: [
@@ -91,7 +95,11 @@ import { CreateConfigurationModalComponent } from './components/create-configura
         SpendForAssignmentResubmissionTokenOptionFieldComponent,
         WithdrawLabDataTokenOptionFieldComponent,
         WithdrawAssignmentResubmissionOptionFieldComponent,
-        CreateConfigurationModalComponent
+        CreateConfigurationModalComponent,
+        SpendForLabSwitchTokenOptionFieldComponent,
+        WithdrawLabSwitchTokenOptionFieldComponent,
+        PickTokenOptionModalComponent,
+        BatchTokenBalanceAdjustmentModalComponent
     ],
     imports: [
         BrowserModule,
