@@ -77,9 +77,10 @@ export class TokenOptionGroup {
         this._tokenOptions = tokenOptions;
     }
 
-    public addTokenOption(tokenOption: TokenOption): void {
+    public addTokenOption(tokenOption: TokenOption, position?: number): void {
         this.configuration.updateNextFreeTokenOptionId(tokenOption.id);
-        this._tokenOptions.push(tokenOption);
+        if (position == undefined) this._tokenOptions.push(tokenOption);
+        else this._tokenOptions.splice(position, 0, tokenOption);
     }
 
     public deleteTokenOption(tokenOption: TokenOption): void {

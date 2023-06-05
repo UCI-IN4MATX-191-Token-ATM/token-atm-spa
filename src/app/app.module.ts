@@ -60,6 +60,7 @@ import { SpendForLabSwitchTokenOptionFieldComponent } from './components/form-fi
 import { WithdrawLabSwitchTokenOptionFieldComponent } from './components/form-fields/token-option-fields/withdraw-lab-switch-token-option-field/withdraw-lab-switch-token-option-field.component';
 import { PickTokenOptionModalComponent } from './components/pick-token-option-modal/pick-token-option-modal.component';
 import { BatchTokenBalanceAdjustmentModalComponent } from './components/batch-token-balance-adjustment-modal/batch-token-balance-adjustment-modal.component';
+import { MoveTokenOptionModalComponent } from './components/move-token-option-modal/move-token-option-modal.component';
 
 @NgModule({
     declarations: [
@@ -99,7 +100,8 @@ import { BatchTokenBalanceAdjustmentModalComponent } from './components/batch-to
         SpendForLabSwitchTokenOptionFieldComponent,
         WithdrawLabSwitchTokenOptionFieldComponent,
         PickTokenOptionModalComponent,
-        BatchTokenBalanceAdjustmentModalComponent
+        BatchTokenBalanceAdjustmentModalComponent,
+        MoveTokenOptionModalComponent
     ],
     imports: [
         BrowserModule,

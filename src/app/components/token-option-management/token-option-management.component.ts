@@ -102,7 +102,9 @@ export class TokenOptionManagementComponent {
         this.isProcessing = true;
         const option = this._value as TokenOption;
         const [confirmationRef, result] = await this.modalManagerService.createConfirmationModal(
-            `Do you really want to delete token option ${option.name}?`
+            `Do you really want to delete token option ${option.name}?`,
+            'Confirmation',
+            true
         );
         if (!result) {
             confirmationRef.hide();
