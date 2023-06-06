@@ -35,29 +35,29 @@ export class PaginatedView<T> implements Iterable<T> {
             }
         }
     }
-
+    //Check if there is a next page return true if there is a next page
     public hasPrevPage(): boolean {
         return this.prevURL != undefined;
     }
-
+    //
     public async prev(): Promise<void> {
         if (!this.prevURL) return;
         const response = await this.requestHandler(this.prevURL);
         this.data = this.dataProcessor(response.data);
         this.extractURLs(response);
     }
-
+    //return whether there is a next page
     public hasNextPage(): boolean {
         return this.nextURL != undefined;
     }
-
+    // return next page data
     public async next(): Promise<void> {
         if (!this.nextURL) return;
         const response = await this.requestHandler(this.nextURL);
         this.data = this.dataProcessor(response.data);
         this.extractURLs(response);
     }
-
+    //
     private *generator(): Iterator<T> {
         for (const entry of this.data) {
             yield entry;
