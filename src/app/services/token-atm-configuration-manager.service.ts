@@ -91,6 +91,17 @@ export class TokenATMConfigurationManagerService {
         });
     }
 
+    public async updateTokenOptionGroupMetadata(tokenOptionGroup: TokenOptionGroup): Promise<void> {
+        const courseId = tokenOptionGroup.configuration.course.id,
+            quizId = tokenOptionGroup.quizId;
+        await this.canvasService.modifyQuiz(
+            courseId,
+            quizId,
+            TokenATMConfigurationManagerService.TOKEN_ATM_QUIZ_PREFIX + tokenOptionGroup.name,
+            tokenOptionGroup.description
+        );
+    }
+
     public async updateTokenOptionGroup(tokenOptionGroup: TokenOptionGroup): Promise<boolean> {
         const courseId = tokenOptionGroup.configuration.course.id,
             quizId = tokenOptionGroup.quizId;
@@ -119,6 +130,7 @@ export class TokenATMConfigurationManagerService {
         );
         await this.canvasService.createQuizQuestions(courseId, quizId, [question]);
         // TODO: support rendering multiple quiz questions
+        // TODO: replace existing questions rather than create a new one
         await this.saveConfiguration(tokenOptionGroup.configuration);
         if (tokenOptionGroup.isPublished && canUnpublish)
             await this.canvasService.changeQuizPublishState(courseId, quizId, true);

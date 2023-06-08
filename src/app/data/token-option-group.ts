@@ -45,6 +45,10 @@ export class TokenOptionGroup {
         return this._name;
     }
 
+    public set name(name: string) {
+        this._name = name;
+    }
+
     public get id(): number {
         return this._id;
     }
@@ -59,6 +63,10 @@ export class TokenOptionGroup {
 
     public get description(): string {
         return this._description;
+    }
+
+    public set description(description: string) {
+        this._description = description;
     }
 
     public get isPublished(): boolean {

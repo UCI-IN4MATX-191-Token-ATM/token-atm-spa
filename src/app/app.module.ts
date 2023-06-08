@@ -38,6 +38,10 @@ import { ConfirmationModalComponent } from './components/confirmation-modal/conf
 import { ModalModule } from 'ngx-bootstrap/modal';
 import { NotificationModalComponent } from './components/notification-modal/notification-modal.component';
 import { ConfigurationComponent } from './components/configuration/configuration.component';
+import { TokenOptionGroupManagementComponent } from './components/token-option-group-management/token-option-group-management.component';
+import { StringInputFieldComponent } from './components/form-fields/string-input-field/string-input-field.component';
+import { StringTextareaFieldComponent } from './components/form-fields/string-textarea-field/string-textarea-field.component';
+import { NumberInputFieldComponent } from './components/form-fields/number-input-field/number-input-field.component';
 
 @NgModule({
     declarations: [
@@ -57,7 +61,11 @@ import { ConfigurationComponent } from './components/configuration/configuration
         StudentRecordDisplayComponent,
         ConfirmationModalComponent,
         NotificationModalComponent,
-        ConfigurationComponent
+        ConfigurationComponent,
+        TokenOptionGroupManagementComponent,
+        StringInputFieldComponent,
+        StringTextareaFieldComponent,
+        NumberInputFieldComponent
     ],
     imports: [
         BrowserModule,
