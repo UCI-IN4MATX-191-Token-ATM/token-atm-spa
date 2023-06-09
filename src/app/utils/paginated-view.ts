@@ -39,7 +39,7 @@ export class PaginatedView<T> implements Iterable<T> {
     public hasPrevPage(): boolean {
         return this.prevURL != undefined;
     }
-    //
+    //extract previous page data
     public async prev(): Promise<void> {
         if (!this.prevURL) return;
         const response = await this.requestHandler(this.prevURL);
@@ -57,7 +57,7 @@ export class PaginatedView<T> implements Iterable<T> {
         this.data = this.dataProcessor(response.data);
         this.extractURLs(response);
     }
-    //
+
     private *generator(): Iterator<T> {
         for (const entry of this.data) {
             yield entry;

@@ -24,7 +24,7 @@ export class StudentListComponent implements CourseConfigurable {
     configuration?: TokenATMConfiguration;
     //Student data in the formate of paginatedView which store student data is previous current and next page format
     students?: PaginatedView<Student>;
-    // Link student names with their grades
+    // This Map links student id to their grades since name is not a unique identifier.
     studentGrades?: Map<string, number>;
     //defualt fetching state is fase
     isFetchingInfo = false;
