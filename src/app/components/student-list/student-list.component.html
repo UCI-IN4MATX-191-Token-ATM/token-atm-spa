@@ -22,16 +22,12 @@
     </div>
     <div *ngIf="students && studentGrades" class="flex-column m-5" [class.is-hidden]="isShowingIndividualStudent">
         <div class="d-flex align-self-stretch mx-5">
-            <button
-                class="btn btn-outline-info"
-                [disabled]="!students.hasPrevPage() || isFetchingInfo"
-                (click)="prev()"
-            >
+            <button class="btn btn-dark" [disabled]="!students.hasPrevPage() || isFetchingInfo" (click)="prev()">
                 Prev
             </button>
             <div ngbDropdown class="d-inline-block mx-auto">
                 <button type="button" class="btn btn-outline-primary" ngbDropdownToggle>
-                    Select Number of Students
+                    Select Number of Students Per Page
                 </button>
                 <div ngbDropdownMenu>
                     <button
@@ -44,11 +40,7 @@
                     </button>
                 </div>
             </div>
-            <button
-                class="btn btn-outline-info"
-                [disabled]="!students.hasNextPage() || isFetchingInfo"
-                (click)="next()"
-            >
+            <button class="btn btn-dark" [disabled]="!students.hasNextPage() || isFetchingInfo" (click)="next()">
                 Next
             </button>
         </div>
@@ -72,17 +64,13 @@
         </div>
         <div class="d-flex align-self-stretch mx-5">
             <button
-                class="btn btn-outline-info me-auto"
+                class="btn btn-dark me-auto"
                 [disabled]="!students.hasPrevPage() || isFetchingInfo"
                 (click)="prev()"
             >
                 Prev
             </button>
-            <button
-                class="btn btn-outline-info"
-                [disabled]="!students.hasNextPage() || isFetchingInfo"
-                (click)="next()"
-            >
+            <button class="btn btn-dark" [disabled]="!students.hasNextPage() || isFetchingInfo" (click)="next()">
                 Next
             </button>
         </div>
