@@ -8,20 +8,23 @@ export class EarnByModuleTokenOption extends TokenOption {
     private _startTime: Date;
     private _gradeThreshold: number;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(group: TokenOptionGroup, data: any) {
-        super(group, data);
-        if (
-            typeof data['module_name'] != 'string' ||
-            typeof data['module_id'] != 'string' ||
-            typeof data['start_time'] != 'number' ||
-            typeof data['grade_threshold'] != 'number'
-        )
-            throw new Error('Invalid data');
-        this._moduleName = data['module_name'];
-        this._moduleId = data['module_id'];
-        this._startTime = fromUnixTime(data['start_time']);
-        this._gradeThreshold = data['grade_threshold'];
+    constructor(
+        group: TokenOptionGroup,
+        type: string,
+        id: number,
+        name: string,
+        description: string,
+        tokenBalanceChange: number,
+        moduleName: string,
+        moduleId: string,
+        startTime: Date,
+        gradeThreshold: number
+    ) {
+        super(group, type, id, name, description, tokenBalanceChange);
+        this._moduleName = moduleName;
+        this._moduleId = moduleId;
+        this._startTime = startTime;
+        this._gradeThreshold = gradeThreshold;
     }
 
     public get moduleName(): string {
@@ -52,5 +55,31 @@ export class EarnByModuleTokenOption extends TokenOption {
             start_time: getUnixTime(this.startTime),
             grade_threshold: this.gradeThreshold
         };
+    }
+
+    protected static resolveEarnByModuleTokenOption(
+        group: TokenOptionGroup,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data: any
+    ): ConstructorParameters<typeof EarnByModuleTokenOption> {
+        if (
+            typeof data['module_name'] != 'string' ||
+            typeof data['module_id'] != 'string' ||
+            typeof data['start_time'] != 'number' ||
+            typeof data['grade_threshold'] != 'number'
+        )
+            throw new Error('Invalid data');
+        return [
+            ...super.resolveTokenOption(group, data),
+            data['module_name'],
+            data['module_id'],
+            fromUnixTime(data['start_time']),
+            data['grade_threshold']
+        ];
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public static deserialize(group: TokenOptionGroup, data: any): EarnByModuleTokenOption {
+        return new EarnByModuleTokenOption(...this.resolveEarnByModuleTokenOption(group, data));
     }
 }

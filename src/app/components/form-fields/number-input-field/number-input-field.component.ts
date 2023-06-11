@@ -7,7 +7,7 @@ import { v4 } from 'uuid';
     templateUrl: './number-input-field.component.html',
     styleUrls: ['./number-input-field.component.sass']
 })
-export class NumberInputFieldComponent implements FormField<number> {
+export class NumberInputFieldComponent implements FormField<number, number> {
     fieldId = v4();
     @Input() label = '';
     value = 0;

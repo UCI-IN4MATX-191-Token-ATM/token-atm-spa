@@ -7,7 +7,7 @@ import { TokenOptionResolver } from './token-option-resolver';
 export class EarnByModuleTokenOptionResolver extends TokenOptionResolver<EarnByModuleTokenOption> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public resolve(group: TokenOptionGroup, data: any): EarnByModuleTokenOption {
-        return new EarnByModuleTokenOption(group, data);
+        return EarnByModuleTokenOption.deserialize(group, data);
     }
     public get type(): string {
         return 'earn-by-module';

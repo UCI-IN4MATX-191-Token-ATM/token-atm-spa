@@ -12,6 +12,8 @@ import { AxiosService } from './axios.service';
 import { User } from 'app/data/user';
 import type { QuizQuestion } from 'app/quiz-questions/quiz-question';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
+import { Quiz } from 'app/data/quiz';
+import { AssignmentOverride } from 'app/utils/assignment-override';
 
 type QuizQuestionResponse = {
     id: string;
@@ -138,7 +140,7 @@ export class CanvasService {
                         course.term = termInfoMap.get(course['enrollment_term_id']);
                     }
                 }
-                return processedData.map((entry: unknown) => new Course(entry));
+                return processedData.map((entry: unknown) => Course.deserialize(entry));
             }
         );
     }
@@ -153,7 +155,7 @@ export class CanvasService {
 
     public async getUserInformation(userId: string): Promise<User> {
         const data = await this.apiRequest(`/api/v1/users/${userId}`);
-        return new User(data);
+        return User.deserialize(data);
     }
 
     public async deletePage(courseId: string, pageId: string): Promise<void> {
@@ -241,7 +243,7 @@ export class CanvasService {
         return new PaginatedResult(
             response,
             async (url: string) => await this.paginatedRequestHandler(url),
-            (data) => data.quiz_submissions.map((entry: unknown) => new QuizSubmission(entry))
+            (data) => data.quiz_submissions.map((entry: unknown) => QuizSubmission.deserialize(entry))
         );
     }
 
@@ -258,7 +260,7 @@ export class CanvasService {
                 }
             }
         );
-        return data.submission_comments.map((entry: unknown) => new SubmissionComment(entry));
+        return data.submission_comments.map((entry: unknown) => SubmissionComment.deserialize(entry));
     }
 
     public async getSingleSubmissionGrade(
@@ -311,7 +313,7 @@ export class CanvasService {
         for (let i = submissionComments.length - 1; i >= 0; i--) {
             let result;
             try {
-                result = new SubmissionComment(submissionComments[i]);
+                result = SubmissionComment.deserialize(submissionComments[i]);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
                 continue;
@@ -354,7 +356,7 @@ export class CanvasService {
                 }
             }
         );
-        return new SubmissionComment(data);
+        return SubmissionComment.deserialize(data);
     }
 
     public async gradeSubmission(
@@ -401,7 +403,7 @@ export class CanvasService {
         for (let i = submissionComments.length - 1; i >= 0; i--) {
             let result;
             try {
-                result = new SubmissionComment(submissionComments[i]);
+                result = SubmissionComment.deserialize(submissionComments[i]);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
                 continue;
@@ -499,7 +501,7 @@ export class CanvasService {
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (data: any) => data.map((entry: any) => new Student(entry))
+            (data: any) => data.map((entry: any) => Student.deserialize(entry))
         );
     }
 
@@ -515,7 +517,7 @@ export class CanvasService {
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
             (data: unknown[]) => {
-                return data.map((entry: unknown) => new ModuleItemInfo(entry));
+                return data.map((entry: unknown) => ModuleItemInfo.deserialize(entry));
             }
         );
         for await (const moduleItem of moduleItems) {
@@ -550,7 +552,7 @@ export class CanvasService {
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (data: any) => data.map((entry: any) => new Student(entry))
+            (data: any) => data.map((entry: any) => Student.deserialize(entry))
         );
     }
 
@@ -654,7 +656,7 @@ export class CanvasService {
                 }),
                 async (url: string) => await this.paginatedRequestHandler(url),
                 (data: unknown[]) => {
-                    return data.map((entry: unknown) => new ModuleItemInfo(entry));
+                    return data.map((entry: unknown) => ModuleItemInfo.deserialize(entry));
                 }
             );
             for await (const moduleItem of moduleItems) {
@@ -877,5 +879,67 @@ export class CanvasService {
                 }
             });
         }
+    }
+
+    public async getQuiz(courseId: string, quizId: string): Promise<Quiz> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`);
+        return Quiz.deserialize(data);
+    }
+
+    public async getAssignmentOverrideByTitle(
+        courseId: string,
+        assignmentId: string,
+        overrideTitle: string
+    ): Promise<AssignmentOverride | undefined> {
+        const data = new PaginatedResult<AssignmentOverride>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => data.map((entry) => AssignmentOverride.deserialize(entry))
+        );
+        for await (const override of data) {
+            if (override.title == overrideTitle) {
+                return override;
+            }
+        }
+        return undefined;
+    }
+
+    public async createAssignmentOverride(
+        courseId: string,
+        assignmentId: string,
+        title: string,
+        studentIds: string[],
+        lockDate: Date
+    ): Promise<void> {
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
+            method: 'post',
+            data: {
+                assignment_override: {
+                    student_ids: studentIds,
+                    title: title,
+                    lock_at: formatISO(lockDate)
+                }
+            }
+        });
+    }
+
+    public async updateAssignmentOverride(
+        courseId: string,
+        assignmentId: string,
+        overrideId: string,
+        title: string,
+        studentIds: string[],
+        lockDate: Date
+    ): Promise<void> {
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${overrideId}`, {
+            method: 'put',
+            data: {
+                assignment_override: {
+                    student_ids: studentIds,
+                    title: title,
+                    lock_at: formatISO(lockDate)
+                }
+            }
+        });
     }
 }

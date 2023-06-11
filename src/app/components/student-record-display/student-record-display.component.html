@@ -64,8 +64,8 @@
                                 <tbody>
                                     <tr *ngFor="let processedRequest of processedRequests">
                                         <td>{{ processedRequest.tokenOptionName }}</td>
-                                        <td>{{ formatDate(processedRequest.submitTime) }}</td>
-                                        <td>{{ formatDate(processedRequest.processTime) }}</td>
+                                        <td>{{ formatDate(processedRequest.submittedTime) }}</td>
+                                        <td>{{ formatDate(processedRequest.processedTime) }}</td>
                                         <td>{{ processedRequest.isApproved ? 'Approved' : 'Rejected' }}</td>
                                         <td>{{ processedRequest.tokenBalanceChange }}</td>
                                         <td>{{ processedRequest.message }}</td>

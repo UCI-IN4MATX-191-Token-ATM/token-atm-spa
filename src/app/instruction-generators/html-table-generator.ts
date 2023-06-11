@@ -24,15 +24,24 @@ export class HTMLTableGenerator extends TokenOptionInstructionGenerator {
             rows.push(row);
         }
         return [
-            '<table>',
+            '<table style="border: 1px solid black; border-collapse: collapse;">',
             '<thead>',
             '<tr>',
-            ...values.map((entry) => `<th style="text-align: center;">${entry[0]}</th>`),
+            ...values.map(
+                (entry) =>
+                    `<th style="text-align: center; margin-left: 1rem; margin-right: 1rem; border: 1px solid black;">${entry[0]}</th>`
+            ),
             '</tr>',
             '</thead>',
             '<tbody>',
             ...rows.map(
-                (row) => `<tr>${row.map((entry) => `<td style="text-align: center;">${entry}</td>`).join('')}</tr>`
+                (row) =>
+                    `<tr>${row
+                        .map(
+                            (entry) =>
+                                `<td style="text-align: center; margin-left: 1rem; margin-right: 1rem; border: 1px solid black;">${entry}</td>`
+                        )
+                        .join('')}</tr>`
             ),
             '</tbody>',
             '</table>'

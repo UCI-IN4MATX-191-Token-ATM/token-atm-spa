@@ -16,32 +16,18 @@ export class StudentRecord {
         configuration: TokenATMConfiguration,
         student: Student,
         commentId: string,
+        commentDate: Date,
         tokenBalance: number,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: any
+        processedAttemptsMap: Map<number, number>,
+        processedRequests: ProcessedRequest[]
     ) {
-        if (
-            typeof data['comment_date'] != 'number' ||
-            typeof data['processed_attempt_map'] != 'object' ||
-            !Array.isArray(data['processed_attempt_map']) ||
-            typeof data['processed_requests'] != 'object' ||
-            !Array.isArray(data['processed_requests'])
-        )
-            throw new Error('Invalid data');
         this._configuration = configuration;
         this._student = student;
         this._commentId = commentId;
-        this._commentDate = fromUnixTime(data['comment_date']);
+        this._commentDate = commentDate;
         this._tokenBalance = tokenBalance;
-        this._processedAttemptsMap = new Map<number, number>();
-        for (const entry of data['processed_attempt_map']) {
-            if (typeof entry['token_option_group_id'] != 'number' || typeof entry['attempt'] != 'number')
-                throw new Error('Invalid data');
-            this._processedAttemptsMap.set(entry['token_option_group_id'], entry['attempt']);
-        }
-        this._processedRequests = data['processed_requests'].map(
-            (entry) => new ProcessedRequest(configuration, student, entry)
-        );
+        this._processedAttemptsMap = processedAttemptsMap;
+        this._processedRequests = processedRequests;
     }
 
     public get configuration(): TokenATMConfiguration {
@@ -102,5 +88,38 @@ export class StudentRecord {
             }),
             processed_requests: this.processedRequests
         };
+    }
+
+    public static deserialize(
+        configuration: TokenATMConfiguration,
+        student: Student,
+        commentId: string,
+        tokenBalance: number,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data: any
+    ): StudentRecord {
+        if (
+            typeof data['comment_date'] != 'number' ||
+            typeof data['processed_attempt_map'] != 'object' ||
+            !Array.isArray(data['processed_attempt_map']) ||
+            typeof data['processed_requests'] != 'object' ||
+            !Array.isArray(data['processed_requests'])
+        )
+            throw new Error('Invalid data');
+        const processedAttemptsMap = new Map<number, number>();
+        for (const entry of data['processed_attempt_map']) {
+            if (typeof entry['token_option_group_id'] != 'number' || typeof entry['attempt'] != 'number')
+                throw new Error('Invalid data');
+            processedAttemptsMap.set(entry['token_option_group_id'], entry['attempt']);
+        }
+        return new StudentRecord(
+            configuration,
+            student,
+            commentId,
+            fromUnixTime(data['comment_date']),
+            tokenBalance,
+            processedAttemptsMap,
+            data['processed_requests'].map((entry) => ProcessedRequest.deserialize(configuration, student, entry))
+        );
     }
 }

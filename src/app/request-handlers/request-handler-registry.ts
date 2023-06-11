@@ -6,13 +6,21 @@ import type { TokenATMRequest } from 'app/requests/token-atm-request';
 import type { TokenOption } from 'app/token-options/token-option';
 import { BasicRequestHandler } from './basic-request-handler';
 import { EarnByModuleRequestHandler } from './earn-by-module-request-handler';
+import { EarnByQuizRequestHandler } from './earn-by-quiz-request-handler';
+import { EarnBySurveyRequestHandler } from './earn-by-survey-request-handler';
 import type { RequestHandler } from './request-handlers';
+import { SpendForAssignmentResubmissionRequestHandler } from './spend-for-assignment-resubmission-request-handler';
+import { SpendForLabDataRequestHandler } from './spend-for-lab-data-request-handler';
 
 type GenericRequestHandler = RequestHandler<TokenOption, TokenATMRequest<TokenOption>>;
 
 export const REGISTERED_REQUEST_HANDLERS: Type<GenericRequestHandler>[] = [
     BasicRequestHandler,
-    EarnByModuleRequestHandler
+    EarnByModuleRequestHandler,
+    EarnByQuizRequestHandler,
+    SpendForAssignmentResubmissionRequestHandler,
+    SpendForLabDataRequestHandler,
+    EarnBySurveyRequestHandler
 ];
 
 export const REQUEST_HANDLER_INJECT_TOKEN = new InjectionToken<GenericRequestHandler[]>('REQUEST_HANDLERS');
