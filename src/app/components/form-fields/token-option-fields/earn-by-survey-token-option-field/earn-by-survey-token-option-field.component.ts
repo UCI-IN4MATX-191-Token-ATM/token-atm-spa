@@ -108,7 +108,7 @@ export class EarnBySurveyTokenOptionFieldComponent extends TokenOptionField<Earn
                 milliseconds: 0
             });
             this._endTimeField.initValue = set(new Date(), {
-                hours: 11,
+                hours: 23,
                 minutes: 59,
                 seconds: 59,
                 milliseconds: 999

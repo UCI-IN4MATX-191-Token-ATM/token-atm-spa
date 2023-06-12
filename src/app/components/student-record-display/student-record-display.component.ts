@@ -5,7 +5,11 @@ import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { StudentRecordManagerService } from 'app/services/student-record-manager.service';
+import type { TokenOption } from 'app/token-options/token-option';
+import { TokenOptionRegistry } from 'app/token-options/token-option-registry';
 import { format } from 'date-fns';
+import { BsModalService } from 'ngx-bootstrap/modal';
+import { PickTokenOptionModalComponent } from '../pick-token-option-modal/pick-token-option-modal.component';
 
 @Component({
     selector: 'app-student-record-display',
@@ -22,7 +26,9 @@ export class StudentRecordDisplayComponent {
 
     constructor(
         @Inject(StudentRecordManagerService) private recordManagerService: StudentRecordManagerService,
-        @Inject(ModalManagerService) private modalManagerService: ModalManagerService
+        @Inject(ModalManagerService) private modalManagerService: ModalManagerService,
+        @Inject(BsModalService) private modalService: BsModalService,
+        @Inject(TokenOptionRegistry) private tokenOptionRegistry: TokenOptionRegistry
     ) {}
 
     public async configureStudent(configuration: TokenATMConfiguration, student: Student): Promise<void> {
@@ -70,6 +76,43 @@ export class StudentRecordDisplayComponent {
             );
             this.tokenAdjustmentCount = 0;
             this.tokenAdjustmentMessage = '';
+        }
+        modalRef.hide();
+    }
+
+    async onCreateProcessedRequest(): Promise<void> {
+        if (!this.configuration || !this.studentRecord) return;
+        let promiseResolve;
+        const promise = new Promise<TokenOption | undefined>((resolve) => {
+            promiseResolve = resolve;
+        });
+        const modalRef = this.modalService.show(PickTokenOptionModalComponent, {
+            initialState: {
+                configuration: this.configuration,
+                onResolve: promiseResolve,
+                filter: (option: TokenOption) => this.tokenOptionRegistry.canCreateRequestByTeacher(option)
+            },
+            backdrop: 'static',
+            keyboard: false
+        });
+        const result = await promise;
+        if (result != undefined) {
+            const nowTime = new Date();
+            await this.recordManagerService.logProcessedRequest(
+                this.configuration,
+                this.studentRecord,
+                new ProcessedRequest(
+                    this.configuration,
+                    result.id,
+                    result.name,
+                    this.studentRecord?.student,
+                    true,
+                    nowTime,
+                    nowTime,
+                    result.tokenBalanceChange,
+                    'This request is made by teachers on your behalf.'
+                )
+            );
         }
         modalRef.hide();
     }

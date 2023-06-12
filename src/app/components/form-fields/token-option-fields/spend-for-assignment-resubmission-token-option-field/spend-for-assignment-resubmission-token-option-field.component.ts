@@ -120,13 +120,13 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponent
                 milliseconds: 0
             });
             this._endTimeField.initValue = set(new Date(), {
-                hours: 11,
+                hours: 23,
                 minutes: 59,
                 seconds: 59,
                 milliseconds: 999
             });
             this._newDueTimeField.initValue = set(new Date(), {
-                hours: 11,
+                hours: 23,
                 minutes: 59,
                 seconds: 59,
                 milliseconds: 999

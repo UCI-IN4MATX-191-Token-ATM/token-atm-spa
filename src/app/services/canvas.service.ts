@@ -544,13 +544,18 @@ export class CanvasService {
         }
         return [obtainedPoints, totalPoints];
     }
-    public async getCourseStudents(courseId: string, dataPerPage = 50): Promise<PaginatedView<Student>> {
+    public async getCourseStudents(
+        courseId: string,
+        dataPerPage = 50,
+        searchTerm?: string
+    ): Promise<PaginatedView<Student>> {
         return new PaginatedView(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/users`, {
                 params: {
                     enrollment_type: ['student'],
                     enrollment_state: ['active'],
-                    per_page: dataPerPage
+                    per_page: dataPerPage,
+                    search_term: searchTerm
                 }
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
@@ -1081,6 +1086,32 @@ export class CanvasService {
             }
         }
         if (!result) throw new Error('Assignment not found');
+        return result;
+    }
+
+    public async getStudentByEmail(courseId: string, email: string): Promise<Student | undefined> {
+        const students = new PaginatedResult<Student>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/users`, {
+                params: {
+                    enrollment_type: ['student'],
+                    enrollment_state: ['active'],
+                    per_page: 100,
+                    search_term: email
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (data: any) => data.map((entry: any) => Student.deserialize(entry))
+        );
+        let result = undefined;
+        for await (const student of students) {
+            if (student.email != email) continue;
+            if (!result) {
+                result = student;
+                continue;
+            }
+            throw new Error('Multiple students found with the same email!');
+        }
         return result;
     }
 }

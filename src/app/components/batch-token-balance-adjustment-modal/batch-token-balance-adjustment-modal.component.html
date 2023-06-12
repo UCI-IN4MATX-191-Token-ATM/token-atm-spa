@@ -1,0 +1,33 @@
+<div class="modal-header">
+    <h4 class="modal-title pull-left">Import CSV</h4>
+    <button
+        type="button"
+        class="btn-close close pull-right"
+        aria-label="Close"
+        [disabled]="isProcessing"
+        (click)="modalRef?.hide()"
+    >
+        <span aria-hidden="true" class="visually-hidden">&times;</span>
+    </button>
+</div>
+<div class="modal-body message">
+    <ng-container *ngIf="configuration">
+        <input type="file" class="form-control" (change)="onSelectFile($event)" accept=".csv" />
+        <div class="d-flex flex-column align-items-center justify-content-center">
+            <div *ngIf="progress" class="progress m-3 mx-auto" style="width: 15rem">
+                <div
+                    class="progress-bar progress-bar-striped bg-success"
+                    role="progressbar"
+                    [style.width]="progress + '%'"
+                ></div>
+            </div>
+            <div *ngIf="progressMessage">{{ progressMessage }}</div>
+        </div>
+    </ng-container>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary me-4" [disabled]="isProcessing" (click)="modalRef?.hide()">
+        Cancel
+    </button>
+    <button type="button" class="btn btn-success" (click)="onImportCSV()" [disabled]="isProcessing">Import</button>
+</div>

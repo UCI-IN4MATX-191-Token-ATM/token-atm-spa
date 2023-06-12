@@ -18,7 +18,7 @@ export class HasApprovedRequestGuard extends RequestHandlerGuard {
                 request.tokenOption instanceof WithdrawTokenOption &&
                 request.tokenOption.withdrawTokenOptionId == this.withdrawTokenOption.id
             ) {
-                count--;
+                if (count > 0) count--;
             }
         }
         if (count == 0) onReject('There is no request to withdraw.');

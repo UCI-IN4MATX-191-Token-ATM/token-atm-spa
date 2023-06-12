@@ -29,7 +29,7 @@ export abstract class TokenOption {
         return this._group;
     }
 
-    protected set group(group: TokenOptionGroup) {
+    public set group(group: TokenOptionGroup) {
         this._group = group;
     }
 

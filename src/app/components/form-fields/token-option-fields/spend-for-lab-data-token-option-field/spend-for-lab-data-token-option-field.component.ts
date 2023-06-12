@@ -28,6 +28,8 @@ export class SpendForLabDataTokenOptionFieldComponent
     @ViewChild('startTimeFieldComponent', { static: true }) private _startTimeField?: DateTimeFieldComponent;
     @ViewChild('endTimeFieldComponent', { static: true }) private _endTimeField?: DateTimeFieldComponent;
     @ViewChild('newDueTimeFieldComponent', { static: true }) private _newDueTimeField?: DateTimeFieldComponent;
+    @ViewChild('excludeTokenOptionIdsFieldComponent', { static: true })
+    private _excludeTokenOptionIdsField?: StringInputFieldComponent;
 
     constructor(@Inject(CanvasService) private canvasService: CanvasService) {
         super();
@@ -47,7 +49,8 @@ export class SpendForLabDataTokenOptionFieldComponent
             !this._quizNameField ||
             !this._startTimeField ||
             !this._endTimeField ||
-            !this._newDueTimeField
+            !this._newDueTimeField ||
+            !this._excludeTokenOptionIdsField
         ) {
             throw new Error('Value is not ready yet');
         }
@@ -67,7 +70,11 @@ export class SpendForLabDataTokenOptionFieldComponent
                 await this.canvasService.getQuizIdByName(courseId, await this._quizNameField.getValue()),
                 await this._startTimeField.getValue(),
                 await this._endTimeField.getValue(),
-                await this._newDueTimeField.getValue()
+                await this._newDueTimeField.getValue(),
+                (await this._excludeTokenOptionIdsField.getValue())
+                    .split(',')
+                    .filter((value: string) => value.trim().length != 0)
+                    .map((value: string) => parseInt(value.trim()))
             );
         } else {
             this._value.name = await this._nameField.getValue();
@@ -81,6 +88,10 @@ export class SpendForLabDataTokenOptionFieldComponent
             this._value.startTime = await this._startTimeField.getValue();
             this._value.endTime = await this._endTimeField.getValue();
             this._value.newDueTime = await this._newDueTimeField.getValue();
+            this._value.excludeTokenOptionIds = (await this._excludeTokenOptionIdsField.getValue())
+                .split(',')
+                .filter((value: string) => value.trim().length != 0)
+                .map((value: string) => parseInt(value.trim()));
             return this._value;
         }
     }
@@ -95,7 +106,8 @@ export class SpendForLabDataTokenOptionFieldComponent
             !this._quizNameField ||
             !this._startTimeField ||
             !this._endTimeField ||
-            !this._newDueTimeField
+            !this._newDueTimeField ||
+            !this._excludeTokenOptionIdsField
         ) {
             throw new Error('Fields are not ready yet!');
         }
@@ -106,6 +118,7 @@ export class SpendForLabDataTokenOptionFieldComponent
         this.addSubField(this._startTimeField);
         this.addSubField(this._endTimeField);
         this.addSubField(this._newDueTimeField);
+        this.addSubField(this._excludeTokenOptionIdsField);
         if (this._value instanceof TokenOptionGroup) {
             this._idField.initValue = this._value.configuration.nextFreeTokenOptionId;
             this._nameField.initValue = '';
@@ -119,17 +132,18 @@ export class SpendForLabDataTokenOptionFieldComponent
                 milliseconds: 0
             });
             this._endTimeField.initValue = set(new Date(), {
-                hours: 11,
+                hours: 23,
                 minutes: 59,
                 seconds: 59,
                 milliseconds: 999
             });
             this._newDueTimeField.initValue = set(new Date(), {
-                hours: 11,
+                hours: 23,
                 minutes: 59,
                 seconds: 59,
                 milliseconds: 999
             });
+            this._excludeTokenOptionIdsField.initValue = '';
         } else {
             this._idField.initValue = this._value.id;
             this._nameField.initValue = this._value.name;
@@ -139,6 +153,7 @@ export class SpendForLabDataTokenOptionFieldComponent
             this._startTimeField.initValue = this._value.startTime;
             this._endTimeField.initValue = this._value.endTime;
             this._newDueTimeField.initValue = this._value.newDueTime;
+            this._excludeTokenOptionIdsField.initValue = this._value.excludeTokenOptionIds.join(',');
         }
         const courseId =
             this._value instanceof TokenOptionGroup
@@ -154,6 +169,15 @@ export class SpendForLabDataTokenOptionFieldComponent
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
                 return err.toString();
+            }
+            return undefined;
+        };
+        this._excludeTokenOptionIdsField.validator = async (value: string) => {
+            const values = value.split(',');
+            for (const value of values) {
+                const trimmedValue = value.trim();
+                if (trimmedValue.length == 0) continue;
+                if (isNaN(parseInt(trimmedValue))) return 'Non-numeric value exists in the list!';
             }
             return undefined;
         };

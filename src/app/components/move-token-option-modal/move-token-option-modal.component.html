@@ -1,0 +1,49 @@
+<div class="modal-header">
+    <h4 class="modal-title pull-left">Move Token Option</h4>
+    <button
+        type="button"
+        class="btn-close close pull-right"
+        aria-label="Close"
+        [disabled]="isProcessing"
+        (click)="onCancel()"
+    >
+        <span aria-hidden="true" class="visually-hidden">&times;</span>
+    </button>
+</div>
+<div class="modal-body message">
+    <ng-container *ngIf="configuration">
+        <select class="form-select m-2" [(ngModel)]="selectedOperation">
+            <option *ngFor="let operation of moveOperations | keyvalue" [ngValue]="operation.value">
+                {{ operation.value }}
+            </option>
+        </select>
+        <select class="form-select m-2" [ngModel]="selectedGroup" (ngModelChange)="onSelectTokenOptionGroup($event)">
+            <option *ngFor="let group of configuration.tokenOptionGroups" [ngValue]="group">{{ group.name }}</option>
+        </select>
+        <ng-container *ngIf="validTokenOptions">
+            <select
+                class="form-select m-2"
+                *ngIf="validTokenOptions.length > 0; else noValidTokenOption"
+                [(ngModel)]="selectedOption"
+            >
+                <option *ngFor="let option of validTokenOptions" [ngValue]="option">
+                    {{ option.name }}
+                </option>
+            </select>
+            <ng-template #noValidTokenOption>
+                <p>
+                    There is no valid token option for the operation you are about to perform in the current selected
+                    token option group.
+                </p>
+            </ng-template>
+        </ng-container>
+    </ng-container>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary me-4" [disabled]="isProcessing" (click)="onCancel()">
+        Cancel
+    </button>
+    <button type="button" class="btn btn-success" (click)="onMove()" [disabled]="isProcessing || !isValidSelection">
+        Move
+    </button>
+</div>
