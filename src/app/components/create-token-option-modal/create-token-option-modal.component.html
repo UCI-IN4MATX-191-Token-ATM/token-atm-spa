@@ -8,7 +8,7 @@
     <div class="modal-body message">
         <p>The type of the token option to be created:</p>
         <select class="form-select" [(ngModel)]="selectedOption">
-            <option *ngFor="let option of options; let i = index" [ngValue]="option[0]" [selected]="i === 0">
+            <option *ngFor="let option of options" [ngValue]="option[0]">
                 {{ option[1] }}
             </option>
         </select>

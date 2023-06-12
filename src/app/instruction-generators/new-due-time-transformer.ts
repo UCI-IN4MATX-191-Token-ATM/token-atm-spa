@@ -1,5 +1,5 @@
 import type { TokenOption } from 'app/token-options/token-option';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { TokenOptionInstructionTransformer } from './token-option-instruction-transformer';
 
 type HasNewDueTime = {
@@ -20,6 +20,6 @@ export class NewDueTimeTransformer extends TokenOptionInstructionTransformer<Has
 
     public validate(tokenOption: TokenOption): HasNewDueTime | undefined {
         const value = (tokenOption as unknown as HasNewDueTime).newDueTime;
-        return value == undefined ? undefined : (tokenOption as unknown as HasNewDueTime);
+        return value != undefined && isValid(value) ? (tokenOption as unknown as HasNewDueTime) : undefined;
     }
 }
