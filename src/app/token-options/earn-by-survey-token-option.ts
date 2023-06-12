@@ -27,24 +27,36 @@ export class EarnBySurveyTokenOption extends TokenOption {
         this._endTime = endTime;
     }
 
-    public get descriptiveName(): string {
-        return 'Earn Tokens by Taking Qualtrics Survey';
-    }
-
     public get surveyId(): string {
         return this._surveyId;
+    }
+
+    public set surveyId(surveyId: string) {
+        this._surveyId = surveyId;
     }
 
     public get fieldName(): string {
         return this._fieldName;
     }
 
+    public set fieldName(fieldName: string) {
+        this._fieldName = fieldName;
+    }
+
     public get startTime(): Date {
         return this._startTime;
     }
 
+    public set startTime(startTime: Date) {
+        this._startTime = startTime;
+    }
+
     public get endTime(): Date {
         return this._endTime;
+    }
+
+    public set endTime(endTime: Date) {
+        this._endTime = endTime;
     }
 
     public override toJSON(): object {

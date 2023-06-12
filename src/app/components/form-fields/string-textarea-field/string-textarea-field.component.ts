@@ -12,7 +12,7 @@ export class StringTextareaFieldComponent implements FormField<string, string> {
     @Input() label = '';
     @Input() rows = 3;
     value = '';
-    private _validator: (value: string) => string | undefined = () => undefined;
+    private _validator: (value: string) => Promise<string | undefined> = async () => undefined;
     errorMessage?: string;
     readonly = false;
 
@@ -24,7 +24,7 @@ export class StringTextareaFieldComponent implements FormField<string, string> {
         this.value = initValue;
     }
 
-    @Input() set validator(validator: (value: string) => string | undefined) {
+    @Input() set validator(validator: (value: string) => Promise<string | undefined>) {
         this._validator = validator;
     }
 
@@ -33,12 +33,8 @@ export class StringTextareaFieldComponent implements FormField<string, string> {
     }
 
     async validate(): Promise<boolean> {
-        const result = this._validator(await this.getValue());
-        if (result == undefined) {
-            return true;
-        } else {
-            this.errorMessage = result;
-            return false;
-        }
+        const result = await this._validator(await this.getValue());
+        this.errorMessage = result;
+        return result == undefined;
     }
 }

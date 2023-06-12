@@ -31,20 +31,32 @@ export class EarnByModuleTokenOption extends TokenOption {
         return this._moduleName;
     }
 
-    public get descriptiveName(): string {
-        return 'Earn Tokens by Passing Canvas Module';
+    public set moduleName(moduleName: string) {
+        this._moduleName = moduleName;
     }
 
     public get moduleId(): string {
         return this._moduleId;
     }
 
+    public set moduleId(moduleId: string) {
+        this._moduleId = moduleId;
+    }
+
     public get startTime(): Date {
         return this._startTime;
     }
 
+    public set startTime(startTime: Date) {
+        this._startTime = startTime;
+    }
+
     public get gradeThreshold(): number {
         return this._gradeThreshold;
+    }
+
+    public set gradeThreshold(gradeThreshold: number) {
+        this._gradeThreshold = gradeThreshold;
     }
 
     public override toJSON(): object {

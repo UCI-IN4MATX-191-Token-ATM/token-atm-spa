@@ -27,12 +27,12 @@ export class EarnByQuizTokenOption extends TokenOption {
         this._gradeThreshold = gradeThreshold;
     }
 
-    public get descriptiveName(): string {
-        return 'Earn Tokens by Passing Canvas Quiz';
-    }
-
     public get quizName(): string {
         return this._quizName;
+    }
+
+    public set quizName(quizName: string) {
+        this._quizName = quizName;
     }
 
     public get quizId(): string {
@@ -47,8 +47,16 @@ export class EarnByQuizTokenOption extends TokenOption {
         return this._startTime;
     }
 
+    public set startTime(startTime: Date) {
+        this._startTime = startTime;
+    }
+
     public get gradeThreshold(): number {
         return this._gradeThreshold;
+    }
+
+    public set gradeThreshold(gradeThreshold: number) {
+        this._gradeThreshold = gradeThreshold;
     }
 
     public override toJSON(): object {

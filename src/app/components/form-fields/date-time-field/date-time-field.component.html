@@ -1,0 +1,22 @@
+<div class="m-3">
+    <div>
+        <label class="form-label">{{ label }}</label>
+        <input
+            type="text"
+            class="form-control"
+            bsDatepicker
+            [(bsValue)]="value"
+            [isDisabled]="isReadOnly"
+            [disabled]="isReadOnly"
+        />
+        <timepicker
+            [(ngModel)]="value"
+            [readonlyInput]="isReadOnly"
+            [disabled]="isReadOnly"
+            [showSeconds]="true"
+            [showMeridian]="false"
+            (isValid)="isTimeValid = $event"
+        ></timepicker>
+    </div>
+    <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
+</div>

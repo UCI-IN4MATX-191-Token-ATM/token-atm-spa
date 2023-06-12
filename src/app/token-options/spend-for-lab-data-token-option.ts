@@ -30,12 +30,12 @@ export class SpendForLabDataTokenOption extends TokenOption {
         this._newDueTime = newDueTime;
     }
 
-    public get descriptiveName(): string {
-        return 'Spend Tokens for Lab Data';
-    }
-
     public get quizName(): string {
         return this._quizName;
+    }
+
+    public set quizName(quizName: string) {
+        this._quizName = quizName;
     }
 
     public get quizId(): string {
@@ -50,12 +50,24 @@ export class SpendForLabDataTokenOption extends TokenOption {
         return this._startTime;
     }
 
+    public set startTime(startTime: Date) {
+        this._startTime = startTime;
+    }
+
     public get endTime(): Date {
         return this._endTime;
     }
 
+    public set endTime(endTime: Date) {
+        this._endTime = endTime;
+    }
+
     public get newDueTime(): Date {
         return this._newDueTime;
+    }
+
+    public set newDueTime(newDueTime: Date) {
+        this._newDueTime = newDueTime;
     }
 
     public override toJSON(): object {

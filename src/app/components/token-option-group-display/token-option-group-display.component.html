@@ -15,7 +15,7 @@
                 [class.bi-slash-circle]="!group.isPublished"
                 (click)="group.isPublished ? onUnpublishGroup() : onPublishGroup()"
             ></span>
-            <span class="bi bi-plus-circle text-success fs-5 mx-3"></span>
+            <span class="bi bi-plus-circle text-success fs-5 mx-3 is-link" (click)="onCreateTokenOption()"></span>
             <div class="btn-group" dropdown>
                 <span class="bi bi-three-dots-vertical fs-5 mx-3" dropdownToggle></span>
                 <ul class="dropdown-menu dropdown-menu-right border-dark text-center" *dropdownMenu>

@@ -17,7 +17,7 @@ export class TokenOptionGroupManagementComponent {
     groupId = -1;
     groupName = '';
     groupDescription = '';
-    groupNameValidator = (v: string) => (v.length > 0 ? undefined : 'Name cannot be empty');
+    groupNameValidator = async (v: string) => (v.length > 0 ? undefined : 'Name cannot be empty');
     modalRef?: BsModalRef<unknown>;
     isProcessing = false;
 
