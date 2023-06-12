@@ -1,0 +1,36 @@
+<div class="modal-header">
+    <h4 class="modal-title pull-left">Create Token ATM Configuration</h4>
+    <button
+        type="button"
+        class="btn-close close pull-right"
+        aria-label="Close"
+        [disabled]="isProcessing"
+        (click)="onCancel()"
+    >
+        <span aria-hidden="true" class="visually-hidden">&times;</span>
+    </button>
+</div>
+<div class="modal-body message">
+    <p>
+        The course you selected contains no Token ATM configuration, or the Token ATM configuration for this course is
+        invalid. Do you want to create a new configuration?
+    </p>
+    <p>Note: For now, you cannot change it from Token ATM Dashboard once you created it.</p>
+    <!-- TODO: support modification -->
+    <app-string-input-field
+        #suffixFieldComponent
+        label="The suffix of Assignment Group & Module name"
+    ></app-string-input-field>
+    <app-string-textarea-field
+        #descriptionFieldComponent
+        label="Description of Token ATM Log Assignment"
+    ></app-string-textarea-field>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary me-4" [disabled]="isProcessing" (click)="onCancel()">
+        Cancel
+    </button>
+    <button type="button" class="btn btn-success" (click)="onCreateConfiguration()" [disabled]="isProcessing">
+        Create
+    </button>
+</div>

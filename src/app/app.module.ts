@@ -55,6 +55,7 @@ import { SpendForLabDataTokenOptionFieldComponent } from './components/form-fiel
 import { SpendForAssignmentResubmissionTokenOptionFieldComponent } from './components/form-fields/token-option-fields/spend-for-assignment-resubmission-token-option-field/spend-for-assignment-resubmission-token-option-field.component';
 import { WithdrawLabDataTokenOptionFieldComponent } from './components/form-fields/token-option-fields/withdraw-lab-data-token-option-field/withdraw-lab-data-token-option-field.component';
 import { WithdrawAssignmentResubmissionOptionFieldComponent } from './components/form-fields/token-option-fields/withdraw-assignment-resubmission-option-field/withdraw-assignment-resubmission-option-field.component';
+import { CreateConfigurationModalComponent } from './components/create-configuration-modal/create-configuration-modal.component';
 
 @NgModule({
     declarations: [
@@ -89,7 +90,8 @@ import { WithdrawAssignmentResubmissionOptionFieldComponent } from './components
         SpendForLabDataTokenOptionFieldComponent,
         SpendForAssignmentResubmissionTokenOptionFieldComponent,
         WithdrawLabDataTokenOptionFieldComponent,
-        WithdrawAssignmentResubmissionOptionFieldComponent
+        WithdrawAssignmentResubmissionOptionFieldComponent,
+        CreateConfigurationModalComponent
     ],
     imports: [
         BrowserModule,
