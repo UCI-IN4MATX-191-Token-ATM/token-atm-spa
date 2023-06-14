@@ -1,13 +1,20 @@
 <!-- https://getbootstrap.com/docs/5.0/examples/sidebars/ -->
 <div class="d-flex">
-    <div id="sidebar" class="d-flex flex-column flex-shrink-0 align-items-center px-3 py-5 bg-light vh-100 me-0">
+    <div
+        id="sidebar"
+        class="d-flex flex-column flex-shrink-0 align-items-center px-3 py-5 bg-light vh-100 me-0 overflow-y-auto"
+    >
         <img src="assets/logo3.png" alt="logo" />
-        <div>
+        <div class="d-flex flex-column align-items-center">
             <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" />
             <p *ngIf="name">{{ name }}</p>
             <p *ngIf="email">{{ email }}</p>
         </div>
-        <div style="height: 20rem"></div>
+        <div *ngIf="course" class="d-flex flex-column align-items-center my-5">
+            <p>{{ course.name }}</p>
+            <p>{{ course.term }}</p>
+            <span class="nav-link fs-5 text-primary is-link" [routerLink]="['/', 'select-course']">Switch Course</span>
+        </div>
         <ul class="nav nav-pills flex-column align-items-center">
             <ng-container *ngFor="let route of routes">
                 <li class="nav-item">
