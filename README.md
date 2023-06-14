@@ -35,7 +35,7 @@ Cody Svozil, Katie Ren, Mingrui (Ray) Han, Xu (Carson) Wang, Yongkang (camerfoul
     Alternatively, you can use token-atm-app for testing. Please follow the note in the Setup section of token-atm-app's README file to switch the SPA opened by the desktop application from the online GitHub version to the local version.
 
 4. Host the SPA in development mode with `npm start`.
-5. Access `http://localhost:4200` in the testing environment setuped in step 3.
+5. Access `http://localhost:4200` in the testing environment you setup in step 3.
 
 ## Build
 
