@@ -1066,6 +1066,7 @@ export class CanvasService {
             )
                 continue;
             targetOverride = override;
+            break;
         }
         if (!targetOverride) {
             await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {

@@ -128,7 +128,8 @@ export class StudentListComponent implements CourseConfigurable {
         this.individaulStudentRecordDisplay.configureStudent(this.configuration, student);
     }
 
-    onGoBack() {
+    async onGoBack() {
         this.isShowingIndividualStudent = false;
+        await this.getStudentGrades();
     }
 }
