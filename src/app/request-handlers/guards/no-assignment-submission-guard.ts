@@ -6,7 +6,7 @@ export class NoAssignmentSubmissionGuard extends RequestHandlerGuard {
         private courseId: string,
         private assignmentId: string,
         private studentId: string,
-        private overrideTitle: string,
+        private overrideTitlePrefix: string,
         private lockDate: Date,
         private canvasService: CanvasService
     ) {
@@ -14,24 +14,18 @@ export class NoAssignmentSubmissionGuard extends RequestHandlerGuard {
     }
 
     public async check(onReject: (message: string) => Promise<void>): Promise<void> {
-        await this.canvasService.removeStudentFromAssignmentOverrideByOverrideTitle(
-            this.courseId,
-            this.assignmentId,
-            this.overrideTitle,
-            this.studentId,
-            this.lockDate
-        );
+        await this.canvasService.deleteAssignmentOverrideForStudent(this.courseId, this.assignmentId, this.studentId);
         const submission = await this.canvasService.getAssignmentSubmission(
             this.courseId,
             this.assignmentId,
             this.studentId
         );
         if (submission.workflowState != 'unsubmitted') {
-            await this.canvasService.addStudentToAssignmentOverrideByOverrideTitle(
+            await this.canvasService.createAssignmentOverrideForStudent(
                 this.courseId,
                 this.assignmentId,
-                this.overrideTitle,
                 this.studentId,
+                this.overrideTitlePrefix,
                 this.lockDate
             );
             onReject('You have already made a submission to the assignment.');
