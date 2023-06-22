@@ -94,10 +94,15 @@ export class StudentListComponent implements CourseConfigurable {
     private async getStudentGrades(): Promise<void> {
         if (!this.course || !this.configuration || !this.students) return;
         this.studentGrades = undefined;
+        const curPageStudents = Array.from(this.students).map((entry: Student) => entry.id);
+        if (curPageStudents.length == 0) {
+            this.studentGrades = new Map<string, number>();
+            return;
+        }
         this.studentGrades = await this.canvasService.getStudentsGrades(
             this.course.id,
             this.configuration.logAssignmentId,
-            Array.from(this.students).map((entry: Student) => entry.id)
+            curPageStudents
         );
     }
     //Go back to the previous students information page
@@ -123,7 +128,8 @@ export class StudentListComponent implements CourseConfigurable {
         this.individaulStudentRecordDisplay.configureStudent(this.configuration, student);
     }
 
-    onGoBack() {
+    async onGoBack() {
         this.isShowingIndividualStudent = false;
+        await this.getStudentGrades();
     }
 }

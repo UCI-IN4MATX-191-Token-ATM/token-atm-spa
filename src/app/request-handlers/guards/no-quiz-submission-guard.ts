@@ -6,7 +6,7 @@ export class NoQuizSubmissionGuard extends RequestHandlerGuard {
         private courseId: string,
         private quizId: string,
         private studentId: string,
-        private overrideTitle: string,
+        private overrideTitlePrefix: string,
         private lockDate: Date,
         private canvasService: CanvasService
     ) {
@@ -15,20 +15,14 @@ export class NoQuizSubmissionGuard extends RequestHandlerGuard {
 
     public async check(onReject: (message: string) => Promise<void>): Promise<void> {
         const assignmentId = await this.canvasService.getAssignmentIdByQuizId(this.courseId, this.quizId);
-        await this.canvasService.removeStudentFromAssignmentOverrideByOverrideTitle(
-            this.courseId,
-            assignmentId,
-            this.overrideTitle,
-            this.studentId,
-            this.lockDate
-        );
+        await this.canvasService.deleteAssignmentOverrideForStudent(this.courseId, assignmentId, this.studentId);
         for await (const submission of await this.canvasService.getQuizSubmissions(this.courseId, this.quizId)) {
             if (submission.studentId != this.studentId) continue;
-            await this.canvasService.addStudentToAssignmentOverrideByOverrideTitle(
+            await this.canvasService.createAssignmentOverrideForStudent(
                 this.courseId,
                 assignmentId,
-                this.overrideTitle,
                 this.studentId,
+                this.overrideTitlePrefix,
                 this.lockDate
             );
             onReject('You have already started taking the quiz, or you have already taken the quiz.');
