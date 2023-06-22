@@ -33,9 +33,6 @@ export class QualtricsService {
     private async refreshQualtricsAccessToken() {
         if (!this.#qualtricsURL || !this.#clientID || !this.#clientSecret)
             throw new Error('Credentials for Qualtrics are invalid');
-        const formData = new FormData();
-        formData.append('grant_type', 'client_credentials');
-        formData.append('scope', ['read:survey_responses', 'read:users'].join(' '));
         const data = (
             await this.axiosService.request({
                 url: this.#qualtricsURL + '/oauth2/token',
@@ -44,9 +41,9 @@ export class QualtricsService {
                     username: this.#clientID,
                     password: this.#clientSecret
                 },
-                data: formData,
-                headers: {
-                    'Content-Type': 'multipart/form-data'
+                params: {
+                    grant_type: 'client_credentials',
+                    scope: ['read:survey_responses', 'read:users'].join(' ')
                 }
             })
         ).data;
