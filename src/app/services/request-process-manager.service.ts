@@ -22,6 +22,7 @@ import { StudentRecordManagerService } from './student-record-manager.service';
 export class RequestProcessManagerService {
     private _isRunning = false;
     private _isStopTriggered = false;
+    private static MAX_SUBMITTED_REQUEST_CNT = 200;
 
     constructor(
         @Inject(CanvasService) private canvasService: CanvasService,
@@ -110,6 +111,8 @@ export class RequestProcessManagerService {
                     return;
                 }
                 for (const request of requests) {
+                    if (studentRecord.submittedRequestCnt >= RequestProcessManagerService.MAX_SUBMITTED_REQUEST_CNT)
+                        break;
                     let processedRequest = undefined;
                     if (request instanceof ProcessedRequest) {
                         processedRequest = request;
@@ -227,6 +230,8 @@ export class RequestProcessManagerService {
     ): Promise<[StudentRecord, (TokenATMRequest<TokenOption> | ProcessedRequest)[]]> {
         const studentRecord = await this.studentRecordManagerService.getStudentRecord(configuration, student);
         const requests: (TokenATMRequest<TokenOption> | ProcessedRequest)[] = [];
+        if (studentRecord.submittedRequestCnt >= RequestProcessManagerService.MAX_SUBMITTED_REQUEST_CNT)
+            return [studentRecord, requests];
         if (this._isStopTriggered) {
             return [studentRecord, requests];
         }

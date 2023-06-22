@@ -62,6 +62,10 @@ export class StudentRecord {
         return this._processedRequests;
     }
 
+    public get submittedRequestCnt(): number {
+        return Array.from(this._processedAttemptsMap.values()).reduce((a, b) => a + b, 0);
+    }
+
     public logProcessedRequest(processedRequest: ProcessedRequest) {
         this._tokenBalance += processedRequest.tokenBalanceChange;
         if (processedRequest.tokenOptionGroupId != undefined) {
