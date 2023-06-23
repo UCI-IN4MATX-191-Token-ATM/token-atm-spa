@@ -32,8 +32,6 @@ export class StudentRecordManagerService {
         );
         studentRecord.commentId = newSubmissionComment.id;
         studentRecord.commentDate = newSubmissionComment.createdAt;
-        // Avoid duplicate Date signature
-        await new Promise((resolve) => setTimeout(resolve, 1000));
         await this.canvasService.modifyComment(
             courseId,
             studentId,
@@ -77,7 +75,9 @@ export class StudentRecordManagerService {
             }
             if (
                 typeof data['comment_date'] != 'number' ||
-                compareAsc(fromUnixTime(data['comment_date']), submissionComment.createdAt) != 0
+                compareAsc(fromUnixTime(data['comment_date']), submissionComment.createdAt) != 0 ||
+                (typeof data['comment_id'] != 'undefined' && typeof data['comment_id'] != 'string') ||
+                (typeof data['comment_id'] == 'string' && data['comment_id'] != submissionComment.id)
             ) {
                 await this.canvasService.deleteComment(courseId, studentId, assignmentId, submissionComment.id);
                 continue;
@@ -105,7 +105,7 @@ export class StudentRecordManagerService {
         const oldTokenBalance = studentRecord.tokenBalance;
         studentRecord.logProcessedRequest(processedRequest);
         // generate a new comment
-        this.canvasService.postComment(
+        await this.canvasService.postComment(
             configuration.course.id,
             studentRecord.student.id,
             configuration.logAssignmentId,

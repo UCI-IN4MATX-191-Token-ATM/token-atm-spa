@@ -83,6 +83,7 @@ export class StudentRecord {
 
     public toJSON(): unknown {
         return {
+            comment_id: this.commentId,
             comment_date: getUnixTime(this.commentDate),
             processed_attempt_map: [...this._processedAttemptsMap.entries()].map((entry) => {
                 return {
