@@ -3,7 +3,7 @@ export class ErrorSerializer {
     public static serailize(err: any): string {
         let result = '';
         if (typeof err.isAxiosError == 'boolean' && err.isAxiosError) {
-            JSON.stringify(err);
+            result = JSON.stringify(err);
         } else result = err.toString();
         if (typeof err.stack != 'undefined') result = result + '\n' + err.stack;
         return result;
