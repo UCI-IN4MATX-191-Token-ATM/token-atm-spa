@@ -8,6 +8,7 @@ import { BasicTokenOption } from 'app/token-options/basic-token-option';
 import { EarnByModuleTokenOption } from 'app/token-options/earn-by-module-token-option';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
+import { ErrorSerializer } from 'app/utils/error-serailizer';
 
 @Component({
     selector: 'app-configuration',
@@ -136,7 +137,7 @@ export class ConfigurationComponent implements CourseConfigurable {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             await this.modalManagerSerivce.createNotificationModal(
-                `Error occured when creating test configuration: ${err}`,
+                `Error occured when creating test configuration: ${ErrorSerializer.serailize(err)}`,
                 'Error'
             );
             this.isProcessing = false;
@@ -164,7 +165,9 @@ export class ConfigurationComponent implements CourseConfigurable {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             await this.modalManagerSerivce.createNotificationModal(
-                `Error occured when deleting Token ATM related content: ${err}\nYou could delete the Token ATM content manually by deleting two pages prefixed with Token ATM, one assignment group prefixed with Token ATM, and one module prefixed with Token ATM. Sorry for the inconvenience!`,
+                `Error occured when deleting Token ATM related content: ${ErrorSerializer.serailize(
+                    err
+                )}\nYou could delete the Token ATM content manually by deleting two pages prefixed with Token ATM, one assignment group prefixed with Token ATM, and one module prefixed with Token ATM. Sorry for the inconvenience!`,
                 'Error'
             );
             this.isProcessing = false;
