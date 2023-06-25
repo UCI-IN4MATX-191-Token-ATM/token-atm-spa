@@ -125,7 +125,7 @@ export class DevTestComponent {
         if (!this.course) return;
         const configuration = await this.manager.getTokenATMConfiguration(this.course);
         for await (const student of await this.canvasService.getCourseStudentEnrollments(this.course.id)) {
-            this.canvasService.gradeSubmission(this.course.id, student.id, configuration.logAssignmentId, 0);
+            await this.canvasService.gradeSubmission(this.course.id, student.id, configuration.logAssignmentId, 0);
             for (const submissionComment of await this.canvasService.getSubmissionComments(
                 this.course.id,
                 student.id,

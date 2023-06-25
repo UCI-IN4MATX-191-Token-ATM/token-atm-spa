@@ -58,7 +58,7 @@ export class RequestResolverRegistry {
         if (quizSubmissionDetail.answers[0] == '') return undefined;
         for (const tokenOption of tokenOptionGroup.tokenOptions) {
             if (tokenOption.prompt != quizSubmissionDetail.answers[0]) continue;
-            return this.getRequestResolver(tokenOption.type).resolve(tokenOption, quizSubmissionDetail);
+            return await this.getRequestResolver(tokenOption.type).resolve(tokenOption, quizSubmissionDetail);
         }
         return undefined;
     }

@@ -122,10 +122,10 @@ export class StudentListComponent implements CourseConfigurable {
         this.isFetchingInfo = false;
     }
     //get the student's information
-    navigateToStudent(student: Student): void {
+    async navigateToStudent(student: Student): Promise<void> {
         if (!this.configuration || !this.individaulStudentRecordDisplay) return;
         this.isShowingIndividualStudent = true;
-        this.individaulStudentRecordDisplay.configureStudent(this.configuration, student);
+        await this.individaulStudentRecordDisplay.configureStudent(this.configuration, student);
     }
 
     async onGoBack() {

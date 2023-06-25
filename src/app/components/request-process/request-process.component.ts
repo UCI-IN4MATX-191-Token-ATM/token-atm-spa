@@ -53,15 +53,15 @@ export class RequestProcessComponent implements CourseConfigurable {
                     this.message = message;
                 }
             },
-            complete: () => {
-                this.onRequestProcessingComplete();
+            complete: async () => {
+                await this.onRequestProcessingComplete();
             },
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             error: async ([message, err]: [message: string, err: any]) => {
                 await this.modalManagerService.createNotificationModal(
                     message + `\nError message: ${ErrorSerializer.serailize(err)}`
                 );
-                this.onRequestProcessingComplete(false);
+                await this.onRequestProcessingComplete(false);
             }
         });
     }

@@ -1,15 +1,15 @@
-import type { AxiosResponse } from 'axios';
+import type { IPCCompatibleAxiosResponse } from 'app/services/axios.service';
 
 export class PaginatedResult<T> implements AsyncIterable<T> {
     private data: T[];
     private nextURL: string | undefined;
-    private requestHandler: (url: string) => Promise<AxiosResponse>;
+    private requestHandler: (url: string) => Promise<IPCCompatibleAxiosResponse>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private dataProcessor: (data: any) => T[];
 
     constructor(
-        response: AxiosResponse,
-        requestHandler: (url: string) => Promise<AxiosResponse>,
+        response: IPCCompatibleAxiosResponse,
+        requestHandler: (url: string) => Promise<IPCCompatibleAxiosResponse>,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dataProcessor: (data: any) => T[]
     ) {
@@ -19,7 +19,7 @@ export class PaginatedResult<T> implements AsyncIterable<T> {
         this.dataProcessor = dataProcessor;
     }
 
-    private extractNextURL(response: AxiosResponse): string | undefined {
+    private extractNextURL(response: IPCCompatibleAxiosResponse): string | undefined {
         const linkHeader = response.headers['link'];
         if (!linkHeader) return undefined;
         for (const link of (linkHeader as string).split(',')) {
