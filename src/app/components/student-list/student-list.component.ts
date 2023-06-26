@@ -11,6 +11,7 @@ import { firstValueFrom } from 'rxjs';
 import { BatchTokenBalanceAdjustmentModalComponent } from '../batch-token-balance-adjustment-modal/batch-token-balance-adjustment-modal.component';
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
 import type { StudentRecordDisplayComponent } from '../student-record-display/student-record-display.component';
+import { ModalManagerService } from 'app/services/modal-manager.service';
 
 @Component({
     selector: 'app-student-list',
@@ -47,7 +48,8 @@ export class StudentListComponent implements CourseConfigurable {
         @Inject(CanvasService) private canvasService: CanvasService,
         @Inject(TokenATMConfigurationManagerService)
         private tokenATMConfigurationManagerService: TokenATMConfigurationManagerService,
-        @Inject(BsModalService) private modalService: BsModalService
+        @Inject(BsModalService) private modalService: BsModalService,
+        @Inject(ModalManagerService) private modalManagerService: ModalManagerService
     ) {}
 
     async batchImport(): Promise<void> {
@@ -73,6 +75,12 @@ export class StudentListComponent implements CourseConfigurable {
     }
 
     async search(): Promise<void> {
+        if (this.studentSearchTerm != undefined && this.studentSearchTerm.length == 1) {
+            await this.modalManagerService.createNotificationModal(
+                'Canvas does not allow searching for students by one character'
+            );
+            return;
+        }
         await this.refreshStudentList(this.studentSearchTerm);
     }
     async clearSearch(): Promise<void> {
