@@ -1,16 +1,16 @@
-import type { AxiosResponse } from 'axios';
+import type { IPCCompatibleAxiosResponse } from 'app/services/axios.service';
 
 export class PaginatedView<T> implements Iterable<T> {
     private data: T[];
     private prevURL?: string;
     private nextURL?: string;
-    private requestHandler: (url: string) => Promise<AxiosResponse>;
+    private requestHandler: (url: string) => Promise<IPCCompatibleAxiosResponse>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private dataProcessor: (data: any) => T[];
 
     constructor(
-        response: AxiosResponse,
-        requestHandler: (url: string) => Promise<AxiosResponse>,
+        response: IPCCompatibleAxiosResponse,
+        requestHandler: (url: string) => Promise<IPCCompatibleAxiosResponse>,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dataProcessor: (data: any) => T[]
     ) {
@@ -20,7 +20,7 @@ export class PaginatedView<T> implements Iterable<T> {
         this.dataProcessor = dataProcessor;
     }
 
-    private extractURLs(response: AxiosResponse): void {
+    private extractURLs(response: IPCCompatibleAxiosResponse): void {
         const linkHeader = response.headers['link'];
         this.prevURL = undefined;
         this.nextURL = undefined;
@@ -78,7 +78,7 @@ export class PaginatedView<T> implements Iterable<T> {
 //         this.pageSize = pageSize;
 //     }
 
-//     private async requestHandler(url: string): Promise<AxiosResponse> {
+//     private async requestHandler(url: string): Promise<IPCCompatibleAxiosResponse> {
 //         const response = await axios.get(url, {
 //             headers: {
 //                 Authorization: `Bearer ${this.token}`

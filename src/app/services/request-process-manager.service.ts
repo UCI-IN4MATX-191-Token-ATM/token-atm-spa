@@ -35,6 +35,7 @@ export class RequestProcessManagerService {
 
     public startRequestProcessing(configuration: TokenATMConfiguration): Observable<[number, string]> {
         const result = new BehaviorSubject<[number, string]>([0, 'Request processing started']);
+        // Intentionally not await since the BehaviorSubject needs to be return to the component
         this.runRequestProcessing(configuration, result);
         return result;
     }

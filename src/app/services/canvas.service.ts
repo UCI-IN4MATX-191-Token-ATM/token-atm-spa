@@ -6,9 +6,9 @@ import { Student } from 'app/data/student';
 import { SubmissionComment } from 'app/data/submission-comment';
 import { PaginatedResult } from 'app/utils/paginated-result';
 import { PaginatedView } from 'app/utils/paginated-view';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosRequestConfig } from 'axios';
 import { compareAsc, formatISO, parseISO } from 'date-fns';
-import { AxiosService } from './axios.service';
+import { AxiosService, IPCCompatibleAxiosResponse, isNetworkOrServerError } from './axios.service';
 import { User } from 'app/data/user';
 import type { QuizQuestion } from 'app/quiz-questions/quiz-question';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
@@ -17,6 +17,7 @@ import { AssignmentOverride } from 'app/utils/assignment-override';
 import { CanvasModule } from 'app/data/canvas-module';
 import { Assignment } from 'app/data/assignment';
 import { AssignmentSubmission } from 'app/data/assignment-submission';
+import { ExponentialBackoffExecutor } from 'app/utils/exponential-backoff-executor';
 
 type QuizQuestionResponse = {
     id: string;
@@ -54,17 +55,26 @@ export class CanvasService {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private async rawAPIRequest<T = any>(endpoint: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
-        const result = await this.axiosService.request({
-            ...config,
-            url: this.#url + endpoint,
-            headers: {
-                ...config?.headers,
-                Accept: 'application/json+canvas-string-ids',
-                Authorization: 'Bearer ' + this.#accessToken
-            }
-        });
-        return result;
+    private async rawAPIRequest<T = any>(
+        endpoint: string,
+        config?: AxiosRequestConfig
+    ): Promise<IPCCompatibleAxiosResponse<T>> {
+        const executor = async () => {
+            return await this.axiosService.request<T>({
+                ...config,
+                url: this.#url + endpoint,
+                headers: {
+                    ...config?.headers,
+                    Accept: 'application/json+canvas-string-ids',
+                    Authorization: 'Bearer ' + this.#accessToken
+                }
+            });
+        };
+        return await ExponentialBackoffExecutor.execute(
+            executor,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            async (_, err: any | undefined) => !isNetworkOrServerError(err)
+        );
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -72,14 +82,21 @@ export class CanvasService {
         return (await this.rawAPIRequest<T>(endpoint, config)).data;
     }
 
-    private async paginatedRequestHandler<T>(url: string): Promise<AxiosResponse<T>> {
-        return await this.axiosService.request({
-            url: url,
-            headers: {
-                Accept: 'application/json+canvas-string-ids',
-                Authorization: 'Bearer ' + this.#accessToken
-            }
-        });
+    private async paginatedRequestHandler<T>(url: string): Promise<IPCCompatibleAxiosResponse<T>> {
+        const executor = async () => {
+            return await this.axiosService.request<T>({
+                url: url,
+                headers: {
+                    Accept: 'application/json+canvas-string-ids',
+                    Authorization: 'Bearer ' + this.#accessToken
+                }
+            });
+        };
+        return await ExponentialBackoffExecutor.execute(
+            executor,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            async (_, err: any | undefined) => !isNetworkOrServerError(err)
+        );
     }
 
     private async safeGuardForAssignment(courseId: string, assignmentId: string): Promise<void> {
@@ -673,7 +690,7 @@ export class CanvasService {
                 if (!moduleItem.contentId) continue;
                 switch (moduleItem.type) {
                     case 'Assignment': {
-                        this.deleteAssignment(courseId, moduleItem.contentId);
+                        await this.deleteAssignment(courseId, moduleItem.contentId);
                         break;
                     }
                     case 'Quiz': {
@@ -909,129 +926,6 @@ export class CanvasService {
         const data = await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`);
         return Quiz.deserialize(data);
     }
-
-    // public async getAssignmentOverrideByTitle(
-    //     courseId: string,
-    //     assignmentId: string,
-    //     overrideTitle: string
-    // ): Promise<AssignmentOverride | undefined> {
-    //     const data = new PaginatedResult<AssignmentOverride>(
-    //         await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`),
-    //         async (url: string) => await this.paginatedRequestHandler(url),
-    //         (data: unknown[]) => data.map((entry) => AssignmentOverride.deserialize(entry))
-    //     );
-    //     for await (const override of data) {
-    //         if (override.title == overrideTitle) {
-    //             return override;
-    //         }
-    //     }
-    //     return undefined;
-    // }
-
-    // public async createAssignmentOverride(
-    //     courseId: string,
-    //     assignmentId: string,
-    //     title: string,
-    //     studentIds: string[],
-    //     lockDate: Date
-    // ): Promise<AssignmentOverride> {
-    //     return AssignmentOverride.deserialize(
-    //         await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
-    //             method: 'post',
-    //             data: {
-    //                 assignment_override: {
-    //                     student_ids: studentIds,
-    //                     title: title,
-    //                     lock_at: formatISO(lockDate)
-    //                 }
-    //             }
-    //         })
-    //     );
-    // }
-
-    // public async updateAssignmentOverride(
-    //     courseId: string,
-    //     assignmentId: string,
-    //     overrideId: string,
-    //     title: string,
-    //     studentIds: string[],
-    //     lockDate: Date
-    // ): Promise<AssignmentOverride> {
-    //     return AssignmentOverride.deserialize(
-    //         await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${overrideId}`, {
-    //             method: 'put',
-    //             data: {
-    //                 assignment_override: {
-    //                     student_ids: studentIds,
-    //                     title: title,
-    //                     lock_at: formatISO(lockDate)
-    //                 }
-    //             }
-    //         })
-    //     );
-    // }
-
-    // public async deleteAssignmentOverride(courseId: string, assignmentId: string, overrideId: string): Promise<void> {
-    //     await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${overrideId}`, {
-    //         method: 'delete'
-    //     });
-    // }
-
-    // public async addStudentToAssignmentOverrideByOverrideTitle(
-    //     courseId: string,
-    //     assignmentId: string,
-    //     overrideTitle: string,
-    //     studentId: string,
-    //     lockDate: Date
-    // ): Promise<[AssignmentOverride, boolean]> {
-    //     const override = await this.getAssignmentOverrideByTitle(courseId, assignmentId, overrideTitle);
-    //     if (!override) {
-    //         return [
-    //             await this.createAssignmentOverride(courseId, assignmentId, overrideTitle, [studentId], lockDate),
-    //             true
-    //         ];
-    //     }
-    //     if (override.studentIds.includes(studentId)) return [override, false];
-    //     override.studentIds.push(studentId);
-    //     return [
-    //         await this.updateAssignmentOverride(
-    //             courseId,
-    //             assignmentId,
-    //             override.id,
-    //             overrideTitle,
-    //             override.studentIds,
-    //             lockDate
-    //         ),
-    //         true
-    //     ];
-    // }
-
-    // public async removeStudentFromAssignmentOverrideByOverrideTitle(
-    //     courseId: string,
-    //     assignmentId: string,
-    //     overrideTitle: string,
-    //     studentId: string,
-    //     lockDate: Date
-    // ): Promise<boolean> {
-    //     const override = await this.getAssignmentOverrideByTitle(courseId, assignmentId, overrideTitle);
-    //     if (!override || !override.studentIds.includes(studentId)) {
-    //         return false;
-    //     }
-    //     if (override.studentIds.length == 1) {
-    //         await this.deleteAssignmentOverride(courseId, assignmentId, override.id);
-    //         return true;
-    //     }
-    //     override.studentIds.splice(override.studentIds.indexOf(studentId), 1);
-    //     await this.updateAssignmentOverride(
-    //         courseId,
-    //         assignmentId,
-    //         override.id,
-    //         overrideTitle,
-    //         override.studentIds,
-    //         lockDate
-    //     );
-    //     return true;
-    // }
 
     public async getAssignmentOverrides(
         courseId: string,

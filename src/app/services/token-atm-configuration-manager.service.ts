@@ -56,7 +56,7 @@ export class TokenATMConfigurationManagerService {
             configuration.course.id,
             TokenATMConfigurationManagerService.TOKEN_ATM_CONFIGURATION_PAGE_NAME
         );
-        this.writeConfigurationToPage(configuration.course, pageId, JSON.stringify(configuration));
+        await this.writeConfigurationToPage(configuration.course, pageId, JSON.stringify(configuration));
     }
 
     private async getAssignmentGroupId(configuration: TokenATMConfiguration): Promise<string> {
