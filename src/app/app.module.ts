@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { ErrorHandler, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
@@ -61,6 +61,7 @@ import { WithdrawLabSwitchTokenOptionFieldComponent } from './components/form-fi
 import { PickTokenOptionModalComponent } from './components/pick-token-option-modal/pick-token-option-modal.component';
 import { BatchTokenBalanceAdjustmentModalComponent } from './components/batch-token-balance-adjustment-modal/batch-token-balance-adjustment-modal.component';
 import { MoveTokenOptionModalComponent } from './components/move-token-option-modal/move-token-option-modal.component';
+import { GlobalErrorHandler } from './utils/global-error-handler';
 
 @NgModule({
     declarations: [
@@ -116,6 +117,7 @@ import { MoveTokenOptionModalComponent } from './components/move-token-option-mo
         TimepickerModule.forRoot()
     ],
     providers: [
+        { provide: ErrorHandler, useClass: GlobalErrorHandler },
         { provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService },
         ...REGISTERED_TOKEN_OPTION_RESOLVERS.map((cls) => ({
             provide: TOKEN_OPTION_RESOLVER_INJECTION_TOKEN,

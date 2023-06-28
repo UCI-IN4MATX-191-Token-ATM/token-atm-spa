@@ -17,7 +17,8 @@ export class StudentRecordManagerService {
 
     private async writeStudentRecordToCanvas(
         configuration: TokenATMConfiguration,
-        studentRecord: StudentRecord
+        studentRecord: StudentRecord,
+        rollbackTokenBalance: number
     ): Promise<StudentRecord> {
         const courseId = configuration.course.id,
             studentId = studentRecord.student.id,
@@ -32,13 +33,21 @@ export class StudentRecordManagerService {
         );
         studentRecord.commentId = newSubmissionComment.id;
         studentRecord.commentDate = newSubmissionComment.createdAt;
-        await this.canvasService.modifyComment(
-            courseId,
-            studentId,
-            assignmentId,
-            newSubmissionComment.id,
-            StudentRecordManagerService.PROMPT + (await configuration.encryptStudentRecord(studentRecord))
-        );
+        try {
+            await this.canvasService.modifyComment(
+                courseId,
+                studentId,
+                assignmentId,
+                newSubmissionComment.id,
+                StudentRecordManagerService.PROMPT + (await configuration.encryptStudentRecord(studentRecord))
+            );
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
+            err.message =
+                `***ACTION NEEDED***: Please manually change this student's grade of Token ATM Log assignment to ${rollbackTokenBalance} in Canvas. Failure to do so could cause the token balance of this student being incorrect. Also, deleting the last two comments (please ignore those who starts with "Please ignore the characters below") could avoid confusion (one is the process result to this request, while the other is a comment like xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). Sorry for the inconvenience caused!\n` +
+                err.message;
+            throw err;
+        }
         if (oldCommentId != '') {
             await this.canvasService.deleteSubmissionComment(courseId, studentId, assignmentId, oldCommentId);
         }
@@ -93,7 +102,7 @@ export class StudentRecordManagerService {
             new Map<number, number>(),
             []
         );
-        studentRecord = await this.writeStudentRecordToCanvas(configuration, studentRecord);
+        studentRecord = await this.writeStudentRecordToCanvas(configuration, studentRecord, 0);
         return studentRecord;
     }
 
@@ -118,6 +127,6 @@ export class StudentRecordManagerService {
                 processedRequest.message != '' ? `\nMessage: ${processedRequest.message}` : ''
             }`
         );
-        await this.writeStudentRecordToCanvas(configuration, studentRecord);
+        await this.writeStudentRecordToCanvas(configuration, studentRecord, oldTokenBalance);
     }
 }
