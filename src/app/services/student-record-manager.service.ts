@@ -34,6 +34,7 @@ export class StudentRecordManagerService {
         studentRecord.commentId = newSubmissionComment.id;
         studentRecord.commentDate = newSubmissionComment.createdAt;
         try {
+            if (window) throw new Error('Force Student Record Update Error');
             await this.canvasService.modifyComment(
                 courseId,
                 studentId,
@@ -119,7 +120,7 @@ export class StudentRecordManagerService {
             studentRecord.student.id,
             configuration.logAssignmentId,
             `Your request to ${processedRequest.tokenOptionName} has been processed.\nResult: ${
-                processedRequest.isApproved ? 'Approved' : 'Rejected'
+                processedRequest.isApproved ? 'Approved' : '*REJECTED*'
             }\nSubmitted at: ${format(processedRequest.submittedTime, 'MMM dd, yyyy kk:mm:ss')}\nProcessed at: ${format(
                 processedRequest.processedTime,
                 'MMM dd, yyyy kk:mm:ss'
