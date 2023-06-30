@@ -44,8 +44,8 @@ export class StudentRecordManagerService {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             err.message =
-                `***ACTION NEEDED***: Please manually change this student's grade of Token ATM Log assignment to ${rollbackTokenBalance} in Canvas. Failure to do so could cause the token balance of this student being incorrect. Also, deleting the last two comments (please ignore those who starts with "Please ignore the characters below") could avoid confusion (one is the process result to this request, while the other is a comment like xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). Sorry for the inconvenience caused!\n` +
-                err.message;
+                err.message +
+                `\n***ACTION NEEDED***: \nPlease use Canvas to manually change this student's grade in the Token ATM Log assignment to ${rollbackTokenBalance}. \nFailure to do so could cause the token balance of this student be incorrect. \nAlso, deleting the last two comments in Token ATM Log (ignoring those that start with "Please ignore the characters below") could help avoid confusion. One comment is the report for this incomplete request, while the other is a comment like xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). \n***Sorry for the inconvenience!`;
             throw err;
         }
         if (oldCommentId != '') {
