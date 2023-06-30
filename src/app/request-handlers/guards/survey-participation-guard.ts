@@ -14,7 +14,7 @@ export class SurveyParticipationGuard extends RequestHandlerGuard {
     public async check(onReject: (message: string) => Promise<void>): Promise<void> {
         if (this.participationId == '') {
             onReject(
-                'Token ATM cannot access your email address, which thus cannot check your participation. Please make your email address visible.'
+                'Token ATM cannot access your email address, and so cannot check your participation. Please make your email address visible.'
             );
             return;
         }

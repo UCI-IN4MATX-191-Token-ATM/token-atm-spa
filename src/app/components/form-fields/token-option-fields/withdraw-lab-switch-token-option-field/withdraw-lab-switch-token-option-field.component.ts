@@ -66,7 +66,7 @@ export class WithdrawLabSwitchTokenOptionFieldComponent
             const tokenOption = configuration?.getTokenOptionById(value);
             if (!tokenOption) return 'There is no token option with this id';
             if (!(tokenOption instanceof SpendForLabSwitchTokenOption))
-                return 'Token option type invalid: should be Spend Tokens for Switching Lab';
+                return "Token option type invalid: should be 'Spend Tokens for Switching Lab'";
             return undefined;
         };
     }
