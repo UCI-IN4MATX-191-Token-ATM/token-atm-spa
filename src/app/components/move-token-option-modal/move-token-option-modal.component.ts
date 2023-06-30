@@ -4,6 +4,7 @@ import type { TokenOptionGroup } from 'app/data/token-option-group';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import type { TokenOption } from 'app/token-options/token-option';
+import { countAndNoun } from 'app/utils/pluralize';
 import type { BsModalRef } from 'ngx-bootstrap/modal';
 
 enum MoveOperation {
@@ -50,16 +51,17 @@ export class MoveTokenOptionModalComponent {
         this.selectedGroup.addTokenOption(this.srcOption, this.destIndex);
         const addResult = await this.configurationManagerService.updateTokenOptionGroup(this.selectedGroup);
         if (!deleteResult || !addResult) {
+            const possibleResultErrors: string[] = [
+                !deleteResult ? srcGroup : undefined,
+                !addResult && (srcGroup != this.selectedGroup || deleteResult) ? this.selectedGroup : undefined
+            ]
+                .filter((value) => value != undefined)
+                .map((value) => value?.name ?? '');
+            const numTokenOptionGroupsString = countAndNoun(possibleResultErrors.length, 'token option group');
             await this.modalManagerService.createNotificationModal(
-                `Auto update failed for token option group(s): ${[
-                    !deleteResult ? srcGroup : undefined,
-                    !addResult && (srcGroup != this.selectedGroup || deleteResult) ? this.selectedGroup : undefined
-                ]
-                    .filter((value) => value != undefined)
-                    .map((value) => value?.name ?? '')
-                    .join(
-                        ', '
-                    )}. Please go to Canvas and click the "Save It Now" button in the quiz management page of the quiz or quizzes that the token option group(s) mentioned above belong to.`
+                `Auto update failed for ${numTokenOptionGroupsString}: ${possibleResultErrors.join(
+                    ', '
+                )}. Please go to Canvas and click the "Save It Now" button in the quiz management page of the quiz or quizzes that the ${numTokenOptionGroupsString} mentioned above belong to.`
             );
         }
         this.modalRef?.hide();

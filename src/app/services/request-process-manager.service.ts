@@ -15,6 +15,7 @@ import { CanvasService } from './canvas.service';
 import { QualtricsService } from './qualtrics.service';
 import { RawRequestFetcherService } from './raw-request-fetcher.service';
 import { StudentRecordManagerService } from './student-record-manager.service';
+import { countAndNoun } from 'app/utils/pluralize';
 
 @Injectable({
     providedIn: 'root'
@@ -166,10 +167,10 @@ export class RequestProcessManagerService {
                     ]);
                     progressUpdate.next([
                         -1 - individualProcessedRequestCnt / requests.length,
-                        `Processed ${this.countAndNoun(
+                        `Processed ${countAndNoun(
                             individualProcessedRequestCnt,
                             'request'
-                        )} for the current student, ${this.countAndNoun(
+                        )} for the current student, ${countAndNoun(
                             requests.length - individualProcessedRequestCnt,
                             'request'
                         )} remaining`
@@ -211,7 +212,7 @@ export class RequestProcessManagerService {
                 submissionCnt++;
                 progressUpdate.next([
                     0,
-                    `Gathering submissions: Gathered ${this.countAndNoun(submissionCnt, 'submission')}`
+                    `Gathering submissions: Gathered ${countAndNoun(submissionCnt, 'submission')}`
                 ]);
                 if (this._isStopTriggered) {
                     return [quizSubmissionMap, assignmentIdMap];
@@ -272,7 +273,7 @@ export class RequestProcessManagerService {
                 requestCnt++;
                 progressUpdate.next([
                     -1,
-                    `Resolving Requests: Resolved ${this.countAndNoun(requestCnt, 'request')} for the current student`
+                    `Resolving Requests: Resolved ${countAndNoun(requestCnt, 'request')} for the current student`
                 ]);
                 if (this._isStopTriggered) return [studentRecord, requests];
             }
@@ -288,15 +289,7 @@ export class RequestProcessManagerService {
         }
     }
 
-    private countAndNoun(count: number, noun: string) {
-        const pluralize = (word: string, count: number): string => {
-            return word + (count == 1 ? '' : 's');
-        };
-        return `${count} ${pluralize(noun, count)}`;
-    }
-
     private progressString(studentCnt: number, processedRequestCnt: number, processedStudentCnt: number): string {
-        const countAndNoun = this.countAndNoun;
         const template = (sC: number, pRC: number, pSC: number): string => {
             return (
                 `Processing Requests: Processed ${countAndNoun(pRC, 'request')}` +

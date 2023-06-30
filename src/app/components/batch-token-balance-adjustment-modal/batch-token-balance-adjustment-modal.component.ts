@@ -3,6 +3,7 @@ import { ProcessedRequest } from 'app/data/processed-request';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { CanvasService } from 'app/services/canvas.service';
 import { StudentRecordManagerService } from 'app/services/student-record-manager.service';
+import { countAndNoun } from 'app/utils/pluralize';
 import type { BsModalRef } from 'ngx-bootstrap/modal';
 import * as CSVParse from 'papaparse';
 
@@ -47,7 +48,7 @@ export class BatchTokenBalanceAdjustmentModalComponent {
         for (const data of result) {
             cnt++;
             this.progress = (((cnt - 1) / result.length) * 100).toFixed(2);
-            this.progressMessage = `${cnt - 1} out of ${result.length} record(s) processed`;
+            this.progressMessage = `${cnt - 1} out of ${countAndNoun(result.length, 'record')} processed`;
             if (!Array.isArray(data) || (data.length != 2 && data.length != 3)) continue;
             const email = data[0];
             if (typeof email != 'string') continue;
