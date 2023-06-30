@@ -59,7 +59,7 @@ export class RequestProcessComponent implements CourseConfigurable {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             error: async ([message, err]: [message: string, err: any]) => {
                 await this.modalManagerService.createNotificationModal(
-                    message + `\nError message: ${ErrorSerializer.serailize(err)}`
+                    message + `\n______________\nError message: ${ErrorSerializer.serailize(err)}`
                 );
                 await this.onRequestProcessingComplete(false);
             }

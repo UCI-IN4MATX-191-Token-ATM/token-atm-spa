@@ -11,7 +11,7 @@ export class GlobalErrorHandler implements ErrorHandler {
         }
         win.document.open();
         win.document.write(
-            `<head><title>Error Report</title></head><body>An Error occured. Sorry for the inconvenience. Error Message: <br/> ${ErrorSerializer.serailize(
+            `<head><title>Error Report</title></head><body>An Error occured. Sorry for the inconvenience. <br/>Error Message: <br/> ${ErrorSerializer.serailize(
                 error
             )}</body>`
         );
