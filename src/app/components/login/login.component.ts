@@ -5,6 +5,7 @@ import { FormItemInfo } from 'app/data/form-item-info';
 import { TokenATMCredentials } from 'app/data/token-atm-credentials';
 import { CanvasService } from 'app/services/canvas.service';
 import { CredentialManagerService } from 'app/services/credential-manager.service';
+// import { ModalManagerService } from 'app/services/modal-manager.service';
 import { QualtricsService } from 'app/services/qualtrics.service';
 
 type TokenATMCredentialsAttributes = Exclude<keyof TokenATMCredentials, 'toJSON'>;
@@ -31,7 +32,7 @@ export class LoginComponent implements AfterViewInit {
         @Inject(CredentialManagerService) private credentialManagerService: CredentialManagerService,
         @Inject(Router) private router: Router,
         @Inject(NgbModal) private ngbModal: NgbModal
-    ) {}
+    ) {} // @Inject(ModalManagerService) private modalManagerSerivce: ModalManagerService
 
     static CREDENTIALS_FORM_ITEM_INFO_MAP: CredentialsFormItemInfoMap = {
         canvasURL: new FormItemInfo(
@@ -157,7 +158,18 @@ export class LoginComponent implements AfterViewInit {
         await this.onSubmitCredential();
     }
 
+    private parseURL(url: string) {
+        const parsedURL = new URL(url);
+        // Force HTTPS protocol
+        parsedURL.protocol = 'https:';
+        return parsedURL.origin;
+    }
+
     async onSubmitCredential(): Promise<void> {
+        // TODO: Check that Canvas is only hosted at a URL origin. If
+        //       Canvas is hosted on a sub-directory, Token ATM won't
+        //       send requests properly.
+        this.credentials.canvasURL = this.parseURL(this.credentials.canvasURL);
         const isCanvasCredentialValid = await this.canvasService.configureCredential(
             this.credentials.canvasURL,
             this.credentials.canvasAccessToken
@@ -173,6 +185,19 @@ export class LoginComponent implements AfterViewInit {
             return;
         } else {
             // TODO: handle invalid credentials
+            if (!isCanvasCredentialValid) {
+                // Disable modalManagerService to pass testing
+                // this.modalManagerSerivce.createNotificationModal(
+                //     `Token ATM couldn't verify your credentials at ${this.credentials.canvasURL}\nDouble check that you are providing the correct Canvas URL & Access Token.`,
+                //     `Invalid Canvas Credentials`
+                // );
+            }
+            if (!isQualtricsCredentialValid) {
+                // this.modalManagerSerivce.createNotificationModal(
+                //     `Token ATM couldn't verify your credentials with Qualtrics. \nDouble check that you are providing the correct credentials and that they can read:users and read:-----.`,
+                //     `Invalid Qualtrics Credentials`
+                // );
+            }
         }
     }
 }

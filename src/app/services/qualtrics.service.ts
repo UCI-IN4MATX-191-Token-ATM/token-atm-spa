@@ -28,7 +28,32 @@ export class QualtricsService {
         this.#clientSecret = clientSecret;
         this.#qualtricsURL = `https://${this.#dataCenter}.qualtrics.com`;
         // TODO: validate credential
-        return true;
+
+        // Basic Credential Checking
+        const data = await this.whoami();
+        console.log(data);
+
+        if (data && data.meta) {
+            if ((data.meta.httpStatus as string).includes('200')) {
+                return true;
+            } else {
+                throw new Error(`Couldn't Verify Credentials with Qualtrics`, { cause: data.meta });
+            }
+        }
+        return false;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public async whoami(): Promise<any> {
+        if (this.hasCredentialConfigured()) {
+            const data = await this.apiRequest(`/API/v3/whoami`, {
+                method: 'get',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            return data;
+        }
     }
 
     private async refreshQualtricsAccessToken() {

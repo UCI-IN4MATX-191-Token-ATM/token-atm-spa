@@ -51,6 +51,13 @@ export class CanvasService {
         this.#url = url;
         this.#accessToken = accessToken;
         // TODO: validate credential
+        try {
+            const user: User = await this.getUserInformation('self');
+            console.log(user);
+        } catch (error) {
+            // TODO: Provide more info
+            return false;
+        }
         return true;
     }
 
