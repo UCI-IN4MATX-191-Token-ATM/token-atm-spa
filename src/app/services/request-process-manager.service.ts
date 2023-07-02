@@ -68,7 +68,7 @@ export class RequestProcessManagerService {
             [quizSubmissionMap, assignmentIdMap] = await this.gatherQuizSubmissions(configuration, progressUpdate);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
-            progressUpdate.error(["Encounter an error when gathering students' quiz submissions", err]);
+            progressUpdate.error(["Encountered an error while gathering students' quiz submissions", err]);
             this.finishRequestProcessing(progressUpdate, false);
             return;
         }
@@ -100,7 +100,7 @@ export class RequestProcessManagerService {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 } catch (err: any) {
                     progressUpdate.error([
-                        `Encounter an error when resolving requests for student ${
+                        `Encountered an error while resolving requests for student ${
                             student.name + (student.email == '' ? '' : `(${student.email})`)
                         }`,
                         err
@@ -128,7 +128,7 @@ export class RequestProcessManagerService {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         } catch (err: any) {
                             progressUpdate.error([
-                                `Encounter an error when handling request to ${
+                                `Encountered an error while handling request to ${
                                     processedRequest ? processedRequest.tokenOptionName : request.tokenOption.name
                                 } submitted at ${format(request.submittedTime, 'MMM dd, yyyy kk:mm:ss')} by student ${
                                     student.name + (student.email == '' ? '' : `(${student.email})`)
@@ -148,7 +148,7 @@ export class RequestProcessManagerService {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     } catch (err: any) {
                         progressUpdate.error([
-                            `Encounter an error when logging request to ${
+                            `Encountered an error while logging request to ${
                                 processedRequest.tokenOptionName
                             } submitted at ${format(
                                 processedRequest.submittedTime,
@@ -184,7 +184,7 @@ export class RequestProcessManagerService {
             this.finishRequestProcessing(progressUpdate);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
-            progressUpdate.error(['Encounter an error when traversing the student list', err]);
+            progressUpdate.error(['Encountered an error while traversing the student list', err]);
             this.finishRequestProcessing(progressUpdate, false);
             return;
         }
@@ -265,7 +265,7 @@ export class RequestProcessManagerService {
                             quizSubmissionDetail.submittedTime,
                             new Date(),
                             0,
-                            'The token option you made a request to cannot be recognized. That token option might be deleted or moved, or you might have submitted the quiz without selecting an option in Question 1',
+                            'The token option you made a request for cannot be recognized. That token option might be deleted or moved. Or you might have submitted the quiz without selecting an option from Question 1',
                             group.id
                         )
                     );

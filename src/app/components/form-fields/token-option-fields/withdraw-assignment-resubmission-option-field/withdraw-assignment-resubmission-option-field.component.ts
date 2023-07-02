@@ -66,7 +66,7 @@ export class WithdrawAssignmentResubmissionOptionFieldComponent
             const tokenOption = configuration?.getTokenOptionById(value);
             if (!tokenOption) return 'There is no token option with this id';
             if (!(tokenOption instanceof SpendForAssignmentResubmissionTokenOption))
-                return 'Token option type invalid: should be Spend Tokens for Assignment Resubmission';
+                return "Token option type invalid: should be 'Spend Tokens for Assignment Resubmission'";
             return undefined;
         };
     }

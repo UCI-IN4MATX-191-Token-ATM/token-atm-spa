@@ -39,35 +39,35 @@ export class LoginComponent implements AfterViewInit {
             'Canvas URL',
             'url',
             'https://canvas.instructure.com',
-            'The URL you used to access the Canvas instance. Please remove the "/" character at the end of the URL if there is one. Example: https://canvas.eee.uci.edu'
+            'The URL you use to access your Canvas instance. \nPlease remove the "/" character at the end of the URL if there is one. \nExample: https://canvas.eee.uci.edu'
         ),
         canvasAccessToken: new FormItemInfo(
             'canvasAccessToken',
             'Canvas Access Token',
             'password',
             '',
-            'Please click your avatar on the left sidebar in Canvas and then click "Settings." In the page you are redirected to, please scroll down until you see a "New Access Token" button in a section named as "Approved Integrations." Please click that button and follow the instruction to create a new access token, copy it, and then paste it here. Example: 1081~prKixoT8pyE04DPBIgmTod2IhyVTNUj7aVhazDI3UKbwt314ha31c6YXgxCpnOxH'
+            'Please click your avatar on the left sidebar in Canvas and then click "Settings." \nIn the page you are redirected to, please scroll down until you see a "New Access Token" button in a section named "Approved Integrations." \nPlease click that button and follow the instruction to create a new access token, copy it, and then paste it here. \nExample: 1081~prKixoT8pyE04DPBIgmTod2IhyVTNUj7aVhazDI3UKbwt314ha31c6YXgxCpnOxH'
         ),
         qualtricsDataCenter: new FormItemInfo(
             'qualtricsDataCenter',
             'Qualtrics Data Center',
             'text',
             '',
-            'Please access the Account Settings page on Qualtrics and click the "Qualtrics IDs" tab. The value of "Datacenter ID" under the "User" table is what you want. Example: iad1'
+            'Please access the Account Settings page on Qualtrics and click the "Qualtrics IDs" tab. \nThe value of "Datacenter ID" under the "User" table is what you want. \nExample: iad1'
         ),
         qualtricsClientID: new FormItemInfo(
             'qualtricsClientID',
             'Qualtrics Client ID',
             'text',
             '',
-            'Please access the Account Settings page on Qualtrics and click the "Qualtrics IDs" tab. After that, clicks "OAuth Client Manager" tab. Press the "New Client" button. Please follow the instruction to create a new client. Token ATM requires two permissions: read:survey_responses and read:users. After creation, please copy & paste the Client ID and the Client Secret that pop up. Example: m2fdch523fe62h7ds896b06587fhn650'
+            'Please access the Account Settings page on Qualtrics and click the "Qualtrics IDs" tab. \nAfter that, clicks "OAuth Client Manager" tab. Press the "New Client" button. \nPlease follow the instruction to create a new client. \nToken ATM *requires* two permissions: read:survey_responses and read:users. \nAfter creation, please copy & paste the Client ID and the Client Secret that pop up. \nExample: m2fdch523fe62h7ds896b06587fhn650'
         ),
         qualtricsClientSecret: new FormItemInfo(
             'qualtricsClientSecret',
             'Qualtrics Client Secret',
             'password',
             '',
-            'Please see the tooltip for the Qualtris Client ID for more information. Please note that you can no longer access the Client Secret again once you close the window that pops up after the creation. You need to create a new Client in that case. Example: ye8gf6hGdscTFPn3zVs4Z3YI0amMk2zbccx2KJbhKv0JFrbsKFiOKPvctMYP6UjT'
+            'Please see the tooltip for the Qualtris Client ID for more information. \nPlease note that you can no longer access the Client Secret again once you close the window that pops up after the creation. You will need to create a new Client in that case. \nExample: ye8gf6hGdscTFPn3zVs4Z3YI0amMk2zbccx2KJbhKv0JFrbsKFiOKPvctMYP6UjT'
         )
     };
 
