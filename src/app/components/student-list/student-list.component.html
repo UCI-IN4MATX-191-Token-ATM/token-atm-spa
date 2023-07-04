@@ -1,5 +1,5 @@
 <div *ngIf="!students || !studentGrades; else studentListPanel" appCenter>
-    <ngb-toast [autohide]="false"> Token ATM is retrieving information from Canvas. Please wait... </ngb-toast>
+    <app-canvas-loading-toast></app-canvas-loading-toast>
 </div>
 <ng-template #studentListPanel>
     <div
@@ -21,24 +21,17 @@
         </button>
     </div>
     <div *ngIf="students && studentGrades" class="flex-column m-5" [class.is-hidden]="isShowingIndividualStudent">
-        <div class="d-flex align-self-stretch mx-5">
+        <div class="d-flex align-self-stretch mx-5 align-items-center">
             <button class="btn btn-dark" [disabled]="!students.hasPrevPage() || isFetchingInfo" (click)="prev()">
                 Prev
             </button>
-            <div ngbDropdown class="d-inline-block mx-auto">
-                <button type="button" class="btn btn-outline-primary" ngbDropdownToggle>
-                    Select Number of Students Per Page
-                </button>
-                <div ngbDropdownMenu>
-                    <button
-                        ngbDropdownItem
-                        *ngFor="let possiblePageCnt of POSSIBLE_PAGE_CNTS"
-                        (click)="changePageSize(possiblePageCnt)"
-                        [class.active]="possiblePageCnt === pageCnt"
-                    >
+            <div class="d-inline-block mx-auto">
+                <span>Number of Students Per Page: </span>
+                <select class="form-select" [ngModel]="pageCnt" (ngModelChange)="changePageSize($event)">
+                    <option *ngFor="let possiblePageCnt of POSSIBLE_PAGE_CNTS" [ngValue]="possiblePageCnt">
                         {{ possiblePageCnt }}
-                    </button>
-                </div>
+                    </option>
+                </select>
             </div>
             <button class="btn btn-dark" [disabled]="!students.hasNextPage() || isFetchingInfo" (click)="next()">
                 Next
@@ -75,7 +68,7 @@
             </button>
         </div>
     </div>
-    <div class="m-5" [class.is-hidden]="!isShowingIndividualStudent">
+    <div [class.is-hidden]="!isShowingIndividualStudent">
         <app-student-record-display #individaulStudentRecordDisplay (goBack)="onGoBack()"></app-student-record-display>
     </div>
 </ng-template>

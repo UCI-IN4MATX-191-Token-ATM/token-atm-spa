@@ -1,5 +1,4 @@
 // import { ComponentFixture, TestBed } from '@angular/core/testing';
-// import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 // import { AxiosService, AxiosServiceFactory } from 'app/services/axios.service';
 
 // import { CourseSelectionComponent } from './course-selection.component';
@@ -12,7 +11,6 @@
 //         await TestBed.configureTestingModule({
 //             declarations: [CourseSelectionComponent],
 //             providers: [{ provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService }],
-//             imports: [NgbModule]
 //         }).compileComponents();
 
 //         fixture = TestBed.createComponent(CourseSelectionComponent);

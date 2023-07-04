@@ -1,6 +1,5 @@
 import { ErrorHandler, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 // https://stackoverflow.com/questions/38892771/cant-bind-to-ngmodel-since-it-isnt-a-known-property-of-input
 import { FormsModule } from '@angular/forms';
@@ -62,6 +61,8 @@ import { PickTokenOptionModalComponent } from './components/pick-token-option-mo
 import { BatchTokenBalanceAdjustmentModalComponent } from './components/batch-token-balance-adjustment-modal/batch-token-balance-adjustment-modal.component';
 import { MoveTokenOptionModalComponent } from './components/move-token-option-modal/move-token-option-modal.component';
 import { GlobalErrorHandler } from './utils/global-error-handler';
+import { CanvasLoadingToastComponent } from './components/canvas-loading-toast/canvas-loading-toast.component';
+import { TooltipModule } from 'ngx-bootstrap/tooltip';
 
 @NgModule({
     declarations: [
@@ -102,19 +103,20 @@ import { GlobalErrorHandler } from './utils/global-error-handler';
         WithdrawLabSwitchTokenOptionFieldComponent,
         PickTokenOptionModalComponent,
         BatchTokenBalanceAdjustmentModalComponent,
-        MoveTokenOptionModalComponent
+        MoveTokenOptionModalComponent,
+        CanvasLoadingToastComponent
     ],
     imports: [
         BrowserModule,
         AppRoutingModule,
         FormsModule,
-        NgbModule,
         BsDropdownModule.forRoot(),
         BrowserAnimationsModule,
         CollapseModule.forRoot(),
         ModalModule.forRoot(),
         BsDatepickerModule.forRoot(),
-        TimepickerModule.forRoot()
+        TimepickerModule.forRoot(),
+        TooltipModule.forRoot()
     ],
     providers: [
         { provide: ErrorHandler, useClass: GlobalErrorHandler },

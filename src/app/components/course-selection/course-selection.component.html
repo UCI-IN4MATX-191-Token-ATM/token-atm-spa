@@ -1,5 +1,5 @@
 <div appCenter *ngIf="loading; else courseSelectionPanel">
-    <ngb-toast [autohide]="false"> Token ATM is retrieving information from Canvas. Please wait... </ngb-toast>
+    <app-canvas-loading-toast></app-canvas-loading-toast>
 </div>
 <ng-template #courseSelectionPanel>
     <div class="container my-5 text-center align-items-center overflow-y-auto">
