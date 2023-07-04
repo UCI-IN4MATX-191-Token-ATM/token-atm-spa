@@ -1,7 +1,5 @@
 <div appCenter>
-    <ngb-toast *ngIf="!configuration; else processPanel" [autohide]="false">
-        Token ATM is retrieving information from Canvas. Please wait...
-    </ngb-toast>
+    <app-canvas-loading-toast *ngIf="!configuration; else processPanel"></app-canvas-loading-toast>
     <ng-template #processPanel>
         <div class="d-flex flex-column align-items-center">
             <button

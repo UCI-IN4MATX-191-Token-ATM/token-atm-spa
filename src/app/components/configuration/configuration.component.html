@@ -1,5 +1,5 @@
 <div *ngIf="!course; else configurationPanel" appCenter>
-    <ngb-toast [autohide]="false"> Token ATM is retrieving information from Canvas. Please wait... </ngb-toast>
+    <app-canvas-loading-toast></app-canvas-loading-toast>
 </div>
 <ng-template #configurationPanel>
     <div appCenter class="flex-column">

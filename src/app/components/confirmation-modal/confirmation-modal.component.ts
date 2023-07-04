@@ -7,7 +7,7 @@ import { Component, Input } from '@angular/core';
 })
 export class ConfirmationModalComponent {
     @Input() message = '';
-    @Input() heading = 'Confrimation';
+    @Input() heading = 'Confirmation';
     @Input() noText = 'Cancel';
     @Input() yesText = 'Yes';
     @Input() isDanger = false;

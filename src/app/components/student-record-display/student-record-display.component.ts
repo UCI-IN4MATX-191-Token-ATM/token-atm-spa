@@ -49,7 +49,7 @@ export class StudentRecordDisplayComponent {
         if (this.tokenAdjustmentCount == null) return;
         if (this.tokenAdjustmentMessage == null) this.tokenAdjustmentMessage = '';
         const [modalRef, result] = await this.modalManagerService.createConfirmationModal(
-            `Do you really want to change student token balance by ${
+            `Do you really want to change this student's token balance by ${
                 this.tokenAdjustmentCount.toString() +
                 (this.tokenAdjustmentMessage == ''
                     ? '?'
@@ -110,7 +110,7 @@ export class StudentRecordDisplayComponent {
                     nowTime,
                     nowTime,
                     result.tokenBalanceChange,
-                    'This request is made by teachers on your behalf.'
+                    'This request is made by instructors on your behalf.'
                 )
             );
         }

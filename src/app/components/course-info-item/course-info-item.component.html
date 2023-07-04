@@ -1,18 +1,17 @@
 <!-- https://getbootstrap.com/docs/4.0/components/card/#titles-text-and-links -->
-<!-- https://ng-bootstrap.github.io/releases/13.x/#/components/tooltip/examples -->
 <div class="card" *ngIf="course" (click)="onSelectCourse()">
     <div class="card-body">
         <h5
             class="card-title text-truncate"
             placement="top"
-            [ngbTooltip]="course.name.length > 20 ? course.name : null"
+            [tooltip]="course.name.length > 20 ? course.name : undefined"
         >
             {{ course.name }}
         </h5>
         <h6
             class="card-subtitle text-truncate text-muted"
             placement="right"
-            [ngbTooltip]="course.term.length > 20 ? course.term : null"
+            [tooltip]="course.term.length > 20 ? course.term : undefined"
         >
             {{ course.term }}
         </h6>

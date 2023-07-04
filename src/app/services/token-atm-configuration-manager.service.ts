@@ -38,7 +38,7 @@ export class TokenATMConfigurationManagerService {
             if (typeof entry.children[0]?.data != 'string') continue;
             return entry.children[0]?.data;
         }
-        throw new Error('Page resolve fails');
+        throw new Error('Page resolve failed');
     }
 
     private async readConfigurationFromPage(course: Course, pageName: string): Promise<string> {

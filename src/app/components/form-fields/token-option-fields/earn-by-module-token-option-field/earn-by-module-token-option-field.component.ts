@@ -137,7 +137,8 @@ export class EarnByModuleTokenOptionFieldComponent extends TokenOptionField<Earn
             return undefined;
         };
         this._gradeThreshold.validator = async (value: number) => {
-            if (value < 0 || value > 1) return 'Grade threshold need to be a number between 0 and 1 (inclusive)';
+            if (value < 0 || value > 1)
+                return 'Grade threshold needs to be a number between 0 and 1 (inclusive). E.g, 0.7';
             return undefined;
         };
     }

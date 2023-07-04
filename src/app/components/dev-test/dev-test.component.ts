@@ -71,7 +71,7 @@ export class DevTestComponent {
         if (!this.course) return;
         const configuration = await this.manager.getTokenATMConfiguration(this.course);
         const group = configuration.tokenOptionGroups[configuration.tokenOptionGroups.length - 1];
-        if (!group) throw new Error('No token option group in the configuration!');
+        if (!group) throw new Error('No token option groups exist in the configuration!');
         group.addTokenOption(
             new BasicTokenOption(
                 group,
@@ -90,7 +90,7 @@ export class DevTestComponent {
     async onDeleteFirstTokenOptionGroup(): Promise<void> {
         if (!this.course) return;
         const configuration = await this.manager.getTokenATMConfiguration(this.course);
-        if (!configuration.tokenOptionGroups[0]) throw new Error('No token option group in the configuration!');
+        if (!configuration.tokenOptionGroups[0]) throw new Error('No token option groups exist in the configuration!');
         await this.manager.deleteTokenOptionGroup(configuration.tokenOptionGroups[0]);
         console.log('Delete first token option group finished!');
     }
@@ -99,8 +99,8 @@ export class DevTestComponent {
         if (!this.course) return;
         const configuration = await this.manager.getTokenATMConfiguration(this.course);
         const group = configuration.tokenOptionGroups[0];
-        if (!group) throw new Error('No token option group in the configuration!');
-        if (!group.tokenOptions[0]) throw new Error('No token option in the first token option group!');
+        if (!group) throw new Error('No token option groups exist in the configuration!');
+        if (!group.tokenOptions[0]) throw new Error('No token option exists in the first token option group!');
         group.deleteTokenOption(group.tokenOptions[0]);
         const result = await this.manager.updateTokenOptionGroup(group);
         console.log('Delete first token option finished!');
@@ -111,7 +111,7 @@ export class DevTestComponent {
         if (!this.course) return;
         const configuration = await this.manager.getTokenATMConfiguration(this.course);
         const group = configuration.tokenOptionGroups[configuration.tokenOptionGroups.length - 1];
-        if (!group) throw new Error('No token option group in the configuration!');
+        if (!group) throw new Error('No token option groups exist in the configuration!');
         if (group.isPublished) {
             const result = await this.manager.unpublishTokenOptionGroup(group);
             console.log('Unpublish operation attempted. Result: ', result);
@@ -189,7 +189,7 @@ export class DevTestComponent {
             'Basic Token Options (Testing)',
             configuration.nextFreeTokenOptionGroupId,
             '',
-            'Test Token ATM with these basic token options whose requests are always get approved!',
+            'Test Token ATM with these basic token options whose requests are always approved!',
             true,
             []
         );

@@ -66,7 +66,7 @@ export class WithdrawLabDataTokenOptionFieldComponent
             const tokenOption = configuration?.getTokenOptionById(value);
             if (!tokenOption) return 'There is no token option with this id';
             if (!(tokenOption instanceof SpendForLabDataTokenOption))
-                return 'Token option type invalid: should be Spend Tokens for Lab Data';
+                return "Token option type invalid: should be 'Spend Tokens for Lab Data'";
             return undefined;
         };
     }

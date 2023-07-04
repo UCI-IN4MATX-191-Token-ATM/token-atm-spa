@@ -7,7 +7,6 @@ export class EndDateGuard extends RequestHandlerGuard {
     }
 
     public async check(onReject: (message: string) => Promise<void>): Promise<void> {
-        if (compareDesc(this.submittedDate, this.endDate) == -1)
-            onReject('Request is submitted later than the end date');
+        if (compareDesc(this.submittedDate, this.endDate) == -1) onReject('Request was submitted after the end date');
     }
 }
