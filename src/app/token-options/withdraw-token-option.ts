@@ -13,9 +13,10 @@ export abstract class WithdrawTokenOption<T> extends TokenOption {
         name: string,
         description: string,
         tokenBalanceChange: number,
+        isMigrating: boolean,
         withdrawTokenOptionId: number
     ) {
-        super(group, type, id, name, description, tokenBalanceChange);
+        super(group, type, id, name, description, tokenBalanceChange, isMigrating);
         this._withdrawTokenOptionId = withdrawTokenOptionId;
     }
 

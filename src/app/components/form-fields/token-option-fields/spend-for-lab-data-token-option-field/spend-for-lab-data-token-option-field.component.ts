@@ -66,6 +66,7 @@ export class SpendForLabDataTokenOptionFieldComponent
                 await this._nameField.getValue(),
                 await this._descriptionField.getValue(),
                 await this._tokenBalanceChangeField.getValue(),
+                false,
                 await this._quizNameField.getValue(),
                 await this.canvasService.getQuizIdByName(courseId, await this._quizNameField.getValue()),
                 await this._startTimeField.getValue(),

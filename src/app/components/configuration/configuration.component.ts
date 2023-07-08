@@ -75,7 +75,8 @@ export class ConfigurationComponent implements CourseConfigurable {
                     configuration.nextFreeTokenOptionId,
                     'Earn 0.5 test tokens',
                     'The test tokens you obtained by requesting this token option is just for testing purpose and will not influence your real token counts',
-                    0.5
+                    0.5,
+                    false
                 )
             );
             basicGroup.addTokenOption(
@@ -85,7 +86,8 @@ export class ConfigurationComponent implements CourseConfigurable {
                     configuration.nextFreeTokenOptionId,
                     'Spend 1 test token',
                     'The test tokens you spent by requesting this token option is just for testing purpose and will not influence your real token counts',
-                    -1
+                    -1,
+                    false
                 )
             );
             await this.configurationManagerService.updateTokenOptionGroup(basicGroup);
@@ -124,7 +126,8 @@ export class ConfigurationComponent implements CourseConfigurable {
                     `Course Preparation Token`,
                     `To get this test token, you need to pass the Course Preparation Module with a score no less than 70% of the total score. The test token you got is just for testing purpose and will not influence your real token counts`,
                     1,
-                    'Course Preparation (Must pass with 70% or higher to earn 1 TOKEN)',
+                    false,
+                    this.moduleName as string,
                     moduleId,
                     new Date(),
                     0.7
@@ -168,6 +171,70 @@ export class ConfigurationComponent implements CourseConfigurable {
                 'Error'
             );
             this.isProcessing = false;
+        }
+    }
+
+    async onResetContent(): Promise<void> {
+        if (!this.course) return;
+        this.isProcessing = true;
+        const [modalRef, result] = await this.modalManagerSerivce.createConfirmationModal(
+            'Do you really want to reset Token ATM for this course? This will cause all information about token balances and requests being deleted! NOTE: if errors occur during reset, there is NO WAY to recover from it! Please export the course content as a backup.',
+            'Confirmation',
+            true
+        );
+        if (!result) {
+            this.isProcessing = false;
+            modalRef.hide();
+            return;
+        }
+        if (modalRef.content) modalRef.content.disableButton = true;
+        try {
+            const configuration = await this.configurationManagerService.getTokenATMConfiguration(this.course);
+            await this.configurationManagerService.regenerateContent(configuration);
+            await this.modalManagerSerivce.createNotificationModal('Token ATM is successfully reset!');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
+            await this.modalManagerSerivce.createNotificationModal(
+                `Error occured when resetting Token ATM:\n***ACTION NEEDED*** Please delete the Token ATM content manually by deleting two pages prefixed with Token ATM, one assignment group prefixed with Token ATM, and one module prefixed with Token ATM. After that, please import the course content related to Token ATM (the things you deleted before) from the course export and then perform migration. Sorry for the inconvenience!\nError Message: ${ErrorSerializer.serailize(
+                    err
+                )}`
+            );
+        } finally {
+            this.isProcessing = false;
+            modalRef.hide();
+        }
+    }
+
+    async onMigrate(): Promise<void> {
+        if (!this.course) return;
+        this.isProcessing = true;
+        const [modalRef, result] = await this.modalManagerSerivce.createConfirmationModal(
+            'Do you really want to start the migration of Token ATM for this course? This will cause all information about token balances and requests being deleted! Also, all token option groups will be unpublished, while all token options will need to be saved again to complete the migration. NOTE: if errors occur during migration, there is NO WAY to recover from it! Please export the course content as a backup.',
+            'Confirmation',
+            true
+        );
+        if (!result) {
+            this.isProcessing = false;
+            modalRef.hide();
+            return;
+        }
+        if (modalRef.content) modalRef.content.disableButton = true;
+        try {
+            const configuration = await this.configurationManagerService.getTokenATMConfiguration(this.course);
+            await this.configurationManagerService.regenerateContent(configuration, true);
+            await this.modalManagerSerivce.createNotificationModal(
+                'Token ATM migration is started sucessfully! You need to save every token option again to complete the migration.'
+            );
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
+            await this.modalManagerSerivce.createNotificationModal(
+                `Error occured when migrating Token ATM:\n***ACTION NEEDED*** Please delete the Token ATM content manually by deleting two pages prefixed with Token ATM, one assignment group prefixed with Token ATM, and one module prefixed with Token ATM. After that, please import the course content related to Token ATM (the things you deleted before) from the course export and then try the migration again. Sorry for the inconvenience!\nError Message: ${ErrorSerializer.serailize(
+                    err
+                )}`
+            );
+        } finally {
+            this.isProcessing = false;
+            modalRef.hide();
         }
     }
 
