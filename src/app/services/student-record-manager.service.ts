@@ -17,7 +17,8 @@ export class StudentRecordManagerService {
 
     private async writeStudentRecordToCanvas(
         configuration: TokenATMConfiguration,
-        studentRecord: StudentRecord
+        studentRecord: StudentRecord,
+        rollbackTokenBalance: number
     ): Promise<StudentRecord> {
         const courseId = configuration.course.id,
             studentId = studentRecord.student.id,
@@ -32,15 +33,22 @@ export class StudentRecordManagerService {
         );
         studentRecord.commentId = newSubmissionComment.id;
         studentRecord.commentDate = newSubmissionComment.createdAt;
-        // Avoid duplicate Date signature
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        await this.canvasService.modifyComment(
-            courseId,
-            studentId,
-            assignmentId,
-            newSubmissionComment.id,
-            StudentRecordManagerService.PROMPT + (await configuration.encryptStudentRecord(studentRecord))
-        );
+        try {
+            await this.canvasService.modifyComment(
+                courseId,
+                studentId,
+                assignmentId,
+                newSubmissionComment.id,
+                StudentRecordManagerService.PROMPT + (await configuration.encryptStudentRecord(studentRecord))
+            );
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
+            // TODO: Create & Use Template for Action Needed Errors (shared with configuration.component.ts)
+            err.message =
+                err.message +
+                `\n***ACTION NEEDED***: \nPlease use Canvas to manually change this student's grade in the Token ATM Log assignment to ${rollbackTokenBalance}. \nFailure to do so could cause the token balance of this student be incorrect. \nAlso, deleting the last two comments in Token ATM Log (ignoring those that start with "Please ignore the characters below") could help avoid confusion. One comment is the report for this incomplete request, while the other is a comment like xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). \n***Sorry for the inconvenience!`;
+            throw err;
+        }
         if (oldCommentId != '') {
             await this.canvasService.deleteSubmissionComment(courseId, studentId, assignmentId, oldCommentId);
         }
@@ -77,7 +85,9 @@ export class StudentRecordManagerService {
             }
             if (
                 typeof data['comment_date'] != 'number' ||
-                compareAsc(fromUnixTime(data['comment_date']), submissionComment.createdAt) != 0
+                compareAsc(fromUnixTime(data['comment_date']), submissionComment.createdAt) != 0 ||
+                (typeof data['comment_id'] != 'undefined' && typeof data['comment_id'] != 'string') ||
+                (typeof data['comment_id'] == 'string' && data['comment_id'] != submissionComment.id)
             ) {
                 await this.canvasService.deleteComment(courseId, studentId, assignmentId, submissionComment.id);
                 continue;
@@ -93,7 +103,7 @@ export class StudentRecordManagerService {
             new Map<number, number>(),
             []
         );
-        studentRecord = await this.writeStudentRecordToCanvas(configuration, studentRecord);
+        studentRecord = await this.writeStudentRecordToCanvas(configuration, studentRecord, 0);
         return studentRecord;
     }
 
@@ -105,12 +115,12 @@ export class StudentRecordManagerService {
         const oldTokenBalance = studentRecord.tokenBalance;
         studentRecord.logProcessedRequest(processedRequest);
         // generate a new comment
-        this.canvasService.postComment(
+        await this.canvasService.postComment(
             configuration.course.id,
             studentRecord.student.id,
             configuration.logAssignmentId,
             `Your request to ${processedRequest.tokenOptionName} has been processed.\nResult: ${
-                processedRequest.isApproved ? 'Approved' : 'Rejected'
+                processedRequest.isApproved ? 'Approved' : '*REJECTED*'
             }\nSubmitted at: ${format(processedRequest.submittedTime, 'MMM dd, yyyy kk:mm:ss')}\nProcessed at: ${format(
                 processedRequest.processedTime,
                 'MMM dd, yyyy kk:mm:ss'
@@ -118,6 +128,6 @@ export class StudentRecordManagerService {
                 processedRequest.message != '' ? `\nMessage: ${processedRequest.message}` : ''
             }`
         );
-        await this.writeStudentRecordToCanvas(configuration, studentRecord);
+        await this.writeStudentRecordToCanvas(configuration, studentRecord, oldTokenBalance);
     }
 }

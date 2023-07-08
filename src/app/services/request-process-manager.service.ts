@@ -15,6 +15,7 @@ import { CanvasService } from './canvas.service';
 import { QualtricsService } from './qualtrics.service';
 import { RawRequestFetcherService } from './raw-request-fetcher.service';
 import { StudentRecordManagerService } from './student-record-manager.service';
+import { countAndNoun } from 'app/utils/pluralize';
 
 @Injectable({
     providedIn: 'root'
@@ -35,6 +36,7 @@ export class RequestProcessManagerService {
 
     public startRequestProcessing(configuration: TokenATMConfiguration): Observable<[number, string]> {
         const result = new BehaviorSubject<[number, string]>([0, 'Request processing started']);
+        // Intentionally not await since the BehaviorSubject needs to be return to the component
         this.runRequestProcessing(configuration, result);
         return result;
     }
@@ -66,7 +68,7 @@ export class RequestProcessManagerService {
             [quizSubmissionMap, assignmentIdMap] = await this.gatherQuizSubmissions(configuration, progressUpdate);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
-            progressUpdate.error(["Encounter an error when gathering students' quiz submissions", err]);
+            progressUpdate.error(["Encountered an error while gathering students' quiz submissions", err]);
             this.finishRequestProcessing(progressUpdate, false);
             return;
         }
@@ -98,7 +100,7 @@ export class RequestProcessManagerService {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 } catch (err: any) {
                     progressUpdate.error([
-                        `Encounter an error when resolving requests for student ${
+                        `Encountered an error while resolving requests for student ${
                             student.name + (student.email == '' ? '' : `(${student.email})`)
                         }`,
                         err
@@ -126,7 +128,7 @@ export class RequestProcessManagerService {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         } catch (err: any) {
                             progressUpdate.error([
-                                `Encounter an error when handling request to ${
+                                `Encountered an error while handling request to ${
                                     processedRequest ? processedRequest.tokenOptionName : request.tokenOption.name
                                 } submitted at ${format(request.submittedTime, 'MMM dd, yyyy kk:mm:ss')} by student ${
                                     student.name + (student.email == '' ? '' : `(${student.email})`)
@@ -146,7 +148,7 @@ export class RequestProcessManagerService {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     } catch (err: any) {
                         progressUpdate.error([
-                            `Encounter an error when logging request to ${
+                            `Encountered an error while logging request to ${
                                 processedRequest.tokenOptionName
                             } submitted at ${format(
                                 processedRequest.submittedTime,
@@ -165,10 +167,10 @@ export class RequestProcessManagerService {
                     ]);
                     progressUpdate.next([
                         -1 - individualProcessedRequestCnt / requests.length,
-                        `Processed ${this.countAndNoun(
+                        `Processed ${countAndNoun(
                             individualProcessedRequestCnt,
                             'request'
-                        )} for the current student, ${this.countAndNoun(
+                        )} for the current student, ${countAndNoun(
                             requests.length - individualProcessedRequestCnt,
                             'request'
                         )} remaining`
@@ -182,7 +184,7 @@ export class RequestProcessManagerService {
             this.finishRequestProcessing(progressUpdate);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
-            progressUpdate.error(['Encounter an error when traversing the student list', err]);
+            progressUpdate.error(['Encountered an error while traversing the student list', err]);
             this.finishRequestProcessing(progressUpdate, false);
             return;
         }
@@ -210,7 +212,7 @@ export class RequestProcessManagerService {
                 submissionCnt++;
                 progressUpdate.next([
                     0,
-                    `Gathering submissions: Gathered ${this.countAndNoun(submissionCnt, 'submission')}`
+                    `Gathering submissions: Gathered ${countAndNoun(submissionCnt, 'submission')}`
                 ]);
                 if (this._isStopTriggered) {
                     return [quizSubmissionMap, assignmentIdMap];
@@ -271,7 +273,7 @@ export class RequestProcessManagerService {
                 requestCnt++;
                 progressUpdate.next([
                     -1,
-                    `Resolving Requests: Resolved ${this.countAndNoun(requestCnt, 'request')} for the current student`
+                    `Resolving Requests: Resolved ${countAndNoun(requestCnt, 'request')} for the current student`
                 ]);
                 if (this._isStopTriggered) return [studentRecord, requests];
             }
@@ -287,15 +289,7 @@ export class RequestProcessManagerService {
         }
     }
 
-    private countAndNoun(count: number, noun: string) {
-        const pluralize = (word: string, count: number): string => {
-            return word + (count == 1 ? '' : 's');
-        };
-        return `${count} ${pluralize(noun, count)}`;
-    }
-
     private progressString(studentCnt: number, processedRequestCnt: number, processedStudentCnt: number): string {
-        const countAndNoun = this.countAndNoun;
         const template = (sC: number, pRC: number, pSC: number): string => {
             return (
                 `Processing Requests: Processed ${countAndNoun(pRC, 'request')}` +

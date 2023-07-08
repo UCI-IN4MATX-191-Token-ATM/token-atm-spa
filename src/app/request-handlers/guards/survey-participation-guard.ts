@@ -13,9 +13,7 @@ export class SurveyParticipationGuard extends RequestHandlerGuard {
 
     public async check(onReject: (message: string) => Promise<void>): Promise<void> {
         if (this.participationId == '') {
-            onReject(
-                'Token ATM cannot access your email address, which thus cannot check your participation. Please make your email address visible.'
-            );
+            onReject('Your Canvas email address is not visible, please contact your institution for help.');
             return;
         }
         const result = await this.qualtricsService.checkParticipation(
@@ -24,7 +22,9 @@ export class SurveyParticipationGuard extends RequestHandlerGuard {
             this.participationId
         );
         if (!result) {
-            onReject('You did not complete the survey.');
+            onReject(
+                "You did not complete the survey. Or your default email address on Canvas doesn't match the email connected with the Qualtrics Survey."
+            );
         }
     }
 }

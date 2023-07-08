@@ -69,7 +69,7 @@ export class TokenOptionDisplayComponent {
     async onDelete(): Promise<void> {
         if (!this.option) return;
         const [confirmationRef, result] = await this.modalManagerService.createConfirmationModal(
-            `Do you really want to delete token option ${this.option.name}?`,
+            `Do you really want to delete the token option '${this.option.name}'?`,
             'Confirmation',
             true
         );
@@ -83,7 +83,7 @@ export class TokenOptionDisplayComponent {
         const updateResult = await this.configurationManagerService.updateTokenOptionGroup(group);
         if (!updateResult)
             await this.modalManagerService.createNotificationModal(
-                'Auto update failed. Some students have already taken the quiz that corresponds to the token option group this token option belongs to. Please clicks the "Save It Now" button in the quiz management page on Canvas.'
+                'Auto update failed. \nSome students have already taken the Canvas quiz that corresponds to the token option group that this token option belongs to. \nPlease click the "Save It Now" button in the quiz management page on Canvas to manually update.'
             );
         confirmationRef.hide();
     }

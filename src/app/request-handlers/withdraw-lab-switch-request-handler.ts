@@ -34,7 +34,7 @@ export class WithdrawLabSwitchRequestHandler extends RequestHandler<
         }
         if (!isRejected) {
             message =
-                "You don't have the permission to withdraw a lab switch request. This token option is only requestable by teachers on your behalf.";
+                "You don't have the permission to withdraw a lab switch request. This token option is only requestable by instructors on your behalf.";
             isRejected = true;
         }
         return new ProcessedRequest(

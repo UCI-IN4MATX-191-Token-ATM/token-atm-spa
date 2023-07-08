@@ -129,11 +129,11 @@ export class EarnBySurveyTokenOptionFieldComponent extends TokenOptionField<Earn
             return undefined;
         };
         this._surveyIdField.validator = async (value: string) => {
-            if (value.length == 0) return 'Survey ID cannot be empty';
+            if (value.length == 0) return 'Qualtrics Survey ID cannot be empty';
             return undefined;
         };
         this._fieldNameField.validator = async (value: string) => {
-            if (value.length == 0) return 'Survey field name cannot be empty';
+            if (value.length == 0) return 'Qualtrics Survey field name cannot be empty';
             return undefined;
         };
     }

@@ -38,7 +38,7 @@ export class TokenATMConfigurationManagerService {
             if (typeof entry.children[0]?.data != 'string') continue;
             return entry.children[0]?.data;
         }
-        throw new Error('Page resolve fails');
+        throw new Error('Page resolve failed');
     }
 
     private async readConfigurationFromPage(course: Course, pageName: string): Promise<string> {
@@ -56,7 +56,7 @@ export class TokenATMConfigurationManagerService {
             configuration.course.id,
             TokenATMConfigurationManagerService.TOKEN_ATM_CONFIGURATION_PAGE_NAME
         );
-        this.writeConfigurationToPage(configuration.course, pageId, JSON.stringify(configuration));
+        await this.writeConfigurationToPage(configuration.course, pageId, JSON.stringify(configuration));
     }
 
     private async getAssignmentGroupId(configuration: TokenATMConfiguration): Promise<string> {

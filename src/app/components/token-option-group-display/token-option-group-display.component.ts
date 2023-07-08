@@ -46,7 +46,7 @@ export class TokenOptionGroupDisplayComponent {
     async onPublishGroup(): Promise<void> {
         if (!this.group) return;
         const [modalRef, result] = await this.modalManagerService.createConfirmationModal(
-            `Do you really want to publish token option group ${this.group.name}?`
+            `Do you really want to publish the token option group '${this.group.name}'?`
         );
         if (!result) {
             modalRef.hide();
@@ -60,7 +60,7 @@ export class TokenOptionGroupDisplayComponent {
     async onUnpublishGroup(): Promise<void> {
         if (!this.group) return;
         const [modalRef, result] = await this.modalManagerService.createConfirmationModal(
-            `Do you really want to unpublish token option group ${this.group.name}?`
+            `Do you really want to unpublish the token option group '${this.group.name}'?`
         );
         if (!result) {
             modalRef.hide();
@@ -70,7 +70,7 @@ export class TokenOptionGroupDisplayComponent {
         const unpublishRresult = await this.configurationManagerService.unpublishTokenOptionGroup(this.group);
         if (!unpublishRresult) {
             await this.modalManagerService.createNotificationModal(
-                `Unpublish token option group ${this.group.name} failed. Some students have already taken the quiz for this token option group`,
+                `Unpublishing token option group '${this.group.name}' failed. \nSome students have already taken the Canvas quiz for this token option group.`,
                 'Error'
             );
         }
@@ -80,7 +80,7 @@ export class TokenOptionGroupDisplayComponent {
     async onDeleteGroup(): Promise<void> {
         if (!this.group) return;
         const [modalRef, result] = await this.modalManagerService.createConfirmationModal(
-            `Do you really want to delete token option group ${this.group.name}?`,
+            `Do you really want to delete the token option group '${this.group.name}'?`,
             'Confirmation',
             true
         );

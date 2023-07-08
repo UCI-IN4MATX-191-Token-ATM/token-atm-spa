@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@angular/core';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosRequestConfig } from 'axios';
 import { unzipRaw } from 'unzipit';
-import { AxiosService } from './axios.service';
+import { AxiosService, IPCCompatibleAxiosResponse, isNetworkOrServerError } from './axios.service';
+import { ExponentialBackoffExecutor } from 'app/utils/exponential-backoff-executor';
 
 @Injectable({
     providedIn: 'root'
@@ -31,25 +32,29 @@ export class QualtricsService {
     }
 
     private async refreshQualtricsAccessToken() {
-        if (!this.#qualtricsURL || !this.#clientID || !this.#clientSecret)
-            throw new Error('Credentials for Qualtrics are invalid');
-        const formData = new FormData();
-        formData.append('grant_type', 'client_credentials');
-        formData.append('scope', ['read:survey_responses', 'read:users'].join(' '));
-        const data = (
-            await this.axiosService.request({
-                url: this.#qualtricsURL + '/oauth2/token',
-                method: 'post',
-                auth: {
-                    username: this.#clientID,
-                    password: this.#clientSecret
-                },
-                data: formData,
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-        ).data;
+        const executor = async () => {
+            if (!this.#qualtricsURL || !this.#clientID || !this.#clientSecret)
+                throw new Error('Credentials for Qualtrics are invalid');
+            return (
+                await this.axiosService.request({
+                    url: this.#qualtricsURL + '/oauth2/token',
+                    method: 'post',
+                    auth: {
+                        username: this.#clientID,
+                        password: this.#clientSecret
+                    },
+                    params: {
+                        grant_type: 'client_credentials',
+                        scope: ['read:survey_responses', 'read:users'].join(' ')
+                    }
+                })
+            ).data;
+        };
+        const data = await ExponentialBackoffExecutor.execute(
+            executor,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            async (_, err: any | undefined) => !isNetworkOrServerError(err)
+        );
         if (typeof data['access_token'] == 'string') {
             this.#qualtricsAccessToken = data['access_token'];
         } else {
@@ -58,7 +63,10 @@ export class QualtricsService {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private async rawAPIRequest<T = any>(endpoint: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    private async rawAPIRequest<T = any>(
+        endpoint: string,
+        config?: AxiosRequestConfig
+    ): Promise<IPCCompatibleAxiosResponse<T>> {
         let isAccessTokenRefreshed = false;
         if (!this.#qualtricsAccessToken) {
             isAccessTokenRefreshed = true;
@@ -67,15 +75,22 @@ export class QualtricsService {
         // eslint-disable-next-line no-constant-condition
         while (true) {
             try {
-                const result = await this.axiosService.request({
-                    ...config,
-                    url: this.#qualtricsURL + endpoint,
-                    headers: {
-                        ...config?.headers,
-                        Authorization: 'Bearer ' + this.#qualtricsAccessToken
-                    }
-                });
-                return result;
+                const executor = async () => {
+                    const result = await this.axiosService.request<T>({
+                        ...config,
+                        url: this.#qualtricsURL + endpoint,
+                        headers: {
+                            ...config?.headers,
+                            Authorization: 'Bearer ' + this.#qualtricsAccessToken
+                        }
+                    });
+                    return result;
+                };
+                return await ExponentialBackoffExecutor.execute(
+                    executor,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    async (_, err: any | undefined) => !isNetworkOrServerError(err)
+                );
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
                 if (err.response && err.response.status == 401 && !isAccessTokenRefreshed) {
