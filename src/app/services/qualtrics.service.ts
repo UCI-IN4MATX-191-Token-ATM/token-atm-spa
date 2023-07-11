@@ -22,13 +22,29 @@ export class QualtricsService {
         return this.#dataCenter != undefined && this.#clientID != undefined && this.#clientSecret != undefined;
     }
 
-    public async configureCredential(dataCenter: string, clientID: string, clientSecret: string): Promise<boolean> {
+    public async configureCredential(
+        dataCenter: string,
+        clientID: string,
+        clientSecret: string
+    ): Promise<unknown | undefined> {
         this.#dataCenter = dataCenter;
         this.#clientID = clientID;
         this.#clientSecret = clientSecret;
         this.#qualtricsURL = `https://${this.#dataCenter}.qualtrics.com`;
-        // TODO: validate credential
-        return true;
+        try {
+            await this.apiRequest(`/API/v3/whoami`);
+        } catch (err: unknown) {
+            return err;
+        }
+        return undefined;
+    }
+
+    public async clearCredential() {
+        this.#dataCenter = undefined;
+        this.#clientID = undefined;
+        this.#clientSecret = undefined;
+        this.#qualtricsURL = undefined;
+        this.#qualtricsAccessToken = undefined;
     }
 
     private async refreshQualtricsAccessToken() {

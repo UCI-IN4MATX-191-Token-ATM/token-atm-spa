@@ -4,7 +4,9 @@ import { FormItemInfo } from 'app/data/form-item-info';
 import { TokenATMCredentials } from 'app/data/token-atm-credentials';
 import { CanvasService } from 'app/services/canvas.service';
 import { CredentialManagerService } from 'app/services/credential-manager.service';
+import { ModalManagerService } from 'app/services/modal-manager.service';
 import { QualtricsService } from 'app/services/qualtrics.service';
+import { ErrorSerializer } from 'app/utils/error-serailizer';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 
 type TokenATMCredentialsAttributes = Exclude<keyof TokenATMCredentials, 'toJSON'>;
@@ -25,6 +27,7 @@ export class LoginComponent implements AfterViewInit {
     storeCredentialModalRef?: BsModalRef<unknown>;
     credentials = new TokenATMCredentials();
     password = '';
+    unlockCredentialErrorMessage: string | undefined = undefined;
     isSavingCredentials = false;
     isProcessing = false;
 
@@ -33,7 +36,8 @@ export class LoginComponent implements AfterViewInit {
         @Inject(QualtricsService) private qualtricsService: QualtricsService,
         @Inject(CredentialManagerService) private credentialManagerService: CredentialManagerService,
         @Inject(Router) private router: Router,
-        @Inject(BsModalService) private modalService: BsModalService
+        @Inject(BsModalService) private modalService: BsModalService,
+        @Inject(ModalManagerService) private modalManagerService: ModalManagerService
     ) {}
 
     static CREDENTIALS_FORM_ITEM_INFO_MAP: CredentialsFormItemInfoMap = {
@@ -108,8 +112,16 @@ export class LoginComponent implements AfterViewInit {
     }
 
     async onUnlockCredentials(): Promise<void> {
+        this.unlockCredentialErrorMessage = undefined;
         this.isProcessing = true;
-        this.credentials = await this.credentialManagerService.retrieveCredentials(this.password);
+        try {
+            this.credentials = await this.credentialManagerService.retrieveCredentials(this.password);
+        } catch (err: unknown) {
+            this.unlockCredentialErrorMessage =
+                'Unlock credentials failed. The password might be wrong, or the saved credentials might have broken.';
+            this.isProcessing = false;
+            return;
+        }
         await this.onSubmitCredential();
         this.retrieveCredentialModalRef?.hide();
         this.isProcessing = false;
@@ -160,21 +172,33 @@ export class LoginComponent implements AfterViewInit {
     }
 
     async onSubmitCredential(): Promise<void> {
-        const isCanvasCredentialValid = await this.canvasService.configureCredential(
+        const canvasCredentialValidation = await this.canvasService.configureCredential(
             this.credentials.canvasURL,
             this.credentials.canvasAccessToken
         );
-        const isQualtricsCredentialValid = await this.qualtricsService.configureCredential(
+        const qualtricsCredentialValidation = await this.qualtricsService.configureCredential(
             this.credentials.qualtricsDataCenter,
             this.credentials.qualtricsClientID,
             this.credentials.qualtricsClientSecret
         );
-        if (isCanvasCredentialValid && isQualtricsCredentialValid) {
+        if (canvasCredentialValidation == undefined && qualtricsCredentialValidation == undefined) {
             this.credentials = new TokenATMCredentials();
             this.router.navigate(['/select-course']);
             return;
         } else {
-            // TODO: handle invalid credentials
+            const errMsgs: string[] = [];
+            if (canvasCredentialValidation != undefined) {
+                errMsgs.push('Provided Canvas credentials are invalid. Error Message:');
+                errMsgs.push(ErrorSerializer.serailize(canvasCredentialValidation));
+            }
+            if (qualtricsCredentialValidation != undefined) {
+                if (errMsgs.length != 0) errMsgs.push('');
+                errMsgs.push('Provided Qualtrics credentials are invalid. Error Message:');
+                errMsgs.push(ErrorSerializer.serailize(qualtricsCredentialValidation));
+            }
+            this.canvasService.clearCredential();
+            this.qualtricsService.clearCredential();
+            await this.modalManagerService.createNotificationModal(errMsgs.join('\n'), 'Error');
         }
     }
 }
