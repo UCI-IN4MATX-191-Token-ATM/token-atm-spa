@@ -34,6 +34,7 @@
         <form>
             <app-form-item [info]="getPasswordFormItemInfo()" [(data)]="password"></app-form-item>
         </form>
+        <p *ngIf="unlockCredentialErrorMessage" class="text-danger">{{ unlockCredentialErrorMessage }}</p>
     </div>
     <div class="modal-footer">
         <div class="d-flex flex-grow-1">

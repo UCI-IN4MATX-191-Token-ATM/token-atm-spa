@@ -47,11 +47,20 @@ export class CanvasService {
         return this.#url != undefined && this.#accessToken != undefined;
     }
 
-    public async configureCredential(url: string, accessToken: string): Promise<boolean> {
+    public async configureCredential(url: string, accessToken: string): Promise<unknown | undefined> {
         this.#url = url;
         this.#accessToken = accessToken;
-        // TODO: validate credential
-        return true;
+        try {
+            await this.getUserInformation('self');
+        } catch (err: unknown) {
+            return err;
+        }
+        return undefined;
+    }
+
+    public async clearCredential() {
+        this.#url = undefined;
+        this.#accessToken = undefined;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
