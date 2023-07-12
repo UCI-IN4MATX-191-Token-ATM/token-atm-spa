@@ -171,7 +171,18 @@ export class LoginComponent implements AfterViewInit {
         this.isProcessing = false;
     }
 
+    private parseURL(url: string) {
+        const parsedURL = new URL(url);
+        // Force HTTPS protocol
+        parsedURL.protocol = 'https:';
+        return parsedURL.origin;
+    }
+
     async onSubmitCredential(): Promise<void> {
+        // TODO: Check that Canvas is only hosted at a URL origin. If
+        //       Canvas is hosted on a sub-directory, Token ATM won't
+        //       send requests properly.
+        this.credentials.canvasURL = this.parseURL(this.credentials.canvasURL);
         const canvasCredentialValidation = await this.canvasService.configureCredential(
             this.credentials.canvasURL,
             this.credentials.canvasAccessToken
