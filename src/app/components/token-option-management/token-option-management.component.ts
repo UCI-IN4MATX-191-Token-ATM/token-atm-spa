@@ -49,9 +49,13 @@ export class TokenOptionManagementComponent {
         if (!this._tokenOptionContainer || !this._optionComponentType || !this._value) return;
         if (!this.componentRef)
             this.componentRef = this._tokenOptionContainer.createComponent(this._optionComponentType);
-        this.isReadOnly = this.isEditing;
+        if (this.isEditing) {
+            this.isReadOnly = !(this._value as TokenOption).isMigrating;
+        } else {
+            this.isReadOnly = false;
+        }
         const instance = this.componentRef.instance;
-        instance.isReadOnly = this.isEditing;
+        instance.isReadOnly = this.isReadOnly;
         instance.initValue = this._value;
     }
 
@@ -85,6 +89,7 @@ export class TokenOptionManagementComponent {
             return;
         }
         const tokenOption = await this.componentRef.instance.getValue();
+        if (tokenOption.isMigrating) tokenOption.isMigrating = false;
         const result = await this.configurationManagerService.updateTokenOptionGroup(tokenOption.group);
         if (!result) await this.notifyUpdateFailure();
         this.isProcessing = false;

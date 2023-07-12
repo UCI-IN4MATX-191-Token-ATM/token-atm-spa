@@ -9,6 +9,12 @@
         <button class="btn btn-danger my-3" (click)="onDeleteAll()" [disabled]="isProcessing">
             Delete All Token-ATM related content
         </button>
+        <button class="btn btn-danger my-3" (click)="onResetContent()" [disabled]="isProcessing">
+            Reset Token ATM
+        </button>
+        <button class="btn btn-danger my-3" (click)="onMigrate()" [disabled]="isProcessing">
+            Migrate Token ATM after a Course Copy/Import
+        </button>
     </div>
 </ng-template>
 

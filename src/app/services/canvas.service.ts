@@ -931,6 +931,46 @@ export class CanvasService {
         }
     }
 
+    public async replaceQuizQuestions(courseId: string, quizId: string, quizQuestions: QuizQuestion[]): Promise<void> {
+        await this.safeGuardForQuiz(courseId, quizId);
+        const quizQuestionIds = await DataConversionHelper.convertAsyncIterableToList(
+            new PaginatedResult<string>(
+                await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions`, {
+                    params: {
+                        per_page: 100
+                    }
+                }),
+                async (url: string) => await this.paginatedRequestHandler(url),
+                (data: unknown[]) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    return data.map((entry: any) => entry.id);
+                }
+            )
+        );
+        const minLen = Math.min(quizQuestionIds.length, quizQuestions.length);
+        for (let i = 0; i < minLen; i++) {
+            await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions/${quizQuestionIds[i]}`, {
+                method: 'put',
+                data: {
+                    question: quizQuestions[i]?.toJSON()
+                }
+            });
+        }
+        for (let i = minLen; i < quizQuestionIds.length; i++) {
+            await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions/${quizQuestionIds[i]}`, {
+                method: 'delete'
+            });
+        }
+        for (let i = minLen; i < quizQuestions.length; i++) {
+            await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions`, {
+                method: 'post',
+                data: {
+                    question: quizQuestions[i]?.toJSON()
+                }
+            });
+        }
+    }
+
     public async getQuiz(courseId: string, quizId: string): Promise<Quiz> {
         const data = await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`);
         return Quiz.deserialize(data);

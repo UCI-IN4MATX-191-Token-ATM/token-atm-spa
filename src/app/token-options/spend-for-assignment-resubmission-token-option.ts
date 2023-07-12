@@ -16,13 +16,14 @@ export class SpendForAssignmentResubmissionTokenOption extends TokenOption {
         name: string,
         description: string,
         tokenBalanceChange: number,
+        isMigrating: boolean,
         assignmentName: string,
         assignmentId: string,
         startTime: Date,
         endTime: Date,
         newDueTime: Date
     ) {
-        super(group, type, id, name, description, tokenBalanceChange);
+        super(group, type, id, name, description, tokenBalanceChange, isMigrating);
         this._assignmentName = assignmentName;
         this._assignmentId = assignmentId;
         this._startTime = startTime;

@@ -77,6 +77,10 @@ export class TokenOptionGroup {
         this._tokenOptions = tokenOptions;
     }
 
+    public get availableTokenOptions(): TokenOption[] {
+        return this.tokenOptions.filter((tokenOption) => !tokenOption.isMigrating);
+    }
+
     public addTokenOption(tokenOption: TokenOption, position?: number): void {
         this.configuration.updateNextFreeTokenOptionId(tokenOption.id);
         if (position == undefined) this._tokenOptions.push(tokenOption);

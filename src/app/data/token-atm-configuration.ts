@@ -6,6 +6,7 @@ import { CryptoHelper } from 'app/utils/crypto-helper';
 import { Base64 } from 'js-base64';
 import { TypedArrayHelper } from 'app/utils/typed-array-helper';
 import { compress, decompress } from 'compress-json';
+import { generateRandomString } from 'app/utils/random-string-generator';
 
 export class TokenATMConfiguration {
     private _course: Course;
@@ -63,6 +64,10 @@ export class TokenATMConfiguration {
 
     public get uid(): string {
         return this._uid;
+    }
+
+    public set uid(uid: string) {
+        this._uid = uid;
     }
 
     public get suffix(): string {
@@ -138,6 +143,13 @@ export class TokenATMConfiguration {
             password: this.#encryptionPassword,
             salt: Base64.fromUint8Array(this.#encryptionSalt)
         };
+    }
+
+    // Warning: This function will override previous secure config!
+    public regenerateSecureConfig(): void {
+        this.#encryptionKey = undefined;
+        this.#encryptionPassword = generateRandomString(32);
+        this.#encryptionSalt = window.crypto.getRandomValues(new Uint8Array(32));
     }
 
     async #generateKey(): Promise<void> {

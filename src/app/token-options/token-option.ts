@@ -8,6 +8,7 @@ export abstract class TokenOption {
     private _name: string;
     private _description: string;
     private _tokenBalanceChange: number;
+    private _isMigrating: boolean;
 
     constructor(
         group: TokenOptionGroup,
@@ -15,7 +16,8 @@ export abstract class TokenOption {
         id: number,
         name: string,
         description: string,
-        tokenBalanceChange: number
+        tokenBalanceChange: number,
+        isMigrating: boolean
     ) {
         this._group = group;
         this._type = type;
@@ -23,6 +25,7 @@ export abstract class TokenOption {
         this._name = name;
         this._description = description;
         this._tokenBalanceChange = tokenBalanceChange;
+        this._isMigrating = isMigrating;
     }
 
     public get group(): TokenOptionGroup {
@@ -73,6 +76,14 @@ export abstract class TokenOption {
         this._tokenBalanceChange = tokenBalanceChange;
     }
 
+    public set isMigrating(isMigrating: boolean) {
+        this._isMigrating = isMigrating;
+    }
+
+    public get isMigrating(): boolean {
+        return this._isMigrating;
+    }
+
     public get prompt(): string {
         return 'Request for ' + this.name;
     }
@@ -83,7 +94,8 @@ export abstract class TokenOption {
             id: this.id,
             name: this.name,
             description: Base64.encode(this.description),
-            token_balance_change: this.tokenBalanceChange
+            token_balance_change: this.tokenBalanceChange,
+            is_migrating: this.isMigrating ? true : undefined
         };
     }
 
@@ -98,7 +110,8 @@ export abstract class TokenOption {
             typeof data['id'] != 'number' ||
             typeof data['name'] != 'string' ||
             (typeof data['description'] != 'undefined' && typeof data['description'] != 'string') ||
-            typeof data['token_balance_change'] != 'number'
+            typeof data['token_balance_change'] != 'number' ||
+            (typeof data['is_migrating'] != 'undefined' && typeof data['is_migrating'] != 'boolean')
         )
             throw new Error('Invalid data');
         return [
@@ -107,7 +120,8 @@ export abstract class TokenOption {
             data['id'],
             data['name'],
             data['description'] ? Base64.decode(data['description']) : '',
-            data['token_balance_change']
+            data['token_balance_change'],
+            data['is_migrating'] ?? false
         ];
     }
 }

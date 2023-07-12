@@ -15,12 +15,13 @@ export class EarnByModuleTokenOption extends TokenOption {
         name: string,
         description: string,
         tokenBalanceChange: number,
+        isMigrating: boolean,
         moduleName: string,
         moduleId: string,
         startTime: Date,
         gradeThreshold: number
     ) {
-        super(group, type, id, name, description, tokenBalanceChange);
+        super(group, type, id, name, description, tokenBalanceChange, isMigrating);
         this._moduleName = moduleName;
         this._moduleId = moduleId;
         this._startTime = startTime;
