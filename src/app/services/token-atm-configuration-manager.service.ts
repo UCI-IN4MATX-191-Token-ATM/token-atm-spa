@@ -13,6 +13,7 @@ import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-op
 import { CanvasService } from './canvas.service';
 import HTMLParse from 'html-dom-parser';
 import { NewDueTimeTransformer } from 'app/instruction-generators/new-due-time-transformer';
+import { generateRandomString } from 'app/utils/random-string-generator';
 
 @Injectable({
     providedIn: 'root'
@@ -277,11 +278,7 @@ export class TokenATMConfigurationManagerService {
         const configuration = new TokenATMConfiguration(
             course,
             '',
-            // https://stackoverflow.com/a/47496558
-            [...Array(8)]
-                .map(() => Math.random().toString(36)[2])
-                .join('')
-                .toUpperCase(),
+            generateRandomString(8).toUpperCase(),
             suffix,
             description,
             1,
@@ -290,7 +287,7 @@ export class TokenATMConfigurationManagerService {
             (group, data) => {
                 return this.tokenOptionResolverRegistry.resolveTokenOption(group, data);
             },
-            [...Array(32)].map(() => Math.random().toString(36)[2]).join(''),
+            generateRandomString(32),
             window.crypto.getRandomValues(new Uint8Array(32))
         );
         await this.canvasService.createPage(
@@ -304,11 +301,8 @@ export class TokenATMConfigurationManagerService {
 
     public async regenerateContent(configuration: TokenATMConfiguration, isMigrating = false): Promise<void> {
         await this.deleteGeneratedContent(configuration);
-        configuration.uid = [...Array(8)]
-            .map(() => Math.random().toString(36)[2])
-            .join('')
-            .toUpperCase();
-        configuration.regenrateSecureConfig();
+        configuration.uid = generateRandomString(8).toUpperCase();
+        configuration.regenerateSecureConfig();
         if (isMigrating)
             for (const tokenOptionGroup of configuration.tokenOptionGroups) {
                 tokenOptionGroup.isPublished = false;

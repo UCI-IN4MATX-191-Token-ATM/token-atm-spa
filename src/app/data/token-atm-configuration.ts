@@ -6,6 +6,7 @@ import { CryptoHelper } from 'app/utils/crypto-helper';
 import { Base64 } from 'js-base64';
 import { TypedArrayHelper } from 'app/utils/typed-array-helper';
 import { compress, decompress } from 'compress-json';
+import { generateRandomString } from 'app/utils/random-string-generator';
 
 export class TokenATMConfiguration {
     private _course: Course;
@@ -145,10 +146,9 @@ export class TokenATMConfiguration {
     }
 
     // Warning: This function will override previous secure config!
-    public regenrateSecureConfig(): void {
+    public regenerateSecureConfig(): void {
         this.#encryptionKey = undefined;
-        // https://stackoverflow.com/a/47496558
-        this.#encryptionPassword = [...Array(32)].map(() => Math.random().toString(36)[2]).join('');
+        this.#encryptionPassword = generateRandomString(32);
         this.#encryptionSalt = window.crypto.getRandomValues(new Uint8Array(32));
     }
 
