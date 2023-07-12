@@ -15,12 +15,13 @@ export class EarnByQuizTokenOption extends TokenOption {
         name: string,
         description: string,
         tokenBalanceChange: number,
+        isMigrating: boolean,
         quizName: string,
         quizId: string,
         startTime: Date,
         gradeThreshold: number
     ) {
-        super(group, type, id, name, description, tokenBalanceChange);
+        super(group, type, id, name, description, tokenBalanceChange, isMigrating);
         this._quizName = quizName;
         this._quizId = quizId;
         this._startTime = startTime;

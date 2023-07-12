@@ -56,6 +56,7 @@ export class EarnBySurveyTokenOptionFieldComponent extends TokenOptionField<Earn
                 await this._nameField.getValue(),
                 await this._descriptionField.getValue(),
                 await this._tokenBalanceChangeField.getValue(),
+                false,
                 await this._surveyIdField.getValue(),
                 await this._fieldNameField.getValue(),
                 await this._startTimeField.getValue(),

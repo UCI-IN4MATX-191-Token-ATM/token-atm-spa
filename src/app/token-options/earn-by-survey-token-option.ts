@@ -15,12 +15,13 @@ export class EarnBySurveyTokenOption extends TokenOption {
         name: string,
         description: string,
         tokenBalanceChange: number,
+        isMigrating: boolean,
         surveyId: string,
         fieldName: string,
         startTime: Date,
         endTime: Date
     ) {
-        super(group, type, id, name, description, tokenBalanceChange);
+        super(group, type, id, name, description, tokenBalanceChange, isMigrating);
         this._surveyId = surveyId;
         this._fieldName = fieldName;
         this._startTime = startTime;

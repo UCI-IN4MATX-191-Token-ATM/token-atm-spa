@@ -64,6 +64,7 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponent
                 await this._nameField.getValue(),
                 await this._descriptionField.getValue(),
                 await this._tokenBalanceChangeField.getValue(),
+                false,
                 await this._assignmentNameField.getValue(),
                 await this.canvasService.getAssignmentIdByName(courseId, await this._assignmentNameField.getValue()),
                 await this._startTimeField.getValue(),

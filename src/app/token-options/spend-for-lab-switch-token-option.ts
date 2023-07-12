@@ -11,9 +11,10 @@ export class SpendForLabSwitchTokenOption extends TokenOption {
         name: string,
         description: string,
         tokenBalanceChange: number,
+        isMigrating: boolean,
         excludeTokenOptionIds: number[]
     ) {
-        super(group, type, id, name, description, tokenBalanceChange);
+        super(group, type, id, name, description, tokenBalanceChange, isMigrating);
         this._excludeTokenOptionIds = excludeTokenOptionIds;
     }
 

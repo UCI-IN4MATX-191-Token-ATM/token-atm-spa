@@ -88,6 +88,7 @@ export class SpendForLabSwitchTokenOptionFieldComponent
                 await this._nameField.getValue(),
                 await this._descriptionField.getValue(),
                 await this._tokenBalanceChangeField.getValue(),
+                false,
                 (await this._excludeTokenOptionIdsField.getValue())
                     .split(',')
                     .filter((value: string) => value.trim().length != 0)

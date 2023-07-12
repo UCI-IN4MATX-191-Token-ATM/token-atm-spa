@@ -79,7 +79,8 @@ export class DevTestComponent {
                 configuration.nextFreeTokenOptionId,
                 `Test Token Option ${group.tokenOptions.length}`,
                 `Just a test <b>token option</b> ${group.tokenOptions.length}`,
-                group.tokenOptions.length
+                group.tokenOptions.length,
+                false
             )
         );
         const result = await this.manager.updateTokenOptionGroup(group);
@@ -163,6 +164,7 @@ export class DevTestComponent {
                 `getting tokens by passing module 1`,
                 `Passing Module 1 with a score no less than 70% of the total score`,
                 1,
+                false,
                 'Module 1',
                 '12612114',
                 new Date(),
@@ -177,6 +179,7 @@ export class DevTestComponent {
                 `getting tokens by passing module 2`,
                 `Passing Module 1 with a score no less than 80% of the total score`,
                 2,
+                false,
                 'Module 2',
                 '12612167',
                 new Date(),
@@ -201,7 +204,8 @@ export class DevTestComponent {
                 configuration.nextFreeTokenOptionId,
                 `basic token option 1`,
                 `Just a test <b>token option</b>`,
-                100
+                100,
+                false
             )
         );
         basicGroup.addTokenOption(
@@ -211,7 +215,8 @@ export class DevTestComponent {
                 configuration.nextFreeTokenOptionId,
                 `basic token option 2`,
                 `Just a test <b>token option</b>`,
-                0.5
+                0.5,
+                false
             )
         );
         basicGroup.addTokenOption(
@@ -221,7 +226,8 @@ export class DevTestComponent {
                 configuration.nextFreeTokenOptionId,
                 `basic token option 3`,
                 `Just a test <b>token option</b>`,
-                -100
+                -100,
+                false
             )
         );
         await this.manager.updateTokenOptionGroup(basicGroup);
@@ -249,6 +255,7 @@ export class DevTestComponent {
                 'Earn by Quiz Testing',
                 'Just a description',
                 10,
+                false,
                 'Argument Driven Inquiry (ADI) Quiz',
                 '14478031',
                 new Date(),
@@ -263,6 +270,7 @@ export class DevTestComponent {
                 'Spend for Assignment Resubmission Testing',
                 'Just a description',
                 -1,
+                false,
                 'Test Locked Assignment',
                 '38096634',
                 new Date(),
@@ -278,6 +286,7 @@ export class DevTestComponent {
                 'Spend for Lab Data Testing',
                 'Just a description',
                 -2,
+                false,
                 'Test Lab Data Quiz',
                 '14544887',
                 new Date(),
@@ -294,6 +303,7 @@ export class DevTestComponent {
                 'Expire Test',
                 'Just make it expired',
                 -2,
+                false,
                 'Test Lab Data Quiz',
                 '14544887',
                 new Date(),
@@ -310,6 +320,7 @@ export class DevTestComponent {
                 'Earn by Taking Qualtrics Survey Testing',
                 'Just a description',
                 10,
+                false,
                 'SV_aVQu2sEgpSgSkBw',
                 'Email',
                 new Date(),

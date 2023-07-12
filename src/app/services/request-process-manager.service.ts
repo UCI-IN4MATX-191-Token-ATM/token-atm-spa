@@ -265,7 +265,7 @@ export class RequestProcessManagerService {
                             quizSubmissionDetail.submittedTime,
                             new Date(),
                             0,
-                            'The token option you made a request for cannot be recognized. That token option might be deleted or moved. Or you might have submitted the quiz without selecting an option from Question 1',
+                            'The token option you made a request for cannot be recognized. You might have submitted the quiz without selecting an option from Question 1, or the token option you requested for is deleted, moved, or not configured properly yet.',
                             group.id
                         )
                     );

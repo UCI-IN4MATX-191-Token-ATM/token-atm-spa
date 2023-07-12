@@ -68,7 +68,8 @@ export class BasicTokenOptionFieldComponent extends TokenOptionField<BasicTokenO
                 await this._idField.getValue(),
                 await this._nameField.getValue(),
                 await this._descriptionField.getValue(),
-                await this._tokenBalanceChangeField.getValue()
+                await this._tokenBalanceChangeField.getValue(),
+                false
             );
         } else {
             this._value.name = await this._nameField.getValue();

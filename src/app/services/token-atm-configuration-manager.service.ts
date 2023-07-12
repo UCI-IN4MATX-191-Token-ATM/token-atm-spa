@@ -109,7 +109,7 @@ export class TokenATMConfigurationManagerService {
         if (tokenOptionGroup.isPublished) canUnpublish = await this.canvasService.canQuizUnpublished(courseId, quizId);
         if (tokenOptionGroup.isPublished && canUnpublish)
             canUnpublish = await this.canvasService.changeQuizPublishState(courseId, quizId, false);
-        await this.canvasService.clearQuizQuestions(courseId, quizId);
+        // await this.canvasService.clearQuizQuestions(courseId, quizId);
         await this.canvasService.modifyQuiz(
             courseId,
             quizId,
@@ -125,13 +125,14 @@ export class TokenATMConfigurationManagerService {
                 new NewDueTimeTransformer(),
                 new TokenBalanceChangeTransformer(),
                 new DescriptionTransformer()
-            ]).process(tokenOptionGroup.tokenOptions),
+            ]).process(tokenOptionGroup.availableTokenOptions),
             0,
-            tokenOptionGroup.tokenOptions.map((tokenOption) => tokenOption.prompt)
+            tokenOptionGroup.availableTokenOptions.map((tokenOption) => tokenOption.prompt)
         );
-        await this.canvasService.createQuizQuestions(courseId, quizId, [question]);
+        // await this.canvasService.createQuizQuestions(courseId, quizId, [question]);
+        await this.canvasService.replaceQuizQuestions(courseId, quizId, [question]);
+
         // TODO: support rendering multiple quiz questions
-        // TODO: replace existing questions rather than create a new one
         await this.saveConfiguration(tokenOptionGroup.configuration);
         if (tokenOptionGroup.isPublished && canUnpublish)
             await this.canvasService.changeQuizPublishState(courseId, quizId, true);
@@ -301,8 +302,20 @@ export class TokenATMConfigurationManagerService {
         return configuration;
     }
 
-    public async regenerateContent(configuration: TokenATMConfiguration): Promise<void> {
+    public async regenerateContent(configuration: TokenATMConfiguration, isMigrating = false): Promise<void> {
         await this.deleteGeneratedContent(configuration);
+        configuration.uid = [...Array(8)]
+            .map(() => Math.random().toString(36)[2])
+            .join('')
+            .toUpperCase();
+        configuration.regenrateSecureConfig();
+        if (isMigrating)
+            for (const tokenOptionGroup of configuration.tokenOptionGroups) {
+                tokenOptionGroup.isPublished = false;
+                for (const tokenOption of tokenOptionGroup.tokenOptions) {
+                    tokenOption.isMigrating = true;
+                }
+            }
         await this.generateContent(configuration);
     }
 

@@ -65,6 +65,10 @@ export class TokenATMConfiguration {
         return this._uid;
     }
 
+    public set uid(uid: string) {
+        this._uid = uid;
+    }
+
     public get suffix(): string {
         return this._suffix;
     }
@@ -138,6 +142,14 @@ export class TokenATMConfiguration {
             password: this.#encryptionPassword,
             salt: Base64.fromUint8Array(this.#encryptionSalt)
         };
+    }
+
+    // Warning: This function will override previous secure config!
+    public regenrateSecureConfig(): void {
+        this.#encryptionKey = undefined;
+        // https://stackoverflow.com/a/47496558
+        this.#encryptionPassword = [...Array(32)].map(() => Math.random().toString(36)[2]).join('');
+        this.#encryptionSalt = window.crypto.getRandomValues(new Uint8Array(32));
     }
 
     async #generateKey(): Promise<void> {

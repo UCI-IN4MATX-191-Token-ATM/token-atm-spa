@@ -89,6 +89,7 @@ export class WithdrawLabSwitchTokenOptionFieldComponent
                 await this._nameField.getValue(),
                 await this._descriptionField.getValue(),
                 await this._tokenBalanceChangeField.getValue(),
+                false,
                 await this._withdrawTokenOptionIdField.getValue()
             );
         } else {

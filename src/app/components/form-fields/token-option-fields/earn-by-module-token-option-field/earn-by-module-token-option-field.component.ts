@@ -58,6 +58,7 @@ export class EarnByModuleTokenOptionFieldComponent extends TokenOptionField<Earn
                 await this._nameField.getValue(),
                 await this._descriptionField.getValue(),
                 await this._tokenBalanceChangeField.getValue(),
+                false,
                 await this._moduleNameField.getValue(),
                 await this.canvasService.getModuleIdByName(courseId, await this._moduleNameField.getValue()),
                 await this._startTimeField.getValue(),
