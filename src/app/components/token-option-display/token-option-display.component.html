@@ -10,8 +10,12 @@
                         getAbsValue(option.tokenBalanceChange).toString() +
                         ' token' +
                         (getAbsValue(option.tokenBalanceChange) === 1 ? '' : 's')
-                }}</span
-            >
+                }}
+                <ng-container *ngIf="option.isMigrating">
+                    <span class="bi bi-dot"></span>
+                    Migrating <span class="bi bi-exclamation-triangle-fill text-warning"></span> Save It to Complete
+                </ng-container>
+            </span>
         </div>
         <div *ngIf="hoverFocus">
             <div class="btn-group" dropdown>

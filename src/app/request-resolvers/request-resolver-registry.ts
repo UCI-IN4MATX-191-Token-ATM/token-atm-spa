@@ -56,7 +56,7 @@ export class RequestResolverRegistry {
         quizSubmissionDetail: QuizSubmissionDetail
     ): Promise<TokenATMRequest<TokenOption> | undefined> {
         if (quizSubmissionDetail.answers[0] == '') return undefined;
-        for (const tokenOption of tokenOptionGroup.tokenOptions) {
+        for (const tokenOption of tokenOptionGroup.availableTokenOptions) {
             if (tokenOption.prompt != quizSubmissionDetail.answers[0]) continue;
             return await this.getRequestResolver(tokenOption.type).resolve(tokenOption, quizSubmissionDetail);
         }

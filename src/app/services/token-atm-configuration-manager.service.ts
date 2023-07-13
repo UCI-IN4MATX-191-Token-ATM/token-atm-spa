@@ -13,6 +13,7 @@ import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-op
 import { CanvasService } from './canvas.service';
 import HTMLParse from 'html-dom-parser';
 import { NewDueTimeTransformer } from 'app/instruction-generators/new-due-time-transformer';
+import { generateRandomString } from 'app/utils/random-string-generator';
 
 @Injectable({
     providedIn: 'root'
@@ -109,7 +110,7 @@ export class TokenATMConfigurationManagerService {
         if (tokenOptionGroup.isPublished) canUnpublish = await this.canvasService.canQuizUnpublished(courseId, quizId);
         if (tokenOptionGroup.isPublished && canUnpublish)
             canUnpublish = await this.canvasService.changeQuizPublishState(courseId, quizId, false);
-        await this.canvasService.clearQuizQuestions(courseId, quizId);
+        // await this.canvasService.clearQuizQuestions(courseId, quizId);
         await this.canvasService.modifyQuiz(
             courseId,
             quizId,
@@ -125,13 +126,14 @@ export class TokenATMConfigurationManagerService {
                 new NewDueTimeTransformer(),
                 new TokenBalanceChangeTransformer(),
                 new DescriptionTransformer()
-            ]).process(tokenOptionGroup.tokenOptions),
+            ]).process(tokenOptionGroup.availableTokenOptions),
             0,
-            tokenOptionGroup.tokenOptions.map((tokenOption) => tokenOption.prompt)
+            tokenOptionGroup.availableTokenOptions.map((tokenOption) => tokenOption.prompt)
         );
-        await this.canvasService.createQuizQuestions(courseId, quizId, [question]);
+        // await this.canvasService.createQuizQuestions(courseId, quizId, [question]);
+        await this.canvasService.replaceQuizQuestions(courseId, quizId, [question]);
+
         // TODO: support rendering multiple quiz questions
-        // TODO: replace existing questions rather than create a new one
         await this.saveConfiguration(tokenOptionGroup.configuration);
         if (tokenOptionGroup.isPublished && canUnpublish)
             await this.canvasService.changeQuizPublishState(courseId, quizId, true);
@@ -276,11 +278,7 @@ export class TokenATMConfigurationManagerService {
         const configuration = new TokenATMConfiguration(
             course,
             '',
-            // https://stackoverflow.com/a/47496558
-            [...Array(8)]
-                .map(() => Math.random().toString(36)[2])
-                .join('')
-                .toUpperCase(),
+            generateRandomString(8).toUpperCase(),
             suffix,
             description,
             1,
@@ -289,7 +287,7 @@ export class TokenATMConfigurationManagerService {
             (group, data) => {
                 return this.tokenOptionResolverRegistry.resolveTokenOption(group, data);
             },
-            [...Array(32)].map(() => Math.random().toString(36)[2]).join(''),
+            generateRandomString(32),
             window.crypto.getRandomValues(new Uint8Array(32))
         );
         await this.canvasService.createPage(
@@ -301,8 +299,17 @@ export class TokenATMConfigurationManagerService {
         return configuration;
     }
 
-    public async regenerateContent(configuration: TokenATMConfiguration): Promise<void> {
+    public async regenerateContent(configuration: TokenATMConfiguration, isMigrating = false): Promise<void> {
         await this.deleteGeneratedContent(configuration);
+        configuration.uid = generateRandomString(8).toUpperCase();
+        configuration.regenerateSecureConfig();
+        if (isMigrating)
+            for (const tokenOptionGroup of configuration.tokenOptionGroups) {
+                tokenOptionGroup.isPublished = false;
+                for (const tokenOption of tokenOptionGroup.tokenOptions) {
+                    tokenOption.isMigrating = true;
+                }
+            }
         await this.generateContent(configuration);
     }
 

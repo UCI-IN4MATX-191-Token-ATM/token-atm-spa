@@ -17,6 +17,7 @@ export class SpendForLabDataTokenOption extends TokenOption {
         name: string,
         description: string,
         tokenBalanceChange: number,
+        isMigrating: boolean,
         quizName: string,
         quizId: string,
         startTime: Date,
@@ -24,7 +25,7 @@ export class SpendForLabDataTokenOption extends TokenOption {
         newDueTime: Date,
         excludeTokenOptionIds: number[]
     ) {
-        super(group, type, id, name, description, tokenBalanceChange);
+        super(group, type, id, name, description, tokenBalanceChange, isMigrating);
         this._quizName = quizName;
         this._quizId = quizId;
         this._startTime = startTime;
