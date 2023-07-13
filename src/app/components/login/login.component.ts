@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Inject, isDevMode, TemplateRef, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, Inject, isDevMode, SecurityContext, TemplateRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormItemInfo } from 'app/data/form-item-info';
 import { TokenATMCredentials } from 'app/data/token-atm-credentials';
@@ -8,6 +8,7 @@ import { ModalManagerService } from 'app/services/modal-manager.service';
 import { QualtricsService } from 'app/services/qualtrics.service';
 import { ErrorSerializer } from 'app/utils/error-serailizer';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+import { DomSanitizer } from '@angular/platform-browser';
 
 type TokenATMCredentialsAttributes = Exclude<keyof TokenATMCredentials, 'toJSON'>;
 
@@ -37,7 +38,8 @@ export class LoginComponent implements AfterViewInit {
         @Inject(CredentialManagerService) private credentialManagerService: CredentialManagerService,
         @Inject(Router) private router: Router,
         @Inject(BsModalService) private modalService: BsModalService,
-        @Inject(ModalManagerService) private modalManagerService: ModalManagerService
+        @Inject(ModalManagerService) private modalManagerService: ModalManagerService,
+        @Inject(DomSanitizer) private sanitizer: DomSanitizer
     ) {}
 
     static CREDENTIALS_FORM_ITEM_INFO_MAP: CredentialsFormItemInfoMap = {
@@ -171,7 +173,34 @@ export class LoginComponent implements AfterViewInit {
         this.isProcessing = false;
     }
 
+    private sanitizeAndParseURL(url: string) {
+        const sanitized = this.sanitizer.sanitize(SecurityContext.URL, url);
+        if (sanitized == null || sanitized.startsWith('unsafe:')) {
+            throw new Error(`Provided Canvas URL (${url}) can't be sanitized.`);
+        }
+        // TODO: handle protocol-less inputs.
+        //       i.e., 'localhost:23457' or 'canvas.instructure.com'
+        const parsedURL = new URL(sanitized);
+        // Force HTTPS protocol
+        parsedURL.protocol = 'https:';
+        return parsedURL.origin;
+        // Based on: https://community.canvaslms.com/t5/Canvas-Basics-Guide/Where-do-I-find-my-institution-s-URL-to-access-Canvas/ta-p/82
+        // It looks like Canvas is only hosted at a URL origin.
+        // If a Canvas is hosted on a sub-directory, Token ATM won't
+        // send requests properly.
+    }
+
     async onSubmitCredential(): Promise<void> {
+        try {
+            this.credentials.canvasURL = this.sanitizeAndParseURL(this.credentials.canvasURL);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            await this.modalManagerService.createNotificationModal(
+                ErrorSerializer.serailize(error),
+                'Canvas URL Error'
+            );
+            return;
+        }
         const canvasCredentialValidation = await this.canvasService.configureCredential(
             this.credentials.canvasURL,
             this.credentials.canvasAccessToken
