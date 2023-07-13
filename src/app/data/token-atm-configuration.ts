@@ -74,8 +74,16 @@ export class TokenATMConfiguration {
         return this._suffix;
     }
 
+    public set suffix(suffix: string) {
+        this._suffix = suffix;
+    }
+
     public get description(): string {
         return this._description;
+    }
+
+    public set description(description: string) {
+        this._description = description;
     }
 
     public get tokenOptionGroups(): TokenOptionGroup[] {

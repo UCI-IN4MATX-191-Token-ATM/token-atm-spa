@@ -1159,4 +1159,42 @@ export class CanvasService {
         }
         return result;
     }
+
+    public async modifyAssignmentDescription(
+        courseId: string,
+        assignmentId: string,
+        description: string
+    ): Promise<void> {
+        await this.safeGuardForAssignment(courseId, assignmentId);
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`, {
+            method: 'put',
+            data: {
+                assignment: {
+                    description: description
+                }
+            }
+        });
+    }
+
+    public async modifyModuleName(courseId: string, moduleId: string, name: string): Promise<void> {
+        await this.safeGuardForModule(courseId, moduleId);
+        await this.apiRequest(`/api/v1/courses/${courseId}/modules/${moduleId}`, {
+            method: 'put',
+            data: {
+                module: {
+                    name: name
+                }
+            }
+        });
+    }
+
+    public async modifyAssignmentGroupName(courseId: string, assignmentGroupId: string, name: string): Promise<void> {
+        await this.safeGuardForAssignmentGroup(courseId, assignmentGroupId);
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignment_groups/${assignmentGroupId}`, {
+            method: 'put',
+            data: {
+                name: name
+            }
+        });
+    }
 }
