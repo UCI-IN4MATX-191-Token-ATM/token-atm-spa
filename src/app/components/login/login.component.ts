@@ -176,12 +176,13 @@ export class LoginComponent implements AfterViewInit {
         // Force HTTPS protocol
         parsedURL.protocol = 'https:';
         return parsedURL.origin;
+        // Based on: https://community.canvaslms.com/t5/Canvas-Basics-Guide/Where-do-I-find-my-institution-s-URL-to-access-Canvas/ta-p/82
+        // It looks like Canvas is only hosted at a URL origin.
+        // If a Canvas is hosted on a sub-directory, Token ATM won't
+        // send requests properly.
     }
 
     async onSubmitCredential(): Promise<void> {
-        // TODO: Check that Canvas is only hosted at a URL origin. If
-        //       Canvas is hosted on a sub-directory, Token ATM won't
-        //       send requests properly.
         this.credentials.canvasURL = this.parseURL(this.credentials.canvasURL);
         const canvasCredentialValidation = await this.canvasService.configureCredential(
             this.credentials.canvasURL,
