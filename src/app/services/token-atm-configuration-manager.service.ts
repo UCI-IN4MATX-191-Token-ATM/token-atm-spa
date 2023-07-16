@@ -60,7 +60,7 @@ export class TokenATMConfigurationManagerService {
         await this.writeConfigurationToPage(configuration.course, pageId, JSON.stringify(configuration));
     }
 
-    private async getAssignmentGroupId(configuration: TokenATMConfiguration): Promise<string> {
+    private async getTokenATMAssignmentGroupId(configuration: TokenATMConfiguration): Promise<string> {
         return await this.canvasService.getAssignmentGroupIdByName(
             configuration.course.id,
             TokenATMConfigurationManagerService.TOKEN_ATM_ASSIGNMENT_GROUP_PREFIX +
@@ -68,7 +68,7 @@ export class TokenATMConfigurationManagerService {
         );
     }
 
-    private async getModuleId(configuration: TokenATMConfiguration): Promise<string> {
+    private async getTokenATMModuleId(configuration: TokenATMConfiguration): Promise<string> {
         return await this.canvasService.getModuleIdByName(
             configuration.course.id,
             TokenATMConfigurationManagerService.TOKEN_ATM_MODULE_PREFIX +
@@ -149,7 +149,7 @@ export class TokenATMConfigurationManagerService {
         if (addToConfiguration) tokenOptionGroup.configuration.addTokenOptionGroup(tokenOptionGroup);
         const courseId = tokenOptionGroup.configuration.course.id;
         if (assignmentGroupId == undefined)
-            assignmentGroupId = await this.getAssignmentGroupId(tokenOptionGroup.configuration);
+            assignmentGroupId = await this.getTokenATMAssignmentGroupId(tokenOptionGroup.configuration);
         const quizName = TokenATMConfigurationManagerService.TOKEN_ATM_QUIZ_PREFIX + tokenOptionGroup.name;
         const quizId = await this.canvasService.createQuiz(
             courseId,
@@ -158,7 +158,7 @@ export class TokenATMConfigurationManagerService {
             tokenOptionGroup.description
         );
         tokenOptionGroup.quizId = quizId;
-        if (moduleId == undefined) moduleId = await this.getModuleId(tokenOptionGroup.configuration);
+        if (moduleId == undefined) moduleId = await this.getTokenATMModuleId(tokenOptionGroup.configuration);
         await this.canvasService.addModuleItem(courseId, moduleId, 'Quiz', quizId);
         await this.updateTokenOptionGroup(tokenOptionGroup);
         if (tokenOptionGroup.isPublished) await this.canvasService.changeQuizPublishState(courseId, quizId, true);
@@ -205,12 +205,46 @@ export class TokenATMConfigurationManagerService {
         return true;
     }
 
+    public async updateTokenATMMetadata(
+        configuration: TokenATMConfiguration,
+        { suffix, description }: { suffix?: string; description?: string } = {}
+    ): Promise<void> {
+        let isModified = false;
+        if (suffix != undefined && suffix != configuration.suffix) {
+            await this.canvasService.modifyModuleName(
+                configuration.course.id,
+                await this.getTokenATMModuleId(configuration),
+                TokenATMConfigurationManagerService.TOKEN_ATM_MODULE_PREFIX + ` - ${configuration.uid} - ${suffix}`
+            );
+            await this.canvasService.modifyAssignmentGroupName(
+                configuration.course.id,
+                await this.getTokenATMAssignmentGroupId(configuration),
+                TokenATMConfigurationManagerService.TOKEN_ATM_ASSIGNMENT_GROUP_PREFIX +
+                    ` - ${configuration.uid} - ${suffix}`
+            );
+            configuration.suffix = suffix;
+            isModified = true;
+        }
+        if (description != undefined && description != configuration.description) {
+            await this.canvasService.modifyAssignmentDescription(
+                configuration.course.id,
+                configuration.logAssignmentId,
+                description
+            );
+            configuration.description = description;
+            isModified = true;
+        }
+        if (isModified) {
+            await this.saveConfiguration(configuration);
+        }
+    }
+
     public async deleteGeneratedContent(configuration: TokenATMConfiguration): Promise<void> {
         await this.canvasService.deleteAssignmentGroup(
             configuration.course.id,
-            await this.getAssignmentGroupId(configuration)
+            await this.getTokenATMAssignmentGroupId(configuration)
         );
-        await this.canvasService.deleteModule(configuration.course.id, await this.getModuleId(configuration));
+        await this.canvasService.deleteModule(configuration.course.id, await this.getTokenATMModuleId(configuration));
         await this.canvasService.deletePage(
             configuration.course.id,
             await this.canvasService.getPageIdByName(

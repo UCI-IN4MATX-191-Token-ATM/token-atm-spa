@@ -63,6 +63,7 @@ import { MoveTokenOptionModalComponent } from './components/move-token-option-mo
 import { GlobalErrorHandler } from './utils/global-error-handler';
 import { CanvasLoadingToastComponent } from './components/canvas-loading-toast/canvas-loading-toast.component';
 import { TooltipModule } from 'ngx-bootstrap/tooltip';
+import { EditConfigurationModalComponent } from './components/edit-configuration-modal/edit-configuration-modal.component';
 
 @NgModule({
     declarations: [
@@ -104,7 +105,8 @@ import { TooltipModule } from 'ngx-bootstrap/tooltip';
         PickTokenOptionModalComponent,
         BatchTokenBalanceAdjustmentModalComponent,
         MoveTokenOptionModalComponent,
-        CanvasLoadingToastComponent
+        CanvasLoadingToastComponent,
+        EditConfigurationModalComponent
     ],
     imports: [
         BrowserModule,

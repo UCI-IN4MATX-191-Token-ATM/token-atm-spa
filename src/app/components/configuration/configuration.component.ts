@@ -9,6 +9,7 @@ import { EarnByModuleTokenOption } from 'app/token-options/earn-by-module-token-
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
 import { ErrorSerializer } from 'app/utils/error-serailizer';
+import { EditConfigurationModalComponent } from '../edit-configuration-modal/edit-configuration-modal.component';
 
 @Component({
     selector: 'app-configuration',
@@ -246,5 +247,19 @@ export class ConfigurationComponent implements CourseConfigurable {
         if (!this.moduleNameModalRef || !this.moduleNamePromiseResolve) return;
         this.moduleNameModalRef.hide();
         this.moduleNamePromiseResolve();
+    }
+
+    async onEditConfigurationMetadata(): Promise<void> {
+        if (!this.course) return;
+        this.isProcessing = true;
+        const modalRef = this.modalSerivce.show(EditConfigurationModalComponent, {
+            initialState: {
+                configuration: await this.configurationManagerService.getTokenATMConfiguration(this.course)
+            },
+            backdrop: 'static',
+            keyboard: false
+        });
+        if (modalRef.content) modalRef.content.modalRef = modalRef;
+        this.isProcessing = false;
     }
 }
