@@ -49,7 +49,7 @@ export class LoginComponent implements AfterViewInit {
             'Canvas URL',
             'url',
             'https://canvas.instructure.com',
-            'The URL you use to access your Canvas instance. \nPlease remove the "/" character at the end of the URL if there is one. \nExample: https://canvas.eee.uci.edu'
+            'The URL you use to access your Canvas instance. \nExample: https://canvas.eee.uci.edu'
         ),
         canvasAccessToken: new FormItemInfo(
             'canvasAccessToken',
