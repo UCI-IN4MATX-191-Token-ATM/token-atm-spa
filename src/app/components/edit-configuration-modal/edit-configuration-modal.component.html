@@ -1,15 +1,19 @@
 <div class="modal-header">
-    <h4 class="modal-title pull-left">Edit Token ATM Configuration Metadata</h4>
+    <h4 class="modal-title pull-left">Edit Initial Setup Information</h4>
 </div>
 <div class="modal-body">
     <app-string-input-field
         #suffixFieldComponent
-        label="The suffix of Assignment Group & Module name"
+        label="The suffix for the Canvas Assignment Group & Module names"
         [isReadOnly]="isProcessing"
     ></app-string-input-field>
+    <!--
+        TODO: Preview suffix in context and use prefixes from TokenATMConfigurationManagerService
+        <p>Preview: Token ATM - {{ this.configuration?.uid }} - {{ this.suffixFieldComponent }}</p>
+    -->
     <app-string-textarea-field
         #descriptionFieldComponent
-        label="Description of Token ATM Log Assignment"
+        label="The description for the Token ATM Log Assignment"
         [isReadOnly]="isProcessing"
     ></app-string-textarea-field>
 </div>
