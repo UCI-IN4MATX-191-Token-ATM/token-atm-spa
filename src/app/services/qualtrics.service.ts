@@ -36,6 +36,7 @@ export class QualtricsService {
         } catch (err: unknown) {
             return err;
         }
+        // TODO: Check if the required scopes are enabled
         return undefined;
     }
 
