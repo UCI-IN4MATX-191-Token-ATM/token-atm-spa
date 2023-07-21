@@ -9,6 +9,7 @@ import { QualtricsService } from 'app/services/qualtrics.service';
 import { ErrorSerializer } from 'app/utils/error-serailizer';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { DomSanitizer } from '@angular/platform-browser';
+import { pluralize } from 'app/utils/pluralize';
 
 type TokenATMCredentialsAttributes = Exclude<keyof TokenATMCredentials, 'toJSON'>;
 
@@ -215,17 +216,24 @@ export class LoginComponent implements AfterViewInit {
         } else {
             const errMsgs: string[] = [];
             if (canvasCredentialValidation != undefined) {
-                errMsgs.push('Provided Canvas credentials are invalid. Error Message:');
-                errMsgs.push(ErrorSerializer.serailize(canvasCredentialValidation));
+                errMsgs.push(
+                    `CANVAS\nToken ATM couldn't verify your credentials at: \n${this.credentials.canvasURL}\nDouble check that you are providing the correct Canvas URL and Access Token.\n`
+                );
+                errMsgs.push('Error Message:' + ErrorSerializer.serailize(canvasCredentialValidation));
             }
             if (qualtricsCredentialValidation != undefined) {
-                if (errMsgs.length != 0) errMsgs.push('');
-                errMsgs.push('Provided Qualtrics credentials are invalid. Error Message:');
-                errMsgs.push(ErrorSerializer.serailize(qualtricsCredentialValidation));
+                if (errMsgs.length != 0) errMsgs.push('\n--------------------\n');
+                errMsgs.push(
+                    `QUALTRICS\nToken ATM couldn't verify your credentials with Qualtrics. \nDouble check that you are providing the correct credentials, that your account has API access, and that the credentials have the scopes read:users and read:survey_responses.\n`
+                );
+                errMsgs.push('Error Message:' + ErrorSerializer.serailize(qualtricsCredentialValidation));
             }
             this.canvasService.clearCredential();
             this.qualtricsService.clearCredential();
-            await this.modalManagerService.createNotificationModal(errMsgs.join('\n'), 'Error');
+            await this.modalManagerService.createNotificationModal(
+                errMsgs.join('\n'),
+                `Credential ${pluralize('Error', errMsgs.length / 2)}`
+            );
         }
     }
 }
