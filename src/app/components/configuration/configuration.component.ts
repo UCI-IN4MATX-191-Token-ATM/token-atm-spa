@@ -156,11 +156,12 @@ export class ConfigurationComponent implements CourseConfigurable {
             'Confirmation',
             true
         );
-        modalRef.hide();
         if (!result) {
             this.isProcessing = false;
+            modalRef.hide();
             return;
         }
+        if (modalRef.content) modalRef.content.disableButton = true;
         try {
             const configuration = await this.configurationManagerService.getTokenATMConfiguration(this.course);
             await this.configurationManagerService.deleteAll(configuration);
@@ -175,7 +176,9 @@ export class ConfigurationComponent implements CourseConfigurable {
                 )}\n***ACTION NEEDED***: \nYou can use Canvas to delete the Token ATM content by manually deleting: \n1) the two Canvas pages prefixed with 'Token ATM', \n2) the one Canvas assignment group prefixed with 'Token ATM', and \n3) the one Canvas module prefixed with 'Token ATM'. \n***Sorry for the inconvenience!`,
                 'Error'
             );
+        } finally {
             this.isProcessing = false;
+            modalRef.hide();
         }
     }
 
