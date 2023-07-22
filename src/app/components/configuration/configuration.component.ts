@@ -10,6 +10,7 @@ import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
 import { ErrorSerializer } from 'app/utils/error-serailizer';
 import { EditConfigurationModalComponent } from '../edit-configuration-modal/edit-configuration-modal.component';
+import { actionNeededTemplate, tokenATMContentListTemplate } from 'app/utils/string-templates';
 
 @Component({
     selector: 'app-configuration',
@@ -168,11 +169,13 @@ export class ConfigurationComponent implements CourseConfigurable {
             await this.modalManagerSerivce.createNotificationModal('All Token ATM related content has been deleted!');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
-            // TODO: Create & Use Template for Action Needed Errors (shared with student-record-manager.service.ts)
             await this.modalManagerSerivce.createNotificationModal(
-                `Error occured when deleting Token ATM related content: ${ErrorSerializer.serailize(
-                    err
-                )}\n***ACTION NEEDED***: \nYou can use Canvas to delete the Token ATM content by manually deleting: \n1) the two Canvas pages prefixed with 'Token ATM', \n2) the one Canvas assignment group prefixed with 'Token ATM', and \n3) the one Canvas module prefixed with 'Token ATM'. \n***Sorry for the inconvenience!`,
+                `Error occured while deleting Token ATM related content: ${actionNeededTemplate(
+                    `You can use Canvas to delete the Token ATM content by manually deleting: \n${tokenATMContentListTemplate(
+                        'the',
+                        '\n'
+                    )}`
+                )}\n\nError Message: ${ErrorSerializer.serailize(err)}`,
                 'Error'
             );
             this.isProcessing = false;
@@ -200,9 +203,16 @@ export class ConfigurationComponent implements CourseConfigurable {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             await this.modalManagerSerivce.createNotificationModal(
-                `Error occured while resetting Token ATM:\n***ACTION NEEDED***: \nPlease use Canvas to remove the Token ATM content by manually deleting: \n1) the two Canvas pages prefixed with 'Token ATM', \n2) the one Canvas assignment group prefixed with 'Token ATM', and \n3) the one Canvas module prefixed with 'Token ATM'. \n\nAfter that, use the course export you made before resetting to reimport the Token ATM course content (the 2 pages, assignment group, and module you just deleted). \n\nAfter importing from a backup, perform a Token ATM migration. \n***Sorry for the inconvenience!\n\nError Message: ${ErrorSerializer.serailize(
-                    err
-                )}`
+                `Error occured while resetting Token ATM:${actionNeededTemplate(
+                    `Please use Canvas to remove the Token ATM content by manually deleting: \n${tokenATMContentListTemplate(
+                        'the',
+                        '\n'
+                    )}\n\nAfter that, use the course export you made before resetting to reimport the Token ATM course content (${tokenATMContentListTemplate(
+                        'the',
+                        ' ',
+                        true
+                    )} you just deleted). \n\nAfter importing from a backup, perform a Token ATM migration.`
+                )}\n\nError Message: ${ErrorSerializer.serailize(err)}`
             );
         } finally {
             this.isProcessing = false;
@@ -233,9 +243,16 @@ export class ConfigurationComponent implements CourseConfigurable {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             await this.modalManagerSerivce.createNotificationModal(
-                `Error occured when migrating Token ATM:\n***ACTION NEEDED***: \nPlease use Canvas to delete the Token ATM content by manually deleting: \n1) the two Canvas pages prefixed with 'Token ATM', \n2) the one Canvas assignment group prefixed with 'Token ATM', and \n3) the one Canvas module prefixed with 'Token ATM'. \n\nAfter that, use the course export you made before migrating to reimport the Token ATM course content (the 2 pages, assignment group, and module you just deleted). \n\nAfter importing from a backup, try the migration again. \n***Sorry for the inconvenience!\n\nError Message: ${ErrorSerializer.serailize(
-                    err
-                )}`
+                `Error occured when migrating Token ATM:${actionNeededTemplate(
+                    `Please use Canvas to delete the Token ATM content by manually deleting: \n${tokenATMContentListTemplate(
+                        'the',
+                        '\n'
+                    )} \n\nAfter that, use the course export you made before migrating to reimport the Token ATM course content (${tokenATMContentListTemplate(
+                        'the',
+                        ' ',
+                        true
+                    )} you just deleted). \n\nAfter importing from a backup, try the migration again.`
+                )}\n\nError Message: ${ErrorSerializer.serailize(err)}`
             );
         } finally {
             this.isProcessing = false;
