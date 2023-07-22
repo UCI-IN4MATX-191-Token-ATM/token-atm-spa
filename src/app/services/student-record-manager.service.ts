@@ -6,6 +6,7 @@ import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { compareAsc, format, fromUnixTime } from 'date-fns';
 import { CanvasService } from './canvas.service';
 import { v4 as uuidv4 } from 'uuid';
+import { actionNeededTemplate } from 'app/utils/string-templates';
 
 @Injectable({
     providedIn: 'root'
@@ -43,10 +44,11 @@ export class StudentRecordManagerService {
             );
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
-            // TODO: Create & Use Template for Action Needed Errors (shared with configuration.component.ts)
             err.message =
                 err.message +
-                `\n***ACTION NEEDED***: \nPlease use Canvas to manually change this student's grade in the Token ATM Log assignment to ${rollbackTokenBalance}. \nFailure to do so could cause the token balance of this student be incorrect. \nAlso, deleting the last two comments in Token ATM Log (ignoring those that start with "Please ignore the characters below") could help avoid confusion. One comment is the report for this incomplete request, while the other is a comment like xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). \n***Sorry for the inconvenience!`;
+                actionNeededTemplate(
+                    `Please use Canvas to manually change this student's grade in the Token ATM Log assignment to ${rollbackTokenBalance}. \nFailure to do so could cause the token balance of this student be incorrect. \nAlso, deleting the last two comments in Token ATM Log (ignoring those that start with "Please ignore the characters below") could help avoid confusion. One comment is the report for this incomplete request, while the other is a comment like xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).`
+                );
             throw err;
         }
         if (oldCommentId != '') {
