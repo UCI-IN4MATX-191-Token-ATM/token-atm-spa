@@ -4,7 +4,6 @@ import { TokenATMConfigurationManagerService } from 'app/services/token-atm-conf
 import type { TokenOption } from 'app/token-options/token-option';
 import { TokenOptionRegistry } from 'app/token-options/token-option-registry';
 import { BsModalService } from 'ngx-bootstrap/modal';
-import { TokenOptionFieldRegistry } from '../form-fields/token-option-fields/token-option-field-registry';
 import { MoveTokenOptionModalComponent } from '../move-token-option-modal/move-token-option-modal.component';
 import { TokenOptionManagementComponent } from '../token-option-management/token-option-management.component';
 
@@ -19,7 +18,6 @@ export class TokenOptionDisplayComponent {
 
     constructor(
         @Inject(BsModalService) private modalService: BsModalService,
-        @Inject(TokenOptionFieldRegistry) private fieldRegistry: TokenOptionFieldRegistry,
         @Inject(TokenOptionRegistry) private tokenOptionRegistry: TokenOptionRegistry,
         @Inject(ModalManagerService) private modalManagerService: ModalManagerService,
         @Inject(TokenATMConfigurationManagerService)
@@ -32,14 +30,10 @@ export class TokenOptionDisplayComponent {
 
     onViewTokenOption() {
         if (!this.option) return;
-        const componentType = this.fieldRegistry.getComponentType(this.option.type);
-        const typeName = this.tokenOptionRegistry.getDescriptiveName(this.option.type);
-        if (!componentType || typeName == undefined) return;
         const modalRef = this.modalService.show(TokenOptionManagementComponent, {
             initialState: {
-                optionComponentType: componentType,
-                value: this.option,
-                typeName: typeName
+                tokenOptionType: this.option.type,
+                value: this.option
             },
             class: 'modal-lg',
             backdrop: 'static',

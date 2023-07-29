@@ -101,6 +101,7 @@ export class TokenATMConfigurationManagerService {
             TokenATMConfigurationManagerService.TOKEN_ATM_QUIZ_PREFIX + tokenOptionGroup.name,
             tokenOptionGroup.description
         );
+        await this.saveConfiguration(tokenOptionGroup.configuration);
     }
 
     public async updateTokenOptionGroup(tokenOptionGroup: TokenOptionGroup): Promise<boolean> {

@@ -42,21 +42,9 @@ import { StringInputFieldComponent } from './components/form-fields/string-input
 import { StringTextareaFieldComponent } from './components/form-fields/string-textarea-field/string-textarea-field.component';
 import { NumberInputFieldComponent } from './components/form-fields/number-input-field/number-input-field.component';
 import { TokenOptionManagementComponent } from './components/token-option-management/token-option-management.component';
-import { EarnByQuizTokenOptionFieldComponent } from './components/form-fields/token-option-fields/earn-by-quiz-token-option-field/earn-by-quiz-token-option-field.component';
 import { DateTimeFieldComponent } from './components/form-fields/date-time-field/date-time-field.component';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { TimepickerModule } from 'ngx-bootstrap/timepicker';
-import { EarnBySurveyTokenOptionFieldComponent } from './components/form-fields/token-option-fields/earn-by-survey-token-option-field/earn-by-survey-token-option-field.component';
-import { BasicTokenOptionFieldComponent } from './components/form-fields/token-option-fields/basic-token-option-field/basic-token-option-field.component';
-import { EarnByModuleTokenOptionFieldComponent } from './components/form-fields/token-option-fields/earn-by-module-token-option-field/earn-by-module-token-option-field.component';
-import { CreateTokenOptionModalComponent } from './components/create-token-option-modal/create-token-option-modal.component';
-import { SpendForLabDataTokenOptionFieldComponent } from './components/form-fields/token-option-fields/spend-for-lab-data-token-option-field/spend-for-lab-data-token-option-field.component';
-import { SpendForAssignmentResubmissionTokenOptionFieldComponent } from './components/form-fields/token-option-fields/spend-for-assignment-resubmission-token-option-field/spend-for-assignment-resubmission-token-option-field.component';
-import { WithdrawLabDataTokenOptionFieldComponent } from './components/form-fields/token-option-fields/withdraw-lab-data-token-option-field/withdraw-lab-data-token-option-field.component';
-import { WithdrawAssignmentResubmissionOptionFieldComponent } from './components/form-fields/token-option-fields/withdraw-assignment-resubmission-option-field/withdraw-assignment-resubmission-option-field.component';
-import { CreateConfigurationModalComponent } from './components/create-configuration-modal/create-configuration-modal.component';
-import { SpendForLabSwitchTokenOptionFieldComponent } from './components/form-fields/token-option-fields/spend-for-lab-switch-token-option-field/spend-for-lab-switch-token-option-field.component';
-import { WithdrawLabSwitchTokenOptionFieldComponent } from './components/form-fields/token-option-fields/withdraw-lab-switch-token-option-field/withdraw-lab-switch-token-option-field.component';
 import { PickTokenOptionModalComponent } from './components/pick-token-option-modal/pick-token-option-modal.component';
 import { BatchTokenBalanceAdjustmentModalComponent } from './components/batch-token-balance-adjustment-modal/batch-token-balance-adjustment-modal.component';
 import { MoveTokenOptionModalComponent } from './components/move-token-option-modal/move-token-option-modal.component';
@@ -64,6 +52,15 @@ import { GlobalErrorHandler } from './utils/global-error-handler';
 import { CanvasLoadingToastComponent } from './components/canvas-loading-toast/canvas-loading-toast.component';
 import { TooltipModule } from 'ngx-bootstrap/tooltip';
 import { EditConfigurationModalComponent } from './components/edit-configuration-modal/edit-configuration-modal.component';
+import { ConcatenateFieldComponent } from './components/form-fields/concatenate-field/concatenate-field.component';
+import { ListFieldItemWrapperComponent } from './components/form-fields/list-field-item-wrapper/list-field-item-wrapper.component';
+import { ListFieldComponent } from './components/form-fields/list-field/list-field.component';
+import {
+    REGISTERED_TOKEN_OPTION_FIELD_COMPONENT_FACTORIES,
+    TOKEN_OPTION_FIELD_COMPONENT_FACTORY_INJECTION_TOKEN
+} from './token-option-field-component-factories/token-option-field-component-factory-registry';
+import { CreateTokenOptionModalComponent } from './components/create-token-option-modal/create-token-option-modal.component';
+import { MultipleSectionDateFieldComponent } from './components/form-fields/multiple-section-date-field/multiple-section-date-field.component';
 
 @NgModule({
     declarations: [
@@ -89,24 +86,17 @@ import { EditConfigurationModalComponent } from './components/edit-configuration
         StringTextareaFieldComponent,
         NumberInputFieldComponent,
         TokenOptionManagementComponent,
-        EarnByQuizTokenOptionFieldComponent,
         DateTimeFieldComponent,
-        EarnBySurveyTokenOptionFieldComponent,
-        BasicTokenOptionFieldComponent,
-        EarnByModuleTokenOptionFieldComponent,
-        CreateTokenOptionModalComponent,
-        SpendForLabDataTokenOptionFieldComponent,
-        SpendForAssignmentResubmissionTokenOptionFieldComponent,
-        WithdrawLabDataTokenOptionFieldComponent,
-        WithdrawAssignmentResubmissionOptionFieldComponent,
-        CreateConfigurationModalComponent,
-        SpendForLabSwitchTokenOptionFieldComponent,
-        WithdrawLabSwitchTokenOptionFieldComponent,
         PickTokenOptionModalComponent,
         BatchTokenBalanceAdjustmentModalComponent,
         MoveTokenOptionModalComponent,
         CanvasLoadingToastComponent,
-        EditConfigurationModalComponent
+        EditConfigurationModalComponent,
+        ConcatenateFieldComponent,
+        ListFieldItemWrapperComponent,
+        ListFieldComponent,
+        CreateTokenOptionModalComponent,
+        MultipleSectionDateFieldComponent
     ],
     imports: [
         BrowserModule,
@@ -135,6 +125,11 @@ import { EditConfigurationModalComponent } from './components/edit-configuration
         })),
         ...REGISTERED_REQUEST_HANDLERS.map((cls) => ({
             provide: REQUEST_HANDLER_INJECT_TOKEN,
+            useClass: cls,
+            multi: true
+        })),
+        ...REGISTERED_TOKEN_OPTION_FIELD_COMPONENT_FACTORIES.map((cls) => ({
+            provide: TOKEN_OPTION_FIELD_COMPONENT_FACTORY_INJECTION_TOKEN,
             useClass: cls,
             multi: true
         }))

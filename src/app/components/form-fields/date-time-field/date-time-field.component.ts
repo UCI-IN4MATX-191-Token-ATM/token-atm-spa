@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import type { FormField } from 'app/utils/form-field';
+import { Component } from '@angular/core';
+import { BaseDirectFormField } from 'app/utils/form-field/direct-form-field';
 import { isValid } from 'date-fns';
 
 @Component({
@@ -7,50 +7,29 @@ import { isValid } from 'date-fns';
     templateUrl: './date-time-field.component.html',
     styleUrls: ['./date-time-field.component.sass']
 })
-export class DateTimeFieldComponent implements FormField<Date, Date> {
-    @Input() label = '';
-    value = new Date();
-    private _validator: (value: Date, isTimeValid: boolean) => Promise<string | undefined> =
-        DateTimeFieldComponent.DEFAULT_VALIDATOR;
-    errorMessage?: string;
-    private _isReadOnly = false;
+export class DateTimeFieldComponent extends BaseDirectFormField<Date, [DateTimeFieldComponent, Date, boolean]> {
     isTimeValid = true;
 
-    private static DEFAULT_VALIDATOR = async (value: Date, isTimeValid: boolean) => {
+    constructor() {
+        super();
+        this.value = new Date();
+        this.validator = DateTimeFieldComponent.DEFAULT_VALIDATOR;
+    }
+
+    public static DEFAULT_VALIDATOR = async ([field, value, isTimeValid]: [DateTimeFieldComponent, Date, boolean]) => {
+        field.errorMessage = undefined;
         if (!isTimeValid) {
-            return 'Time is invalid';
+            field.errorMessage = 'Time is invalid';
+            return false;
         }
-        if (!isValid(value)) return 'Date is invalid';
-        return undefined;
+        if (!isValid(value)) {
+            field.errorMessage = 'Date is invalid';
+            return false;
+        }
+        return true;
     };
 
-    @Input() set isReadOnly(isReadOnly: boolean) {
-        this._isReadOnly = isReadOnly;
-    }
-
-    get isReadOnly(): boolean {
-        return this._isReadOnly;
-    }
-
-    @Input() set initValue(initValue: Date) {
-        this.value = initValue;
-    }
-
-    @Input() set validator(validator: (value: Date) => Promise<string | undefined>) {
-        this._validator = async (value: Date, isTimeValid: boolean) => {
-            const result = DateTimeFieldComponent.DEFAULT_VALIDATOR(value, isTimeValid);
-            if (result != undefined) return result;
-            return validator(value);
-        };
-    }
-
-    async getValue(): Promise<Date> {
-        return this.value;
-    }
-
-    async validate(): Promise<boolean> {
-        const result = await this._validator(await this.getValue(), this.isTimeValid);
-        this.errorMessage = result;
-        return result == undefined;
+    public override async validate(): Promise<boolean> {
+        return await this._validator([this, await this.destValue, this.isTimeValid]);
     }
 }

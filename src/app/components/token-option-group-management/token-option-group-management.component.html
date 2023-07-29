@@ -5,19 +5,7 @@
     </button>
 </div>
 <div class="modal-body">
-    <app-number-input-field label="Group ID" [initValue]="groupId" [isReadOnly]="true"></app-number-input-field>
-    <app-string-input-field
-        #groupNameComp
-        label="Group Name"
-        [initValue]="groupName"
-        [validator]="groupNameValidator"
-    ></app-string-input-field>
-    <app-string-textarea-field
-        #groupDescriptionComp
-        label="Group Description"
-        [initValue]="groupDescription"
-        [rows]="4"
-    ></app-string-textarea-field>
+    <ng-template #container></ng-template>
 </div>
 <div class="modal-footer">
     <button

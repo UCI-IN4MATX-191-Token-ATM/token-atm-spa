@@ -1,22 +1,27 @@
 <div class="m-3">
     <div>
         <label class="form-label">{{ label }}</label>
-        <input
-            type="text"
-            class="form-control"
-            bsDatepicker
-            [(bsValue)]="value"
-            [isDisabled]="isReadOnly"
-            [disabled]="isReadOnly"
-        />
-        <timepicker
-            [(ngModel)]="value"
-            [readonlyInput]="isReadOnly"
-            [disabled]="isReadOnly"
-            [showSeconds]="true"
-            [showMeridian]="false"
-            (isValid)="isTimeValid = $event"
-        ></timepicker>
+        <div class="d-flex align-items-center flex-wrap">
+            <input
+                type="text"
+                class="form-control d-inline w-auto me-1 flex-grow-1 flex-shrink-1"
+                bsDatepicker
+                [(bsValue)]="value"
+                [isDisabled]="isReadOnly"
+                [disabled]="isReadOnly"
+            />
+            <timepicker
+                [(ngModel)]="value"
+                [readonlyInput]="isReadOnly"
+                [disabled]="isReadOnly"
+                [showSeconds]="true"
+                [showMeridian]="false"
+                [showSpinners]="false"
+                [arrowkeys]="false"
+                [mousewheel]="false"
+                (isValid)="isTimeValid = $event"
+            ></timepicker>
+        </div>
     </div>
     <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
 </div>

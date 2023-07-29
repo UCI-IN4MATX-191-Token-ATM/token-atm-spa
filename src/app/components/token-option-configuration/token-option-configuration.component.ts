@@ -29,7 +29,7 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
         if (!this.configuration) return;
         const modalRef = this.modalService.show(TokenOptionGroupManagementComponent, {
             initialState: {
-                configuration: this.configuration
+                value: this.configuration
             }
         });
         if (modalRef.content) modalRef.content.modalRef = modalRef;

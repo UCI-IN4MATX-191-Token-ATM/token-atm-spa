@@ -15,14 +15,7 @@
         The course you selected contains no Token ATM configuration, or the Token ATM configuration for this course is
         invalid. Do you want to create a new configuration?
     </p>
-    <app-string-input-field
-        #suffixFieldComponent
-        label="The suffix of Assignment Group & Module name"
-    ></app-string-input-field>
-    <app-string-textarea-field
-        #descriptionFieldComponent
-        label="Description of Token ATM Log Assignment"
-    ></app-string-textarea-field>
+    <ng-template #container></ng-template>
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-outline-secondary me-4" [disabled]="isProcessing" (click)="onCancel()">

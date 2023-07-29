@@ -2,16 +2,7 @@
     <h4 class="modal-title pull-left">Edit Token ATM Configuration Metadata</h4>
 </div>
 <div class="modal-body">
-    <app-string-input-field
-        #suffixFieldComponent
-        label="The suffix of Assignment Group & Module name"
-        [isReadOnly]="isProcessing"
-    ></app-string-input-field>
-    <app-string-textarea-field
-        #descriptionFieldComponent
-        label="Description of Token ATM Log Assignment"
-        [isReadOnly]="isProcessing"
-    ></app-string-textarea-field>
+    <ng-template #container></ng-template>
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-outline-secondary mx-2" [disabled]="isProcessing" (click)="onCancel()">

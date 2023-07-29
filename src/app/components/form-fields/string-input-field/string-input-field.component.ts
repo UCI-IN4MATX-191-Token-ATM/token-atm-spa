@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import type { FormField } from 'app/utils/form-field';
+import { Component } from '@angular/core';
+import { BaseDirectFormField } from 'app/utils/form-field/direct-form-field';
 import { v4 } from 'uuid';
 
 @Component({
@@ -7,33 +7,10 @@ import { v4 } from 'uuid';
     templateUrl: './string-input-field.component.html',
     styleUrls: ['./string-input-field.component.sass']
 })
-export class StringInputFieldComponent implements FormField<string, string> {
+export class StringInputFieldComponent extends BaseDirectFormField<string, [StringInputFieldComponent, string]> {
     fieldId = v4();
-    @Input() label = '';
-    value = '';
-    private _validator: (value: string) => Promise<string | undefined> = async () => undefined;
-    errorMessage?: string;
-    readonly = false;
 
-    @Input() set isReadOnly(isReadOnly: boolean) {
-        this.readonly = isReadOnly;
-    }
-
-    @Input() set initValue(initValue: string) {
-        this.value = initValue;
-    }
-
-    @Input() set validator(validator: (value: string) => Promise<string | undefined>) {
-        this._validator = validator;
-    }
-
-    async getValue(): Promise<string> {
-        return this.value;
-    }
-
-    async validate(): Promise<boolean> {
-        const result = await this._validator(await this.getValue());
-        this.errorMessage = result;
-        return result == undefined;
+    public override async validate(): Promise<boolean> {
+        return await this._validator([this, await this.destValue]);
     }
 }
