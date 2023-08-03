@@ -142,7 +142,7 @@ export class ConfigurationComponent implements CourseConfigurable {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             await this.modalManagerSerivce.createNotificationModal(
-                `Error occured when creating test configuration: ${ErrorSerializer.serailize(err)}`,
+                `Error occurred when creating test configuration: ${ErrorSerializer.serailize(err)}`,
                 'Error'
             );
             this.isProcessing = false;
@@ -170,7 +170,7 @@ export class ConfigurationComponent implements CourseConfigurable {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             await this.modalManagerSerivce.createNotificationModal(
-                `Error occured while deleting Token ATM related content: ${actionNeededTemplate(
+                `Error occurred while deleting Token ATM related content: ${actionNeededTemplate(
                     `You can use Canvas to delete the Token ATM content by manually deleting: \n${tokenATMContentListTemplate(
                         'the',
                         '\n'
@@ -203,7 +203,7 @@ export class ConfigurationComponent implements CourseConfigurable {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             await this.modalManagerSerivce.createNotificationModal(
-                `Error occured while resetting Token ATM:${actionNeededTemplate(
+                `Error occurred while resetting Token ATM:${actionNeededTemplate(
                     `Please use Canvas to remove the Token ATM content by manually deleting: \n${tokenATMContentListTemplate(
                         'the',
                         '\n'
@@ -243,7 +243,7 @@ export class ConfigurationComponent implements CourseConfigurable {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             await this.modalManagerSerivce.createNotificationModal(
-                `Error occured when migrating Token ATM:${actionNeededTemplate(
+                `Error occurred when migrating Token ATM:${actionNeededTemplate(
                     `Please use Canvas to delete the Token ATM content by manually deleting: \n${tokenATMContentListTemplate(
                         'the',
                         '\n'
