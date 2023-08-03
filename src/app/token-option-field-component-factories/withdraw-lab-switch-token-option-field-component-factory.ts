@@ -9,6 +9,7 @@ import type { FormField } from 'app/utils/form-field/form-field';
 import { StaticFormField } from 'app/utils/form-field/static-form-field';
 import type { TokenOption } from 'app/token-options/token-option';
 import { WithdrawLabSwitchTokenOption } from 'app/token-options/withdraw-lab-switch-token-option';
+import { SpendForLabSwitchTokenOption } from 'app/token-options/spend-for-lab-switch-token-option';
 
 @Injectable()
 export class WithdrawLabSwitchTokenOptionFieldComponentFactory extends TokenOptionFieldComponentFactory<WithdrawLabSwitchTokenOption> {
@@ -25,7 +26,7 @@ export class WithdrawLabSwitchTokenOptionFieldComponentFactory extends TokenOpti
             .appendBuilder(
                 createWithdrawTokenOptionComponentBuilder(
                     async (value: TokenOption) =>
-                        value instanceof WithdrawLabSwitchTokenOption
+                        value instanceof SpendForLabSwitchTokenOption
                             ? undefined
                             : "Token option type invalid: should be 'Spend Tokens for Switching Lab'",
                     environmentInjector
