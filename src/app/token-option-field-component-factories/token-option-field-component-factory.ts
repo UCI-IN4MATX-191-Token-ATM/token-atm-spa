@@ -253,7 +253,7 @@ export function tokenOptionFieldComponentBuilder(
             if (value instanceof TokenOptionGroup) {
                 return [value.configuration.nextFreeTokenOptionId, '', '', 0];
             } else {
-                return [value.id, value.name, value.description, 0];
+                return [value.id, value.name, value.description, value.tokenBalanceChange];
             }
         })
         .transformVP((field) => field.destValue);
