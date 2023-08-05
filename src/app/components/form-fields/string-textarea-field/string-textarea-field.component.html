@@ -5,8 +5,8 @@
         id="'textarea' + fieldId"
         [(ngModel)]="value"
         [rows]="rows"
-        [readonly]="readonly"
-        [disabled]="readonly"
+        [readonly]="isReadOnly"
+        [disabled]="isReadOnly"
     ></textarea>
     <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
 </div>

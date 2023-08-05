@@ -33,9 +33,9 @@ export class Quiz {
             typeof data['id'] != 'string' ||
             typeof data['title'] != 'string' ||
             typeof data['assignment_id'] != 'string' ||
-            typeof data['points_possible'] != 'number'
+            (typeof data['points_possible'] != 'number' && data['points_possible'] != null)
         )
             throw new Error('Invalid data');
-        return new Quiz(data['id'], data['title'], data['assignment_id'], data['points_possible']);
+        return new Quiz(data['id'], data['title'], data['assignment_id'], data['points_possible'] ?? 0);
     }
 }

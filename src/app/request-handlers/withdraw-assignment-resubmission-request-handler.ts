@@ -11,6 +11,8 @@ import { NoAssignmentSubmissionGuard } from './guards/no-assignment-submission-g
 import { RequestHandlerGuardExecutor } from './guards/request-handler-guard-executor';
 import { StartDateGuard } from './guards/start-date-guard';
 import { RequestHandler } from './request-handlers';
+import { MultipleSectionEndDateGuard } from './guards/multiple-section-end-date-guard';
+import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 
 @Injectable()
 export class WithdrawAssignmentResubmissionRequestHandler extends RequestHandler<
@@ -33,16 +35,34 @@ export class WithdrawAssignmentResubmissionRequestHandler extends RequestHandler
             message = 'The withdraw token option you requested is no longer valid.';
             isRejected = true;
         } else {
+            const newDueTime = withdrawTokenOption.newDueTime;
             const guardExecutor = new RequestHandlerGuardExecutor([
                 new StartDateGuard(request.submittedTime, withdrawTokenOption.startTime),
-                new EndDateGuard(request.submittedTime, withdrawTokenOption.endTime),
+                withdrawTokenOption.endTime instanceof Date
+                    ? new EndDateGuard(request.submittedTime, withdrawTokenOption.endTime)
+                    : new MultipleSectionEndDateGuard(
+                          configuration.course.id,
+                          studentRecord.student.id,
+                          request.submittedTime,
+                          withdrawTokenOption.endTime,
+                          this.canvasService
+                      ),
                 new HasApprovedRequestGuard(withdrawTokenOption, studentRecord.processedRequests),
                 new NoAssignmentSubmissionGuard(
                     configuration.course.id,
                     withdrawTokenOption.assignmentId,
                     studentRecord.student.id,
                     `Token ATM - ${configuration.uid}`,
-                    withdrawTokenOption.newDueTime,
+                    newDueTime instanceof Date
+                        ? newDueTime
+                        : newDueTime.match(
+                              await DataConversionHelper.convertAsyncIterableToList(
+                                  await this.canvasService.getStudentSectionEnrollments(
+                                      configuration.course.id,
+                                      studentRecord.student.id
+                                  )
+                              )
+                          ),
                     this.canvasService
                 )
             ]);

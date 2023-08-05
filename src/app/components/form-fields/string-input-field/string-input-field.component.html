@@ -5,8 +5,8 @@
         class="form-control"
         id="'input' + fieldId"
         [(ngModel)]="value"
-        [readonly]="readonly"
-        [disabled]="readonly"
+        [readonly]="isReadOnly"
+        [disabled]="isReadOnly"
     />
     <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
 </div>
