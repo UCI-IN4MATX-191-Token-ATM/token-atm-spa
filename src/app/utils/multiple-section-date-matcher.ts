@@ -1,28 +1,25 @@
 import { fromUnixTime, getUnixTime } from 'date-fns';
 import * as t from 'io-ts';
-import { isLeft, chain } from 'fp-ts/Either';
-import { PathReporter } from 'io-ts/PathReporter';
+import { chain } from 'fp-ts/Either';
+import { DateDef } from './mixin-helper';
+import { unwrapValidation } from './validation-unwrapper';
 
-const DateTypeDef = new t.Type<Date, number, unknown>(
-    'Date',
-    (v): v is Date => v instanceof Date,
-    (v, ctx) =>
-        chain((time: number): t.Validation<Date> => {
-            const res = fromUnixTime(time);
-            return isNaN(res.getTime()) ? t.failure(v, ctx) : t.success(res);
-        })(t.number.validate(v, ctx)),
-    (v) => getUnixTime(v)
-);
-
-export const DateOverrideDef = t.type({
+export const DateOverrideDef = t.strict({
     sections: t.array(t.tuple([t.string, t.string])),
     name: t.string,
-    date: DateTypeDef
+    date: DateDef
 });
+
+export const MultipleSectionDateMatcherDataDef = t.strict({
+    defaultDate: DateDef,
+    overrides: t.union([t.array(DateOverrideDef), t.undefined])
+});
+
+export type MultipleSectionDateMatcherData = t.TypeOf<typeof MultipleSectionDateMatcherDataDef>;
 
 export type DateOverride = t.TypeOf<typeof DateOverrideDef>;
 
-export class MultipleSectionDateMatcher {
+export class MultipleSectionDateMatcher implements MultipleSectionDateMatcherData {
     constructor(private _defaultDate: Date, private _overrides: DateOverride[] = []) {}
 
     public get defaultDate(): Date {
@@ -64,11 +61,28 @@ export class MultipleSectionDateMatcher {
         if (typeof data['overrides'] != 'undefined') {
             if (!Array.isArray(data['overrides'])) throw new Error('Invalid data');
             for (const overrideData of data['overrides']) {
-                const res = DateOverrideDef.decode(overrideData);
-                if (isLeft(res)) throw new Error('Invalid data: ' + PathReporter.report(res).join('\n'));
-                overrides.push(res.right);
+                const res = unwrapValidation(DateOverrideDef.decode(overrideData));
+                overrides.push(res);
             }
         }
         return new MultipleSectionDateMatcher(defaultDate, overrides);
     }
 }
+
+export const MultipleSectionDateMatcherDef = new t.Type<
+    MultipleSectionDateMatcher,
+    t.OutputOf<typeof MultipleSectionDateMatcherDataDef>,
+    unknown
+>(
+    'MultipleSectionDateMatcher',
+    (v): v is MultipleSectionDateMatcher => v instanceof MultipleSectionDateMatcher,
+    (v, ctx) =>
+        chain((v: MultipleSectionDateMatcherData): t.Validation<MultipleSectionDateMatcher> => {
+            return t.success(new MultipleSectionDateMatcher(v.defaultDate, v.overrides));
+        })(MultipleSectionDateMatcherDataDef.validate(v, ctx)),
+    (v) =>
+        MultipleSectionDateMatcherDataDef.encode({
+            defaultDate: v.defaultDate,
+            overrides: v.overrides
+        })
+);

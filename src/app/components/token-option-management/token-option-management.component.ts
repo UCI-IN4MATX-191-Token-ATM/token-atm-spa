@@ -1,9 +1,10 @@
 import { Component, EnvironmentInjector, Inject, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
-import type { TokenOptionGroup } from 'app/data/token-option-group';
+import { TokenOptionGroup } from 'app/data/token-option-group';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import { TokenOptionFieldComponentFactoryRegistry } from 'app/token-option-field-component-factories/token-option-field-component-factory-registry';
-import { TokenOption } from 'app/token-options/token-option';
+import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-option-resolver-registry';
+import type { TokenOption } from 'app/token-options/token-option';
 import { TokenOptionRegistry } from 'app/token-options/token-option-registry';
 import type { FormField } from 'app/utils/form-field/form-field';
 import type { BsModalRef } from 'ngx-bootstrap/modal';
@@ -21,7 +22,7 @@ export class TokenOptionManagementComponent implements OnInit {
     modalRef?: BsModalRef<unknown>;
     typeName = '';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private field?: FormField<TokenOptionGroup | TokenOption, TokenOption, any>;
+    private field?: FormField<TokenOptionGroup | TokenOption, unknown, any>;
 
     private _isReadOnly = true;
     private _isProcessing = false;
@@ -33,6 +34,7 @@ export class TokenOptionManagementComponent implements OnInit {
         @Inject(TokenOptionFieldComponentFactoryRegistry)
         private componentFactoryRegistry: TokenOptionFieldComponentFactoryRegistry,
         @Inject(TokenOptionRegistry) private tokenOptionRegistry: TokenOptionRegistry,
+        @Inject(TokenOptionResolverRegistry) private tokenOptionResolverRegistry: TokenOptionResolverRegistry,
         @Inject(EnvironmentInjector) private environmentInjector: EnvironmentInjector
     ) {}
 
@@ -89,8 +91,12 @@ export class TokenOptionManagementComponent implements OnInit {
             this.isProcessing = false;
             return;
         }
-        const tokenOption = await this.field.destValue;
         const group = this.value as TokenOptionGroup;
+        const tokenOption = this.tokenOptionResolverRegistry.constructTokenOption(
+            group,
+            await this.field.destValue,
+            true
+        );
         group.addTokenOption(tokenOption);
         const result = await this.configurationManagerService.updateTokenOptionGroup(group);
         if (!result) await this.notifyUpdateFailure();
@@ -105,7 +111,7 @@ export class TokenOptionManagementComponent implements OnInit {
             this.isProcessing = false;
             return;
         }
-        const tokenOption = await this.field.destValue;
+        const tokenOption = (this.value as TokenOption).fromData(await this.field.destValue, true);
         if (tokenOption.isMigrating) tokenOption.isMigrating = false;
         const result = await this.configurationManagerService.updateTokenOptionGroup(tokenOption.group);
         if (!result) await this.notifyUpdateFailure();
@@ -144,6 +150,6 @@ export class TokenOptionManagementComponent implements OnInit {
     }
 
     get isEditing(): boolean {
-        return this.value instanceof TokenOption;
+        return !(this.value instanceof TokenOptionGroup);
     }
 }

@@ -1,7 +1,7 @@
 import type { ProcessedRequest } from 'app/data/processed-request';
 import type { TokenOption } from 'app/token-options/token-option';
-import { WithdrawTokenOption } from 'app/token-options/withdraw-token-option';
 import { RequestHandlerGuard } from './request-handler-guard';
+import { WithdrawTokenOptionMixinDataDef } from 'app/token-options/mixins/withdraw-token-option-mixin';
 
 export class HasApprovedRequestGuard extends RequestHandlerGuard {
     constructor(private withdrawTokenOption: TokenOption, private processedRequests: ProcessedRequest[]) {
@@ -15,7 +15,7 @@ export class HasApprovedRequestGuard extends RequestHandlerGuard {
             if (this.withdrawTokenOption.id == request.tokenOption.id) {
                 count++;
             } else if (
-                request.tokenOption instanceof WithdrawTokenOption &&
+                WithdrawTokenOptionMixinDataDef.is(request.tokenOption) &&
                 request.tokenOption.withdrawTokenOptionId == this.withdrawTokenOption.id
             ) {
                 if (count > 0) count--;

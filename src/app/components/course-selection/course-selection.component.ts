@@ -73,7 +73,6 @@ export class CourseSelectionComponent implements OnInit {
     }
 
     async onSelectCourse(course: Course): Promise<void> {
-        // TODO-Now
         this.loading = true;
         try {
             await this.configurationManagerService.getTokenATMConfiguration(course);

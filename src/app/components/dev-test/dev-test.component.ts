@@ -1,14 +1,15 @@
-import { Component, EnvironmentInjector, Inject, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import type { Course } from 'app/data/course';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import { CanvasService } from 'app/services/canvas.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
-import { createFieldComponentWithLabel } from 'app/token-option-field-component-factories/token-option-field-component-factory';
-import { BasicTokenOption } from 'app/token-options/basic-token-option';
-import { EarnByModuleTokenOption } from 'app/token-options/earn-by-module-token-option';
-import { MultipleSectionDateFieldComponent } from '../form-fields/multiple-section-date-field/multiple-section-date-field.component';
-import { DateTimeFieldComponent } from '../form-fields/date-time-field/date-time-field.component';
-import { MultipleSectionDateMatcher } from 'app/utils/multiple-section-date-matcher';
+import type { BasicTokenOptionData } from 'app/token-options/basic-token-option';
+import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-option-resolver-registry';
+import {
+    WithdrawAssignmentResubmissionTokenOption,
+    WithdrawAssignmentResubmissionTokenOptionDataDef,
+    type WithdrawAssignmentResubmissionTokenOptionData
+} from 'app/token-options/withdraw-assignment-resubmission-token-option';
 
 @Component({
     selector: 'app-dev-test',
@@ -21,7 +22,7 @@ export class DevTestComponent {
     constructor(
         @Inject(TokenATMConfigurationManagerService) private manager: TokenATMConfigurationManagerService,
         @Inject(CanvasService) private canvasService: CanvasService,
-        @Inject(EnvironmentInjector) private environmentInjector: EnvironmentInjector
+        @Inject(TokenOptionResolverRegistry) private tokenOptionResolverRegistry: TokenOptionResolverRegistry
     ) {}
 
     async configureCourse(course: Course): Promise<void> {
@@ -72,17 +73,15 @@ export class DevTestComponent {
         const configuration = await this.manager.getTokenATMConfiguration(this.course);
         const group = configuration.tokenOptionGroups[configuration.tokenOptionGroups.length - 1];
         if (!group) throw new Error('No token option groups exist in the configuration!');
-        group.addTokenOption(
-            new BasicTokenOption(
-                group,
-                'basic',
-                configuration.nextFreeTokenOptionId,
-                `Test Token Option ${group.tokenOptions.length}`,
-                `Just a test <b>token option</b> ${group.tokenOptions.length}`,
-                group.tokenOptions.length,
-                false
-            )
-        );
+        const basicTokenOptionData: BasicTokenOptionData = {
+            type: 'basic',
+            id: configuration.nextFreeTokenOptionId,
+            name: `Test Token Option ${group.tokenOptions.length}`,
+            description: `Just a test <b>token option</b> ${group.tokenOptions.length}`,
+            tokenBalanceChange: group.tokenOptions.length,
+            isMigrating: false
+        };
+        group.addTokenOption(this.tokenOptionResolverRegistry.constructTokenOption(group, basicTokenOptionData));
         const result = await this.manager.updateTokenOptionGroup(group);
         console.log('Add token option finished!');
         if (!result) console.log('auto update failed. Need manual update');
@@ -143,123 +142,20 @@ export class DevTestComponent {
         console.log('Deletion finished!');
     }
 
-    async onPopulateICSExpoConfiguration(): Promise<void> {
-        if (!this.course) return;
-        const configuration = await this.manager.getTokenATMConfiguration(this.course);
-        const group = new TokenOptionGroup(
-            configuration,
-            'Pass Module',
-            configuration.nextFreeTokenOptionGroupId,
-            '',
-            'Pass module with a specific grade threshold to get tokens!',
-            true,
-            []
-        );
-        await this.manager.addNewTokenOptionGroup(group);
-        group.addTokenOption(
-            new EarnByModuleTokenOption(
-                group,
-                'earn-by-module',
-                configuration.nextFreeTokenOptionId,
-                `getting tokens by passing module 1`,
-                `Passing Module 1 with a score no less than 70% of the total score`,
-                1,
-                false,
-                'Module 1',
-                '12612114',
-                new Date(),
-                0.7
-            )
-        );
-        group.addTokenOption(
-            new EarnByModuleTokenOption(
-                group,
-                'earn-by-module',
-                configuration.nextFreeTokenOptionId,
-                `getting tokens by passing module 2`,
-                `Passing Module 1 with a score no less than 80% of the total score`,
-                2,
-                false,
-                'Module 2',
-                '12612167',
-                new Date(),
-                0.8
-            )
-        );
-        await this.manager.updateTokenOptionGroup(group);
-        const basicGroup = new TokenOptionGroup(
-            configuration,
-            'Basic Token Options (Testing)',
-            configuration.nextFreeTokenOptionGroupId,
-            '',
-            'Test Token ATM with these basic token options whose requests are always approved!',
-            true,
-            []
-        );
-        await this.manager.addNewTokenOptionGroup(basicGroup);
-        basicGroup.addTokenOption(
-            new BasicTokenOption(
-                group,
-                'basic',
-                configuration.nextFreeTokenOptionId,
-                `basic token option 1`,
-                `Just a test <b>token option</b>`,
-                100,
-                false
-            )
-        );
-        basicGroup.addTokenOption(
-            new BasicTokenOption(
-                group,
-                'basic',
-                configuration.nextFreeTokenOptionId,
-                `basic token option 2`,
-                `Just a test <b>token option</b>`,
-                0.5,
-                false
-            )
-        );
-        basicGroup.addTokenOption(
-            new BasicTokenOption(
-                group,
-                'basic',
-                configuration.nextFreeTokenOptionId,
-                `basic token option 3`,
-                `Just a test <b>token option</b>`,
-                -100,
-                false
-            )
-        );
-        await this.manager.updateTokenOptionGroup(basicGroup);
-        console.log('Completed!');
-    }
-
-    @ViewChild('container', { read: ViewContainerRef, static: true }) containerRef?: ViewContainerRef;
-    field?: MultipleSectionDateFieldComponent;
-
     async onMyOperation(): Promise<void> {
-        if (!this.containerRef || !this.course) return;
-        this.containerRef.clear();
-        const [renderer, field] = createFieldComponentWithLabel(
-            MultipleSectionDateFieldComponent,
-            'Label Test',
-            this.environmentInjector
-        )
-            .editField((field) => {
-                field.dateFieldBuilderFactory = () => {
-                    return createFieldComponentWithLabel(DateTimeFieldComponent, 'Date', this.environmentInjector);
-                };
-            })
-            .build();
-        renderer(this.containerRef);
-        field.srcValue = [this.course.id, new MultipleSectionDateMatcher(new Date())];
-        this.field = field;
-    }
-
-    async onMyOperation1() {
-        if (!this.field) return;
-        const result = await this.field.validate();
-        console.log(result);
-        if (result) console.log(await this.field.destValue);
+        if (!this.course) return;
+        const withrdawTokenOptionData: WithdrawAssignmentResubmissionTokenOptionData = {
+            type: 'withdraw-assignment-resubmission',
+            id: -2,
+            name: 'Test Option',
+            description: 'AAAAAAAAAA',
+            tokenBalanceChange: 10,
+            isMigrating: false,
+            withdrawTokenOptionId: -3
+        };
+        const tokenOption = Object.assign(new WithdrawAssignmentResubmissionTokenOption(), withrdawTokenOptionData);
+        console.log(tokenOption);
+        console.log(WithdrawAssignmentResubmissionTokenOptionDataDef.is(tokenOption));
+        console.log(WithdrawAssignmentResubmissionTokenOptionDataDef.encode(tokenOption));
     }
 }

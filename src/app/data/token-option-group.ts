@@ -1,6 +1,7 @@
 import type { TokenATMConfiguration } from './token-atm-configuration';
 import type { TokenOption } from '../token-options/token-option';
 import { Base64 } from 'js-base64';
+import decamelizeKeys from 'decamelize-keys';
 
 export class TokenOptionGroup {
     private _configuration: TokenATMConfiguration;
@@ -100,7 +101,8 @@ export class TokenOptionGroup {
             quiz_id: this.quizId,
             description: Base64.encode(this.description),
             is_published: this.isPublished,
-            token_options: this.tokenOptions.map((entry) => entry.toJSON())
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            token_options: this.tokenOptions.map((entry) => decamelizeKeys(entry.toJSON() as any))
         };
     }
 
