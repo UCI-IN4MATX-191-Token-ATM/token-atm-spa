@@ -71,7 +71,7 @@ export class TokenOptionResolverRegistry {
         const type = (data as ITokenOptionType).type;
         if (typeof type != 'string') throw new Error('Invalid data');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data = camelcaseKeys(data as any);
+        data = camelcaseKeys(data as any, { deep: true });
         if (this._defaultTokenOptionResolversMap.has(type)) {
             const classDef = this._defaultTokenOptionResolversMap.get(type);
             if (!classDef) throw new Error('Invalid Map');

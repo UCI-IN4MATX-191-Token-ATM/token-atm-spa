@@ -144,7 +144,7 @@ export class DevTestComponent {
 
     async onMyOperation(): Promise<void> {
         if (!this.course) return;
-        const withrdawTokenOptionData: WithdrawAssignmentResubmissionTokenOptionData = {
+        const withdrawTokenOptionData: WithdrawAssignmentResubmissionTokenOptionData = {
             type: 'withdraw-assignment-resubmission',
             id: -2,
             name: 'Test Option',
@@ -153,7 +153,7 @@ export class DevTestComponent {
             isMigrating: false,
             withdrawTokenOptionId: -3
         };
-        const tokenOption = Object.assign(new WithdrawAssignmentResubmissionTokenOption(), withrdawTokenOptionData);
+        const tokenOption = Object.assign(new WithdrawAssignmentResubmissionTokenOption(), withdrawTokenOptionData);
         console.log(tokenOption);
         console.log(WithdrawAssignmentResubmissionTokenOptionDataDef.is(tokenOption));
         console.log(WithdrawAssignmentResubmissionTokenOptionDataDef.encode(tokenOption));

@@ -293,13 +293,27 @@ export function tokenOptionValidationWrapper<F extends FormField<any, any, any>>
 ) {
     return builder
         .appendComp(createComponent(ErrorMessageFieldComponent, { environmentInjector: environmentInjector }))
-        .appendVP(
-            async (field) => [field.fieldB, (await field.destValue)[0]] as [ErrorMessageFieldComponent, ExtractDest<F>]
-        )
+        .appendVP(async (field) => {
+            try {
+                const destValue = (await field.destValue)[0];
+                return [field.fieldB, destValue, undefined] as [ErrorMessageFieldComponent, ExtractDest<F>, undefined];
+            } catch (err: unknown) {
+                return [field.fieldB, undefined, err] as [ErrorMessageFieldComponent, undefined, unknown];
+            }
+        })
         .editField((field) => {
-            field.validator = async ([errorMsgField, value]: [ErrorMessageFieldComponent, ExtractDest<F>]) => {
+            field.validator = async ([errorMsgField, value, err]: [
+                ErrorMessageFieldComponent,
+                ExtractDest<F> | undefined,
+                unknown | undefined
+            ]) => {
                 errorMsgField.srcValue = undefined;
-                const result = validator(value);
+                if (err != undefined) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    errorMsgField.srcValue = `Fail to construct token option data: ${(err as any).toString()}`;
+                    return false;
+                }
+                const result = validator(value as ExtractDest<F>);
                 if (!result) errorMsgField.srcValue = errorMsg;
                 return result;
             };

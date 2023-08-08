@@ -102,7 +102,7 @@ export class TokenOptionGroup {
             description: Base64.encode(this.description),
             is_published: this.isPublished,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            token_options: this.tokenOptions.map((entry) => decamelizeKeys(entry.toJSON() as any))
+            token_options: this.tokenOptions.map((entry) => decamelizeKeys(entry.toJSON() as any, { deep: true }))
         };
     }
 
