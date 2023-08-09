@@ -18,6 +18,7 @@ import { CanvasModule } from 'app/data/canvas-module';
 import { Assignment } from 'app/data/assignment';
 import { AssignmentSubmission } from 'app/data/assignment-submission';
 import { ExponentialBackoffExecutor } from 'app/utils/exponential-backoff-executor';
+import { Section } from 'app/data/section';
 
 type QuizQuestionResponse = {
     id: string;
@@ -1196,5 +1197,29 @@ export class CanvasService {
                 name: name
             }
         });
+    }
+
+    public async getSections(courseId: string): Promise<PaginatedResult<Section>> {
+        return new PaginatedResult<Section>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/sections`),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (data: any) => data.map((entry: any) => Section.deserialize(entry))
+        );
+    }
+
+    public async getStudentSectionEnrollments(courseId: string, userId: string): Promise<PaginatedResult<string>> {
+        return new PaginatedResult<string>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/enrollments`, {
+                params: {
+                    type: ['StudentEnrollment'],
+                    state: ['active'],
+                    user_id: userId
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (data: any) => data.map((entry: any) => entry.course_section_id)
+        );
     }
 }

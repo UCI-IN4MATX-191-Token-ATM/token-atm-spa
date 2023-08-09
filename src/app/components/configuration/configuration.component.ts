@@ -157,11 +157,12 @@ export class ConfigurationComponent implements CourseConfigurable {
             'Confirmation',
             true
         );
-        modalRef.hide();
         if (!result) {
             this.isProcessing = false;
+            modalRef.hide();
             return;
         }
+        if (modalRef.content) modalRef.content.disableButton = true;
         try {
             const configuration = await this.configurationManagerService.getTokenATMConfiguration(this.course);
             await this.configurationManagerService.deleteAll(configuration);
@@ -178,7 +179,9 @@ export class ConfigurationComponent implements CourseConfigurable {
                 )}\n\nError Message: ${ErrorSerializer.serailize(err)}`,
                 'Error'
             );
+        } finally {
             this.isProcessing = false;
+            modalRef.hide();
         }
     }
 

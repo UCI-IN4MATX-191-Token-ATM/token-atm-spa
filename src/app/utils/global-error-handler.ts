@@ -1,9 +1,13 @@
-import type { ErrorHandler } from '@angular/core';
+import { isDevMode, type ErrorHandler } from '@angular/core';
 import { ErrorSerializer } from './error-serailizer';
 
 export class GlobalErrorHandler implements ErrorHandler {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public handleError(error: any) {
+        if (isDevMode()) {
+            console.error(error);
+            return;
+        }
         const win = window.open('about:blank', '_blank');
         if (win == null) {
             console.error('Create error report failed!');

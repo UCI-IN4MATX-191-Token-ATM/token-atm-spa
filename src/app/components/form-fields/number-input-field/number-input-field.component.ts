@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import type { FormField } from 'app/utils/form-field';
+import { Component } from '@angular/core';
+import { BaseDirectFormField } from 'app/utils/form-field/direct-form-field';
 import { v4 } from 'uuid';
 
 @Component({
@@ -7,37 +7,22 @@ import { v4 } from 'uuid';
     templateUrl: './number-input-field.component.html',
     styleUrls: ['./number-input-field.component.sass']
 })
-export class NumberInputFieldComponent implements FormField<number, number> {
+export class NumberInputFieldComponent extends BaseDirectFormField<number, [NumberInputFieldComponent, number]> {
     fieldId = v4();
-    @Input() label = '';
-    value = 0;
-    private _validator: (value: number) => Promise<string | undefined> = async (value: number) =>
-        typeof value != 'number' ? 'Value is invalid' : undefined;
-    errorMessage?: string;
-    readonly = false;
 
-    @Input() set isReadOnly(isReadOnly: boolean) {
-        this.readonly = isReadOnly;
-    }
-
-    @Input() set initValue(initValue: number) {
-        this.value = initValue;
-    }
-
-    @Input() set validator(validator: (value: number) => Promise<string | undefined>) {
-        this._validator = async (value: number) => {
-            if (typeof value != 'number') return 'Value is invalid';
-            return validator(value);
+    constructor() {
+        super();
+        this.validator = async ([field, value]: [NumberInputFieldComponent, number]) => {
+            field.errorMessage = undefined;
+            if (typeof value != 'number') {
+                field.errorMessage = 'Value is invalid';
+                return false;
+            }
+            return true;
         };
     }
 
-    async getValue(): Promise<number> {
-        return this.value;
-    }
-
-    async validate(): Promise<boolean> {
-        const result = await this._validator(await this.getValue());
-        this.errorMessage = result;
-        return result == undefined;
+    public override async validate(): Promise<boolean> {
+        return await this._validator([this, await this.destValue]);
     }
 }

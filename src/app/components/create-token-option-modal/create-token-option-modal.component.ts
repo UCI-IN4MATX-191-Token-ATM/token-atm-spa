@@ -2,7 +2,6 @@ import { Component, Inject, Input } from '@angular/core';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import { TokenOptionRegistry } from 'app/token-options/token-option-registry';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
-import { TokenOptionFieldRegistry } from '../form-fields/token-option-fields/token-option-field-registry';
 import { TokenOptionManagementComponent } from '../token-option-management/token-option-management.component';
 
 @Component({
@@ -16,7 +15,6 @@ export class CreateTokenOptionModalComponent {
 
     constructor(
         @Inject(TokenOptionRegistry) private tokenOptionRegistry: TokenOptionRegistry,
-        @Inject(TokenOptionFieldRegistry) private tokenOptionFieldRegistry: TokenOptionFieldRegistry,
         @Inject(BsModalService) private modalService: BsModalService
     ) {}
 
@@ -28,14 +26,10 @@ export class CreateTokenOptionModalComponent {
 
     onNextStep(): void {
         if (!this.group || !this.selectedOption) return;
-        const componentType = this.tokenOptionFieldRegistry.getComponentType(this.selectedOption);
-        const typeName = this.tokenOptionRegistry.getDescriptiveName(this.selectedOption);
-        if (!componentType || !typeName) return;
         const modalRef = this.modalService.show(TokenOptionManagementComponent, {
             initialState: {
-                optionComponentType: componentType,
-                value: this.group,
-                typeName: typeName
+                tokenOptionType: this.selectedOption,
+                value: this.group
             },
             class: 'modal-lg',
             backdrop: 'static',

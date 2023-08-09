@@ -1,13 +1,14 @@
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import { fromUnixTime, getUnixTime } from 'date-fns';
 import { TokenOption } from './token-option';
+import { MultipleSectionDateMatcher } from 'app/utils/multiple-section-date-matcher';
 
 export class SpendForAssignmentResubmissionTokenOption extends TokenOption {
     private _assignmentName: string;
     private _assignmentId: string;
     private _startTime: Date;
-    private _endTime: Date;
-    private _newDueTime: Date;
+    private _endTime: Date | MultipleSectionDateMatcher;
+    private _newDueTime: Date | MultipleSectionDateMatcher;
 
     constructor(
         group: TokenOptionGroup,
@@ -20,8 +21,8 @@ export class SpendForAssignmentResubmissionTokenOption extends TokenOption {
         assignmentName: string,
         assignmentId: string,
         startTime: Date,
-        endTime: Date,
-        newDueTime: Date
+        endTime: Date | MultipleSectionDateMatcher,
+        newDueTime: Date | MultipleSectionDateMatcher
     ) {
         super(group, type, id, name, description, tokenBalanceChange, isMigrating);
         this._assignmentName = assignmentName;
@@ -55,19 +56,19 @@ export class SpendForAssignmentResubmissionTokenOption extends TokenOption {
         this._startTime = startTime;
     }
 
-    public get endTime(): Date {
+    public get endTime(): Date | MultipleSectionDateMatcher {
         return this._endTime;
     }
 
-    public set endTime(endTime: Date) {
+    public set endTime(endTime: Date | MultipleSectionDateMatcher) {
         this._endTime = endTime;
     }
 
-    public get newDueTime(): Date {
+    public get newDueTime(): Date | MultipleSectionDateMatcher {
         return this._newDueTime;
     }
 
-    public set newDueTime(newDueTime: Date) {
+    public set newDueTime(newDueTime: Date | MultipleSectionDateMatcher) {
         this._newDueTime = newDueTime;
     }
 
@@ -77,8 +78,8 @@ export class SpendForAssignmentResubmissionTokenOption extends TokenOption {
             assignment_name: this.assignmentName,
             assignment_id: this.assignmentId,
             start_time: getUnixTime(this.startTime),
-            end_time: getUnixTime(this.endTime),
-            new_due_time: getUnixTime(this.newDueTime)
+            end_time: this.endTime instanceof Date ? getUnixTime(this.endTime) : this.endTime.toJSON(),
+            new_due_time: this.newDueTime instanceof Date ? getUnixTime(this.newDueTime) : this.newDueTime.toJSON()
         };
     }
 
@@ -91,8 +92,8 @@ export class SpendForAssignmentResubmissionTokenOption extends TokenOption {
             typeof data['assignment_name'] != 'string' ||
             typeof data['assignment_id'] != 'string' ||
             typeof data['start_time'] != 'number' ||
-            typeof data['end_time'] != 'number' ||
-            typeof data['new_due_time'] != 'number'
+            (typeof data['end_time'] != 'number' && typeof data['end_time'] != 'object') ||
+            (typeof data['new_due_time'] != 'number' && typeof data['new_due_time'] != 'object')
         )
             throw new Error('Invalid data');
         return [
@@ -100,8 +101,12 @@ export class SpendForAssignmentResubmissionTokenOption extends TokenOption {
             data['assignment_name'],
             data['assignment_id'],
             fromUnixTime(data['start_time']),
-            fromUnixTime(data['end_time']),
-            fromUnixTime(data['new_due_time'])
+            typeof data['end_time'] == 'number'
+                ? fromUnixTime(data['end_time'])
+                : MultipleSectionDateMatcher.deserialize(data['end_time']),
+            typeof data['new_due_time'] == 'number'
+                ? fromUnixTime(data['new_due_time'])
+                : MultipleSectionDateMatcher.deserialize(data['new_due_time'])
         ];
     }
 

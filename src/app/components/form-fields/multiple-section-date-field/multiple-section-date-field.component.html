@@ -1,0 +1,15 @@
+<ng-template #defaultDateContainer></ng-template>
+<div class="m-3">
+    <div class="form-check">
+        <input
+            class="form-check-input"
+            type="checkbox"
+            [id]="'checkbox' + fieldId"
+            [(ngModel)]="hasException"
+            [disabled]="isReadOnly"
+            [readOnly]="isReadOnly"
+        />
+        <label class="form-check-label" [for]="'checkbox' + fieldId"> Add exception(s) for section(s) </label>
+    </div>
+    <app-list-field [hidden]="!hasException"></app-list-field>
+</div>

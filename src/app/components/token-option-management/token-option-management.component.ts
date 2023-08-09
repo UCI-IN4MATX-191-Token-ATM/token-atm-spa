@@ -1,79 +1,96 @@
-import { Component, ComponentRef, Inject, Input, Type, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, EnvironmentInjector, Inject, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
+import { TokenOptionFieldComponentFactoryRegistry } from 'app/token-option-field-component-factories/token-option-field-component-factory-registry';
 import { TokenOption } from 'app/token-options/token-option';
+import { TokenOptionRegistry } from 'app/token-options/token-option-registry';
+import type { FormField } from 'app/utils/form-field/form-field';
 import type { BsModalRef } from 'ngx-bootstrap/modal';
-import type { TokenOptionField } from '../form-fields/token-option-fields/token-option-field';
 
 @Component({
     selector: 'app-token-option-management',
     templateUrl: './token-option-management.component.html',
     styleUrls: ['./token-option-management.component.sass']
 })
-export class TokenOptionManagementComponent {
-    @Input() typeName = '';
-    @ViewChild('tokenOptionField', { read: ViewContainerRef, static: false }) set tokenOptionContainer(
-        tokenOptionContainer: ViewContainerRef
-    ) {
-        this._tokenOptionContainer = tokenOptionContainer;
-        this.initialize();
-    }
+export class TokenOptionManagementComponent implements OnInit {
+    @Input() tokenOptionType?: string;
+    @Input() value?: TokenOptionGroup | TokenOption;
+    @ViewChild('tokenOptionField', { read: ViewContainerRef, static: true }) tokenOptionContainer?: ViewContainerRef;
 
     modalRef?: BsModalRef<unknown>;
-    componentRef?: ComponentRef<TokenOptionField>;
+    typeName = '';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private field?: FormField<TokenOptionGroup | TokenOption, TokenOption, any>;
 
-    @Input() set optionComponentType(optionComponentType: Type<TokenOptionField>) {
-        this._optionComponentType = optionComponentType;
-        this.initialize();
-    }
-
-    @Input() set value(value: TokenOptionGroup | TokenOption) {
-        this._value = value;
-        this.initialize();
-    }
-
-    isReadOnly = true;
-    isProcessing = false;
-    private _tokenOptionContainer?: ViewContainerRef;
-    private _optionComponentType?: Type<TokenOptionField>;
-    private _value?: TokenOptionGroup | TokenOption;
+    private _isReadOnly = true;
+    private _isProcessing = false;
 
     constructor(
         @Inject(TokenATMConfigurationManagerService)
         private configurationManagerService: TokenATMConfigurationManagerService,
-        @Inject(ModalManagerService) private modalManagerService: ModalManagerService
+        @Inject(ModalManagerService) private modalManagerService: ModalManagerService,
+        @Inject(TokenOptionFieldComponentFactoryRegistry)
+        private componentFactoryRegistry: TokenOptionFieldComponentFactoryRegistry,
+        @Inject(TokenOptionRegistry) private tokenOptionRegistry: TokenOptionRegistry,
+        @Inject(EnvironmentInjector) private environmentInjector: EnvironmentInjector
     ) {}
 
-    private initialize() {
-        if (!this._tokenOptionContainer || !this._optionComponentType || !this._value) return;
-        if (!this.componentRef)
-            this.componentRef = this._tokenOptionContainer.createComponent(this._optionComponentType);
-        if (this.isEditing) {
-            this.isReadOnly = !(this._value as TokenOption).isMigrating;
-        } else {
-            this.isReadOnly = false;
-        }
-        const instance = this.componentRef.instance;
-        instance.isReadOnly = this.isReadOnly;
-        instance.initValue = this._value;
+    ngOnInit() {
+        if (
+            !this.tokenOptionType ||
+            !this.value ||
+            !this.tokenOptionContainer ||
+            this.tokenOptionRegistry.getDescriptiveName(this.tokenOptionType) == undefined
+        )
+            throw new Error('Fail to initialize token option management modal');
+        this.typeName = this.tokenOptionRegistry.getDescriptiveName(this.tokenOptionType) as string;
+        const result = this.componentFactoryRegistry.createTokenOptionFieldComponent(
+            this.tokenOptionType,
+            this.environmentInjector
+        );
+        if (result == undefined)
+            throw new Error('Fail to intialize token option management modal: Unsupported token option type');
+        const [renderer, field] = result;
+        this.field = field;
+        this.field.srcValue = this.value;
+        this.isReadOnly = this.isEditing ? !(this.value as TokenOption).isMigrating : false;
+        renderer(this.tokenOptionContainer);
+    }
+
+    set isReadOnly(isReadOnly: boolean) {
+        this._isReadOnly = isReadOnly;
+        if (this.field) this.field.isReadOnly = isReadOnly || this.isProcessing;
+    }
+
+    get isReadOnly(): boolean {
+        return this._isReadOnly;
+    }
+
+    set isProcessing(isProcessing: boolean) {
+        this._isProcessing = isProcessing;
+        if (this.field) this.field.isReadOnly = this.isReadOnly || isProcessing;
+    }
+
+    get isProcessing(): boolean {
+        return this._isProcessing;
     }
 
     onEdit(): void {
-        if (!this.componentRef) return;
+        if (!this.field) return;
         this.isReadOnly = false;
-        this.componentRef.instance.isReadOnly = false;
+        this.field.isReadOnly = false;
     }
 
     async onCreate(): Promise<void> {
-        if (!this.componentRef || this.isEditing) return;
+        if (!this.field || this.isEditing) return;
         this.isProcessing = true;
-        if (!(await this.componentRef.instance.validate())) {
+        if (!(await this.field.validate())) {
             this.isProcessing = false;
             return;
         }
-        const tokenOption = await this.componentRef.instance.getValue();
-        const group = this._value as TokenOptionGroup;
+        const tokenOption = await this.field.destValue;
+        const group = this.value as TokenOptionGroup;
         group.addTokenOption(tokenOption);
         const result = await this.configurationManagerService.updateTokenOptionGroup(group);
         if (!result) await this.notifyUpdateFailure();
@@ -82,13 +99,13 @@ export class TokenOptionManagementComponent {
     }
 
     async onSave(): Promise<void> {
-        if (!this.componentRef || !this.isEditing) return;
+        if (!this.field || !this.isEditing) return;
         this.isProcessing = true;
-        if (!(await this.componentRef.instance.validate())) {
+        if (!(await this.field.validate())) {
             this.isProcessing = false;
             return;
         }
-        const tokenOption = await this.componentRef.instance.getValue();
+        const tokenOption = await this.field.destValue;
         if (tokenOption.isMigrating) tokenOption.isMigrating = false;
         const result = await this.configurationManagerService.updateTokenOptionGroup(tokenOption.group);
         if (!result) await this.notifyUpdateFailure();
@@ -103,9 +120,9 @@ export class TokenOptionManagementComponent {
     }
 
     async onDelete(): Promise<void> {
-        if (!this.componentRef || !this.isEditing) return;
+        if (!this.field || !this.isEditing) return;
         this.isProcessing = true;
-        const option = this._value as TokenOption;
+        const option = this.value as TokenOption;
         const [confirmationRef, result] = await this.modalManagerService.createConfirmationModal(
             `Do you really want to delete the token option '${option.name}'?`,
             'Confirmation',
@@ -127,6 +144,6 @@ export class TokenOptionManagementComponent {
     }
 
     get isEditing(): boolean {
-        return this._value instanceof TokenOption;
+        return this.value instanceof TokenOption;
     }
 }

@@ -1,0 +1,8 @@
+<div class="d-flex align-items-center">
+    <button class="btn btn-outline-danger" (click)="remove.emit()" [disabled]="isReadOnly">
+        <span class="bi bi-x-circle-fill"></span>
+    </button>
+    <div class="flex-grow-1">
+        <ng-template #container></ng-template>
+    </div>
+</div>

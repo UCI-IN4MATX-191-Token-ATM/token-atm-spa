@@ -11,6 +11,8 @@ import { RequestHandlerGuardExecutor } from './guards/request-handler-guard-exec
 import { StartDateGuard } from './guards/start-date-guard';
 import { SufficientTokenBalanceGuard } from './guards/sufficient-token-balance-guard';
 import { RequestHandler } from './request-handlers';
+import { MultipleSectionEndDateGuard } from './guards/multiple-section-end-date-guard';
+import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 
 @Injectable()
 export class SpendForAssignmentResubmissionRequestHandler extends RequestHandler<
@@ -28,18 +30,36 @@ export class SpendForAssignmentResubmissionRequestHandler extends RequestHandler
     ): Promise<ProcessedRequest> {
         const guardExecutor = new RequestHandlerGuardExecutor([
             new StartDateGuard(request.submittedTime, request.tokenOption.startTime),
-            new EndDateGuard(request.submittedTime, request.tokenOption.endTime),
+            request.tokenOption.endTime instanceof Date
+                ? new EndDateGuard(request.submittedTime, request.tokenOption.endTime)
+                : new MultipleSectionEndDateGuard(
+                      configuration.course.id,
+                      studentRecord.student.id,
+                      request.submittedTime,
+                      request.tokenOption.endTime,
+                      this.canvasService
+                  ),
             new RepeatRequestGuard(request.tokenOption, studentRecord.processedRequests),
             new SufficientTokenBalanceGuard(studentRecord.tokenBalance, request.tokenOption.tokenBalanceChange)
         ]);
         await guardExecutor.check();
+        const newDueTime = request.tokenOption.newDueTime;
         if (!guardExecutor.isRejected) {
             await this.canvasService.createAssignmentOverrideForStudent(
                 configuration.course.id,
                 request.tokenOption.assignmentId,
                 request.student.id,
                 `Token ATM - ${configuration.uid}`,
-                request.tokenOption.newDueTime
+                newDueTime instanceof Date
+                    ? newDueTime
+                    : newDueTime.match(
+                          await DataConversionHelper.convertAsyncIterableToList(
+                              await this.canvasService.getStudentSectionEnrollments(
+                                  configuration.course.id,
+                                  studentRecord.student.id
+                              )
+                          )
+                      )
             );
         }
         return new ProcessedRequest(

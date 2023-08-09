@@ -2,6 +2,7 @@ import type { TokenOptionGroup } from 'app/data/token-option-group';
 import { SpendForAssignmentResubmissionTokenOption } from './spend-for-assignment-resubmission-token-option';
 import type { TokenOption } from './token-option';
 import { WithdrawTokenOption } from './withdraw-token-option';
+import type { MultipleSectionDateMatcher } from 'app/utils/multiple-section-date-matcher';
 
 export class WithdrawAssignmentResubmissionTokenOption extends WithdrawTokenOption<SpendForAssignmentResubmissionTokenOption> {
     protected validateTokenOptionType(tokenOption: TokenOption): boolean {
@@ -12,7 +13,7 @@ export class WithdrawAssignmentResubmissionTokenOption extends WithdrawTokenOpti
         return this.withdrawTokenOption?.startTime;
     }
 
-    public get endTime(): Date | undefined {
+    public get endTime(): Date | MultipleSectionDateMatcher | undefined {
         return this.withdrawTokenOption?.endTime;
     }
 

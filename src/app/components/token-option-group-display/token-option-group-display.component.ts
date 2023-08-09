@@ -27,7 +27,7 @@ export class TokenOptionGroupDisplayComponent {
         if (!this.group) return;
         const modalRef = this.modalService.show(TokenOptionGroupManagementComponent, {
             initialState: {
-                group: this.group
+                value: this.group
             }
         });
         if (modalRef.content) modalRef.content.modalRef = modalRef;
