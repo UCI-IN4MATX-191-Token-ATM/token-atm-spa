@@ -110,6 +110,7 @@ export const EarnByQuizTokenOptionDataDef = t.intersection([
 ]);
 
 export type EarnByQuizTokenOptionData = t.TypeOf<typeof EarnByQuizTokenOptionDataDef>;
+export type RawEarnByQuizTokenOptionData = t.OutputOf<typeof EarnByQuizTokenOptionDataDef>;
 
 export class EarnByQuizTokenOption extends FromDataMixin(
     ToJSONMixin(GradeThresholdMixin(StartTimeMixin(QuizMixin(ATokenOption))), EarnByQuizTokenOptionDataDef.encode),

@@ -7,6 +7,7 @@ export const MultipleSectionNewDueTimeMixinDataDef = t.strict({
 });
 
 export type MultipleSectionNewDueTimeMixinData = t.TypeOf<typeof MultipleSectionNewDueTimeMixinDataDef>;
+export type RawMultipleSectionNewDueTimeMixinData = t.OutputOf<typeof MultipleSectionNewDueTimeMixinDataDef>;
 
 export type IMultipleSectionNewDueTime = MultipleSectionNewDueTimeMixinData;
 

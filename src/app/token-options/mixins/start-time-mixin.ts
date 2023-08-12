@@ -6,6 +6,7 @@ export const StartTimeMixinDataDef = t.strict({
 });
 
 export type StartTimeMixinData = t.TypeOf<typeof StartTimeMixinDataDef>;
+export type RawStartTimeMixinData = t.OutputOf<typeof StartTimeMixinDataDef>;
 
 export type IStartTime = StartTimeMixinData;
 

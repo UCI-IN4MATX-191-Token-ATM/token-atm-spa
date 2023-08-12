@@ -23,6 +23,7 @@ export const WithdrawLabSwitchTokenOptionDataDef = t.intersection([
 ]);
 
 export type WithdrawLabSwitchTokenOptionData = t.TypeOf<typeof WithdrawLabSwitchTokenOptionDataDef>;
+export type RawWithdrawLabSwitchTokenOptionData = t.OutputOf<typeof WithdrawLabSwitchTokenOptionDataDef>;
 
 export class WithdrawLabSwitchTokenOption extends FromDataMixin(
     ToJSONMixin(

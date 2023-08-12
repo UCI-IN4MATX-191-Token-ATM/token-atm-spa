@@ -6,6 +6,7 @@ export const GradeThresholdMixinDataDef = t.strict({
 });
 
 export type GradeThresholdMixinData = t.TypeOf<typeof GradeThresholdMixinDataDef>;
+export type RawGradeThresholdMixinData = t.OutputOf<typeof GradeThresholdMixinDataDef>;
 
 export type IGradeThreshold = GradeThresholdMixinData;
 

@@ -30,6 +30,7 @@ import { FromDataMixin } from './mixins/from-data-mixin';
 export const WithdrawLabDataTokenOptionDataDef = t.intersection([TokenOptionDataDef, WithdrawTokenOptionMixinDataDef]);
 
 export type WithdrawLabDataTokenOptionData = t.TypeOf<typeof WithdrawLabDataTokenOptionDataDef>;
+export type RawWithdrawLabDataTokenOptionData = t.OutputOf<typeof WithdrawLabDataTokenOptionDataDef>;
 
 export class WithdrawLabDataTokenOption extends FromDataMixin(
     ToJSONMixin(

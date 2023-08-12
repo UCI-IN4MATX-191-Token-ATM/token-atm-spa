@@ -35,6 +35,9 @@ export const WithdrawAssignmentResubmissionTokenOptionDataDef = t.intersection([
 export type WithdrawAssignmentResubmissionTokenOptionData = t.TypeOf<
     typeof WithdrawAssignmentResubmissionTokenOptionDataDef
 >;
+export type RawWithdrawAssignmentResubmissionTokenOptionData = t.OutputOf<
+    typeof WithdrawAssignmentResubmissionTokenOptionDataDef
+>;
 
 export class WithdrawAssignmentResubmissionTokenOption extends FromDataMixin(
     ToJSONMixin(

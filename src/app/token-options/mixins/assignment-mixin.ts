@@ -7,6 +7,7 @@ export const AssignmentMixinDataDef = t.strict({
 });
 
 export type AssignmentMixinData = t.TypeOf<typeof AssignmentMixinDataDef>;
+export type RawAssignmentMixinData = t.OutputOf<typeof AssignmentMixinDataDef>;
 
 export type IAssignment = AssignmentMixinData;
 

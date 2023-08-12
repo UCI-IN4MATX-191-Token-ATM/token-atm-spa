@@ -140,6 +140,9 @@ export const SpendForAssignmentResubmissionTokenOptionDataDef = t.intersection([
 export type SpendForAssignmentResubmissionTokenOptionData = t.TypeOf<
     typeof SpendForAssignmentResubmissionTokenOptionDataDef
 >;
+export type RawSpendForAssignmentResubmissionTokenOptionData = t.OutputOf<
+    typeof SpendForAssignmentResubmissionTokenOptionDataDef
+>;
 
 export class SpendForAssignmentResubmissionTokenOption extends FromDataMixin(
     ToJSONMixin(

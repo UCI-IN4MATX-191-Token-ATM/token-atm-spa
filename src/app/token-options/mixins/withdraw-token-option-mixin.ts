@@ -6,6 +6,7 @@ import { getterWrapper } from 'app/utils/io-ts-getter-wrapper';
 export const WithdrawTokenOptionMixinDataDef = getterWrapper('withdrawTokenOptionId', t.number);
 
 export type WithdrawTokenOptionMixinData = t.TypeOf<typeof WithdrawTokenOptionMixinDataDef>;
+export type RawWithdrawTokenOptionMixinData = t.OutputOf<typeof WithdrawTokenOptionMixinDataDef>;
 
 export interface IWithdrawTokenOption<T extends ITokenOption> extends WithdrawTokenOptionMixinData, ITokenOption {
     get hasWithdrawTokenOption(): boolean;

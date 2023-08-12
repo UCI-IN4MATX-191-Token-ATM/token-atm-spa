@@ -102,6 +102,9 @@ import { FromDataMixin } from './mixins/from-data-mixin';
 //     }
 // }
 
+/**
+ * The definition of `EarnBySurveyTokenOptionData`.
+ */
 export const EarnBySurveyTokenOptionDataDef = t.intersection([
     TokenOptionDataDef,
     QualtricsSurveyMixinDataDef,
@@ -109,7 +112,15 @@ export const EarnBySurveyTokenOptionDataDef = t.intersection([
     EndTimeMixinDataDef
 ]);
 
+/**
+ * The compile-time type of `EarnBySurveyTokenOptionData`;
+ */
 export type EarnBySurveyTokenOptionData = t.TypeOf<typeof EarnBySurveyTokenOptionDataDef>;
+
+/**
+ * The compile-time type of encoded form of `EarnBySurveyTokenOptionData`.
+ */
+export type RawEarnBySurveyTokenOptionData = t.OutputOf<typeof EarnBySurveyTokenOptionDataDef>;
 
 export class EarnBySurveyTokenOption extends FromDataMixin(
     ToJSONMixin(

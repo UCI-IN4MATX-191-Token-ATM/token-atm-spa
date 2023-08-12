@@ -7,6 +7,7 @@ export const QuizMixinDataDef = t.strict({
 });
 
 export type QuizMixinData = t.TypeOf<typeof QuizMixinDataDef>;
+export type RawQuizMixinData = t.OutputOf<typeof QuizMixinDataDef>;
 
 export type IQuiz = QuizMixinData;
 

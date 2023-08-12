@@ -16,6 +16,7 @@ export const MultipleSectionDateMatcherDataDef = t.strict({
 });
 
 export type MultipleSectionDateMatcherData = t.TypeOf<typeof MultipleSectionDateMatcherDataDef>;
+export type RawMultipleSectionDateMatcherData = t.OutputOf<typeof MultipleSectionDateMatcherDataDef>;
 
 export type DateOverride = t.TypeOf<typeof DateOverrideDef>;
 

@@ -18,6 +18,7 @@ export const ExcludeTokenOptionIdsMixinDataDef = t.strict({
 });
 
 export type ExcludeTokenOptionIdsMixinData = t.TypeOf<typeof ExcludeTokenOptionIdsMixinDataDef>;
+export type RawExcludeTokenOptionIdsMixinData = t.OutputOf<typeof ExcludeTokenOptionIdsMixinDataDef>;
 
 export type IExcludeTokenOptionIds = ExcludeTokenOptionIdsMixinData;
 

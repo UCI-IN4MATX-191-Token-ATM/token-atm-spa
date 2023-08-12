@@ -14,6 +14,7 @@ import { unwrapValidationFunc } from 'app/utils/validation-unwrapper';
 export const BasicTokenOptionDataDef = TokenOptionDataDef;
 
 export type BasicTokenOptionData = t.TypeOf<typeof BasicTokenOptionDataDef>;
+export type RawBasicTokenOptionData = t.OutputOf<typeof BasicTokenOptionDataDef>;
 
 export class BasicTokenOption extends FromDataMixin(
     ToJSONMixin(ATokenOption, BasicTokenOptionDataDef.encode),

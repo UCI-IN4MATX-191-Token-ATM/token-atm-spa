@@ -110,6 +110,7 @@ export const EarnByModuleTokenOptionDataDef = t.intersection([
 ]);
 
 export type EarnByModuleTokenOptionData = t.TypeOf<typeof EarnByModuleTokenOptionDataDef>;
+export type RawEarnByModuleTokenOptionData = t.OutputOf<typeof EarnByModuleTokenOptionDataDef>;
 
 export class EarnByModuleTokenOption extends FromDataMixin(
     ToJSONMixin(GradeThresholdMixin(StartTimeMixin(ModuleMixin(ATokenOption))), EarnByModuleTokenOptionDataDef.encode),

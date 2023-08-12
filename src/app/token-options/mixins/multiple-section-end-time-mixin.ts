@@ -7,6 +7,7 @@ export const MultipleSectionEndTimeMixinDataDef = t.strict({
 });
 
 export type MultipleSectionEndTimeMixinData = t.TypeOf<typeof MultipleSectionEndTimeMixinDataDef>;
+export type RawMultipleSectionEndTimeMixinData = t.OutputOf<typeof MultipleSectionEndTimeMixinDataDef>;
 
 export type IMultipleSectionEndTime = MultipleSectionEndTimeMixinData;
 

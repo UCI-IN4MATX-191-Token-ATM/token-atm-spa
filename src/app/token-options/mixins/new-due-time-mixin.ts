@@ -6,6 +6,7 @@ export const NewDueTimeMixinDataDef = t.strict({
 });
 
 export type NewDueTimeMixinData = t.TypeOf<typeof NewDueTimeMixinDataDef>;
+export type RawNewDueTimeMixinData = t.OutputOf<typeof NewDueTimeMixinDataDef>;
 
 export type INewDueTime = NewDueTimeMixinData;
 

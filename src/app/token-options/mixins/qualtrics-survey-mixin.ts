@@ -38,6 +38,7 @@ export const QualtricsSurveyMixinDataDef = t.intersection([
 ]);
 
 export type QualtricsSurveyMixinData = t.TypeOf<typeof QualtricsSurveyMixinDataDef>;
+export type RawQualtricsSurveyMixinData = t.OutputOf<typeof QualtricsSurveyMixinDataDef>;
 
 export type IQualtricsSurvey = QualtricsSurveyMixinData;
 

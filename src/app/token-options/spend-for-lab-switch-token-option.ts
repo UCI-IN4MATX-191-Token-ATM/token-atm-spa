@@ -68,6 +68,7 @@ export const SpendForLabSwitchTokenOptionDataDef = t.intersection([
 ]);
 
 export type SpendForLabSwitchTokenOptionData = t.TypeOf<typeof SpendForLabSwitchTokenOptionDataDef>;
+export type RawSpendForLabSwitchTokenOptionData = t.OutputOf<typeof SpendForLabSwitchTokenOptionDataDef>;
 
 export class SpendForLabSwitchTokenOption extends FromDataMixin(
     ToJSONMixin(ExcludeTokenOptionIdsMixin(ATokenOption), SpendForLabSwitchTokenOptionDataDef.encode),

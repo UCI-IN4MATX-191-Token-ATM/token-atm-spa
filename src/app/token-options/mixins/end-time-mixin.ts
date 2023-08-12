@@ -6,6 +6,7 @@ export const EndTimeMixinDataDef = t.strict({
 });
 
 export type EndTimeMixinData = t.TypeOf<typeof EndTimeMixinDataDef>;
+export type RawEndTimeMixinData = t.OutputOf<typeof EndTimeMixinDataDef>;
 
 export type IEndTime = EndTimeMixinData;
 

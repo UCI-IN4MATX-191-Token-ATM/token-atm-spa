@@ -5,6 +5,12 @@ import { ErrorSerializer } from 'app/utils/error-serailizer';
 import type { Constructor } from 'app/utils/mixin-helper';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 
+/**
+ * The definition of `description` attribute of `TokenOptionMixinData`.
+ * Encode string to its base64 value.
+ * Decode string by considering the provided value as a base64 string and then decode it to its original form.
+ * Specifically, `undefined` will be decoded to empty string.
+ */
 export const DescriptionDef = new t.Type<string, string | undefined, unknown>(
     'TokenOptionDescription',
     (v): v is string => typeof v == 'string',
@@ -22,6 +28,9 @@ export const DescriptionDef = new t.Type<string, string | undefined, unknown>(
     (v) => Base64.encode(v)
 );
 
+/**
+ * The definition of `TokenOptionMixinData`.
+ */
 export const TokenOptionMixinDataDef = t.strict({
     type: t.string,
     id: t.number,
@@ -31,13 +40,29 @@ export const TokenOptionMixinDataDef = t.strict({
     isMigrating: t.union([t.boolean, t.undefined])
 });
 
+/**
+ * The compile-time type of `TokenOptionMixinData`.
+ */
 export type TokenOptionMixinData = t.TypeOf<typeof TokenOptionMixinDataDef>;
 
+/**
+ * The compile-time type of encoded form of `TokenOptionMixinData`.
+ */
+export type RawTokenOptionMixinData = t.OutputOf<typeof TokenOptionMixinDataDef>;
+
+/**
+ * The interface of `TokenOption`.
+ */
 export interface ITokenOption extends TokenOptionMixinData {
     group: TokenOptionGroup;
     get prompt(): string;
 }
 
+/**
+ * The mixin function for `TokenOption`.
+ * @param Base The base class that need to be mixined.
+ * @returns The class constructed by mixining the Base class with `TokenOption`. The class will implement `ITokenOption`.
+ */
 export function TokenOptionMixin<TBase extends Constructor>(Base: TBase) {
     return class extends Base implements ITokenOption {
         type = '';

@@ -131,6 +131,7 @@ import type { IFromData } from './mixins/from-data-mixin';
 export const TokenOptionDataDef = TokenOptionMixinDataDef;
 
 export type TokenOptionData = t.TypeOf<typeof TokenOptionDataDef>;
+export type RawTokenOptionData = t.OutputOf<typeof TokenOptionDataDef>;
 
 export class ATokenOption extends TokenOptionMixin(Object) {}
 

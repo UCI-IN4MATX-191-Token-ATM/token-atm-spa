@@ -7,6 +7,7 @@ export const ModuleMixinDataDef = t.strict({
 });
 
 export type ModuleMixinData = t.TypeOf<typeof ModuleMixinDataDef>;
+export type RawModuleMixinData = t.OutputOf<typeof ModuleMixinDataDef>;
 
 export type IModule = ModuleMixinData;
 
