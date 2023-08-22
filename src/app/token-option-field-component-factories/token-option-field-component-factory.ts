@@ -310,7 +310,7 @@ export function tokenOptionValidationWrapper<F extends FormField<any, any, any>>
                 errorMsgField.srcValue = undefined;
                 if (err != undefined) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    errorMsgField.srcValue = `Fail to construct token option data: ${(err as any).toString()}`;
+                    errorMsgField.srcValue = `Failed to construct token option data: ${(err as any).toString()}`;
                     return false;
                 }
                 const result = validator(value as ExtractDest<F>);
