@@ -32,7 +32,7 @@ export class EditConfigurationModalComponent implements OnInit {
         if (!this.container || !this.configuration) throw new Error('Fail to initialize configuration editing modal');
         const [renderer, field] = createFieldComponentWithLabel(
             StringInputFieldComponent,
-            'The suffix of Assignment Group & Module name',
+            'The suffix for the Canvas Assignment Group & Module names',
             this.environmentInjector
         )
             .appendBuilder(
