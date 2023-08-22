@@ -5,6 +5,7 @@ import { FormFieldSrcTransformer } from './form-field-src-transformer';
 import { FormFieldModifier, type FormFieldModifierConfig } from './form-field-modifier';
 import { FormFieldDestTransformer } from './form-field-dest-transformer';
 import { FormFieldVPTransformer } from './form-field-vp-transformer';
+import { FormFieldVPAppender } from './form-field-vp-appender';
 
 export type TupleAppend<A, B> = A extends unknown[] ? [...A, B] : [A, B];
 
@@ -72,6 +73,13 @@ export class FormFieldComponentBuilder<F extends FormField<any, any, any>> {
     ): FormFieldComponentBuilder<FormFieldVPTransformer<F, VP1>> {
         if (!this.field) throw new Error('No field to transform');
         return new FormFieldComponentBuilder(this._components, new FormFieldVPTransformer(this.field, VPTransformer));
+    }
+
+    public appendVP<VP1>(
+        VPTransformer: (value: F) => Promise<VP1>
+    ): FormFieldComponentBuilder<FormFieldVPAppender<F, VP1>> {
+        if (!this.field) throw new Error('No field to transform');
+        return new FormFieldComponentBuilder(this._components, new FormFieldVPAppender(this.field, VPTransformer));
     }
 
     public modify(config: FormFieldModifierConfig<F>): FormFieldComponentBuilder<FormFieldModifier<F>> {

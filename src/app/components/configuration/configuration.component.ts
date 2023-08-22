@@ -4,12 +4,13 @@ import { TokenOptionGroup } from 'app/data/token-option-group';
 import { CanvasService } from 'app/services/canvas.service';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
-import { BasicTokenOption } from 'app/token-options/basic-token-option';
-import { EarnByModuleTokenOption } from 'app/token-options/earn-by-module-token-option';
+import type { BasicTokenOptionData } from 'app/token-options/basic-token-option';
+import type { EarnByModuleTokenOptionData } from 'app/token-options/earn-by-module-token-option';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
 import { ErrorSerializer } from 'app/utils/error-serailizer';
 import { EditConfigurationModalComponent } from '../edit-configuration-modal/edit-configuration-modal.component';
+import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-option-resolver-registry';
 import { actionNeededTemplate, tokenATMContentListTemplate } from 'app/utils/string-templates';
 
 @Component({
@@ -31,6 +32,7 @@ export class ConfigurationComponent implements CourseConfigurable {
         private configurationManagerService: TokenATMConfigurationManagerService,
         @Inject(CanvasService) private canvasService: CanvasService,
         @Inject(BsModalService) private modalSerivce: BsModalService,
+        @Inject(TokenOptionResolverRegistry) private tokenOptionResolverRegistry: TokenOptionResolverRegistry,
         @Inject(ModalManagerService) private modalManagerSerivce: ModalManagerService
     ) {}
 
@@ -71,27 +73,29 @@ export class ConfigurationComponent implements CourseConfigurable {
                 []
             );
             await this.configurationManagerService.addNewTokenOptionGroup(basicGroup);
-            basicGroup.addTokenOption(
-                new BasicTokenOption(
-                    basicGroup,
-                    'basic',
-                    configuration.nextFreeTokenOptionId,
-                    'Earn 0.5 test tokens',
+            const basicTokenOption1Data: BasicTokenOptionData = {
+                type: 'basic',
+                id: configuration.nextFreeTokenOptionId,
+                name: 'Earn 0.5 test tokens',
+                description:
                     'The test tokens you obtained by requesting this token option is just for testing purpose and will not influence your real token counts',
-                    0.5,
-                    false
-                )
+                tokenBalanceChange: 0.5,
+                isMigrating: false
+            };
+            const basicTokenOption2Data: BasicTokenOptionData = {
+                type: 'basic',
+                id: configuration.nextFreeTokenOptionId,
+                name: 'Spend 1 test token',
+                description:
+                    'The test tokens you spent by requesting this token option is just for testing purpose and will not influence your real token counts',
+                tokenBalanceChange: -1,
+                isMigrating: false
+            };
+            basicGroup.addTokenOption(
+                this.tokenOptionResolverRegistry.constructTokenOption(basicGroup, basicTokenOption1Data)
             );
             basicGroup.addTokenOption(
-                new BasicTokenOption(
-                    basicGroup,
-                    'basic',
-                    configuration.nextFreeTokenOptionId,
-                    'Spend 1 test token',
-                    'The test tokens you spent by requesting this token option is just for testing purpose and will not influence your real token counts',
-                    -1,
-                    false
-                )
+                this.tokenOptionResolverRegistry.constructTokenOption(basicGroup, basicTokenOption2Data)
             );
             await this.configurationManagerService.updateTokenOptionGroup(basicGroup);
             const moduleGroup = new TokenOptionGroup(
@@ -121,20 +125,20 @@ export class ConfigurationComponent implements CourseConfigurable {
             });
             await moduleNamePromise;
             const moduleId = await this.canvasService.getModuleIdByName(this.course.id, this.moduleName as string);
+            const moduleTokenOptionData: EarnByModuleTokenOptionData = {
+                type: 'earn-by-module',
+                id: configuration.nextFreeTokenOptionId,
+                name: `Course Preparation Token`,
+                description: `To get this test token, you need to pass the Course Preparation Module with a score no less than 70% of the total score. The test token you got is just for testing purpose and will not influence your real token counts`,
+                tokenBalanceChange: 1,
+                isMigrating: false,
+                moduleName: this.moduleName as string,
+                moduleId,
+                startTime: new Date(),
+                gradeThreshold: 0.7
+            };
             moduleGroup.addTokenOption(
-                new EarnByModuleTokenOption(
-                    moduleGroup,
-                    'earn-by-module',
-                    configuration.nextFreeTokenOptionId,
-                    `Course Preparation Token`,
-                    `To get this test token, you need to pass the Course Preparation Module with a score no less than 70% of the total score. The test token you got is just for testing purpose and will not influence your real token counts`,
-                    1,
-                    false,
-                    this.moduleName as string,
-                    moduleId,
-                    new Date(),
-                    0.7
-                )
+                this.tokenOptionResolverRegistry.constructTokenOption(moduleGroup, moduleTokenOptionData)
             );
             await this.configurationManagerService.updateTokenOptionGroup(moduleGroup);
             this.isProcessing = false;
