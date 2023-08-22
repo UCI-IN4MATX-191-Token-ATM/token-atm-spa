@@ -61,6 +61,7 @@ import {
 } from './token-option-field-component-factories/token-option-field-component-factory-registry';
 import { CreateTokenOptionModalComponent } from './components/create-token-option-modal/create-token-option-modal.component';
 import { MultipleSectionDateFieldComponent } from './components/form-fields/multiple-section-date-field/multiple-section-date-field.component';
+import { ErrorMessageFieldComponent } from './components/form-fields/error-message-field/error-message-field.component';
 
 @NgModule({
     declarations: [
@@ -96,7 +97,8 @@ import { MultipleSectionDateFieldComponent } from './components/form-fields/mult
         ListFieldItemWrapperComponent,
         ListFieldComponent,
         CreateTokenOptionModalComponent,
-        MultipleSectionDateFieldComponent
+        MultipleSectionDateFieldComponent,
+        ErrorMessageFieldComponent
     ],
     imports: [
         BrowserModule,

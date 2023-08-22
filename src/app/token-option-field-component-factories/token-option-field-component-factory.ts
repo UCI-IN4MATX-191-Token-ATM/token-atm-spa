@@ -1,5 +1,6 @@
-import { createComponent, Type, type EnvironmentInjector, type ViewContainerRef } from '@angular/core';
+import { createComponent, Type, EnvironmentInjector, type ViewContainerRef } from '@angular/core';
 import { DateTimeFieldComponent } from 'app/components/form-fields/date-time-field/date-time-field.component';
+import { ErrorMessageFieldComponent } from 'app/components/form-fields/error-message-field/error-message-field.component';
 import { MultipleSectionDateFieldComponent } from 'app/components/form-fields/multiple-section-date-field/multiple-section-date-field.component';
 import { NumberInputFieldComponent } from 'app/components/form-fields/number-input-field/number-input-field.component';
 import { StringInputFieldComponent } from 'app/components/form-fields/string-input-field/string-input-field.component';
@@ -7,22 +8,21 @@ import { StringTextareaFieldComponent } from 'app/components/form-fields/string-
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import type { CanvasService } from 'app/services/canvas.service';
-import type { TokenOption } from 'app/token-options/token-option';
-import type { FormField } from 'app/utils/form-field/form-field';
+import type { ExtractDataType, TokenOption, TokenOptionData } from 'app/token-options/token-option';
+import type { ExtractDest, ExtractSrc, FormField } from 'app/utils/form-field/form-field';
 import type { FormFieldAppender } from 'app/utils/form-field/form-field-appender';
-import { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
+import { FormFieldComponentBuilder, TupleAppend } from 'app/utils/form-field/form-field-component-builder';
 import { StaticFormField } from 'app/utils/form-field/static-form-field';
 import { compareDesc, set } from 'date-fns';
 
-export abstract class TokenOptionFieldComponentFactory<T extends TokenOption> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export abstract class TokenOptionFieldComponentFactory<T extends TokenOption<any>> {
     public abstract create(
         environmentInjector: EnvironmentInjector
     ): // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [(viewContainerRef: ViewContainerRef) => void, FormField<T | TokenOptionGroup, T, any>];
+    [(viewContainerRef: ViewContainerRef) => void, FormField<T | TokenOptionGroup, ExtractDataType<T>, any>];
     public abstract get type(): string;
 }
-
-export type TOKEN_OPTION_FIELDS = [number, string, string, number];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createFieldComponentWithLabel<T extends FormField<any, any, any>>(
@@ -227,34 +227,106 @@ export function createGradeThresholdComponentBuilder(
 
 export function tokenOptionFieldComponentBuilder(
     environmentInjector: EnvironmentInjector
-): FormFieldComponentBuilder<FormField<TokenOption | TokenOptionGroup, TOKEN_OPTION_FIELDS, TOKEN_OPTION_FIELDS>> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): FormFieldComponentBuilder<FormField<TokenOption | TokenOptionGroup, TokenOptionData, any>> {
     const builder = createIdFieldComponentBuilder(environmentInjector);
-    const nameFieldComp = createComponent(StringInputFieldComponent, {
-            environmentInjector: environmentInjector
-        }),
-        descriptionFieldComp = createComponent(StringTextareaFieldComponent, {
+    const descriptionFieldComp = createComponent(StringTextareaFieldComponent, {
             environmentInjector: environmentInjector
         }),
         tokenBalanceChangeFieldComp = createComponent(NumberInputFieldComponent, {
             environmentInjector: environmentInjector
         });
-    nameFieldComp.instance.label = 'Name';
-    nameFieldComp.instance.validator = async ([field, value]: [StringInputFieldComponent, string]) => {
-        field.errorMessage = value.length == 0 ? 'Token option name cannot be empty' : undefined;
-        return value.length != 0;
-    };
+    const nameFieldCompBuilder = createFieldComponentWithLabel(StringInputFieldComponent, 'Name', environmentInjector)
+        .appendField(new StaticFormField<[TokenOptionGroup, TokenOption | undefined]>())
+        .editField((field) => {
+            field.validator = async (value: typeof field) => {
+                value.fieldA.errorMessage = undefined;
+                const result = await value.destValue;
+                if (result[0].length == 0) {
+                    value.fieldA.errorMessage = 'Token option name cannot be empty';
+                    return false;
+                }
+                const [group, cur] = result[1];
+                for (const tokenOption of group.tokenOptions) {
+                    if (cur == tokenOption) continue;
+                    if (tokenOption.name == result[0]) {
+                        value.fieldA.errorMessage =
+                            'Cannot have two token options with the same name in a token option group';
+                        return false;
+                    }
+                }
+                return true;
+            };
+        })
+        .transformDest(async ([description]) => description);
     descriptionFieldComp.instance.label = 'Description';
     tokenBalanceChangeFieldComp.instance.label = 'Token Balance Change';
     return builder
-        .appendComp(nameFieldComp)
+        .appendBuilder(nameFieldCompBuilder)
         .appendComp(descriptionFieldComp)
         .appendComp(tokenBalanceChangeFieldComp)
         .transformSrc((value: TokenOption | TokenOptionGroup) => {
             if (value instanceof TokenOptionGroup) {
-                return [value.configuration.nextFreeTokenOptionId, '', '', 0];
+                return [value.configuration.nextFreeTokenOptionId, ['', [value, undefined]], '', 0];
             } else {
-                return [value.id, value.name, value.description, value.tokenBalanceChange];
+                return [value.id, [value.name, [value.group, value]], value.description, value.tokenBalanceChange];
             }
         })
-        .transformVP((field) => field.destValue);
+        .transformDest(async ([id, name, description, tokenBalanceChange]) => {
+            return {
+                type: 'invalid',
+                id,
+                name,
+                description,
+                tokenBalanceChange,
+                isMigrating: false
+            };
+        });
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function tokenOptionValidationWrapper<F extends FormField<any, any, any>>(
+    environmentInjector: EnvironmentInjector,
+    builder: FormFieldComponentBuilder<F>,
+    validator: (value: ExtractDest<F>) => boolean,
+    errorMsg = 'Invalid token option data: check error message under each field for details'
+) {
+    return builder
+        .appendComp(createComponent(ErrorMessageFieldComponent, { environmentInjector: environmentInjector }))
+        .appendVP(async (field) => {
+            try {
+                const destValue = (await field.destValue)[0];
+                return [field.fieldB, destValue, undefined] as [ErrorMessageFieldComponent, ExtractDest<F>, undefined];
+            } catch (err: unknown) {
+                return [field.fieldB, undefined, err] as [ErrorMessageFieldComponent, undefined, unknown];
+            }
+        })
+        .editField((field) => {
+            field.validator = async ([errorMsgField, value, err]: [
+                ErrorMessageFieldComponent,
+                ExtractDest<F> | undefined,
+                unknown | undefined
+            ]) => {
+                errorMsgField.srcValue = undefined;
+                if (err != undefined) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    errorMsgField.srcValue = `Fail to construct token option data: ${(err as any).toString()}`;
+                    return false;
+                }
+                const result = validator(value as ExtractDest<F>);
+                if (!result) errorMsgField.srcValue = errorMsg;
+                return result;
+            };
+        })
+        .transformSrc((key: ExtractSrc<F>) => {
+            if (Array.isArray(key)) {
+                return [...key, undefined] as TupleAppend<ExtractSrc<F>, undefined>;
+            } else {
+                return [key, undefined] as TupleAppend<ExtractSrc<F>, undefined>;
+            }
+        })
+        .transformDest(async (value) => {
+            if (value.length == 2) return value[0] as ExtractDest<F>;
+            return value.slice(0, value.length - 1) as ExtractDest<F>;
+        });
 }

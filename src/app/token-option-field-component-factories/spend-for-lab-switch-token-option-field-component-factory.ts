@@ -1,13 +1,17 @@
 import {
     TokenOptionFieldComponentFactory,
     createExcludeTokenOptionsComponentBuilder,
-    tokenOptionFieldComponentBuilder
+    tokenOptionFieldComponentBuilder,
+    tokenOptionValidationWrapper
 } from './token-option-field-component-factory';
 import { Injectable, type EnvironmentInjector, type ViewContainerRef } from '@angular/core';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import type { FormField } from 'app/utils/form-field/form-field';
-import { StaticFormField } from 'app/utils/form-field/static-form-field';
-import { SpendForLabSwitchTokenOption } from 'app/token-options/spend-for-lab-switch-token-option';
+import {
+    SpendForLabSwitchTokenOption,
+    SpendForLabSwitchTokenOptionData,
+    SpendForLabSwitchTokenOptionDataDef
+} from 'app/token-options/spend-for-lab-switch-token-option';
 
 @Injectable()
 export class SpendForLabSwitchTokenOptionFieldComponentFactory extends TokenOptionFieldComponentFactory<SpendForLabSwitchTokenOption> {
@@ -15,42 +19,31 @@ export class SpendForLabSwitchTokenOptionFieldComponentFactory extends TokenOpti
         (viewContainerRef: ViewContainerRef) => void,
         FormField<
             SpendForLabSwitchTokenOption | TokenOptionGroup,
-            SpendForLabSwitchTokenOption,
+            SpendForLabSwitchTokenOptionData,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             any
         >
     ] {
-        return tokenOptionFieldComponentBuilder(environmentInjector)
-            .appendBuilder(createExcludeTokenOptionsComponentBuilder(environmentInjector))
-            .appendField(new StaticFormField<SpendForLabSwitchTokenOption | TokenOptionGroup>())
-            .transformSrc((value: SpendForLabSwitchTokenOption | TokenOptionGroup) => {
-                if (value instanceof TokenOptionGroup) {
-                    return [value, ['', value.configuration], value];
-                } else {
-                    return [value, [value.excludeTokenOptionIds.join(','), value.group.configuration], value];
-                }
-            })
-            .transformDest(async ([id, name, description, tokenBalanceChange, excludeTokenOptionIds, value]) => {
-                if (value instanceof TokenOptionGroup) {
-                    return new SpendForLabSwitchTokenOption(
-                        value,
-                        'spend-for-lab-switch',
-                        id,
-                        name,
-                        description,
-                        tokenBalanceChange,
-                        false,
+        return tokenOptionValidationWrapper(
+            environmentInjector,
+            tokenOptionFieldComponentBuilder(environmentInjector)
+                .appendBuilder(createExcludeTokenOptionsComponentBuilder(environmentInjector))
+                .transformSrc((value: SpendForLabSwitchTokenOption | TokenOptionGroup) => {
+                    if (value instanceof TokenOptionGroup) {
+                        return [value, ['', value.configuration]];
+                    } else {
+                        return [value, [value.excludeTokenOptionIds.join(','), value.group.configuration]];
+                    }
+                })
+                .transformDest(async ([tokenOptionData, excludeTokenOptionIds]) => {
+                    return {
+                        ...tokenOptionData,
+                        type: 'spend-for-lab-switch',
                         excludeTokenOptionIds
-                    );
-                } else {
-                    value.name = name;
-                    value.description = description;
-                    value.tokenBalanceChange = tokenBalanceChange;
-                    value.excludeTokenOptionIds = excludeTokenOptionIds;
-                    return value;
-                }
-            })
-            .build();
+                    };
+                }),
+            SpendForLabSwitchTokenOptionDataDef.is
+        ).build();
     }
     public override get type(): string {
         return 'spend-for-lab-switch';

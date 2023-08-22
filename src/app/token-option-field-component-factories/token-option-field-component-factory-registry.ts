@@ -67,7 +67,7 @@ export class TokenOptionFieldComponentFactoryRegistry {
         type: string,
         environmentInjector: EnvironmentInjector
     ): // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    | [(viewContainerRef: ViewContainerRef) => void, FormField<TokenOption | TokenOptionGroup, TokenOption, any>]
+    | [(viewContainerRef: ViewContainerRef) => void, FormField<TokenOption | TokenOptionGroup, unknown, any>]
         | undefined {
         const factory = this.getTokenOptionFieldComponentFactory(type);
         if (!factory) return undefined;

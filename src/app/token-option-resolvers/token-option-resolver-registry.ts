@@ -1,40 +1,53 @@
 import { Inject, Injectable, InjectionToken, Optional, Type } from '@angular/core';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import type { TokenOption } from 'app/token-options/token-option';
-import { BasicTokenOptionResolver } from './basic-token-option-resolver';
-import { EarnByModuleTokenOptionResolver } from './earn-by-module-token-option-resolver';
-import { EarnByQuizTokenOptionResolver } from './earn-by-quiz-token-option-resolver';
-import { EarnBySurveyTokenOptionResolver } from './earn-by-survey-token-option-resolver';
-import { SpendForAssignmentResubmissionTokenOptionResolver } from './spend-for-assignment-resubmission-token-option-resolver';
-import { SpendForLabDataTokenOptionResolver } from './spend-for-lab-data-token-option-resolver';
-import { SpendForLabSwitchTokenOptionResolver } from './spend-for-lab-switch-token-option-resolver';
+import type { Constructor } from 'app/utils/mixin-helper';
+import { BasicTokenOption } from 'app/token-options/basic-token-option';
+import { EarnByQuizTokenOption } from 'app/token-options/earn-by-quiz-token-option';
+import { EarnByModuleTokenOption } from 'app/token-options/earn-by-module-token-option';
+import { EarnBySurveyTokenOption } from 'app/token-options/earn-by-survey-token-option';
+import { SpendForLabDataTokenOption } from 'app/token-options/spend-for-lab-data-token-option';
+import { SpendForAssignmentResubmissionTokenOption } from 'app/token-options/spend-for-assignment-resubmission-token-option';
+import { SpendForLabSwitchTokenOption } from 'app/token-options/spend-for-lab-switch-token-option';
+import { WithdrawAssignmentResubmissionTokenOption } from 'app/token-options/withdraw-assignment-resubmission-token-option';
+import { WithdrawLabDataTokenOption } from 'app/token-options/withdraw-lab-data-token-option';
+import { WithdrawLabSwitchTokenOption } from 'app/token-options/withdraw-lab-switch-token-option';
 import type { TokenOptionResolver } from './token-option-resolver';
-import { WithdrawAssignmentResubmissionTokenOptionResolver } from './withdraw-assignment-resubmission-token-option-resolver';
-import { WithdrawLabDataTokenOptionResolver } from './withdraw-lab-data-token-option-resolver';
-import { WithdrawLabSwitchTokenOptionResolver } from './withdraw-lab-switch-token-option-resolver';
+import camelcaseKeys from 'camelcase-keys';
 
-export const REGISTERED_TOKEN_OPTION_RESOLVERS: Type<TokenOptionResolver<TokenOption>>[] = [
-    BasicTokenOptionResolver,
-    EarnByModuleTokenOptionResolver,
-    EarnByQuizTokenOptionResolver,
-    SpendForAssignmentResubmissionTokenOptionResolver,
-    SpendForLabDataTokenOptionResolver,
-    EarnBySurveyTokenOptionResolver,
-    WithdrawAssignmentResubmissionTokenOptionResolver,
-    WithdrawLabDataTokenOptionResolver,
-    SpendForLabSwitchTokenOptionResolver,
-    WithdrawLabSwitchTokenOptionResolver
-];
+export const REGISTERED_TOKEN_OPTION_RESOLVERS: Type<TokenOptionResolver<TokenOption>>[] = [];
 
 export const TOKEN_OPTION_RESOLVER_INJECTION_TOKEN = new InjectionToken<TokenOptionResolver<TokenOption>[]>(
     'TOKEN_OPTION_RESOLVERS'
 );
+
+export const DEFAULT_TOKEN_OPTION_RESOLVERS: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: Constructor<TokenOption>;
+} = {
+    basic: BasicTokenOption,
+    'earn-by-quiz': EarnByQuizTokenOption,
+    'earn-by-module': EarnByModuleTokenOption,
+    'earn-by-survey': EarnBySurveyTokenOption,
+    'spend-for-assignment-resubmission': SpendForAssignmentResubmissionTokenOption,
+    'spend-for-lab-data': SpendForLabDataTokenOption,
+    'spend-for-lab-switch': SpendForLabSwitchTokenOption,
+    'withdraw-assignment-resubmission': WithdrawAssignmentResubmissionTokenOption,
+    'withdraw-lab-data': WithdrawLabDataTokenOption,
+    'withdraw-lab-switch': WithdrawLabSwitchTokenOption
+};
+
+interface ITokenOptionType {
+    type: string;
+}
 
 @Injectable({
     providedIn: 'root'
 })
 export class TokenOptionResolverRegistry {
     private _tokenOptionResolversMap = new Map<string, TokenOptionResolver<TokenOption>>();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private _defaultTokenOptionResolversMap: Map<string, Constructor<TokenOption>>;
 
     constructor(
         @Optional()
@@ -45,6 +58,7 @@ export class TokenOptionResolverRegistry {
             tokenOptionResolvers.forEach((resolver) => {
                 this._tokenOptionResolversMap.set(resolver.type, resolver);
             });
+        this._defaultTokenOptionResolversMap = new Map(Object.entries(DEFAULT_TOKEN_OPTION_RESOLVERS));
     }
 
     private getTokenOptionResolver(type: string): TokenOptionResolver<TokenOption> {
@@ -53,9 +67,31 @@ export class TokenOptionResolverRegistry {
         return result;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public resolveTokenOption(group: TokenOptionGroup, data: any): TokenOption {
-        if (typeof data['type'] != 'string') throw new Error('Invalid data');
-        return this.getTokenOptionResolver(data['type']).resolve(group, data);
+    public resolveTokenOption(group: TokenOptionGroup, data: unknown): TokenOption {
+        const type = (data as ITokenOptionType).type;
+        if (typeof type != 'string') throw new Error('Invalid data');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data = camelcaseKeys(data as any, { deep: true });
+        if (this._defaultTokenOptionResolversMap.has(type)) {
+            const classDef = this._defaultTokenOptionResolversMap.get(type);
+            if (!classDef) throw new Error('Invalid Map');
+            const result = new classDef().fromRawData(data);
+            result.group = group;
+            return result;
+        }
+        return this.getTokenOptionResolver((data as ITokenOptionType).type).resolve(group, data);
+    }
+
+    public constructTokenOption(group: TokenOptionGroup, data: unknown, isValidated = false): TokenOption {
+        const type = (data as ITokenOptionType).type;
+        if (typeof type != 'string') throw new Error('Invalid data');
+        if (this._defaultTokenOptionResolversMap.has(type)) {
+            const classDef = this._defaultTokenOptionResolversMap.get(type);
+            if (!classDef) throw new Error('Invalid Map');
+            const result = new classDef().fromData(data, isValidated);
+            result.group = group;
+            return result;
+        }
+        return this.getTokenOptionResolver((data as ITokenOptionType).type).construct(group, data);
     }
 }
