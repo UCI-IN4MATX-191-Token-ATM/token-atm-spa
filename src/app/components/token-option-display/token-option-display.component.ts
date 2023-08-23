@@ -77,7 +77,9 @@ export class TokenOptionDisplayComponent {
         const updateResult = await this.configurationManagerService.updateTokenOptionGroup(group);
         if (!updateResult)
             await this.modalManagerService.createNotificationModal(
-                'Auto update failed. \nSome students have already taken the Canvas quiz that corresponds to the token option group that this token option belongs to. \nPlease click the "Save It Now" button in the quiz management page on Canvas to manually update.'
+                // TODO: Should this use the action needed heading?
+                // TODO: Add direct link to the Quiz needing "Save It Now"
+                'Auto update failed. \nSome students have already taken the Canvas quiz that corresponds to the token option group that this token option belongs to. \n\nPlease click the "Save It Now" button in the quiz management page on Canvas to manually update.'
             );
         confirmationRef.hide();
     }

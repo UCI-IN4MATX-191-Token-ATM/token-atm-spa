@@ -54,7 +54,7 @@ export class MultipleSectionDateFieldComponent
 
     ngOnInit(): void {
         if (!this.dateFieldBuilderFactory || !this.defaultDateContainerRef || !this.listFieldComponent)
-            throw new Error('Fail to initialize MultipleSectionDateFieldComponent');
+            throw new Error('Failed to initialize MultipleSectionDateFieldComponent');
         const [renderer, field] = this.dateFieldBuilderFactory().build();
         renderer(this.defaultDateContainerRef);
         this._defaultDateField = field;
@@ -73,10 +73,10 @@ export class MultipleSectionDateFieldComponent
         const [courseId, value] = srcValue;
         this.listFieldComponent.fieldFactory = () => {
             if (!this.dateFieldBuilderFactory)
-                throw new Error('Fail to initialize list item for MultipleSectionDateFieldComponent');
+                throw new Error('Failed to initialize list item for MultipleSectionDateFieldComponent');
             return createFieldComponentWithLabel(
                 StringInputFieldComponent,
-                'Section Names (separated by comma)',
+                'Section Names (separated by commas)',
                 this.environmentInjector
             )
                 .appendField(new StaticFormField<string>())

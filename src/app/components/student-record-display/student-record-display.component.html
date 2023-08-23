@@ -19,8 +19,7 @@
                                     </li>
                                     <li class="list-group-item">
                                         <!-- TODO: Update to use Angular Pipe for pluralize utility -->
-                                        Current Token Balance: {{ studentRecord.tokenBalance }}
-                                        {{ studentRecord.tokenBalance === 1 ? 'token' : 'tokens' }}
+                                        Current Balance: {{ balanceString(studentRecord.tokenBalance) }}
                                     </li>
                                 </ul>
                             </div>

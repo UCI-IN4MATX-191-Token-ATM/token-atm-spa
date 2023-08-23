@@ -63,7 +63,7 @@ export function createExcludeTokenOptionsComponentBuilder(
 > {
     return createFieldComponentWithLabel(
         StringInputFieldComponent,
-        "Mutually Exclusive Token Options' IDs (separated by comma)",
+        "Mutually Exclusive Token Options' IDs (separated by commas)",
         environmentInjector
     )
         .appendField(new StaticFormField<TokenATMConfiguration>())
