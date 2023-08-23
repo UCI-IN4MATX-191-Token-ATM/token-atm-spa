@@ -5,9 +5,9 @@
             <br />
             <span class="fs-6 fw-light text-secondary"
                 >{{ descriptiveName }} <span class="bi bi-dot"></span>
+                <!-- TODO: Use an Angular Pipe for pluralize utility -->
                 {{
                     (option.tokenBalanceChange > 0 ? 'Earn ' : 'Spend ') +
-                        // TODO: Use an Angular Pipe for pluralize utility
                         getAbsValue(option.tokenBalanceChange).toString() +
                         ' token' +
                         (getAbsValue(option.tokenBalanceChange) === 1 ? '' : 's')
