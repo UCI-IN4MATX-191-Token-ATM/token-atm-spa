@@ -27,7 +27,7 @@ export class CreateConfigurationModalComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        if (!this.course || !this.container) throw new Error('Fail to initialize create configuration modal');
+        if (!this.course || !this.container) throw new Error('Failed to initialize create configuration modal'); // TODO: Double check phrasing
         // TODO: Add Preview for what the entire name string looks like, including Prefix and Suffix
         const [renderer, field] = createFieldComponentWithLabel(
             StringInputFieldComponent,

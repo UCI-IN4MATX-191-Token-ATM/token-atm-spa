@@ -59,9 +59,11 @@ export class MoveTokenOptionModalComponent {
                 .map((value) => value?.name ?? '');
             const numTokenOptionGroupsString = countAndNoun(possibleResultErrors.length, 'token option group');
             await this.modalManagerService.createNotificationModal(
+                // TODO: Does this need an Action Required Header?
+                // TODO: Add direct link to the Quiz needing "Save It Now"
                 `Auto update failed for ${numTokenOptionGroupsString}: ${possibleResultErrors.join(
                     ', '
-                )}. Please go to Canvas and click the "Save It Now" button in the quiz management page of the quiz or quizzes that the ${numTokenOptionGroupsString} mentioned above belong to.`
+                )}. \n\nPlease go to Canvas and click the "Save It Now" button in the quiz management page of the quiz or quizzes that the ${numTokenOptionGroupsString} mentioned above belong to.`
             );
         }
         this.modalRef?.hide();

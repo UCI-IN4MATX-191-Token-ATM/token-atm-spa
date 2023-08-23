@@ -115,7 +115,7 @@ export class StudentRecordDisplayComponent {
                     nowTime,
                     nowTime,
                     result.tokenBalanceChange,
-                    'This request is made by instructors on your behalf.'
+                    'This request was made by an instructor on your behalf.'
                 )
             );
         }

@@ -29,7 +29,7 @@ export class EditConfigurationModalComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        if (!this.container || !this.configuration) throw new Error('Fail to initialize configuration editing modal');
+        if (!this.container || !this.configuration) throw new Error('Failed to initialize configuration editing modal'); // TODO: Double check phrasing
         const [renderer, field] = createFieldComponentWithLabel(
             StringInputFieldComponent,
             'The suffix for the Canvas Assignment Group & Module names',

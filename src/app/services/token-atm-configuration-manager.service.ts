@@ -20,7 +20,7 @@ import { generateRandomString } from 'app/utils/random-string-generator';
 })
 export class TokenATMConfigurationManagerService {
     private static TOKEN_ATM_CONFIGURATION_PAGE_NAME = 'Token ATM Configuration';
-    private static TOKEN_ATM_SECURE_CONFIGURATION_PAGE_NAME = 'Token ATM Encryption Key (PLEASE DO NOT PUBLISH IT)';
+    private static TOKEN_ATM_SECURE_CONFIGURATION_PAGE_NAME = 'Token ATM Encryption Key (PLEASE DO NOT PUBLISH IT)'; // TODO: Remove 'IT', and maybe 'PLEASE'
     private static TOKEN_ATM_ASSIGNMENT_GROUP_PREFIX = 'Token ATM';
     private static TOKEN_ATM_MODULE_PREFIX = 'Token ATM';
     private static TOKEN_ATM_QUIZ_PREFIX = 'Token ATM Request Submission - ';
