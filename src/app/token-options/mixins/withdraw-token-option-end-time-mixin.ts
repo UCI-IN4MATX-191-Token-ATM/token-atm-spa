@@ -12,7 +12,7 @@ export function WithdrawTokenOptionEndTimeMixin<
 >(Base: TBase) {
     return class extends Base implements IWithdrawTokenOptionEndTime {
         public set endTime(_: Date | undefined) {
-            throw new Error('Cannot set End Time for Withdraw Token Option');
+            throw new Error('Cannot set Available Until Date/Time for Withdraw Token Option');
         }
 
         public get endTime(): Date | undefined {

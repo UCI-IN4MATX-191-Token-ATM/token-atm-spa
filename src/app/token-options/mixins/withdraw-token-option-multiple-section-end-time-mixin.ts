@@ -13,7 +13,7 @@ export function WithdrawTokenOptionMultipleSectionEndTimeMixin<
 >(Base: TBase) {
     return class extends Base implements IWithdrawTokenOptionMultipleSectionEndTime {
         public set endTime(_: Date | MultipleSectionDateMatcher | undefined) {
-            throw new Error('Cannot set End Time for Withdraw Token Option');
+            throw new Error('Cannot set Until Date/Time for Withdraw Token Option');
         }
 
         public get endTime(): Date | MultipleSectionDateMatcher | undefined {

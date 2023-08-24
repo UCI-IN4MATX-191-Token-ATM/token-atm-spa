@@ -28,10 +28,14 @@ export class EarnBySurveyTokenOptionFieldComponentFactory extends TokenOptionFie
             environmentInjector,
             tokenOptionFieldComponentBuilder(environmentInjector)
                 .appendBuilder(
-                    createFieldComponentWithLabel(StringInputFieldComponent, 'Survey ID', environmentInjector)
+                    createFieldComponentWithLabel(StringInputFieldComponent, 'Qualtrics Survey ID', environmentInjector)
                 )
                 .appendBuilder(
-                    createFieldComponentWithLabel(StringInputFieldComponent, 'Survey Field Name', environmentInjector)
+                    createFieldComponentWithLabel(
+                        StringInputFieldComponent,
+                        'Survey Field Name for Student Email', // TODO: Update Label
+                        environmentInjector
+                    )
                 )
                 .appendBuilder(createStartTimeComponentBuilder(environmentInjector))
                 .appendBuilder(createEndTimeComponentBuilder(environmentInjector))

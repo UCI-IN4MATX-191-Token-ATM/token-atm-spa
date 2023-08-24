@@ -9,7 +9,7 @@ type HasNewDueTime = {
 
 export class NewDueTimeTransformer extends TokenOptionInstructionTransformer<HasNewDueTime> {
     public get infoDescription(): string {
-        return 'Extend Assignment/Quiz Lock Date To';
+        return 'Extends Assignment/Quiz Until Date To';
     }
 
     public process(tokenOptions: TokenOption[]): string[] {

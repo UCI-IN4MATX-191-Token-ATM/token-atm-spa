@@ -43,7 +43,7 @@ export function createIdFieldComponentBuilder(
     const component = createComponent(NumberInputFieldComponent, {
         environmentInjector: environmentInjector
     });
-    component.instance.label = 'ID';
+    component.instance.label = 'Token Option ID';
     component.instance.isReadOnly = true;
     return new FormFieldComponentBuilder().setComp(component).modify({
         setIsReadOnly: (field) => {
@@ -63,7 +63,7 @@ export function createExcludeTokenOptionsComponentBuilder(
 > {
     return createFieldComponentWithLabel(
         StringInputFieldComponent,
-        "Mutually Exclusive Token Options' IDs (separated by commas)",
+        'Mutually Exclusive Token Options’ IDs (separated by commas)',
         environmentInjector
     )
         .appendField(new StaticFormField<TokenATMConfiguration>())
@@ -132,7 +132,7 @@ export function createQuizFieldComponentBuilder(
 ): FormFieldComponentBuilder<
     FormField<[string, string], [string, string], FormFieldAppender<StringInputFieldComponent, StaticFormField<string>>>
 > {
-    return createFieldComponentWithLabel(StringInputFieldComponent, 'Quiz Name', environmentInjector)
+    return createFieldComponentWithLabel(StringInputFieldComponent, 'Canvas Quiz Name', environmentInjector)
         .appendField(new StaticFormField<string>())
         .editField((field) => {
             field.validator = async (value: typeof field) => {
@@ -153,13 +153,21 @@ export function createQuizFieldComponentBuilder(
 export function createStartTimeComponentBuilder(
     environmentInjector: EnvironmentInjector
 ): FormFieldComponentBuilder<DateTimeFieldComponent> {
-    return createFieldComponentWithLabel(DateTimeFieldComponent, 'Start Time', environmentInjector);
+    return createFieldComponentWithLabel(
+        DateTimeFieldComponent,
+        'Token ATM Request Available From',
+        environmentInjector
+    );
 }
 
 export function createEndTimeComponentBuilder(
     environmentInjector: EnvironmentInjector
 ): FormFieldComponentBuilder<DateTimeFieldComponent> {
-    return createFieldComponentWithLabel(DateTimeFieldComponent, 'End Time', environmentInjector);
+    return createFieldComponentWithLabel(
+        DateTimeFieldComponent,
+        'Token ATM Request Available Until',
+        environmentInjector
+    );
 }
 
 export function createNewDueTimeComponentBuilder(
@@ -182,7 +190,7 @@ export function createNewDueTimeComponentBuilder(
                     milliseconds: 999
                 });
             if (compareDesc(startRange, value) != -1 && compareDesc(endRange, value) != 1) {
-                field.errorMessage = 'Canvas does not support a due date or lock date between 00:00:00 and 00:00:59';
+                field.errorMessage = 'Canvas does not support a due date or until date between 00:00:00 and 00:00:59';
                 return false;
             }
             return true;
@@ -209,7 +217,7 @@ export function createGradeThresholdComponentBuilder(
     return new FormFieldComponentBuilder()
         .setComp(createComponent(NumberInputFieldComponent, { environmentInjector: environmentInjector }))
         .editField((field) => {
-            field.label = 'Grade Threshold';
+            field.label = 'Passing Grade Threshold';
             field.validator = async ([field, value]: [NumberInputFieldComponent, number]) => {
                 field.errorMessage = undefined;
                 if (typeof value != 'number') {
@@ -236,7 +244,11 @@ export function tokenOptionFieldComponentBuilder(
         tokenBalanceChangeFieldComp = createComponent(NumberInputFieldComponent, {
             environmentInjector: environmentInjector
         });
-    const nameFieldCompBuilder = createFieldComponentWithLabel(StringInputFieldComponent, 'Name', environmentInjector)
+    const nameFieldCompBuilder = createFieldComponentWithLabel(
+        StringInputFieldComponent,
+        'Token Option Name',
+        environmentInjector
+    )
         .appendField(new StaticFormField<[TokenOptionGroup, TokenOption | undefined]>())
         .editField((field) => {
             field.validator = async (value: typeof field) => {
@@ -259,7 +271,7 @@ export function tokenOptionFieldComponentBuilder(
             };
         })
         .transformDest(async ([description]) => description);
-    descriptionFieldComp.instance.label = 'Description';
+    descriptionFieldComp.instance.label = 'Information / Directions';
     tokenBalanceChangeFieldComp.instance.label = 'Token Balance Change';
     return builder
         .appendBuilder(nameFieldCompBuilder)

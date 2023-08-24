@@ -21,6 +21,8 @@ export class MultipleSectionEndDateGuard extends RequestHandlerGuard {
                 await this.canvasService.getStudentSectionEnrollments(this.courseId, this.studentId)
             )
         );
-        if (compareDesc(this.submittedDate, matchedEndDate) == -1) onReject('Request was submitted after the end date');
+        // TODO: Update reject message (and match end-date-guard.ts)
+        if (compareDesc(this.submittedDate, matchedEndDate) == -1)
+            onReject('Request was submitted after the until date/time');
     }
 }

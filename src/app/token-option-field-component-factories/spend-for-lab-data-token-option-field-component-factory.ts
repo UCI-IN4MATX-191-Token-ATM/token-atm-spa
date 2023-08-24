@@ -40,7 +40,12 @@ export class SpendForLabDataTokenOptionFieldComponentFactory extends TokenOption
                 .appendBuilder(createQuizFieldComponentBuilder(this.canvasService, environmentInjector))
                 .appendBuilder(createStartTimeComponentBuilder(environmentInjector))
                 .appendBuilder(createEndTimeComponentBuilder(environmentInjector))
-                .appendBuilder(createNewDueTimeComponentBuilder(environmentInjector, 'New Due Time for Lab Data Quiz'))
+                .appendBuilder(
+                    createNewDueTimeComponentBuilder(
+                        environmentInjector,
+                        'New Until Date/Time for Lab Data Canvas Quiz'
+                    )
+                )
                 .appendBuilder(createExcludeTokenOptionsComponentBuilder(environmentInjector))
                 .transformSrc((value: SpendForLabDataTokenOption | TokenOptionGroup) => {
                     if (value instanceof TokenOptionGroup) {

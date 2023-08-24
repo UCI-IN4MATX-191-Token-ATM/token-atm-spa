@@ -8,7 +8,7 @@ type HasStartTime = {
 
 export class StartTimeTransformer extends TokenOptionInstructionTransformer<HasStartTime> {
     public get infoDescription(): string {
-        return 'Start At';
+        return 'Can Request From';
     }
 
     public process(tokenOptions: TokenOption[]): string[] {

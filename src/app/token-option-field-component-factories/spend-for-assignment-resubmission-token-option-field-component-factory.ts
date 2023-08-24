@@ -38,7 +38,7 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
     ] {
         const assignmentField = createFieldComponentWithLabel(
             StringInputFieldComponent,
-            'Assignment Name',
+            'Canvas Assignment Name',
             environmentInjector
         )
             .appendField(new StaticFormField<string>())
@@ -64,18 +64,22 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                 .appendBuilder(
                     createMultipleSectionDateComponentBuilder(
                         () => {
-                            return createFieldComponentWithLabel(DateTimeFieldComponent, 'Time', environmentInjector);
+                            return createFieldComponentWithLabel(
+                                DateTimeFieldComponent,
+                                'Date/Time',
+                                environmentInjector
+                            );
                         },
-                        'End Time',
+                        'Token ATM Request Available Until',
                         environmentInjector
                     )
                 )
                 .appendBuilder(
                     createMultipleSectionDateComponentBuilder(
                         () => {
-                            return createNewDueTimeComponentBuilder(environmentInjector, 'Time');
+                            return createNewDueTimeComponentBuilder(environmentInjector, 'Date/Time');
                         },
-                        'New Due Time for Assignment',
+                        'New Until Date/Time for Canvas Assignment',
                         environmentInjector
                     )
                 )

@@ -12,7 +12,7 @@ export function WithdrawTokenOptionStartTimeMixin<
 >(Base: TBase) {
     return class extends Base implements IWithdrawTokenOptionStartTime {
         public set startTime(_: Date | undefined) {
-            throw new Error('Cannot set Start Time for Withdraw Token Option');
+            throw new Error('Cannot set Available From Date/Time for Withdraw Token Option');
         }
 
         public get startTime(): Date | undefined {
