@@ -114,6 +114,7 @@ export class CredentialManagerService {
 
     public async updateEntry(key: string, value: string): Promise<void> {
         if (!this.isStorageInitialized || !this.#publicKey) throw new Error('Secure storage is not initialized!');
+        if (value == this.#storage.get(key)) return;
         this.#storage.set(key, value);
         this.#hasUpdate = true;
         if (this.#isStoring) return;
@@ -144,5 +145,8 @@ export class CredentialManagerService {
         localStorage.removeItem('salt');
         localStorage.removeItem('iv');
         localStorage.removeItem('data');
+        localStorage.removeItem('storage_key_pub');
+        localStorage.removeItem('storage_key_priv');
+        localStorage.removeItem('storage_data');
     }
 }
