@@ -70,7 +70,7 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                                 environmentInjector
                             );
                         },
-                        'Token ATM Request Available Until',
+                        'Students Can Request Until',
                         environmentInjector
                     )
                 )

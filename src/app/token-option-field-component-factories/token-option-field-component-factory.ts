@@ -153,21 +153,13 @@ export function createQuizFieldComponentBuilder(
 export function createStartTimeComponentBuilder(
     environmentInjector: EnvironmentInjector
 ): FormFieldComponentBuilder<DateTimeFieldComponent> {
-    return createFieldComponentWithLabel(
-        DateTimeFieldComponent,
-        'Token ATM Request Available From',
-        environmentInjector
-    );
+    return createFieldComponentWithLabel(DateTimeFieldComponent, 'Students Can Request From', environmentInjector);
 }
 
 export function createEndTimeComponentBuilder(
     environmentInjector: EnvironmentInjector
 ): FormFieldComponentBuilder<DateTimeFieldComponent> {
-    return createFieldComponentWithLabel(
-        DateTimeFieldComponent,
-        'Token ATM Request Available Until',
-        environmentInjector
-    );
+    return createFieldComponentWithLabel(DateTimeFieldComponent, 'Students Can Request Until', environmentInjector);
 }
 
 export function createNewDueTimeComponentBuilder(
