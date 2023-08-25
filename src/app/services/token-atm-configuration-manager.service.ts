@@ -119,7 +119,7 @@ export class TokenATMConfigurationManagerService {
             tokenOptionGroup.description
         );
         const question = new MultipleChoiceQuestion(
-            'Choose a token option',
+            'Make a Request',
             new HTMLTableGenerator([
                 new NameTransformer(),
                 new StartTimeTransformer(),

@@ -33,7 +33,7 @@ export class EarnBySurveyTokenOptionFieldComponentFactory extends TokenOptionFie
                 .appendBuilder(
                     createFieldComponentWithLabel(
                         StringInputFieldComponent,
-                        'Survey Field Name for Student Email', // TODO: Update Label
+                        'Survey Field Name for Respondent’s Email (from SSO)',
                         environmentInjector
                     )
                 )
