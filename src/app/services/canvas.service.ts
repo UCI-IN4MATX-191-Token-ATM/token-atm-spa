@@ -1104,10 +1104,10 @@ export class CanvasService {
             if (result == undefined) {
                 result = quiz.id;
             } else {
-                throw new Error('Multiple quizzes found');
+                throw new Error('Multiple Canvas quizzes found');
             }
         }
-        if (!result) throw new Error('Quiz not found');
+        if (!result) throw new Error('Canvas Quiz not found');
         return result;
     }
 
@@ -1128,10 +1128,10 @@ export class CanvasService {
             if (result == undefined) {
                 result = assignment.id;
             } else {
-                throw new Error('Multiple assignments found');
+                throw new Error('Multiple Canvas assignments found');
             }
         }
-        if (!result) throw new Error('Assignment not found');
+        if (!result) throw new Error('Canvas assignment not found');
         return result;
     }
 
