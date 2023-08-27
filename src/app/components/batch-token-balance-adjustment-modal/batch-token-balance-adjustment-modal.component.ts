@@ -22,7 +22,9 @@ export class BatchTokenBalanceAdjustmentModalComponent {
     progress?: string;
     progressMessage?: string;
 
-    errorCollection?: string[][];
+    errorCollection: string[][] = new Array<string[]>();
+    errorsCSVFile?: File;
+    errorsCSVURL?: string;
 
     constructor(
         @Inject(StudentRecordManagerService) private managerService: StudentRecordManagerService,
@@ -32,19 +34,19 @@ export class BatchTokenBalanceAdjustmentModalComponent {
     onSelectFile(event: Event) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.selectedFile = (event.target as any)?.files[0];
+        this.clearErrors();
+        this.clearProgress();
     }
 
     // TODO: - Selectable Columns
     //       - Header Parsing
     //       - Parsing from & Unparsing to Excel formatted CSVs (https://www.papaparse.com/faq#encoding)
-    //       - Downloadable CSV blob for rows with Token ATM Errors
-    //          - Use file `.name` and append error label + time
-    //          - Use file `.path` for suggested download directory
     //       - Expose Parser Errors & Meta info (`results.errors` & `results.meta`)
     //          - Allow dry-run functionality to test CSV without updating Token ATM
     //       - Make/Use a type for parsed row data (string[] or JSON[])
     //       - Update parser to use a stream to parse row by row
     //       - Only preserve columns needed by Token ATM in Error CSV
+    //       - Use `URL.revokeObjectURL()` on Error CSV URL when modal event onHidden
 
     async onImportCSV() {
         if (!this.selectedFile || !this.configuration) return;
@@ -60,15 +62,17 @@ export class BatchTokenBalanceAdjustmentModalComponent {
         });
         const result = await promise;
         let cnt = 0;
-        this.errorCollection = new Array<string[]>();
+        this.clearErrors();
         for (const data of result) {
             cnt++;
-            this.progress = (((cnt - 1) / result.length) * 100).toFixed(2);
-            this.progressMessage = `${cnt - 1} out of ${countAndNoun(result.length, 'record')} processed`;
+            this.updateProgress(cnt - 1, result.length);
             try {
-                if (!Array.isArray(data) || (data.length != 2 && data.length != 3)) {
+                if (Array.isArray(data)) {
                     if (data.length === 1 && data[0]?.trim() === '') continue; // Skip empty and whitespace rows
-                    throw new Error('Not enough CSV columns');
+                    if (data.length < 2) throw new Error('Too few CSV columns');
+                    if (data.length > 3) throw new Error('Too many CSV columns');
+                } else {
+                    throw new Error('Unsupported parsed result');
                 }
                 const email = data[0];
                 if (typeof email != 'string' || Validators.email({ value: email } as AbstractControl) != null)
@@ -101,8 +105,11 @@ export class BatchTokenBalanceAdjustmentModalComponent {
                 console.log(this.errorCollection);
             }
         }
+        this.updateProgress(cnt, result.length);
         console.log('Error CSV Text:', CSVParse.unparse(this.errorCollection));
-        this.modalRef?.hide();
+        this.makeErrorCSV();
+        this.isProcessing = false;
+        // this.modalRef?.hide();
     }
 
     collectError(record: string[], line: number, errorMessage: string) {
@@ -110,5 +117,44 @@ export class BatchTokenBalanceAdjustmentModalComponent {
             throw new Error('Error collector has not been initialized');
         }
         this.errorCollection.push([...record, `line ${line}`, errorMessage.replaceAll(/[\n\r]/g, '  ')]);
+    }
+
+    makeErrorCSV() {
+        if (this.errorCollection == null || this.errorCollection.length == 0) return;
+
+        this.errorsCSVFile = new File(
+            [CSVParse.unparse(this.errorCollection)],
+            `${this.cleanName(this.selectedFile?.name)}-Errors-${this.cleanName(new Date().toISOString())}.csv`,
+            { type: 'text/csv;charset=utf-8;' }
+        );
+        this.errorsCSVURL = window.URL.createObjectURL(this.errorsCSVFile);
+        // window.URL.revokeObjectURL(this.errorsCSVURL);
+    }
+
+    clearErrors() {
+        this.errorCollection = new Array<string[]>();
+        if (this.errorsCSVURL) window.URL.revokeObjectURL(this.errorsCSVURL);
+        this.errorsCSVFile = undefined;
+        this.errorsCSVURL = undefined;
+    }
+
+    clearProgress() {
+        this.progress = undefined;
+        this.progressMessage = undefined;
+    }
+
+    updateProgress(current: number, total: number) {
+        this.progress = ((current / total) * 100).toFixed(2);
+        this.progressMessage = `${current} out of ${countAndNoun(total, 'record')} processed`;
+    }
+
+    errorMessage(errorCount: number): string {
+        return `${countAndNoun(errorCount, 'error')} occured while processing`;
+    }
+
+    cleanName(name?: string): string {
+        if (name == null) return 'Batch_CSV';
+        const cleanExpr = /\..{3,}?$|:/gm;
+        return name.replaceAll(cleanExpr, '');
     }
 }

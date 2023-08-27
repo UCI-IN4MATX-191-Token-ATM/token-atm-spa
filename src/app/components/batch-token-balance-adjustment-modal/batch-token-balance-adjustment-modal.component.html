@@ -22,12 +22,32 @@
                 ></div>
             </div>
             <div *ngIf="progressMessage">{{ progressMessage }}</div>
+            <div *ngIf="errorCollection.length > 0">{{ errorMessage(errorCollection.length) }}</div>
         </div>
     </ng-container>
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-outline-secondary me-4" [disabled]="isProcessing" (click)="modalRef?.hide()">
-        Cancel
+        {{ errorsCSVFile ? 'Close' : 'Cancel' }}
     </button>
-    <button type="button" class="btn btn-success" (click)="onImportCSV()" [disabled]="isProcessing">Import</button>
+    <button
+        *ngIf="!errorsCSVFile"
+        type="button"
+        class="btn btn-success"
+        (click)="onImportCSV()"
+        [disabled]="isProcessing"
+    >
+        Import
+    </button>
+    <a
+        class="btn btn-danger"
+        role="button"
+        *ngIf="errorsCSVFile"
+        [href]="errorsCSVURL"
+        target="_blank"
+        rel="noopener"
+        download="{{ errorsCSVFile.name }}"
+    >
+        Download CSV with Errors
+    </a>
 </div>
