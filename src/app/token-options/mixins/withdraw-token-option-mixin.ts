@@ -2,13 +2,17 @@ import * as t from 'io-ts';
 import type { Constructor } from 'app/utils/mixin-helper';
 import type { ITokenOption } from './token-option-mixin';
 import { getterWrapper } from 'app/utils/io-ts-getter-wrapper';
+import type { IGridViewDataSource } from './grid-view-data-source-mixin';
 
 export const WithdrawTokenOptionMixinDataDef = getterWrapper('withdrawTokenOptionId', t.number);
 
 export type WithdrawTokenOptionMixinData = t.TypeOf<typeof WithdrawTokenOptionMixinDataDef>;
 export type RawWithdrawTokenOptionMixinData = t.OutputOf<typeof WithdrawTokenOptionMixinDataDef>;
 
-export interface IWithdrawTokenOption<T extends ITokenOption> extends WithdrawTokenOptionMixinData, ITokenOption {
+export interface IWithdrawTokenOption<T extends ITokenOption>
+    extends WithdrawTokenOptionMixinData,
+        ITokenOption,
+        IGridViewDataSource {
     get hasWithdrawTokenOption(): boolean;
     get withdrawTokenOption(): T | undefined;
 }
@@ -21,6 +25,16 @@ export function WithdrawTokenOptionMixin<T extends ITokenOption, TBase extends C
         private _withdrawTokenOptionId = -1;
         private _cachedWithdrawTokenOption?: T;
         private _isCachedWithdrawTokenOptionInitialized = false;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        constructor(...args: any[]) {
+            super(...args);
+            this.registerDataPointSource(() => ({
+                colName: 'Withdrawal Token Option ID',
+                type: 'number',
+                value: this.withdrawTokenOptionId
+            }));
+        }
 
         public get withdrawTokenOptionId(): number {
             return this._withdrawTokenOptionId;

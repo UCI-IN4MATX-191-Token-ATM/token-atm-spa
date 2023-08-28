@@ -1,5 +1,6 @@
 import * as t from 'io-ts';
 import type { Constructor } from 'app/utils/mixin-helper';
+import type { IGridViewDataSource } from './grid-view-data-source-mixin';
 
 export const InternalExcludeTokenOptionIdsDef = t.array(t.number);
 
@@ -20,10 +21,20 @@ export const ExcludeTokenOptionIdsMixinDataDef = t.strict({
 export type ExcludeTokenOptionIdsMixinData = t.TypeOf<typeof ExcludeTokenOptionIdsMixinDataDef>;
 export type RawExcludeTokenOptionIdsMixinData = t.OutputOf<typeof ExcludeTokenOptionIdsMixinDataDef>;
 
-export type IExcludeTokenOptionIds = ExcludeTokenOptionIdsMixinData;
+export type IExcludeTokenOptionIds = ExcludeTokenOptionIdsMixinData & IGridViewDataSource;
 
-export function ExcludeTokenOptionIdsMixin<TBase extends Constructor>(Base: TBase) {
+export function ExcludeTokenOptionIdsMixin<TBase extends Constructor<IGridViewDataSource>>(Base: TBase) {
     return class extends Base implements IExcludeTokenOptionIds {
         excludeTokenOptionIds = [];
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        constructor(...args: any[]) {
+            super(...args);
+            this.registerDataPointSource(() => ({
+                colName: 'Mutually Exclusive with',
+                type: 'string',
+                value: this.excludeTokenOptionIds.join(', ')
+            }));
+        }
     };
 }

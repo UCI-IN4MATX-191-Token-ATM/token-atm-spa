@@ -44,6 +44,7 @@ jobs:
       - name: Build Angular project
         run: |
           npm run build
+          cp dist/token-atm-spa/index.html dist/token-atm-spa/404.html
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
