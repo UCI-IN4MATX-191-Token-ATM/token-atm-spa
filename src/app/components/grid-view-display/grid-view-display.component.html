@@ -5,4 +5,5 @@
     [columnDefs]="gridViewColDef"
     [enableCellTextSelection]="true"
     (firstDataRendered)="onFirstDataRendered($event)"
+    (displayedColumnsChanged)="columnChange.emit($event)"
 ></ag-grid-angular>

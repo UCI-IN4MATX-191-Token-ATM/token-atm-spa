@@ -7,8 +7,9 @@ import type { CourseConfigurable } from '../dashboard/dashboard-routing';
 import { TokenOptionGroupManagementComponent } from '../token-option-group-management/token-option-group-management.component';
 import type { GridViewData } from 'app/token-options/mixins/grid-view-data-source-mixin';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, CDK_DRAG_CONFIG } from '@angular/cdk/drag-drop';
-import { firstValueFrom } from 'rxjs';
 import { CredentialManagerService } from 'app/services/credential-manager.service';
+import { ModalManagerService } from 'app/services/modal-manager.service';
+import type { DisplayedColumnsChangedEvent } from 'ag-grid-community';
 
 @Component({
     selector: 'app-token-option-configuration',
@@ -34,7 +35,8 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
         @Inject(TokenATMConfigurationManagerService)
         private configurationManagerService: TokenATMConfigurationManagerService,
         @Inject(BsModalService) private modalService: BsModalService,
-        @Inject(CredentialManagerService) private credentialManagerService: CredentialManagerService
+        @Inject(CredentialManagerService) private credentialManagerService: CredentialManagerService,
+        @Inject(ModalManagerService) private modalManagerService: ModalManagerService
     ) {}
 
     async configureCourse(course: Course): Promise<void> {
@@ -54,28 +56,51 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
 
     shownColumns: string[] = [];
     availableColumns: string[] = [];
-    private isGridViewPreferencesLoaded = false;
+
+    savedShownColumns: string[] = [];
+    savedAvailableColumns: string[] = [];
+
+    curShownColumns?: string[];
+
+    private hasInitializedFromStorage = false;
+
     @ViewChild('configureGridViewModal') configureGridViewModalTemplate?: TemplateRef<unknown>;
     configureGridViewModalRef?: BsModalRef<unknown>;
+    isProcessing = false;
 
     loadGridViewColumnPreferences() {
-        if (this.isGridViewPreferencesLoaded) return;
-        this.isGridViewPreferencesLoaded = true;
-        if (this.credentialManagerService.isStorageInitialized) {
-            const value = this.credentialManagerService.getEntry('gridViewColumnPerferences');
-            if (value != undefined) [this.shownColumns, this.availableColumns] = JSON.parse(value);
-            this.isGridViewPreferencesLoaded = true;
+        if (!this.configuration) return;
+        if (this.credentialManagerService.isStorageInitialized && !this.hasInitializedFromStorage) {
+            const value = this.credentialManagerService.getEntry('gridViewColumnPreferences');
+            if (value != undefined) [this.savedShownColumns, this.savedAvailableColumns] = JSON.parse(value);
+            this.hasInitializedFromStorage = true;
         }
+        const allColSet = new Set(
+            this.configuration.tokenOptionGroups
+                .flatMap((group) => group.tokenOptions)
+                .flatMap((tokenOption) => tokenOption.gridViewData.data.map((entry) => entry.colName))
+        );
+        const existingColSet = new Set([...this.savedShownColumns, ...this.savedAvailableColumns]);
+        this.savedShownColumns = this.savedShownColumns.filter((v) => allColSet.has(v));
+        this.savedAvailableColumns = this.savedAvailableColumns.filter((v) => allColSet.has(v));
+        this.savedAvailableColumns.push(...Array.from(allColSet).filter((v) => !existingColSet.has(v)));
     }
 
-    onSwitchToGridView(): void {
+    async onSwitchToGridView(): Promise<void> {
         if (!this.configuration) return;
         this.loadGridViewColumnPreferences();
+        if (this.savedShownColumns.length == 0) {
+            await this.modalManagerService.createNotificationModal(
+                'No columns are configured for the grid view. Please click the gear button at the top-left corner of "Token Options" page to configure the grid view.'
+            );
+            return;
+        }
+        this.curShownColumns = undefined;
         this.gridViewData = [
             this.configuration.tokenOptionGroups
                 .flatMap((group) => group.tokenOptions)
                 .map((tokenOption) => tokenOption.gridViewData),
-            this.shownColumns
+            this.savedShownColumns
         ];
         this.isGridView = true;
     }
@@ -85,9 +110,15 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
         this.gridViewData = undefined;
     }
 
-    onOpenGridViewInNewWindow(): void {
+    async onOpenGridViewInNewWindow(): Promise<void> {
         if (!this.configuration) return;
         this.loadGridViewColumnPreferences();
+        if (this.savedShownColumns.length == 0) {
+            await this.modalManagerService.createNotificationModal(
+                'No columns are configured for the grid view. Please click the gear button at the top-left corner of "Token Options" page to configure the grid view.'
+            );
+            return;
+        }
         const windowRef = window.open(document.baseURI + 'grid-view', '_blank');
         windowRef?.addEventListener(
             'DOMContentLoaded',
@@ -99,7 +130,7 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
                         this.configuration.tokenOptionGroups
                             .flatMap((group) => group.tokenOptions)
                             .map((tokenOption) => tokenOption.gridViewData),
-                        this.shownColumns
+                        this.savedShownColumns
                     ]
                 });
             },
@@ -113,24 +144,62 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
     async onConfigureGridView(): Promise<void> {
         if (!this.configuration || !this.configureGridViewModalTemplate) return;
         this.loadGridViewColumnPreferences();
-        const allColSet = new Set(
-            this.configuration.tokenOptionGroups
-                .flatMap((group) => group.tokenOptions)
-                .flatMap((tokenOption) => tokenOption.gridViewData.data.map((entry) => entry.colName))
-        );
-        const existingColSet = new Set([...this.shownColumns, ...this.availableColumns]);
-        this.shownColumns = this.shownColumns.filter((v) => allColSet.has(v));
-        this.availableColumns = this.availableColumns.filter((v) => allColSet.has(v));
-        this.availableColumns.push(...Array.from(allColSet).filter((v) => !existingColSet.has(v)));
+        this.shownColumns = this.savedShownColumns.slice(0);
+        this.availableColumns = this.savedAvailableColumns.slice(0);
         this.configureGridViewModalRef = this.modalService.show(this.configureGridViewModalTemplate, {
-            class: 'modal-lg'
+            class: 'modal-lg',
+            backdrop: 'static',
+            keyboard: false
         });
-        if (!this.configureGridViewModalRef.onHide) throw new Error('Invalid modal ref');
-        await firstValueFrom(this.configureGridViewModalRef.onHide);
-        this.credentialManagerService.updateEntry(
-            'gridViewColumnPerferences',
-            JSON.stringify([this.shownColumns, this.availableColumns])
-        );
+    }
+
+    onClearShownColumns(): void {
+        this.availableColumns.splice(0, 0, ...this.shownColumns);
+        this.shownColumns.splice(0, this.shownColumns.length);
+    }
+
+    get canSaveGridViewPreferences(): boolean {
+        return this.credentialManagerService.isStorageInitialized;
+    }
+
+    async onSaveGridViewPreferences(): Promise<void> {
+        this.isProcessing = true;
+        this.savedShownColumns = this.shownColumns.slice(0);
+        this.savedAvailableColumns = this.availableColumns.slice(0);
+        if (this.canSaveGridViewPreferences) {
+            await this.credentialManagerService.updateEntry(
+                'gridViewColumnPreferences',
+                JSON.stringify([this.savedShownColumns, this.savedAvailableColumns])
+            );
+        }
+        this.configureGridViewModalRef?.hide();
+        this.isProcessing = false;
+    }
+
+    onColumnChange(event: DisplayedColumnsChangedEvent): void {
+        this.curShownColumns = event.columnApi
+            .getAllDisplayedColumns()
+            .map((c) => c.getDefinition().headerName)
+            .filter((v) => v != undefined) as string[];
+    }
+
+    async onSaveCurColumnPreferences(): Promise<void> {
+        if (!this.curShownColumns) return;
+        this.isProcessing = true;
+        const newColSet = new Set(this.curShownColumns);
+        this.savedAvailableColumns.splice(0, 0, ...this.savedShownColumns.filter((v) => !newColSet.has(v)));
+        this.savedShownColumns = this.curShownColumns;
+        if (this.canSaveGridViewPreferences) {
+            await this.credentialManagerService.updateEntry(
+                'gridViewColumnPreferences',
+                JSON.stringify([this.savedShownColumns, this.savedAvailableColumns])
+            );
+        } else {
+            await this.modalManagerService.createNotificationModal(
+                `You did not save credentials with a password, so the column preferences won't be preserved if you leave the "Token Options" page.`
+            );
+        }
+        this.isProcessing = false;
     }
 
     drop(event: CdkDragDrop<string[]>) {

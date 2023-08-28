@@ -1,5 +1,11 @@
-import { Component, Input } from '@angular/core';
-import type { ColDef, FirstDataRenderedEvent, ICellRendererParams, ValueFormatterParams } from 'ag-grid-community';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import type {
+    ColDef,
+    DisplayedColumnsChangedEvent,
+    FirstDataRenderedEvent,
+    ICellRendererParams,
+    ValueFormatterParams
+} from 'ag-grid-community';
 import type { GridViewData, GridViewDataPoint } from 'app/token-options/mixins/grid-view-data-source-mixin';
 import { format } from 'date-fns';
 
@@ -15,6 +21,7 @@ type AGGridDataSource = {
 export class GridViewDisplayComponent {
     gridViewColDef?: ColDef<AGGridDataSource, GridViewDataPoint['value']>[];
     gridViewData?: AGGridDataSource[];
+    @Output() columnChange = new EventEmitter<DisplayedColumnsChangedEvent>();
 
     @Input() set data(data: [GridViewData[], string[]] | undefined) {
         this.gridViewColDef = undefined;

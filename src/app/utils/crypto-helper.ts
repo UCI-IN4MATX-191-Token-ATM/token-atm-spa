@@ -1,3 +1,5 @@
+import { TypedArrayHelper } from './typed-array-helper';
+
 export class CryptoHelper {
     public static AES_IV_LENGTH = 12;
 
@@ -39,8 +41,28 @@ export class CryptoHelper {
         );
     }
 
+    public static async generateAESKey(extractable = false): Promise<CryptoKey> {
+        return await window.crypto.subtle.generateKey(
+            {
+                name: 'AES-GCM',
+                length: 256
+            },
+            extractable,
+            ['encrypt', 'decrypt']
+        );
+    }
+
     public static encryptAES(key: CryptoKey, content: string, iv?: Uint8Array): Promise<[Uint8Array, Uint8Array]> {
         return this.encryptAESRaw(key, new TextEncoder().encode(content), iv);
+    }
+
+    public static encryptAESWithIV(key: CryptoKey, content: string): Promise<Uint8Array> {
+        return this.encryptAESRawWithIV(key, new TextEncoder().encode(content));
+    }
+
+    public static async encryptAESRawWithIV(key: CryptoKey, content: Uint8Array): Promise<Uint8Array> {
+        const [iv, encryptedData] = await this.encryptAESRaw(key, content);
+        return TypedArrayHelper.contactUint8Array(iv, encryptedData);
     }
 
     public static async encryptAESRaw(
@@ -62,6 +84,15 @@ export class CryptoHelper {
 
     public static async decryptAES(key: CryptoKey, encryptedData: Uint8Array, iv: Uint8Array): Promise<string> {
         return new TextDecoder().decode(await this.decryptAESRaw(key, encryptedData, iv));
+    }
+
+    public static async decryptAESWithIV(key: CryptoKey, encryptedDataWithIV: Uint8Array): Promise<string> {
+        return new TextDecoder().decode(await this.decryptAESRawWithIV(key, encryptedDataWithIV));
+    }
+
+    public static async decryptAESRawWithIV(key: CryptoKey, encryptedDataWithIV: Uint8Array): Promise<Uint8Array> {
+        const [iv, encryptedData] = TypedArrayHelper.splitUint8Array(encryptedDataWithIV, CryptoHelper.AES_IV_LENGTH);
+        return this.decryptAESRaw(key, encryptedData, iv);
     }
 
     public static async decryptAESRaw(key: CryptoKey, encryptedData: Uint8Array, iv: Uint8Array): Promise<Uint8Array> {

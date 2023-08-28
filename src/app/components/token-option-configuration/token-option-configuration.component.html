@@ -26,10 +26,23 @@
         </div>
         <ng-template #gridView>
             <div class="d-flex flex-column vh-100">
-                <button class="btn btn-outline-primary" (click)="onSwitchToDefaultView()">
-                    Switch Back To Token Options
-                </button>
-                <app-grid-view-display class="flex-grow-1 overflow-auto" [data]="gridViewData"></app-grid-view-display>
+                <div class="row justify-content-around m-2">
+                    <button class="col-5 btn btn-outline-secondary" (click)="onSwitchToDefaultView()">
+                        Switch Back To Token Options
+                    </button>
+                    <button
+                        class="col-5 btn btn-outline-primary"
+                        [disabled]="isProcessing"
+                        (click)="onSaveCurColumnPreferences()"
+                    >
+                        Save Current Column Preferences
+                    </button>
+                </div>
+                <app-grid-view-display
+                    class="flex-grow-1 overflow-auto"
+                    [data]="gridViewData"
+                    (columnChange)="onColumnChange($event)"
+                ></app-grid-view-display>
             </div>
         </ng-template>
     </ng-container>
@@ -37,20 +50,46 @@
 
 <ng-template #configureGridViewModal>
     <div class="modal-header">
-        <h4 class="modal-title pull-left">Configure Gird View</h4>
-        <button
-            type="button"
-            class="btn-close close pull-right"
-            aria-label="Close"
-            (click)="configureGridViewModalRef?.hide()"
-        >
-            <span aria-hidden="true" class="visually-hidden">&times;</span>
-        </button>
+        <h4 class="modal-title pull-left">Configure Grid View</h4>
+        <div class="pull-right d-flex align-items-center">
+            <button
+                type="button"
+                class="btn btn-primary me-4"
+                [disabled]="isProcessing"
+                (click)="onSaveGridViewPreferences()"
+            >
+                Save
+            </button>
+            <button
+                type="button"
+                class="btn-close close"
+                aria-label="Close"
+                (click)="configureGridViewModalRef?.hide()"
+            >
+                <span aria-hidden="true" class="visually-hidden">&times;</span>
+            </button>
+        </div>
     </div>
     <div class="modal-body">
-        <div class="d-flex justify-content-around">
-            <div class="d-flex flex-column">
-                <h3>Shown Columns</h3>
+        <p *ngIf="!canSaveGridViewPreferences" class="text-danger mx-auto my-2">
+            You did not save credentials with a password, so the column preferences won't be preserved if you leave the
+            "Token Options" page.
+        </p>
+        <div class="row mb-2">
+            <div class="offset-1 col-4 d-flex justify-content-center align-items-center">
+                <button
+                    type="button"
+                    class="btn btn-outline-danger"
+                    [disabled]="shownColumns.length === 0"
+                    (click)="onClearShownColumns()"
+                >
+                    Clear
+                </button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="offset-1 col-4 d-flex flex-column">
+                <h3 class="text-center">Shown Columns</h3>
                 <!-- https://material.angular.io/cdk/drag-drop/overview#transferring-items-between-lists -->
                 <div
                     cdkDropList
@@ -63,8 +102,8 @@
                     <div class="example-box" *ngFor="let item of shownColumns" cdkDrag>{{ item }}</div>
                 </div>
             </div>
-            <div class="d-flex flex-column">
-                <h3>Available Columns</h3>
+            <div class="offset-2 col-4 d-flex flex-column">
+                <h3 class="text-center">Available Columns</h3>
                 <div
                     cdkDropList
                     #availableList="cdkDropList"
