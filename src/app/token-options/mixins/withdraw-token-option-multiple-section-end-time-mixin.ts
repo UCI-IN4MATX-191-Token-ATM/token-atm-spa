@@ -19,13 +19,13 @@ export function WithdrawTokenOptionMultipleSectionEndTimeMixin<
             this.registerDataPointSource(() =>
                 this.endTime instanceof MultipleSectionDateMatcher
                     ? {
-                          colName: 'End At (with exceptions)',
+                          colName: 'Can Request Until (with exceptions)',
                           type: 'html',
                           value: this.endTime.toHTML()
                       }
                     : this.endTime instanceof Date
                     ? {
-                          colName: 'End At',
+                          colName: 'Can Request Until',
                           type: 'date',
                           value: this.endTime
                       }

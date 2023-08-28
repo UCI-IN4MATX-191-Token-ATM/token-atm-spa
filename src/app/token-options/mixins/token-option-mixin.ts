@@ -78,22 +78,22 @@ export function TokenOptionMixin<TBase extends Constructor<IGridViewDataSource>>
         constructor(...args: any[]) {
             super(...args);
             this.registerDataPointSource(() => ({
-                colName: 'Group',
+                colName: 'Token Option Group',
                 type: 'string',
                 value: this.group.name
             }));
             this.registerDataPointSource(() => ({
-                colName: 'Type',
+                colName: 'Token Option Type',
                 type: 'string',
                 value: this.type
             }));
             this.registerDataPointSource(() => ({
-                colName: 'ID',
+                colName: 'Token Option ID',
                 type: 'number',
                 value: this.id
             }));
             this.registerDataPointSource(() => ({
-                colName: 'Name',
+                colName: 'Token Option Name',
                 type: 'string',
                 value: this.name
             }));
@@ -103,7 +103,7 @@ export function TokenOptionMixin<TBase extends Constructor<IGridViewDataSource>>
                 value: this.tokenBalanceChange
             }));
             this.registerDataPointSource(() => ({
-                colName: 'Description',
+                colName: 'Information / Directions',
                 type: 'string',
                 value: this.description
             }));

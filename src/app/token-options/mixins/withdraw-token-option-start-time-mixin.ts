@@ -18,7 +18,7 @@ export function WithdrawTokenOptionStartTimeMixin<
             this.registerDataPointSource(() =>
                 this.startTime
                     ? {
-                          colName: 'Start At',
+                          colName: 'Can Request From',
                           type: 'date',
                           value: this.startTime
                       }

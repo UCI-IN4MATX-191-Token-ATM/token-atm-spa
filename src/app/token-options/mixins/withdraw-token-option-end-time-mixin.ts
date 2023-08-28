@@ -18,7 +18,7 @@ export function WithdrawTokenOptionEndTimeMixin<
             this.registerDataPointSource(() =>
                 this.endTime
                     ? {
-                          colName: 'End At',
+                          colName: 'Can Request Until',
                           type: 'date',
                           value: this.endTime
                       }

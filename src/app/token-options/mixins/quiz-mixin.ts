@@ -21,7 +21,7 @@ export function QuizMixin<TBase extends Constructor<IGridViewDataSource>>(Base: 
         constructor(...args: any[]) {
             super(...args);
             this.registerDataPointSource(() => ({
-                colName: 'Quiz Name',
+                colName: 'Canvas Quiz Name',
                 type: 'string',
                 value: this.quizName
             }));
