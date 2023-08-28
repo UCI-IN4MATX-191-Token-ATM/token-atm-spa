@@ -7,6 +7,7 @@ import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-op
 import type { TokenOption } from 'app/token-options/token-option';
 import { TokenOptionRegistry } from 'app/token-options/token-option-registry';
 import type { FormField } from 'app/utils/form-field/form-field';
+import { actionNeededTemplate } from 'app/utils/string-templates';
 import type { BsModalRef } from 'ngx-bootstrap/modal';
 
 @Component({
@@ -45,14 +46,14 @@ export class TokenOptionManagementComponent implements OnInit {
             !this.tokenOptionContainer ||
             this.tokenOptionRegistry.getDescriptiveName(this.tokenOptionType) == undefined
         )
-            throw new Error('Fail to initialize token option management modal');
+            throw new Error('Failed to initialize token option management modal');
         this.typeName = this.tokenOptionRegistry.getDescriptiveName(this.tokenOptionType) as string;
         const result = this.componentFactoryRegistry.createTokenOptionFieldComponent(
             this.tokenOptionType,
             this.environmentInjector
         );
         if (result == undefined)
-            throw new Error('Fail to intialize token option management modal: Unsupported token option type');
+            throw new Error('Failed to intialize token option management modal: Unsupported token option type');
         const [renderer, field] = result;
         this.field = field;
         this.field.srcValue = this.value;
@@ -121,7 +122,10 @@ export class TokenOptionManagementComponent implements OnInit {
 
     private async notifyUpdateFailure(): Promise<void> {
         await this.modalManagerService.createNotificationModal(
-            'Auto update failed. \nSome students have already taken the quiz that corresponds to the token option group that this token option belongs to. \nPlease click the "Save It Now" button in the quiz management page on Canvas to manually update.'
+            // TODO: Add direct link to the Quiz needing "Save It Now"
+            actionNeededTemplate(
+                'Auto update failed. \nSome students have already taken the quiz that corresponds to the token option group that this token option belongs to. \n\nPlease click the "Save It Now" button in the quiz management page on Canvas to manually update.'
+            )
         );
     }
 

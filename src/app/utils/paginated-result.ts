@@ -47,7 +47,7 @@ export class PaginatedResult<T> implements AsyncIterable<T> {
         while (this.hasNextPage() || index != this.data.length) {
             if (index == this.data.length) await this.fetchNextPage();
             const result = this.data[index++];
-            if (!result) throw new Error('Index out of bound');
+            if (!result) throw new Error('Index out of bounds');
             yield result;
         }
     }

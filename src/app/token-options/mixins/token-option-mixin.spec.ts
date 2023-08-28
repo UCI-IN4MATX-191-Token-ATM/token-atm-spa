@@ -182,7 +182,7 @@ describe('TokenOptionMixin', () => {
             expect(value.description).toEqual('Description');
         });
 
-        it('should have proeprty `tokenBalanceChange`', () => {
+        it('should have property `tokenBalanceChange`', () => {
             expect(value.tokenBalanceChange).toEqual(0);
             value.tokenBalanceChange = 1;
             expect(value.tokenBalanceChange).toEqual(1);
