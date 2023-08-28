@@ -43,7 +43,7 @@ export class SpendForLabDataTokenOptionFieldComponentFactory extends TokenOption
                 .appendBuilder(
                     createNewDueTimeComponentBuilder(
                         environmentInjector,
-                        'New Until Date/Time for Lab Data Canvas Quiz'
+                        'Change Until Date/Time for Lab Data Canvas Quiz to'
                     )
                 )
                 .appendBuilder(createExcludeTokenOptionsComponentBuilder(environmentInjector))
