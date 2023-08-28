@@ -2,6 +2,7 @@ import type * as t from 'io-ts';
 import { TokenOptionMixin, TokenOptionMixinDataDef } from './mixins/token-option-mixin';
 import type { IToJSON } from './mixins/to-json-mixin';
 import type { IFromData } from './mixins/from-data-mixin';
+import { GridViewDataSourceMixin } from './mixins/grid-view-data-source-mixin';
 
 // export abstract class TokenOption {
 //     private _group: TokenOptionGroup;
@@ -133,7 +134,7 @@ export const TokenOptionDataDef = TokenOptionMixinDataDef;
 export type TokenOptionData = t.TypeOf<typeof TokenOptionDataDef>;
 export type RawTokenOptionData = t.OutputOf<typeof TokenOptionDataDef>;
 
-export class ATokenOption extends TokenOptionMixin(Object) {}
+export class ATokenOption extends TokenOptionMixin(GridViewDataSourceMixin(Object)) {}
 
 export type TokenOption<T = unknown> = ATokenOption & IToJSON & IFromData<T>;
 

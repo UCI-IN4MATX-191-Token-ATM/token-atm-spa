@@ -62,6 +62,10 @@ import {
 import { CreateTokenOptionModalComponent } from './components/create-token-option-modal/create-token-option-modal.component';
 import { MultipleSectionDateFieldComponent } from './components/form-fields/multiple-section-date-field/multiple-section-date-field.component';
 import { ErrorMessageFieldComponent } from './components/form-fields/error-message-field/error-message-field.component';
+import { AgGridModule } from 'ag-grid-angular';
+import { GridViewDisplayComponent } from './components/grid-view-display/grid-view-display.component';
+import { DragDropModule } from '@angular/cdk/drag-drop';
+import { GridViewExternalAccessComponent } from './components/grid-view-external-access/grid-view-external-access.component';
 
 @NgModule({
     declarations: [
@@ -98,7 +102,9 @@ import { ErrorMessageFieldComponent } from './components/form-fields/error-messa
         ListFieldComponent,
         CreateTokenOptionModalComponent,
         MultipleSectionDateFieldComponent,
-        ErrorMessageFieldComponent
+        ErrorMessageFieldComponent,
+        GridViewDisplayComponent,
+        GridViewExternalAccessComponent
     ],
     imports: [
         BrowserModule,
@@ -110,7 +116,9 @@ import { ErrorMessageFieldComponent } from './components/form-fields/error-messa
         ModalModule.forRoot(),
         BsDatepickerModule.forRoot(),
         TimepickerModule.forRoot(),
-        TooltipModule.forRoot()
+        TooltipModule.forRoot(),
+        AgGridModule,
+        DragDropModule
     ],
     providers: [
         { provide: ErrorHandler, useClass: GlobalErrorHandler },

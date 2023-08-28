@@ -9,6 +9,7 @@ import {
 } from './token-option-mixin';
 import { Base64 } from 'js-base64';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
+import { GridViewDataSourceMixin } from './grid-view-data-source-mixin';
 
 describe('TokenOptionMixin', () => {
     describe('DescriptionDef', () => {
@@ -153,7 +154,7 @@ describe('TokenOptionMixin', () => {
         let value: ITokenOption;
 
         beforeEach(() => {
-            tokenOptionMixinClass = TokenOptionMixin(Object);
+            tokenOptionMixinClass = TokenOptionMixin(GridViewDataSourceMixin(Object));
             value = new tokenOptionMixinClass();
         });
 
