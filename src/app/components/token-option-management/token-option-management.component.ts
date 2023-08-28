@@ -7,6 +7,7 @@ import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-op
 import type { TokenOption } from 'app/token-options/token-option';
 import { TokenOptionRegistry } from 'app/token-options/token-option-registry';
 import type { FormField } from 'app/utils/form-field/form-field';
+import { actionNeededTemplate } from 'app/utils/string-templates';
 import type { BsModalRef } from 'ngx-bootstrap/modal';
 
 @Component({
@@ -121,9 +122,10 @@ export class TokenOptionManagementComponent implements OnInit {
 
     private async notifyUpdateFailure(): Promise<void> {
         await this.modalManagerService.createNotificationModal(
-            // TODO: Should this have the Action Needed header?
             // TODO: Add direct link to the Quiz needing "Save It Now"
-            'Auto update failed. \nSome students have already taken the quiz that corresponds to the token option group that this token option belongs to. \n\nPlease click the "Save It Now" button in the quiz management page on Canvas to manually update.'
+            actionNeededTemplate(
+                'Auto update failed. \nSome students have already taken the quiz that corresponds to the token option group that this token option belongs to. \n\nPlease click the "Save It Now" button in the quiz management page on Canvas to manually update.'
+            )
         );
     }
 
