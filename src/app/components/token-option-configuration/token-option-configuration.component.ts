@@ -91,7 +91,7 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
         this.loadGridViewColumnPreferences();
         if (this.savedShownColumns.length == 0) {
             await this.modalManagerService.createNotificationModal(
-                'No columns are configured for the grid view. Please click the gear button at the top-left corner of "Token Options" page to configure the grid view.'
+                'No columns are configured for the grid view. Please click the gear button near the top-left corner of the "Token Options" page to configure the grid view.'
             );
             return;
         }
@@ -115,7 +115,7 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
         this.loadGridViewColumnPreferences();
         if (this.savedShownColumns.length == 0) {
             await this.modalManagerService.createNotificationModal(
-                'No columns are configured for the grid view. Please click the gear button at the top-left corner of "Token Options" page to configure the grid view.'
+                'No columns are configured for the grid view. Please click the gear button near the top-left corner of the "Token Options" page to configure the grid view.'
             );
             return;
         }
@@ -196,7 +196,7 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
             );
         } else {
             await this.modalManagerService.createNotificationModal(
-                `You did not save credentials with a password, so the column preferences won't be preserved if you leave the "Token Options" page.`
+                `You have not saved credentials with a password, so your column choices won't be preserved if you leave the "Token Options" page.`
             );
         }
         this.isProcessing = false;
