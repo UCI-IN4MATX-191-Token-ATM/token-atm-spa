@@ -93,7 +93,7 @@ export function TokenOptionMixin<TBase extends Constructor<IGridViewDataSource>>
                 value: this.id
             }));
             this.registerDataPointSource(() => ({
-                colName: 'Token Option Name',
+                colName: 'Request’s Name',
                 type: 'string',
                 value: this.name
             }));

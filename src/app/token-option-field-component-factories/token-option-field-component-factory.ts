@@ -238,7 +238,7 @@ export function tokenOptionFieldComponentBuilder(
         });
     const nameFieldCompBuilder = createFieldComponentWithLabel(
         StringInputFieldComponent,
-        'Token Option Name',
+        'Request’s Name',
         environmentInjector
     )
         .appendField(new StaticFormField<[TokenOptionGroup, TokenOption | undefined]>())
@@ -247,7 +247,7 @@ export function tokenOptionFieldComponentBuilder(
                 value.fieldA.errorMessage = undefined;
                 const result = await value.destValue;
                 if (result[0].length == 0) {
-                    value.fieldA.errorMessage = 'Token option name cannot be empty';
+                    value.fieldA.errorMessage = 'Request’s Name cannot be empty';
                     return false;
                 }
                 const [group, cur] = result[1];
