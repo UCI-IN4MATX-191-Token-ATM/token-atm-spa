@@ -1,5 +1,6 @@
 import * as t from 'io-ts';
 import type { Constructor } from 'app/utils/mixin-helper';
+import type { IGridViewDataSource } from './grid-view-data-source-mixin';
 
 export const AssignmentMixinDataDef = t.strict({
     assignmentName: t.string,
@@ -9,11 +10,21 @@ export const AssignmentMixinDataDef = t.strict({
 export type AssignmentMixinData = t.TypeOf<typeof AssignmentMixinDataDef>;
 export type RawAssignmentMixinData = t.OutputOf<typeof AssignmentMixinDataDef>;
 
-export type IAssignment = AssignmentMixinData;
+export type IAssignment = AssignmentMixinData & IGridViewDataSource;
 
-export function AssignmentMixin<TBase extends Constructor>(Base: TBase) {
+export function AssignmentMixin<TBase extends Constructor<IGridViewDataSource>>(Base: TBase) {
     return class extends Base implements IAssignment {
         assignmentName = '';
         assignmentId = '';
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        constructor(...args: any[]) {
+            super(...args);
+            this.registerDataPointSource(() => ({
+                colName: 'Assignment Name',
+                type: 'string',
+                value: this.assignmentName
+            }));
+        }
     };
 }
