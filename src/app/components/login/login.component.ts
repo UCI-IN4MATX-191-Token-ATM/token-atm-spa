@@ -77,7 +77,7 @@ export class LoginComponent implements AfterViewInit {
             'Qualtrics Client Secret',
             'password',
             '',
-            'Please see the tooltip for the Qualtris Client ID for more information. \nPlease note that you can no longer access the Client Secret again once you close the window that pops up after the creation. You will need to create a new Client in that case. \nExample: ye8gf6hGdscTFPn3zVs4Z3YI0amMk2zbccx2KJbhKv0JFrbsKFiOKPvctMYP6UjT'
+            'Please see the tooltip for the Qualtrics Client ID for more information. \nPlease note that you can no longer access the Client Secret again once you close the window that pops up after the creation. You will need to create a "New Client" in that case. \nExample: ye8gf6hGdscTFPn3zVs4Z3YI0amMk2zbccx2KJbhKv0JFrbsKFiOKPvctMYP6UjT'
         )
     };
 
