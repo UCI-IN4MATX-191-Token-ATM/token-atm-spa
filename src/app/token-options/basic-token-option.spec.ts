@@ -5,7 +5,7 @@ import {
     type BasicTokenOptionData,
     type RawBasicTokenOptionData,
     BasicTokenOption
-} from './basic-token-option';
+} from './basic-token-option'; // Import all exports from matching token option to test
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import { TO_BE_SUPER_SET_OF_MATCHER } from 'app/utils/test/to-be-super-set-of-matcher';
 // +------------------------------------------------------------+
@@ -16,7 +16,7 @@ import { TO_BE_SUPER_SET_OF_MATCHER } from 'app/utils/test/to-be-super-set-of-ma
 describe('BasicTokenOption', () => {
     const validValues: BasicTokenOptionData[] = [
         {
-            type: '', // TODO: Fill with correct type name
+            type: 'basic', // TODO: Fill with correct type name
             id: 1,
             name: 'A',
             description: '',
@@ -38,11 +38,43 @@ describe('BasicTokenOption', () => {
         return [v, result];
     });
     const invalidValues = [
-        {}
+        {},
+        {
+            type: undefined,
+            id: '1',
+            name: 1,
+            description: 1,
+            tokenBalanceChange: '1',
+            isMigrating: 'true'
+        },
+        {
+            type: undefined,
+            id: 1,
+            name: 'A',
+            description: '',
+            tokenBalanceChange: 1,
+            isMigrating: undefined
+        }
         // TODO: Add invalid JSON objects for this token option
     ];
     const invalidRawValues = [
-        {}
+        {},
+        {
+            type: undefined,
+            id: '1',
+            name: 1,
+            description: 1,
+            tokenBalanceChange: '1',
+            isMigrating: 'true'
+        },
+        {
+            type: undefined,
+            id: 1,
+            name: 'A',
+            description: '',
+            tokenBalanceChange: 1,
+            isMigrating: undefined
+        }
         // TODO: Add invalid encoded form JSON objects for this token option
     ];
 
