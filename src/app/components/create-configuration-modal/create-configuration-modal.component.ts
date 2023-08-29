@@ -27,10 +27,11 @@ export class CreateConfigurationModalComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        if (!this.course || !this.container) throw new Error('Fail to initialize create configuration modal');
+        if (!this.course || !this.container) throw new Error('Failed to initialize create configuration modal'); // TODO: Double check phrasing
+        // TODO: Add Preview for what the entire name string looks like, including Prefix and Suffix
         const [renderer, field] = createFieldComponentWithLabel(
             StringInputFieldComponent,
-            'The suffix of Assignment Group & Module name',
+            'A suffix for the Canvas Assignment Group & Module names',
             this.environmentInjector
         )
             .appendBuilder(

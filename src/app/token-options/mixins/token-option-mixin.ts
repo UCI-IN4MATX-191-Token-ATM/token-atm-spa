@@ -4,6 +4,7 @@ import { Base64 } from 'js-base64';
 import { ErrorSerializer } from 'app/utils/error-serailizer';
 import type { Constructor } from 'app/utils/mixin-helper';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
+import type { IGridViewDataSource } from './grid-view-data-source-mixin';
 
 /**
  * The definition of `description` attribute of `TokenOptionMixinData`.
@@ -53,7 +54,7 @@ export type RawTokenOptionMixinData = t.OutputOf<typeof TokenOptionMixinDataDef>
 /**
  * The interface of `TokenOption`.
  */
-export interface ITokenOption extends TokenOptionMixinData {
+export interface ITokenOption extends TokenOptionMixinData, IGridViewDataSource {
     group: TokenOptionGroup;
     get prompt(): string;
 }
@@ -63,7 +64,7 @@ export interface ITokenOption extends TokenOptionMixinData {
  * @param Base The base class that need to be mixined.
  * @returns The class constructed by mixining the Base class with `TokenOption`. The class will implement `ITokenOption`.
  */
-export function TokenOptionMixin<TBase extends Constructor>(Base: TBase) {
+export function TokenOptionMixin<TBase extends Constructor<IGridViewDataSource>>(Base: TBase) {
     return class extends Base implements ITokenOption {
         type = '';
         id = -1;
@@ -72,6 +73,41 @@ export function TokenOptionMixin<TBase extends Constructor>(Base: TBase) {
         tokenBalanceChange = 0;
         isMigrating: boolean | undefined = undefined;
         _group: TokenOptionGroup | undefined = undefined;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        constructor(...args: any[]) {
+            super(...args);
+            this.registerDataPointSource(() => ({
+                colName: 'Group',
+                type: 'string',
+                value: this.group.name
+            }));
+            this.registerDataPointSource(() => ({
+                colName: 'Type',
+                type: 'string',
+                value: this.type
+            }));
+            this.registerDataPointSource(() => ({
+                colName: 'ID',
+                type: 'number',
+                value: this.id
+            }));
+            this.registerDataPointSource(() => ({
+                colName: 'Name',
+                type: 'string',
+                value: this.name
+            }));
+            this.registerDataPointSource(() => ({
+                colName: 'Token Balance Change',
+                type: 'number',
+                value: this.tokenBalanceChange
+            }));
+            this.registerDataPointSource(() => ({
+                colName: 'Description',
+                type: 'string',
+                value: this.description
+            }));
+        }
 
         public set group(group: TokenOptionGroup) {
             this._group = group;

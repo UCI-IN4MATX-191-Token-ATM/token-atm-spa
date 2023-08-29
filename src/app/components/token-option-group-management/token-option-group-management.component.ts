@@ -29,7 +29,7 @@ export class TokenOptionGroupManagementComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        if (!this.value || !this.container) throw new Error('Fail to initialize token option group management modal');
+        if (!this.value || !this.container) throw new Error('Failed to initialize token option group management modal');
         const [renderer, field] = createFieldComponentWithLabel(
             NumberInputFieldComponent,
             'Group ID',

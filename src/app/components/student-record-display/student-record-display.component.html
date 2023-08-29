@@ -18,8 +18,7 @@
                                         Email: {{ studentRecord.student.email }}
                                     </li>
                                     <li class="list-group-item">
-                                        Current Token Balance: {{ studentRecord.tokenBalance }}
-                                        {{ studentRecord.tokenBalance === 1 ? 'token' : 'tokens' }}
+                                        Current Balance: {{ balanceString(studentRecord.tokenBalance) }}
                                     </li>
                                 </ul>
                             </div>

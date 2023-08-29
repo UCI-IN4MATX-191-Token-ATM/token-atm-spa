@@ -9,7 +9,9 @@
             [disabled]="isReadOnly"
             [readOnly]="isReadOnly"
         />
-        <label class="form-check-label" [for]="'checkbox' + fieldId"> Add exception(s) for section(s) </label>
+        <label class="form-check-label" [for]="'checkbox' + fieldId">
+            Add exceptions for specific Canvas sections
+        </label>
     </div>
     <app-list-field [hidden]="!hasException"></app-list-field>
 </div>
