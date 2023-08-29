@@ -1,4 +1,4 @@
-import { fromUnixTime, getUnixTime } from 'date-fns';
+import { format, fromUnixTime, getUnixTime } from 'date-fns';
 import * as t from 'io-ts';
 import { chain } from 'fp-ts/Either';
 import { DateDef } from './mixin-helper';
@@ -41,6 +41,36 @@ export class MultipleSectionDateMatcher implements MultipleSectionDateMatcherDat
             }
         }
         return this.defaultDate;
+    }
+
+    public toHTML(): string {
+        if (this._overrides.length == 0) {
+            return format(this.defaultDate, 'MMM dd, yyyy kk:mm:ss');
+        }
+        return [
+            '<table style="border-collapse: collapse; width: 100%;">',
+            '<tbody>',
+            ...this.overrides.map((override) => {
+                return [
+                    `<tr>`,
+                    `<td style="text-align: end; text-wrap: nowrap">${override.name}:</td>`,
+                    `<td style="text-align: start; text-wrap: nowrap">${format(
+                        override.date,
+                        'MMM dd, yyyy kk:mm:ss'
+                    )}</td>`,
+                    `</tr>`
+                ].join('');
+            }),
+            '<tr>',
+            '<td style="text-align: end; text-wrap: nowrap">Default:</td>',
+            `<td style="text-align: start; text-wrap: nowrap">${format(
+                this.defaultDate,
+                'MMM dd, yyyy kk:mm:ss'
+            )}</td>`,
+            '</tr>',
+            '</tbody>',
+            '</table>'
+        ].join('');
     }
 
     public toJSON(): object {

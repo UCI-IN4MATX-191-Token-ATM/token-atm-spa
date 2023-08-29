@@ -5,8 +5,10 @@ import { getDashboardRoutes } from './components/dashboard/dashboard-routing';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { LoginComponent } from './components/login/login.component';
 import { AUTH_GUARD } from './utils/auth-guard';
+import { GridViewExternalAccessComponent } from './components/grid-view-external-access/grid-view-external-access.component';
 
 const routes: Routes = [
+    { path: 'grid-view', component: GridViewExternalAccessComponent },
     { path: 'login', component: LoginComponent },
     {
         path: 'dashboard',

@@ -6,6 +6,7 @@ import { TokenOptionRegistry } from 'app/token-options/token-option-registry';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { MoveTokenOptionModalComponent } from '../move-token-option-modal/move-token-option-modal.component';
 import { TokenOptionManagementComponent } from '../token-option-management/token-option-management.component';
+import { actionNeededTemplate } from 'app/utils/string-templates';
 
 @Component({
     selector: 'app-token-option-display',
@@ -77,7 +78,10 @@ export class TokenOptionDisplayComponent {
         const updateResult = await this.configurationManagerService.updateTokenOptionGroup(group);
         if (!updateResult)
             await this.modalManagerService.createNotificationModal(
-                'Auto update failed. \nSome students have already taken the Canvas quiz that corresponds to the token option group that this token option belongs to. \nPlease click the "Save It Now" button in the quiz management page on Canvas to manually update.'
+                // TODO: Add direct link to the Quiz needing "Save It Now"
+                actionNeededTemplate(
+                    'Auto update failed. \nSome students have already taken the Canvas quiz that corresponds to the token option group that this token option belongs to. \n\nPlease click the "Save It Now" button in the quiz management page on Canvas to manually update.'
+                )
             );
         confirmationRef.hide();
     }
