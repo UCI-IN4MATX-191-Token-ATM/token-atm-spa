@@ -13,6 +13,9 @@
 <div class="modal-body message">
     <ng-container *ngIf="configuration">
         <input type="file" class="form-control" (change)="onSelectFile($event)" accept=".csv" />
+        <input type="checkbox" [(ngModel)]="hasHeader" [disabled]="isProcessing || hasStarted" /> Has a Header Row
+        <input type="checkbox" [(ngModel)]="reportWholeLine" [disabled]="isProcessing || hasStarted" />
+        Include entire row in Error CSV
         <div class="d-flex flex-column align-items-center justify-content-center">
             <div *ngIf="progress" class="progress m-3 mx-auto" style="width: 15rem">
                 <div
@@ -28,14 +31,14 @@
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-outline-secondary me-4" [disabled]="isProcessing" (click)="modalRef?.hide()">
-        {{ errorsCSVFile ? 'Close' : 'Cancel' }}
+        {{ errorsCSVFile || !hasStarted ? 'Close' : 'Cancel' }}
     </button>
     <button
         *ngIf="!errorsCSVFile"
         type="button"
         class="btn btn-success"
         (click)="onImportCSV()"
-        [disabled]="isProcessing"
+        [disabled]="isProcessing || hasStarted"
     >
         Import
     </button>

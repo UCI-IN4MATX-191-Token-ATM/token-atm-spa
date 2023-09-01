@@ -29,6 +29,7 @@ export class BatchTokenBalanceAdjustmentModalComponent {
 
     reportWholeLine = false;
     hasHeader = false;
+    hasStarted = false;
 
     firstRow?: string[];
     possibleColumnIndex: {
@@ -69,6 +70,7 @@ export class BatchTokenBalanceAdjustmentModalComponent {
 
     async onSelectFile(event: Event) {
         this.isProcessing = true;
+        this.hasStarted = false;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.selectedFile = (event.target as any)?.files[0];
         this.clearErrors();
@@ -139,18 +141,18 @@ export class BatchTokenBalanceAdjustmentModalComponent {
     // TODO: - Select from Possible Headers/Columns in UI
     //          - Use possibleColumnIndex for preview/preselection
     //          - Update columnsUsed with actual user selections (w/ index as a string)
-    //       - Set Flags from UI
-    //          - reportWholeLine (boolean, if the entire parsed line should be in the error report)
-    //          - hasHeader(boolean, if the parser should assume there is a CSV header)
+    //          - Call/Update using the selections onImportCSV
+    //       - Disable interactions (header/column selection) once Import begins
     //       - Parsing from & Unparsing to Excel formatted CSVs (https://www.papaparse.com/faq#encoding)
     //       - Expose Parser Errors & Meta info (`results.errors` & `results.meta`)
-    //          - Allow dry-run functionality to test CSV without updating Token ATM
+    //       - Allow dry-run functionality to test CSV without updating Token ATM
     //       - Update parser to use a stream to parse row by row (makes progress indeterminate)
-    //       - Use `URL.revokeObjectURL()` on Error CSV URL when modal event onHidden
+    //       - Use `URL.revokeObjectURL()` on Error CSV URL when modal event onHidden occurs
 
     async onImportCSV() {
         if (!this.selectedFile || !this.configuration) return;
         this.isProcessing = true;
+        this.hasStarted = true;
         const results = await this.parseCSV(this.selectedFile, { header: this.hasHeader });
         let cnt = 0;
         this.clearErrors();
