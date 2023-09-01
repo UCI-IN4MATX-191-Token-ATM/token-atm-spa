@@ -22,7 +22,7 @@
                 ></div>
             </div>
             <div *ngIf="progressMessage">{{ progressMessage }}</div>
-            <div *ngIf="errorCollection.length > 0">{{ errorMessage(errorCollection.length) }}</div>
+            <div *ngIf="errorCollection">{{ errorMessage(errorCollection.length) }}</div>
         </div>
     </ng-container>
 </div>
