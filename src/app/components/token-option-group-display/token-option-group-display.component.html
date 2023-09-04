@@ -15,7 +15,22 @@
                 [class.bi-slash-circle]="!group.isPublished"
                 (click)="group.isPublished ? onUnpublishGroup() : onPublishGroup()"
             ></span>
-            <span class="bi bi-plus-circle text-success fs-5 mx-3 is-link" (click)="onCreateTokenOption()"></span>
+            <div
+                [title]="
+                    group.isFull
+                        ? 'Group is full (cannot have more than 17 token options in one group)'
+                        : 'Add a new token option to this group'
+                "
+            >
+                <button
+                    type="button"
+                    class="btn btn-outline-success mx-3 border-0"
+                    (click)="onCreateTokenOption()"
+                    [disabled]="group.isFull ? 'disabled' : undefined"
+                >
+                    <span class="bi bi-plus-circle fs-5"></span>
+                </button>
+            </div>
             <div class="btn-group" dropdown>
                 <span class="bi bi-three-dots-vertical fs-5 mx-3 is-link" dropdownToggle></span>
                 <ul class="dropdown-menu dropdown-menu-right border-dark text-center" *dropdownMenu>
