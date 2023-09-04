@@ -61,6 +61,9 @@ export class GridViewDisplayComponent {
                 }
                 case 'percentage': {
                     colDef.cellDataType = 'number';
+                    colDef.valueFormatter = (
+                        params: ValueFormatterParams<AGGridDataSource, GridViewDataPoint['value']>
+                    ) => (typeof params.value == 'number' ? `${Number((params.value * 100).toFixed(2))}%` : '');
                     // TODO: custom formatting & sorting
                     break;
                 }
@@ -80,6 +83,14 @@ export class GridViewDisplayComponent {
                     colDef.valueFormatter = (
                         params: ValueFormatterParams<AGGridDataSource, GridViewDataPoint['value']>
                     ) => (params.value instanceof Date ? format(params.value, 'MMM dd, yyyy HH:mm:ss') : '');
+                    break;
+                }
+                case 'boolean': {
+                    colDef.cellDataType = 'text';
+                    colDef.valueFormatter = (
+                        params: ValueFormatterParams<AGGridDataSource, GridViewDataPoint['value']>
+                    ) => (params.value ? 'Yes' : 'No');
+                    break;
                 }
             }
             return colDef;
