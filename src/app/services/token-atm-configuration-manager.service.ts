@@ -21,6 +21,7 @@ import { generateRandomString } from 'app/utils/random-string-generator';
 export class TokenATMConfigurationManagerService {
     private static TOKEN_ATM_CONFIGURATION_PAGE_NAME = 'Token ATM Configuration';
     private static TOKEN_ATM_SECURE_CONFIGURATION_PAGE_NAME = 'Token ATM Encryption Key (PLEASE DO NOT PUBLISH IT)'; // TODO: Remove 'IT', and maybe 'PLEASE'
+    private static TOKEN_ATM_AVAILABLE_TOKEN_OPTIONS_PAGE_NAME = 'Token ATM - Available Token Options';
     private static TOKEN_ATM_ASSIGNMENT_GROUP_PREFIX = 'Token ATM';
     private static TOKEN_ATM_MODULE_PREFIX = 'Token ATM';
     private static TOKEN_ATM_QUIZ_PREFIX = 'Token ATM Request Submission - ';
@@ -99,9 +100,47 @@ export class TokenATMConfigurationManagerService {
             courseId,
             quizId,
             TokenATMConfigurationManagerService.TOKEN_ATM_QUIZ_PREFIX + tokenOptionGroup.name,
-            tokenOptionGroup.description
+            String.raw`<div>${tokenOptionGroup.description}</div><div>${this.generateTokenOptionDataTable(
+                tokenOptionGroup
+            )}</div>`
         );
         await this.saveConfiguration(tokenOptionGroup.configuration);
+    }
+
+    private generateTokenOptionDataTable(tokenOptionGroup: TokenOptionGroup): string {
+        return new HTMLTableGenerator([
+            new NameTransformer(),
+            new StartTimeTransformer(),
+            new EndTimeTransformer(),
+            new NewDueTimeTransformer(),
+            new TokenBalanceChangeTransformer(),
+            new DescriptionTransformer()
+        ]).process(tokenOptionGroup.availableTokenOptions);
+    }
+
+    private generateTokenOptionDataPage(configuration: TokenATMConfiguration): string {
+        const result = [];
+        for (const group of configuration.tokenOptionGroups) {
+            if (!group.isPublished) continue;
+            result.push('<div>');
+            result.push(`<h3>${group.name}</h3>`);
+            const tableContent = this.generateTokenOptionDataTable(group);
+            if (tableContent.trim() == '') {
+                result.push('<p>No available token option exists in this group</p>');
+            } else {
+                result.push(this.generateTokenOptionDataTable(group));
+            }
+            result.push('</div>');
+        }
+        return result.join('');
+    }
+
+    private async updateAvailableTokenOptionPage(configuration: TokenATMConfiguration): Promise<void> {
+        await this.canvasService.createOrModifyPageByName(
+            configuration.course.id,
+            TokenATMConfigurationManagerService.TOKEN_ATM_AVAILABLE_TOKEN_OPTIONS_PAGE_NAME,
+            this.generateTokenOptionDataPage(configuration)
+        );
     }
 
     public async updateTokenOptionGroup(tokenOptionGroup: TokenOptionGroup): Promise<boolean> {
@@ -112,22 +151,16 @@ export class TokenATMConfigurationManagerService {
         if (tokenOptionGroup.isPublished && canUnpublish)
             canUnpublish = await this.canvasService.changeQuizPublishState(courseId, quizId, false);
         // await this.canvasService.clearQuizQuestions(courseId, quizId);
+        const dataTable = this.generateTokenOptionDataTable(tokenOptionGroup);
         await this.canvasService.modifyQuiz(
             courseId,
             quizId,
             TokenATMConfigurationManagerService.TOKEN_ATM_QUIZ_PREFIX + tokenOptionGroup.name,
-            tokenOptionGroup.description
+            String.raw`<div>${tokenOptionGroup.description}</div><div>${dataTable}</div>`
         );
         const question = new MultipleChoiceQuestion(
             'Choose a token option',
-            new HTMLTableGenerator([
-                new NameTransformer(),
-                new StartTimeTransformer(),
-                new EndTimeTransformer(),
-                new NewDueTimeTransformer(),
-                new TokenBalanceChangeTransformer(),
-                new DescriptionTransformer()
-            ]).process(tokenOptionGroup.availableTokenOptions),
+            'Make a request by choosing an option below (see the table above for the detailed description of each option)',
             0,
             tokenOptionGroup.availableTokenOptions.map((tokenOption) => tokenOption.prompt)
         );
@@ -135,6 +168,7 @@ export class TokenATMConfigurationManagerService {
         await this.canvasService.replaceQuizQuestions(courseId, quizId, [question]);
 
         // TODO: support rendering multiple quiz questions
+        await this.updateAvailableTokenOptionPage(tokenOptionGroup.configuration);
         await this.saveConfiguration(tokenOptionGroup.configuration);
         if (tokenOptionGroup.isPublished && canUnpublish)
             await this.canvasService.changeQuizPublishState(courseId, quizId, true);
@@ -156,7 +190,9 @@ export class TokenATMConfigurationManagerService {
             courseId,
             assignmentGroupId,
             quizName,
-            tokenOptionGroup.description
+            String.raw`<div>${tokenOptionGroup.description}</div><div>${this.generateTokenOptionDataTable(
+                tokenOptionGroup
+            )}</div>`
         );
         tokenOptionGroup.quizId = quizId;
         if (moduleId == undefined) moduleId = await this.getTokenATMModuleId(tokenOptionGroup.configuration);
@@ -171,6 +207,7 @@ export class TokenATMConfigurationManagerService {
     ): Promise<void> {
         if (deleteFromConfiguration) tokenOptionGroup.configuration.deleteTokenOptionGroup(tokenOptionGroup);
         await this.canvasService.deleteQuiz(tokenOptionGroup.configuration.course.id, tokenOptionGroup.quizId);
+        await this.updateAvailableTokenOptionPage(tokenOptionGroup.configuration);
         if (deleteFromConfiguration) await this.saveConfiguration(tokenOptionGroup.configuration);
     }
 
@@ -182,6 +219,7 @@ export class TokenATMConfigurationManagerService {
             true
         );
         tokenOptionGroup.isPublished = true;
+        await this.updateAvailableTokenOptionPage(tokenOptionGroup.configuration);
         await this.saveConfiguration(tokenOptionGroup.configuration);
     }
 
@@ -202,6 +240,7 @@ export class TokenATMConfigurationManagerService {
         );
         if (!result) return false;
         tokenOptionGroup.isPublished = false;
+        await this.updateAvailableTokenOptionPage(tokenOptionGroup.configuration);
         await this.saveConfiguration(tokenOptionGroup.configuration);
         return true;
     }
@@ -246,6 +285,16 @@ export class TokenATMConfigurationManagerService {
             await this.getTokenATMAssignmentGroupId(configuration)
         );
         await this.canvasService.deleteModule(configuration.course.id, await this.getTokenATMModuleId(configuration));
+        try {
+            const pageId = await this.canvasService.getPageIdByName(
+                configuration.course.id,
+                TokenATMConfigurationManagerService.TOKEN_ATM_AVAILABLE_TOKEN_OPTIONS_PAGE_NAME
+            );
+            await this.canvasService.deletePage(configuration.course.id, pageId);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
+            if (err.message != 'Page not found') throw err;
+        }
         await this.canvasService.deletePage(
             configuration.course.id,
             await this.canvasService.getPageIdByName(
@@ -263,6 +312,7 @@ export class TokenATMConfigurationManagerService {
             TokenATMConfigurationManagerService.TOKEN_ATM_SECURE_CONFIGURATION_PAGE_NAME,
             `<p>${JSON.stringify(configuration.getSecureConfig())}</p>`
         );
+        this.updateAvailableTokenOptionPage(configuration);
 
         // Generate module & assignment group
         const assignmentGroupId = await this.canvasService.createAssignmentGroup(

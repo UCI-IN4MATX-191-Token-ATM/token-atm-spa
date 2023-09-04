@@ -12,6 +12,7 @@ import { ErrorSerializer } from 'app/utils/error-serailizer';
 import { EditConfigurationModalComponent } from '../edit-configuration-modal/edit-configuration-modal.component';
 import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-option-resolver-registry';
 import { actionNeededTemplate, tokenATMContentListTemplate } from 'app/utils/string-templates';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-configuration',
@@ -33,7 +34,8 @@ export class ConfigurationComponent implements CourseConfigurable {
         @Inject(CanvasService) private canvasService: CanvasService,
         @Inject(BsModalService) private modalSerivce: BsModalService,
         @Inject(TokenOptionResolverRegistry) private tokenOptionResolverRegistry: TokenOptionResolverRegistry,
-        @Inject(ModalManagerService) private modalManagerSerivce: ModalManagerService
+        @Inject(ModalManagerService) private modalManagerSerivce: ModalManagerService,
+        @Inject(Router) private router: Router
     ) {}
 
     async configureCourse(course: Course): Promise<void> {
@@ -187,6 +189,7 @@ export class ConfigurationComponent implements CourseConfigurable {
             this.isProcessing = false;
             modalRef.hide();
         }
+        this.router.navigate(['/select-course']);
     }
 
     async onResetContent(): Promise<void> {
