@@ -22,7 +22,7 @@
                 *ngFor="let group of configuration.tokenOptionGroups"
                 [ngValue]="group"
                 [disabled]="group !== srcOption?.group && group.isFull"
-                [title]="
+                [attr.title]="
                     group !== srcOption?.group && group.isFull
                         ? 'This token option group is full (cannot have more than 17 token options in one group)'
                         : undefined
