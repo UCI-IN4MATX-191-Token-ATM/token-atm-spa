@@ -18,7 +18,9 @@
             <div
                 [title]="
                     group.isFull
-                        ? 'Group is full (cannot have more than 17 token options in one group)'
+                        ? 'Group is full (there cannot be more than ' +
+                          tokenOptionGroupMaxSize.toString() +
+                          ' token options in a group)'
                         : 'Add a new token option to this group'
                 "
             >

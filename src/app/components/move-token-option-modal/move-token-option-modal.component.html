@@ -24,7 +24,9 @@
                 [disabled]="group !== srcOption?.group && group.isFull"
                 [attr.title]="
                     group !== srcOption?.group && group.isFull
-                        ? 'This token option group is full (cannot have more than 17 token options in one group)'
+                        ? 'This token option group is full (there cannot be more than ' +
+                          tokenOptionGroupMaxSize.toString() +
+                          ' token options in a group)'
                         : undefined
                 "
             >
