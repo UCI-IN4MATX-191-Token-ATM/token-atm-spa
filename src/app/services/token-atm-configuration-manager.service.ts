@@ -312,7 +312,7 @@ export class TokenATMConfigurationManagerService {
             TokenATMConfigurationManagerService.TOKEN_ATM_SECURE_CONFIGURATION_PAGE_NAME,
             `<p>${JSON.stringify(configuration.getSecureConfig())}</p>`
         );
-        this.updateAvailableTokenOptionPage(configuration);
+        await this.updateAvailableTokenOptionPage(configuration);
 
         // Generate module & assignment group
         const assignmentGroupId = await this.canvasService.createAssignmentGroup(
