@@ -4,6 +4,7 @@ import type {
     DisplayedColumnsChangedEvent,
     FirstDataRenderedEvent,
     ICellRendererParams,
+    INumberFilterParams,
     ValueFormatterParams
 } from 'ag-grid-community';
 import type { GridViewData, GridViewDataPoint } from 'app/token-options/mixins/grid-view-data-source-mixin';
@@ -43,9 +44,10 @@ export class GridViewDisplayComponent {
             this.gridViewData.push(dataObj);
         }
         this.gridViewColDef = columns.map(([name, type]) => {
+            const fieldName = JSON.stringify([name, type]);
             const colDef: ColDef<AGGridDataSource, GridViewDataPoint['value']> = {
                 headerName: name,
-                field: JSON.stringify([name, type]),
+                field: fieldName,
                 resizable: true,
                 wrapHeaderText: true,
                 wrapText: true,
@@ -61,7 +63,27 @@ export class GridViewDisplayComponent {
                 }
                 case 'percentage': {
                     colDef.cellDataType = 'number';
-                    // TODO: custom formatting & sorting
+                    colDef.filterValueGetter = (params) => {
+                        const value = params.data?.[fieldName];
+                        if (value == undefined || typeof value != 'number') return undefined;
+                        return Number((value * 100).toFixed(2));
+                    };
+                    colDef.valueFormatter = (
+                        params: ValueFormatterParams<AGGridDataSource, GridViewDataPoint['value']>
+                    ) => (typeof params.value == 'number' ? `${Number((params.value * 100).toFixed(2))}%` : '');
+                    colDef.filterParams = <INumberFilterParams>{
+                        allowedCharPattern: String.raw`\d\.%`,
+                        numberParser: (text: string | null) => {
+                            if (text == null) return null;
+                            const value = parseFloat(text.replaceAll('%', ''));
+                            if (Number.isNaN(value)) return null;
+                            return value;
+                        },
+                        numberFormatter: (value: number | null) => {
+                            if (value == null) return null;
+                            return `${value}%`;
+                        }
+                    };
                     break;
                 }
                 case 'string': {
@@ -80,6 +102,32 @@ export class GridViewDisplayComponent {
                     colDef.valueFormatter = (
                         params: ValueFormatterParams<AGGridDataSource, GridViewDataPoint['value']>
                     ) => (params.value instanceof Date ? format(params.value, 'MMM dd, yyyy HH:mm:ss') : '');
+                    break;
+                }
+                case 'boolean': {
+                    colDef.cellDataType = 'text';
+                    colDef.valueFormatter = (
+                        params: ValueFormatterParams<AGGridDataSource, GridViewDataPoint['value']>
+                    ) => (params.value ? 'Yes' : 'No');
+                    colDef.filterParams = {
+                        maxNumConditions: 1,
+                        filterOptions: [
+                            'empty',
+                            {
+                                displayKey: 'customBooleanYes',
+                                displayName: 'Yes',
+                                predicate: (_: unknown, cellValue: unknown) => cellValue,
+                                numberOfInputs: 0
+                            },
+                            {
+                                displayKey: 'customBooleanNo',
+                                displayName: 'No',
+                                predicate: (_: unknown, cellValue: boolean) => !cellValue,
+                                numberOfInputs: 0
+                            }
+                        ]
+                    };
+                    break;
                 }
             }
             return colDef;
