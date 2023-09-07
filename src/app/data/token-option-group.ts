@@ -11,6 +11,7 @@ export class TokenOptionGroup {
     private _description: string;
     private _isPublished: boolean;
     private _tokenOptions: TokenOption[];
+    public static TOKEN_OPTION_GROUP_MAX_SIZE = 17;
 
     constructor(
         configuration: TokenATMConfiguration,
@@ -80,6 +81,10 @@ export class TokenOptionGroup {
 
     public get availableTokenOptions(): TokenOption[] {
         return this.tokenOptions.filter((tokenOption) => !tokenOption.isMigrating);
+    }
+
+    public get isFull(): boolean {
+        return this.tokenOptions.length >= TokenOptionGroup.TOKEN_OPTION_GROUP_MAX_SIZE;
     }
 
     public addTokenOption(tokenOption: TokenOption, position?: number): void {
