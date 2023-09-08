@@ -8,6 +8,17 @@ import type { BsModalRef } from 'ngx-bootstrap/modal';
 import * as CSVParse from 'papaparse';
 import { AbstractControl, Validators } from '@angular/forms';
 
+type previewColumnsIndex = {
+    email?: number;
+    balanceChange?: number;
+    message?: number;
+};
+type mandatoryColumns = {
+    email: number;
+    balanceChange: number;
+    message?: number;
+};
+
 @Component({
     selector: 'app-batch-token-balance-adjustment-modal',
     templateUrl: './batch-token-balance-adjustment-modal.component.html',
@@ -32,16 +43,12 @@ export class BatchTokenBalanceAdjustmentModalComponent {
     hasStarted = false;
 
     firstRow?: string[];
-    possibleColumnIndex: {
-        email?: number;
-        balanceChange?: number;
-        message?: number;
-    } = {};
-    columnsUsed: {
-        email: string;
-        balanceChange: string;
-        message?: string;
-    } = { email: '0', balanceChange: '1', message: undefined };
+    possibleColumnIndex: previewColumnsIndex = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    possibleColumnsUsed: any = {};
+    columnsUsed?: mandatoryColumns;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    firstResult?: string[] | any;
 
     private baselineConfig = {
         skipEmptyLines: true,
@@ -75,6 +82,9 @@ export class BatchTokenBalanceAdjustmentModalComponent {
         this.selectedFile = (event.target as any)?.files[0];
         this.clearErrors();
         this.clearProgress();
+        this.clearPreview();
+        // TODO: Remove Header reset once UI Interaction and User Toggle-able Headers work
+        this.hasHeader = false;
         const setPossibleHeaders = (results: CSVParse.ParseResult<unknown>) => {
             if (this.hasHeader) this.firstRow = results.meta?.fields;
             else {
@@ -82,9 +92,10 @@ export class BatchTokenBalanceAdjustmentModalComponent {
             }
         };
         if (this.selectedFile) {
-            const results = await this.parseCSV(this.selectedFile, { header: this.hasHeader, preview: 1 });
+            const results = await this.parseCSV(this.selectedFile, { header: this.hasHeader, preview: 2 });
             setPossibleHeaders(results);
-            console.log("File's First Row:", this.firstRow);
+            // console.log("File's First Row:", this.firstRow);
+            // console.log('Results:', results);
             if (Array.isArray(this.firstRow)) {
                 // Check for matching Token ATM CSV Column Names
                 const normed = this.firstRow.map((x) => x.toLowerCase());
@@ -93,13 +104,13 @@ export class BatchTokenBalanceAdjustmentModalComponent {
                 const message_str = 'message';
                 const present = normed.filter((x) => x === email_str || x === change_str || x === message_str);
 
-                console.log('Matched Headers:', present);
+                // console.log('Matched Headers:', present);
                 const getIndex = (match_str: string): number | undefined => {
                     const idx = normed.indexOf(match_str);
                     return idx === -1 ? undefined : idx;
                 };
 
-                // Set the possible indexes for needed columns
+                // Set the possible indexes for columns
                 this.possibleColumnIndex = {
                     email: getIndex(email_str),
                     balanceChange: getIndex(change_str),
@@ -115,23 +126,55 @@ export class BatchTokenBalanceAdjustmentModalComponent {
                 if (!this.hasHeader && present.length > 1) {
                     this.hasHeader = true;
                 }
-                // If there aren't headers, but there are more than 2 columns, assume the 3rd is for a message
-                if (!this.hasHeader && this.firstRow.length > 2) {
-                    if (this.columnsUsed.message == null) {
-                        this.columnsUsed.message = '2';
-                    }
-                }
 
-                // Temporarily connect possibleColumnIndex with columnsUsed
+                // Temporarily connect possibleColumnUsed with columnsUsed
                 // Will be replaced with header selection UI in future
                 // Be careful to handle the case of a previous import having headers
                 // and the next csv not having a header.
-                if (this.hasHeader) {
-                    this.columnsUsed = namesUsed(this.firstRow) as {
-                        email: string;
-                        balanceChange: string;
-                        message?: string;
-                    };
+                const updatePreview = (data: unknown[]) => {
+                    if (this.firstRow == null) return;
+                    if (this.hasHeader) {
+                        this.possibleColumnsUsed = namesUsed(this.firstRow);
+                        if (Array.isArray(data[0])) {
+                            // Handle when headers are programmatically found and assigned
+                            const firstData = data[1] as string[];
+                            this.firstResult = {};
+                            if (this.possibleColumnsUsed.email != null && this.possibleColumnIndex.email != null) {
+                                this.firstResult[this.possibleColumnsUsed.email] =
+                                    firstData[this.possibleColumnIndex.email];
+                            }
+                            if (
+                                this.possibleColumnsUsed.balanceChange != null &&
+                                this.possibleColumnIndex.balanceChange != null
+                            ) {
+                                this.firstResult[this.possibleColumnsUsed.balanceChange] =
+                                    firstData[this.possibleColumnIndex.balanceChange];
+                            }
+                            if (this.possibleColumnsUsed.message != null && this.possibleColumnIndex.message != null) {
+                                this.firstResult[this.possibleColumnsUsed.message] =
+                                    firstData[this.possibleColumnIndex.message];
+                            }
+                        } else {
+                            this.firstResult = data[0];
+                        }
+                    } else {
+                        // Default for no existing headers
+                        this.possibleColumnsUsed =
+                            this.firstRow.length == 0
+                                ? {}
+                                : this.firstRow.length == 1
+                                ? { email: '0' }
+                                : this.firstRow.length == 2
+                                ? { email: '0', balanceChange: '1' }
+                                : { email: '0', balanceChange: '1', message: '2' };
+                        this.firstResult = this.firstRow as string[];
+                    }
+                    // console.log('Columns:', this.columnsUsed, '\nPreview Result:', this.firstResult);
+                };
+                updatePreview(results.data);
+                if (this.possibleColumnsUsed.email != null && this.possibleColumnsUsed.balanceChange != null) {
+                    // Update columnsUsed for actual import
+                    this.columnsUsed = this.possibleColumnsUsed as mandatoryColumns;
                 }
             }
         }
@@ -139,10 +182,11 @@ export class BatchTokenBalanceAdjustmentModalComponent {
     }
 
     // TODO: - Select from Possible Headers/Columns in UI
-    //          - Use possibleColumnIndex for preview/preselection
+    //          - Use possibleColumnIndex for preselection
+    //          - Use possibleColumnUsed for preview
     //          - Update columnsUsed with actual user selections (w/ index as a string)
-    //          - Call/Update using the selections onImportCSV
-    //       - Disable interactions (header/column selection) once Import begins
+    //          - Disable interactions (header/column selection) once Import begins
+    //       - Handle user turning headers off/on
     //       - Parsing from & Unparsing to Excel formatted CSVs (https://www.papaparse.com/faq#encoding)
     //       - Expose Parser Errors & Meta info (`results.errors` & `results.meta`)
     //       - Allow dry-run functionality to test CSV without updating Token ATM
@@ -150,7 +194,7 @@ export class BatchTokenBalanceAdjustmentModalComponent {
     //       - Use `URL.revokeObjectURL()` on Error CSV URL when modal event onHidden occurs
 
     async onImportCSV() {
-        if (!this.selectedFile || !this.configuration) return;
+        if (!this.selectedFile || !this.configuration || !this.columnsUsed) return;
         this.isProcessing = true;
         this.hasStarted = true;
         const results = await this.parseCSV(this.selectedFile, { header: this.hasHeader });
@@ -228,7 +272,7 @@ export class BatchTokenBalanceAdjustmentModalComponent {
         }
         this.updateProgress(cnt, results.data.length);
         if (this.errorCollection) {
-            console.log('Error CSV Text:', CSVParse.unparse(this.errorCollection));
+            // console.log('Error CSV Text:', CSVParse.unparse(this.errorCollection));
         }
         this.makeErrorCSV();
         this.isProcessing = false;
@@ -274,6 +318,20 @@ export class BatchTokenBalanceAdjustmentModalComponent {
     clearProgress() {
         this.progress = undefined;
         this.progressMessage = undefined;
+    }
+
+    clearPreview() {
+        this.firstRow = undefined;
+        this.possibleColumnIndex = {};
+        this.columnsUsed = undefined;
+        this.firstResult = undefined;
+        this.possibleColumnsUsed = {};
+    }
+
+    clearAll() {
+        this.clearErrors();
+        this.clearPreview();
+        this.clearProgress();
     }
 
     updateProgress(current: number, total: number) {
