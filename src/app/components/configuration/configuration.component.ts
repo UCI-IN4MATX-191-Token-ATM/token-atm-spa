@@ -177,12 +177,16 @@ export class ConfigurationComponent implements CourseConfigurable {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             await this.modalManagerSerivce.createNotificationModal(
-                `Error occurred while deleting Token ATM related content: ${actionNeededTemplate(
+                `Error occurred while deleting Token ATM related content for ${
+                    this.course.name
+                }: ${actionNeededTemplate(
                     `You can use Canvas to delete the Token ATM content by manually deleting: \n${tokenATMContentListTemplate(
                         'the',
                         '\n'
                     )}`
-                )}\n\nError Message: ${ErrorSerializer.serailize(err)}`,
+                )}\nNote: You will be redirected to the course selection page after closing this notification.\n\nError Message: ${ErrorSerializer.serailize(
+                    err
+                )}`,
                 'Error'
             );
         } finally {

@@ -120,12 +120,13 @@ export class TokenATMConfigurationManagerService {
 
     private generateTokenOptionDataPage(configuration: TokenATMConfiguration): string {
         const result = [];
+        let isFirstGroup = false;
         for (const group of configuration.tokenOptionGroups) {
             if (!group.isPublished) continue;
             result.push('<div>');
-            result.push(`<h3>${group.name}</h3>`);
-            const tableContent = this.generateTokenOptionDataTable(group);
-            if (tableContent.trim() == '') {
+            result.push(`<h3${isFirstGroup ? '' : ' style="padding-top: 1em;"'}>${group.name}</h3>`);
+            isFirstGroup = false;
+            if (group.availableTokenOptions.length == 0) {
                 result.push('<p>No available token option exists in this group</p>');
             } else {
                 result.push(this.generateTokenOptionDataTable(group));
@@ -156,11 +157,15 @@ export class TokenATMConfigurationManagerService {
             courseId,
             quizId,
             TokenATMConfigurationManagerService.TOKEN_ATM_QUIZ_PREFIX + tokenOptionGroup.name,
-            String.raw`<div>${tokenOptionGroup.description}</div><div>${dataTable}</div>`
+            String.raw`<div>${tokenOptionGroup.description}</div><div style="padding-top: 1em;">${dataTable}</div>`
         );
+        const questionPrompt =
+            tokenOptionGroup.availableTokenOptions.length == 0
+                ? "There isn't anything you can make a request to via this quiz. If you think this is an error, please contact your instructor."
+                : 'Make a request by choosing an option below (see the table above for the detailed description of each option)';
         const question = new MultipleChoiceQuestion(
             'Choose a token option',
-            'Make a request by choosing an option below (see the table above for the detailed description of each option)',
+            questionPrompt,
             0,
             tokenOptionGroup.availableTokenOptions.map((tokenOption) => tokenOption.prompt)
         );
