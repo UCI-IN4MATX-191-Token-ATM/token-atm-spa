@@ -8,7 +8,6 @@ export class StartDateGuard extends RequestHandlerGuard {
 
     public async check(onReject: (message: string) => Promise<void>): Promise<void> {
         // TODO: Update reject message
-        if (compareAsc(this.submittedDate, this.startDate) == -1)
-            onReject('Request was submitted before the available from date/time');
+        if (compareAsc(this.submittedDate, this.startDate) == -1) onReject('Request was submitted too early');
     }
 }
