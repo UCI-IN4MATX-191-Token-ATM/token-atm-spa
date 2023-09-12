@@ -135,10 +135,7 @@ export class LoginComponent implements AfterViewInit {
     }
 
     openLink() {
-        window.open(
-            'https://docs.google.com/document/d/1H4cvBXV7wwVp1IA2squ0mtrug5HkDVlBf4qKhh1o_vQ/view',
-            '_blank'
-        );
+        window.open('https://docs.google.com/document/d/1H4cvBXV7wwVp1IA2squ0mtrug5HkDVlBf4qKhh1o_vQ/view', '_blank');
     }
 
     getCredentialsFormItemInfoMap(): CredentialsFormItemInfoMap {
