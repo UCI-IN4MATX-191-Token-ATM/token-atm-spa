@@ -12,6 +12,7 @@ import { ErrorSerializer } from 'app/utils/error-serailizer';
 import { EditConfigurationModalComponent } from '../edit-configuration-modal/edit-configuration-modal.component';
 import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-option-resolver-registry';
 import { actionNeededTemplate, tokenATMContentListTemplate } from 'app/utils/string-templates';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-configuration',
@@ -33,7 +34,8 @@ export class ConfigurationComponent implements CourseConfigurable {
         @Inject(CanvasService) private canvasService: CanvasService,
         @Inject(BsModalService) private modalSerivce: BsModalService,
         @Inject(TokenOptionResolverRegistry) private tokenOptionResolverRegistry: TokenOptionResolverRegistry,
-        @Inject(ModalManagerService) private modalManagerSerivce: ModalManagerService
+        @Inject(ModalManagerService) private modalManagerSerivce: ModalManagerService,
+        @Inject(Router) private router: Router
     ) {}
 
     async configureCourse(course: Course): Promise<void> {
@@ -175,18 +177,23 @@ export class ConfigurationComponent implements CourseConfigurable {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             await this.modalManagerSerivce.createNotificationModal(
-                `Error occurred while deleting Token ATM related content: ${actionNeededTemplate(
+                `Error occurred while deleting Token ATM related content for ${
+                    this.course.name
+                }: ${actionNeededTemplate(
                     `You can use Canvas to delete the Token ATM content by manually deleting: \n${tokenATMContentListTemplate(
                         'the',
                         '\n'
                     )}`
-                )}\n\nError Message: ${ErrorSerializer.serailize(err)}`,
+                )}\nNote: You will be redirected to the course selection page after closing this notification.\n\nError Message: ${ErrorSerializer.serailize(
+                    err
+                )}`,
                 'Error'
             );
         } finally {
             this.isProcessing = false;
             modalRef.hide();
         }
+        this.router.navigate(['/select-course']);
     }
 
     async onResetContent(): Promise<void> {
