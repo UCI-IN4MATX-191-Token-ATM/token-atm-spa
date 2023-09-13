@@ -26,6 +26,10 @@ export const GridViewDataPointDef = t.intersection([
         t.strict({
             type: t.literal('html'),
             value: t.string
+        }),
+        t.strict({
+            type: t.literal('boolean'),
+            value: t.boolean
         })
     ])
 ]);

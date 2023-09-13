@@ -107,6 +107,11 @@ export function TokenOptionMixin<TBase extends Constructor<IGridViewDataSource>>
                 type: 'string',
                 value: this.description
             }));
+            this.registerDataPointSource(() => ({
+                colName: 'Is Migrating?',
+                type: 'boolean',
+                value: this.isMigrating ?? false
+            }));
         }
 
         public set group(group: TokenOptionGroup) {
