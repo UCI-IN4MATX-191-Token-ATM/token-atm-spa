@@ -1,6 +1,6 @@
 import { Component, Inject, Input } from '@angular/core';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
-import type { TokenOptionGroup } from 'app/data/token-option-group';
+import { TokenOptionGroup } from 'app/data/token-option-group';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import type { TokenOption } from 'app/token-options/token-option';
@@ -93,6 +93,10 @@ export class MoveTokenOptionModalComponent {
     onSelectTokenOptionGroup(group: TokenOptionGroup) {
         this.selectedGroup = group;
         this.selectedOption = undefined;
+    }
+
+    get tokenOptionGroupMaxSize() {
+        return TokenOptionGroup.TOKEN_OPTION_GROUP_MAX_SIZE;
     }
 
     get validTokenOptions(): TokenOption[] | undefined {

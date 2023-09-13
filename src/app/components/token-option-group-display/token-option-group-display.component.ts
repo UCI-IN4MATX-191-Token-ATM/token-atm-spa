@@ -1,5 +1,5 @@
 import { Component, Inject, Input } from '@angular/core';
-import type { TokenOptionGroup } from 'app/data/token-option-group';
+import { TokenOptionGroup } from 'app/data/token-option-group';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import { BsModalService } from 'ngx-bootstrap/modal';
@@ -91,5 +91,9 @@ export class TokenOptionGroupDisplayComponent {
         if (modalRef.content) modalRef.content.disableButton = true;
         await this.configurationManagerService.deleteTokenOptionGroup(this.group);
         modalRef.hide();
+    }
+
+    get tokenOptionGroupMaxSize() {
+        return TokenOptionGroup.TOKEN_OPTION_GROUP_MAX_SIZE;
     }
 }
