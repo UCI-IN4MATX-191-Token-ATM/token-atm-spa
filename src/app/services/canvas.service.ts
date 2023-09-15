@@ -7,18 +7,19 @@ import { SubmissionComment } from 'app/data/submission-comment';
 import { PaginatedResult } from 'app/utils/paginated-result';
 import { PaginatedView } from 'app/utils/paginated-view';
 import type { AxiosRequestConfig } from 'axios';
-import { compareAsc, formatISO, parseISO } from 'date-fns';
+import { compareAsc, compareDesc, formatISO, isEqual, parseISO } from 'date-fns';
 import { AxiosService, IPCCompatibleAxiosResponse, isNetworkOrServerError } from './axios.service';
 import { User } from 'app/data/user';
 import type { QuizQuestion } from 'app/quiz-questions/quiz-question';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import { Quiz } from 'app/data/quiz';
-import { AssignmentOverride } from 'app/utils/assignment-override';
+import { AssignmentOverride, AssignmentOverrideDef } from 'app/data/assignment-override';
 import { CanvasModule } from 'app/data/canvas-module';
-import { Assignment } from 'app/data/assignment';
+import { Assignment, AssignmentDef } from 'app/data/assignment';
 import { AssignmentSubmission } from 'app/data/assignment-submission';
 import { ExponentialBackoffExecutor } from 'app/utils/exponential-backoff-executor';
 import { Section } from 'app/data/section';
+import { unwrapValidation } from 'app/utils/validation-unwrapper';
 
 type QuizQuestionResponse = {
     id: string;
@@ -444,6 +445,18 @@ export class CanvasService {
             return result;
         }
         throw new Error('Comment creation failed');
+    }
+
+    public async getAssignment(courseId: string, assignmentId: string): Promise<Assignment> {
+        return unwrapValidation(
+            AssignmentDef.decode(
+                await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`, {
+                    params: {
+                        override_assignment_dates: false
+                    }
+                })
+            )
+        );
     }
 
     public async getAssignmentIdByQuizId(courseId: string, quizId: string): Promise<string> {
@@ -984,7 +997,7 @@ export class CanvasService {
         return new PaginatedResult<AssignmentOverride>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`),
             async (url: string) => await this.paginatedRequestHandler(url),
-            (data: unknown[]) => data.map((entry) => AssignmentOverride.deserialize(entry))
+            (data: unknown[]) => data.map((entry) => unwrapValidation(AssignmentOverrideDef.decode(entry)))
         );
     }
 
@@ -998,13 +1011,14 @@ export class CanvasService {
         let targetOverride: AssignmentOverride | undefined = undefined,
             titleCnt = 0;
         for await (const override of await this.getAssignmentOverrides(courseId, assignmentId)) {
+            if (override.isSectionLevel) continue;
             const data = override.title.split(' - ');
             if (data.length >= 3) {
                 titleCnt = parseInt(data[2] as string) + 1;
             }
-            if (override.studentIds.includes(studentId)) return false;
+            if (override.studentIdsAsIndividualLevel.includes(studentId)) return false;
             if (
-                override.studentIds.length >= CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE ||
+                override.studentIdsAsIndividualLevel.length >= CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE ||
                 override.lockAt == undefined ||
                 compareAsc(override.lockAt, lockDate) != 0
             )
@@ -1030,7 +1044,7 @@ export class CanvasService {
                     method: 'put',
                     data: {
                         assignment_override: {
-                            student_ids: targetOverride.studentIds.concat([studentId]),
+                            student_ids: targetOverride.studentIdsAsIndividualLevel.concat([studentId]),
                             title: targetOverride.title,
                             lock_at: formatISO(lockDate)
                         }
@@ -1048,18 +1062,21 @@ export class CanvasService {
     ): Promise<boolean> {
         let targetOverride: AssignmentOverride | undefined = undefined;
         for await (const override of await this.getAssignmentOverrides(courseId, assignmentId)) {
-            if (!override.studentIds.includes(studentId)) continue;
+            if (override.isSectionLevel || !override.studentIdsAsIndividualLevel.includes(studentId)) continue;
             targetOverride = override;
             break;
         }
         if (targetOverride == undefined) return false;
-        if (targetOverride.studentIds.length == 1) {
+        if (targetOverride.studentIdsAsIndividualLevel.length == 1) {
             await this.apiRequest(
                 `/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${targetOverride.id}`,
                 { method: 'delete' }
             );
         } else {
-            targetOverride.studentIds.splice(targetOverride.studentIds.indexOf(studentId), 1);
+            targetOverride.studentIdsAsIndividualLevel.splice(
+                targetOverride.studentIdsAsIndividualLevel.indexOf(studentId),
+                1
+            );
             await this.apiRequest(
                 `/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${targetOverride.id}`,
                 {
@@ -1075,6 +1092,110 @@ export class CanvasService {
             );
         }
         return true;
+    }
+
+    private mergeOverrideDate(a: Date | null, b: Date | null, min = true): Date | null {
+        if (a == null || b == null) return null;
+        if (min) {
+            return compareDesc(a, b) == 1 ? a : b;
+        } else {
+            return compareAsc(a, b) == 1 ? a : b;
+        }
+    }
+
+    private isOverrideDateEqual(a: Date | null, b: Date | null): boolean {
+        if (a == null && b == null) return true;
+        if (a == null || b == null) return false;
+        return isEqual(a, b);
+    }
+
+    public async extendAssignmentForStudent(
+        courseId: string,
+        assignmentId: string,
+        studentId: string,
+        overrideTitlePrefix: string
+    ): Promise<boolean> {
+        const overrides = await DataConversionHelper.convertAsyncIterableToList(
+            await this.getAssignmentOverrides(courseId, assignmentId)
+        );
+        const sections = new Set(
+            await DataConversionHelper.convertAsyncIterableToList(
+                await this.getStudentSectionEnrollments(courseId, studentId)
+            )
+        );
+        let lockDate: Date | null = null,
+            unlockDate: Date | null = null,
+            titleCnt = 0,
+            hasMatchedOverride = false;
+        for (const override of overrides) {
+            const data = override.title.split(' - ');
+            if (data.length >= 3) {
+                titleCnt = parseInt(data[2] as string) + 1;
+            }
+            if (override.isIndividualLevel) {
+                if (override.studentIdsAsIndividualLevel.includes(studentId)) return false;
+                continue;
+            }
+            if (sections.has(override.sectionIdAsSectionLevel)) {
+                if (!hasMatchedOverride) {
+                    lockDate = override.lockAt;
+                    unlockDate = override.unlockAt;
+                    hasMatchedOverride = true;
+                    continue;
+                }
+                lockDate = this.mergeOverrideDate(lockDate, override.lockAt, false);
+                unlockDate = this.mergeOverrideDate(unlockDate, override.unlockAt, true);
+            }
+        }
+        if (!hasMatchedOverride) {
+            const assignment = await this.getAssignment(courseId, assignmentId);
+            lockDate = assignment.lockAt;
+            unlockDate = assignment.unlockAt;
+        }
+        let targetOverride: AssignmentOverride | undefined = undefined;
+        for (const override of overrides) {
+            if (!override.isIndividualLevel) continue;
+            if (override.studentIdsAsIndividualLevel.length >= CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE) continue;
+            if (
+                this.isOverrideDateEqual(unlockDate, override.unlockAt) &&
+                this.isOverrideDateEqual(lockDate, override.lockAt) &&
+                this.isOverrideDateEqual(lockDate, override.dueAt)
+            ) {
+                targetOverride = override;
+                break;
+            }
+        }
+        if (targetOverride) {
+            await this.apiRequest(
+                `/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${targetOverride.id}`,
+                {
+                    method: 'put',
+                    data: {
+                        assignment_override: {
+                            student_ids: targetOverride.studentIdsAsIndividualLevel.concat([studentId]),
+                            title: targetOverride.title,
+                            lock_at: lockDate ? formatISO(lockDate) : null,
+                            unlock_at: unlockDate ? formatISO(unlockDate) : null,
+                            due_at: lockDate ? formatISO(lockDate) : null
+                        }
+                    }
+                }
+            );
+        } else {
+            await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
+                method: 'post',
+                data: {
+                    assignment_override: {
+                        student_ids: [studentId],
+                        title: `${overrideTitlePrefix} - ${titleCnt}`,
+                        lock_at: lockDate ? formatISO(lockDate) : null,
+                        unlock_at: unlockDate ? formatISO(unlockDate) : null,
+                        due_at: lockDate ? formatISO(lockDate) : null
+                    }
+                }
+            });
+        }
+        return false;
     }
 
     public async getAssignmentSubmission(
@@ -1120,7 +1241,7 @@ export class CanvasService {
                 }
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
-            (data: unknown[]) => data.map((entry) => Assignment.deserialize(entry))
+            (data: unknown[]) => data.map((entry) => unwrapValidation(AssignmentDef.decode(entry)))
         );
         let result: string | undefined = undefined;
         for await (const assignment of assignments) {
