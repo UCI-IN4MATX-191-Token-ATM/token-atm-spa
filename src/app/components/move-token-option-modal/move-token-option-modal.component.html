@@ -18,7 +18,20 @@
             </option>
         </select>
         <select class="form-select m-2" [ngModel]="selectedGroup" (ngModelChange)="onSelectTokenOptionGroup($event)">
-            <option *ngFor="let group of configuration.tokenOptionGroups" [ngValue]="group">{{ group.name }}</option>
+            <option
+                *ngFor="let group of configuration.tokenOptionGroups"
+                [ngValue]="group"
+                [disabled]="group !== srcOption?.group && group.isFull"
+                [attr.title]="
+                    group !== srcOption?.group && group.isFull
+                        ? 'This token option group is full (there cannot be more than ' +
+                          tokenOptionGroupMaxSize.toString() +
+                          ' token options in a group)'
+                        : undefined
+                "
+            >
+                {{ group.name }}
+            </option>
         </select>
         <ng-container *ngIf="validTokenOptions">
             <select

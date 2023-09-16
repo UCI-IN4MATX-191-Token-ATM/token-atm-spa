@@ -267,6 +267,17 @@ export class CanvasService {
         return content;
     }
 
+    public async createOrModifyPageByName(courseId: string, pageTitle: string, pageContent: string): Promise<string> {
+        try {
+            const pageId = await this.getPageIdByName(courseId, pageTitle);
+            return await this.modifyPage(courseId, pageId, pageContent);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
+            if (err.message == 'Page not found') return await this.createPage(courseId, pageTitle, pageContent);
+            throw err;
+        }
+    }
+
     public async getQuizSubmissions(courseId: string, quizId: string): Promise<PaginatedResult<QuizSubmission>> {
         const response = await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/submissions`, {
             params: {
