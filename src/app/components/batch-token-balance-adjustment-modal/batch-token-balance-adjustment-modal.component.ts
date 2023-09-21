@@ -32,6 +32,7 @@ export class BatchTokenBalanceAdjustmentModalComponent {
     selectedFile?: File;
     progress?: string;
     progressMessage?: string;
+    displayKeys = ['email', 'balanceChange', 'message'];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     errorCollection?: (string[] | any)[];

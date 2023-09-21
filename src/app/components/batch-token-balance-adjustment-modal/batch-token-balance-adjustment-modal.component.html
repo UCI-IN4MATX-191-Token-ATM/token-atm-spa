@@ -32,19 +32,18 @@
                 <tbody>
                     <tr *ngIf="hasHeader && possibleColumnsUsed" class="table-active">
                         <th scope="row">CSV Header</th>
-                        <td>{{ possibleColumnsUsed.email }}</td>
-                        <td>{{ possibleColumnsUsed.balanceChange }}</td>
-                        <td>{{ possibleColumnsUsed.message }}</td>
+                        <td *ngFor="let key of displayKeys">{{ possibleColumnsUsed[key] }}</td>
                     </tr>
                     <tr *ngIf="possibleColumnsUsed && firstResult">
                         <th scope="row">1.</th>
-                        <td>{{ possibleColumnsUsed.email ? firstResult[possibleColumnsUsed.email] : '' }}</td>
-                        <td>
-                            {{
-                                possibleColumnsUsed.balanceChange ? firstResult[possibleColumnsUsed.balanceChange] : ''
-                            }}
+                        <td
+                            *ngFor="let key of displayKeys"
+                            [class]="
+                                possibleColumnsUsed[key] ? '' : key === 'message' ? 'table-warning' : 'table-danger'
+                            "
+                        >
+                            {{ possibleColumnsUsed[key] ? firstResult[possibleColumnsUsed[key]] : '' }}
                         </td>
-                        <td>{{ possibleColumnsUsed.message ? firstResult[possibleColumnsUsed.message] : '' }}</td>
                     </tr>
                 </tbody>
             </table>
