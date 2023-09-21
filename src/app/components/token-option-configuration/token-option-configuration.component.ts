@@ -10,6 +10,7 @@ import { CdkDragDrop, moveItemInArray, transferArrayItem, CDK_DRAG_CONFIG } from
 import { CredentialManagerService } from 'app/services/credential-manager.service';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import type { DisplayedColumnsChangedEvent } from 'ag-grid-community';
+import { ExportRequestModalComponent } from '../export-request-modal/export-request-modal.component';
 
 @Component({
     selector: 'app-token-option-configuration',
@@ -213,5 +214,18 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
                 event.currentIndex
             );
         }
+    }
+
+    onExportProcessedRequests(): void {
+        if (!this.configuration) return;
+        const modalRef = this.modalService.show(ExportRequestModalComponent, {
+            initialState: {
+                configuration: this.configuration
+            },
+            class: 'modal-lg',
+            backdrop: 'static',
+            keyboard: false
+        });
+        if (modalRef.content) modalRef.content.modalRef = modalRef;
     }
 }

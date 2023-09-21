@@ -66,6 +66,9 @@ import { AgGridModule } from 'ag-grid-angular';
 import { GridViewDisplayComponent } from './components/grid-view-display/grid-view-display.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { GridViewExternalAccessComponent } from './components/grid-view-external-access/grid-view-external-access.component';
+import { ExportRequestModalComponent } from './components/export-request-modal/export-request-modal.component';
+import { SelectFieldComponent } from './components/form-fields/select-field/select-field.component';
+import { CheckboxFieldComponent } from './components/form-fields/checkbox-field/checkbox-field.component';
 
 @NgModule({
     declarations: [
@@ -104,7 +107,10 @@ import { GridViewExternalAccessComponent } from './components/grid-view-external
         MultipleSectionDateFieldComponent,
         ErrorMessageFieldComponent,
         GridViewDisplayComponent,
-        GridViewExternalAccessComponent
+        GridViewExternalAccessComponent,
+        ExportRequestModalComponent,
+        SelectFieldComponent,
+        CheckboxFieldComponent
     ],
     imports: [
         BrowserModule,
