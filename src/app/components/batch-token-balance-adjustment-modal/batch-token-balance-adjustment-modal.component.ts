@@ -8,12 +8,12 @@ import type { BsModalRef } from 'ngx-bootstrap/modal';
 import * as CSVParse from 'papaparse';
 import { AbstractControl, Validators } from '@angular/forms';
 
-type previewColumnsIndex = {
+type PreviewColumnsIndex = {
     email?: number;
     balanceChange?: number;
     message?: number;
 };
-type mandatoryColumns = {
+type MandatoryColumns = {
     email: number;
     balanceChange: number;
     message?: number;
@@ -43,10 +43,10 @@ export class BatchTokenBalanceAdjustmentModalComponent {
     hasStarted = false;
 
     firstRow?: string[];
-    possibleColumnIndex: previewColumnsIndex = {};
+    possibleColumnIndex: PreviewColumnsIndex = {};
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     possibleColumnsUsed: any = {};
-    columnsUsed?: mandatoryColumns;
+    columnsUsed?: MandatoryColumns;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     firstResult?: string[] | any;
 
@@ -174,7 +174,7 @@ export class BatchTokenBalanceAdjustmentModalComponent {
                 updatePreview(results.data);
                 if (this.possibleColumnsUsed.email != null && this.possibleColumnsUsed.balanceChange != null) {
                     // Update columnsUsed for actual import
-                    this.columnsUsed = this.possibleColumnsUsed as mandatoryColumns;
+                    this.columnsUsed = this.possibleColumnsUsed as MandatoryColumns;
                 }
             }
         }
