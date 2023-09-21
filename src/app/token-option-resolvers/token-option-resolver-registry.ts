@@ -14,6 +14,7 @@ import { WithdrawLabDataTokenOption } from 'app/token-options/withdraw-lab-data-
 import { WithdrawLabSwitchTokenOption } from 'app/token-options/withdraw-lab-switch-token-option';
 import type { TokenOptionResolver } from './token-option-resolver';
 import camelcaseKeys from 'camelcase-keys';
+import { SpendForAssignmentExtensionTokenOption } from 'app/token-options/spend-for-assignment-extension-token-option';
 
 export const REGISTERED_TOKEN_OPTION_RESOLVERS: Type<TokenOptionResolver<TokenOption>>[] = [];
 
@@ -34,7 +35,8 @@ export const DEFAULT_TOKEN_OPTION_RESOLVERS: {
     'spend-for-lab-switch': SpendForLabSwitchTokenOption,
     'withdraw-assignment-resubmission': WithdrawAssignmentResubmissionTokenOption,
     'withdraw-lab-data': WithdrawLabDataTokenOption,
-    'withdraw-lab-switch': WithdrawLabSwitchTokenOption
+    'withdraw-lab-switch': WithdrawLabSwitchTokenOption,
+    'spend-for-assignment-extension': SpendForAssignmentExtensionTokenOption
 };
 
 interface ITokenOptionType {

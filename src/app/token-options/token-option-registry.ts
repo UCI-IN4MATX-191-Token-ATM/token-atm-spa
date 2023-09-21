@@ -18,7 +18,8 @@ export class TokenOptionRegistry {
         'withdraw-assignment-resubmission': 'Withdraw Assignment Resubmission Request',
         'withdraw-lab-data': 'Withdraw Lab Data Request',
         'spend-for-lab-switch': 'Spend Tokens for Switching Lab',
-        'withdraw-lab-switch': 'Withdraw Lab Switch Request (For Teacher Only)'
+        'withdraw-lab-switch': 'Withdraw Lab Switch Request (For Teacher Only)',
+        'spend-for-assignment-extension': 'Spend Tokens for Assignment Extension'
     };
 
     public getDescriptiveName(tokenOptionType: string): string | undefined {
