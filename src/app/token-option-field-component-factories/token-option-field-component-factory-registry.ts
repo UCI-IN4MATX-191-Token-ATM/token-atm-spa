@@ -21,6 +21,7 @@ import { SpendForLabSwitchTokenOptionFieldComponentFactory } from './spend-for-l
 import { WithdrawAssignmentResubmissionTokenOptionFieldComponentFactory } from './withdraw-assignment-resubmission-token-option-field-component-factory';
 import { WithdrawLabDataTokenOptionFieldComponentFactory } from './withdraw-lab-data-token-option-field-component-factory';
 import { WithdrawLabSwitchTokenOptionFieldComponentFactory } from './withdraw-lab-switch-token-option-field-component-factory';
+import { SpendForQuizRevisionTokenOptionFieldComponentFactory } from './spend-for-quiz-revision-token-option-field-component-factory';
 import { SpendForAssignmentExtensionTokenOptionFieldComponentFactory } from './spend-for-assignment-extension-token-option-field-component-factory';
 
 export const REGISTERED_TOKEN_OPTION_FIELD_COMPONENT_FACTORIES: Type<TokenOptionFieldComponentFactory<TokenOption>>[] =
@@ -35,6 +36,7 @@ export const REGISTERED_TOKEN_OPTION_FIELD_COMPONENT_FACTORIES: Type<TokenOption
         WithdrawAssignmentResubmissionTokenOptionFieldComponentFactory,
         WithdrawLabDataTokenOptionFieldComponentFactory,
         WithdrawLabSwitchTokenOptionFieldComponentFactory,
+        SpendForQuizRevisionTokenOptionFieldComponentFactory,
         SpendForAssignmentExtensionTokenOptionFieldComponentFactory
     ];
 
