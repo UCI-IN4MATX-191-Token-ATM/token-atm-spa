@@ -69,6 +69,7 @@ import { GridViewExternalAccessComponent } from './components/grid-view-external
 import { ExportRequestModalComponent } from './components/export-request-modal/export-request-modal.component';
 import { SelectFieldComponent } from './components/form-fields/select-field/select-field.component';
 import { CheckboxFieldComponent } from './components/form-fields/checkbox-field/checkbox-field.component';
+import { OptionalFieldComponent } from './components/form-fields/optional-field/optional-field.component';
 
 @NgModule({
     declarations: [
@@ -110,7 +111,8 @@ import { CheckboxFieldComponent } from './components/form-fields/checkbox-field/
         GridViewExternalAccessComponent,
         ExportRequestModalComponent,
         SelectFieldComponent,
-        CheckboxFieldComponent
+        CheckboxFieldComponent,
+        OptionalFieldComponent
     ],
     imports: [
         BrowserModule,

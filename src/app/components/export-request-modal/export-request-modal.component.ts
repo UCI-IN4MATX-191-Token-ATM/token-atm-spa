@@ -24,6 +24,8 @@ import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { v4 as uuidv4 } from 'uuid';
 import { ErrorSerializer } from 'app/utils/error-serailizer';
+import { OptionalFieldComponent } from '../form-fields/optional-field/optional-field.component';
+import type { DirectFormField } from 'app/utils/form-field/direct-form-field';
 
 @Component({
     selector: 'app-export-request-modal',
@@ -31,6 +33,7 @@ import { ErrorSerializer } from 'app/utils/error-serailizer';
     styleUrls: ['./export-request-modal.component.sass']
 })
 export class ExportRequestModalComponent implements OnInit, OnDestroy {
+    private static IS_TIME_RANGE_FILTER_ENABLED = false;
     private static SAVED_START_TIME = set(new Date(), {
         hours: 0,
         minutes: 0,
@@ -55,7 +58,7 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
 
     isInitialized = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    configField?: FormField<any, [string, [Date, Date], boolean], any>;
+    configField?: FormField<any, [string, [Date, Date] | undefined, boolean], any>;
     exportInstance?: RequestExportInstance;
     fileURL?: string;
     fileName?: string;
@@ -95,49 +98,56 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
                 .transformDest(async (value) => value as string)
                 .appendBuilder(
                     createFieldComponentWithLabel(
-                        DateTimeFieldComponent,
-                        'Include Requests Since',
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        OptionalFieldComponent<DirectFormField<[Date, Date], any>>,
+                        'Specify a time range for requests',
                         this.environmentInjector
-                    )
-                        .appendBuilder(
-                            createFieldComponentWithLabel(
-                                DateTimeFieldComponent,
-                                'Include Requests Until',
-                                this.environmentInjector
-                            )
+                    ).editField((field) => {
+                        field.fieldBuilder = createFieldComponentWithLabel(
+                            DateTimeFieldComponent,
+                            'Include Requests Since',
+                            this.environmentInjector
                         )
-                        .appendVP(
-                            async (field) =>
-                                <[DateTimeFieldComponent, DateTimeFieldComponent, [Date, Date]]>[
-                                    field.fieldA,
-                                    field.fieldB,
-                                    await field.destValue
-                                ]
-                        )
-                        .editField((field) => {
-                            field.validator = async ([startTimeField, endTimeField, [startTime, endTime]]) => {
-                                if (
-                                    startTime == undefined ||
-                                    endTime == undefined ||
-                                    isNaN(startTime.getTime()) ||
-                                    isNaN(endTime.getTime())
+                            .appendBuilder(
+                                createFieldComponentWithLabel(
+                                    DateTimeFieldComponent,
+                                    'Include Requests Until',
+                                    this.environmentInjector
                                 )
-                                    return false;
-                                if (compareAsc(startTime, endTime) == 1) {
-                                    startTimeField.errorMessage =
-                                        'Time range is invalid: start time cannot be later than the end time';
-                                    endTimeField.errorMessage =
-                                        'Time range is invalid: start time cannot be later than the end time';
-                                    return false;
-                                }
-                                return true;
-                            };
-                        })
+                            )
+                            .appendVP(
+                                async (field) =>
+                                    <[DateTimeFieldComponent, DateTimeFieldComponent, [Date, Date]]>[
+                                        field.fieldA,
+                                        field.fieldB,
+                                        await field.destValue
+                                    ]
+                            )
+                            .editField((field) => {
+                                field.validator = async ([startTimeField, endTimeField, [startTime, endTime]]) => {
+                                    if (
+                                        startTime == undefined ||
+                                        endTime == undefined ||
+                                        isNaN(startTime.getTime()) ||
+                                        isNaN(endTime.getTime())
+                                    )
+                                        return false;
+                                    if (compareAsc(startTime, endTime) == 1) {
+                                        startTimeField.errorMessage =
+                                            'Time range is invalid: start time cannot be later than the end time';
+                                        endTimeField.errorMessage =
+                                            'Time range is invalid: start time cannot be later than the end time';
+                                        return false;
+                                    }
+                                    return true;
+                                };
+                            });
+                    })
                 )
                 .appendBuilder(
                     createFieldComponentWithLabel(
                         CheckboxFieldComponent,
-                        'Include Rejected Request',
+                        'Include Rejected Requests',
                         this.environmentInjector
                     )
                 )
@@ -145,7 +155,10 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
             field.srcValue = [
                 undefined,
                 options,
-                [ExportRequestModalComponent.SAVED_START_TIME, ExportRequestModalComponent.SAVED_END_TIME],
+                [
+                    ExportRequestModalComponent.IS_TIME_RANGE_FILTER_ENABLED,
+                    [ExportRequestModalComponent.SAVED_START_TIME, ExportRequestModalComponent.SAVED_END_TIME]
+                ],
                 false
             ];
             this.configField = field;
@@ -164,25 +177,17 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
         if (!this.configuration || !this.configField) return;
         if (!(await this.configField.validate())) return;
         if (this.exportInstance) return;
+        if (this.fileURL != undefined || this.fileName != undefined) return;
         try {
-            if (this.fileURL != undefined) {
-                if (
-                    !(await this.modalManagerService.createConfirmationModalWithoutRef(
-                        'There is already an exported file. Start a new export will cause it being deleted. Do you still want to proceed?'
-                    ))
-                ) {
-                    return;
-                }
-                URL.revokeObjectURL(this.fileURL);
-                this.fileURL = undefined;
-                this.fileName = undefined;
-            }
             this.message = undefined;
             this.isProcessing = true;
             this.configField.isReadOnly = true;
-            const [scope, [startTime, endTime], includeRejected] = await this.configField.destValue;
-            ExportRequestModalComponent.SAVED_START_TIME = startTime;
-            ExportRequestModalComponent.SAVED_END_TIME = endTime;
+            const [scope, dateRange, includeRejected] = await this.configField.destValue;
+            ExportRequestModalComponent.IS_TIME_RANGE_FILTER_ENABLED = dateRange != undefined;
+            if (dateRange) {
+                ExportRequestModalComponent.SAVED_START_TIME = dateRange[0];
+                ExportRequestModalComponent.SAVED_END_TIME = dateRange[1];
+            }
             const students: Student[] = [];
             let classifier: ((request: ProcessedRequest, student: Student) => Promise<string>) | undefined = undefined;
             switch (scope) {
@@ -224,8 +229,9 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
                 async (request: ProcessedRequest) => {
                     if (this.filter && !(await this.filter(request))) return false;
                     if (
-                        compareAsc(startTime, request.submittedTime) == 1 ||
-                        compareAsc(request.submittedTime, endTime) == 1
+                        dateRange &&
+                        (compareAsc(dateRange[0], request.submittedTime) == 1 ||
+                            compareAsc(request.submittedTime, dateRange[1]) == 1)
                     )
                         return false;
                     if (!includeRejected && !request.isApproved) return false;
@@ -240,11 +246,11 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
             if (exportedFile) {
                 this.fileURL = URL.createObjectURL(exportedFile);
                 this.fileName = exportedFile.name;
-            }
+                this.configField.isReadOnly = true;
+            } else this.configField.isReadOnly = false;
             if (exportedFile == null)
                 this.message = 'Export finished, but no requests satisfy the specified restrictions.';
             this.isProcessing = false;
-            this.configField.isReadOnly = false;
         } catch (err: unknown) {
             await this.modalManagerService.createNotificationModal(
                 `Error occurred when exporting processed requests${
@@ -254,6 +260,21 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
             );
             this.modalRef?.hide();
         }
+    }
+
+    async onClearExport(): Promise<void> {
+        if (this.fileURL == undefined || !this.configField) return;
+        if (
+            !(await this.modalManagerService.createConfirmationModalWithoutRef(
+                'The existing exported file will be deleted. Do you still want to proceed?'
+            ))
+        ) {
+            return;
+        }
+        URL.revokeObjectURL(this.fileURL);
+        this.fileURL = undefined;
+        this.fileName = undefined;
+        this.configField.isReadOnly = false;
     }
 
     onStopExport(): void {

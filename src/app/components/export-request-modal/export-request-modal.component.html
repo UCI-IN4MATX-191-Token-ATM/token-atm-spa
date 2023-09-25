@@ -41,13 +41,22 @@
             Close
         </button>
         <button
-            *ngIf="this.configuration && this.configField && !this.exportInstance"
+            *ngIf="this.configuration && this.configField && !this.exportInstance && this.fileURL === undefined"
             type="button"
             class="btn btn-outline-primary"
             (click)="onExport()"
             [disabled]="isProcessing"
         >
             Export
+        </button>
+        <button
+            *ngIf="this.configuration && this.configField && this.fileURL"
+            type="button"
+            class="btn btn-danger"
+            (click)="onClearExport()"
+            [disabled]="isProcessing"
+        >
+            Clear Current Export
         </button>
         <button *ngIf="this.exportInstance" class="btn btn-danger" (click)="onStopExport()" [disabled]="isProcessing">
             Stop

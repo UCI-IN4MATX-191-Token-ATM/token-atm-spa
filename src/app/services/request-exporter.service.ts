@@ -76,7 +76,7 @@ export class RequestExportInstance {
             }
             this.curProgress++;
         }
-        const fileName = `Token-ATM-Request-Export-${
+        const fileName = `Token-ATM-Requests-Export-${
             this.fileName ? sanitizeFileName(this.fileName) + '-' : '' + format(new Date(), 'MM-dd-yyyy-HH-mm-ss')
         }`;
         if (!this.classifier) {
