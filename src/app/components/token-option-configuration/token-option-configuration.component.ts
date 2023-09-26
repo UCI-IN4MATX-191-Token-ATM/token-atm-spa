@@ -220,7 +220,8 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
         if (!this.configuration) return;
         const modalRef = this.modalService.show(ExportRequestModalComponent, {
             initialState: {
-                configuration: this.configuration
+                configuration: this.configuration,
+                titleSuffix: 'All Token Options'
             },
             class: 'modal-lg',
             backdrop: 'static',

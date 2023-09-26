@@ -249,7 +249,8 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
                 this.configField.isReadOnly = true;
             } else this.configField.isReadOnly = false;
             if (exportedFile == null)
-                this.message = 'Export finished, but no requests satisfy the specified restrictions.';
+                this.message =
+                    'Export finished, but there are no requests that satisfy the restrictions specified above.';
             this.isProcessing = false;
         } catch (err: unknown) {
             await this.modalManagerService.createNotificationModal(
