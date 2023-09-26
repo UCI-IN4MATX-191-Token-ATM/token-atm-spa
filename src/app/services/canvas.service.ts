@@ -1006,7 +1006,11 @@ export class CanvasService {
         assignmentId: string
     ): Promise<PaginatedResult<AssignmentOverride>> {
         return new PaginatedResult<AssignmentOverride>(
-            await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`),
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
+                params: {
+                    per_page: 100
+                }
+            }),
             async (url: string) => await this.paginatedRequestHandler(url),
             (data: unknown[]) => data.map((entry) => unwrapValidation(AssignmentOverrideDef.decode(entry)))
         );
@@ -1333,7 +1337,11 @@ export class CanvasService {
 
     public async getSections(courseId: string): Promise<PaginatedResult<Section>> {
         return new PaginatedResult<Section>(
-            await this.rawAPIRequest(`/api/v1/courses/${courseId}/sections`),
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/sections`, {
+                params: {
+                    per_page: 100
+                }
+            }),
             async (url: string) => await this.paginatedRequestHandler(url),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (data: any) => data.map((entry: any) => Section.deserialize(entry))
@@ -1346,12 +1354,52 @@ export class CanvasService {
                 params: {
                     type: ['StudentEnrollment'],
                     state: ['active'],
-                    user_id: userId
+                    user_id: userId,
+                    per_page: 100
                 }
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (data: any) => data.map((entry: any) => entry.course_section_id)
         );
+    }
+
+    public async getSectionStudentsWithEmail(courseId: string, sectionId: string): Promise<Student[]> {
+        const studentIds = new PaginatedView<string>(
+            await this.rawAPIRequest(`/api/v1/sections/${sectionId}/enrollments`, {
+                params: {
+                    type: ['StudentEnrollment'],
+                    state: ['active'],
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (data: any) => data.map((entry: any) => entry.user.id)
+        );
+        let isFirstPage = true;
+        const students = [];
+        do {
+            if (isFirstPage) isFirstPage = false;
+            else studentIds.next();
+            students.push(
+                ...(await DataConversionHelper.convertAsyncIterableToList(
+                    new PaginatedResult<Student>(
+                        await this.rawAPIRequest(`/api/v1/courses/${courseId}/users`, {
+                            params: {
+                                enrollment_type: ['student'],
+                                enrollment_state: ['active'],
+                                per_page: 100,
+                                user_ids: [...studentIds]
+                            }
+                        }),
+                        async (url: string) => await this.paginatedRequestHandler(url),
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (data: any) => data.map((entry: any) => Student.deserialize(entry))
+                    )
+                ))
+            );
+        } while (studentIds.hasNextPage());
+        return students;
     }
 }

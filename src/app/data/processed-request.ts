@@ -49,6 +49,10 @@ export class ProcessedRequest {
         return this._tokenOption;
     }
 
+    public get tokenOptionId(): number {
+        return this._tokenOptionId;
+    }
+
     public get tokenOptionName(): string {
         return this._tokenOptionName;
     }

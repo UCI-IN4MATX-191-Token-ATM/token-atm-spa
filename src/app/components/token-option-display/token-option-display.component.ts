@@ -7,6 +7,7 @@ import { BsModalService } from 'ngx-bootstrap/modal';
 import { MoveTokenOptionModalComponent } from '../move-token-option-modal/move-token-option-modal.component';
 import { TokenOptionManagementComponent } from '../token-option-management/token-option-management.component';
 import { actionNeededTemplate } from 'app/utils/string-templates';
+import { ExportRequestModalComponent } from '../export-request-modal/export-request-modal.component';
 
 @Component({
     selector: 'app-token-option-display',
@@ -84,5 +85,21 @@ export class TokenOptionDisplayComponent {
                 )
             );
         confirmationRef.hide();
+    }
+
+    onExportProcessedRequests(): void {
+        if (!this.option) return;
+        const option = this.option;
+        const modalRef = this.modalService.show(ExportRequestModalComponent, {
+            initialState: {
+                configuration: option.group.configuration,
+                filter: async (request) => request.tokenOptionId == option.id,
+                titleSuffix: `Token Option (${option.name})`
+            },
+            class: 'modal-lg',
+            backdrop: 'static',
+            keyboard: false
+        });
+        if (modalRef.content) modalRef.content.modalRef = modalRef;
     }
 }

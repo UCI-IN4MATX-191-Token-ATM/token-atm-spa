@@ -1,0 +1,9 @@
+<div class="m-3">
+    <div class="d-flex align-items-center">
+        <input class="me-2" type="checkbox" [(ngModel)]="isShown" [disabled]="isReadOnly" />
+        <span>{{ label }}</span>
+    </div>
+    <div [hidden]="!isShown">
+        <ng-template #fieldContainer></ng-template>
+    </div>
+</div>
