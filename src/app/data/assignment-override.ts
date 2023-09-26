@@ -3,14 +3,15 @@ import { ISODateDef } from '../utils/mixin-helper';
 import { chain } from 'fp-ts/Either';
 import camelcaseKeys from 'camelcase-keys';
 import decamelizeKeys from 'decamelize-keys';
+import { NullOrUndefinedAsNull } from 'app/utils/io-ts-type-definitions';
 
 export const AssignmentOverrideDataDef = t.intersection([
     t.strict({
         id: t.string,
         title: t.string,
-        lockAt: t.union([ISODateDef, t.null]),
-        unlockAt: t.union([ISODateDef, t.null]),
-        dueAt: t.union([ISODateDef, t.null])
+        lockAt: t.union([ISODateDef, NullOrUndefinedAsNull]),
+        unlockAt: t.union([ISODateDef, NullOrUndefinedAsNull]),
+        dueAt: t.union([ISODateDef, NullOrUndefinedAsNull])
     }),
     t.union([
         t.strict({

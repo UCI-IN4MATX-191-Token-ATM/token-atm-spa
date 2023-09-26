@@ -51,7 +51,7 @@ export class SpendForQuizRevisionRequestHandler extends RequestHandler<
                 configuration.course.id,
                 request.tokenOption.assignmentId,
                 studentRecord.student.id,
-                '',
+                `Token ATM - ${configuration.uid}`,
                 request.tokenOption.newDueTime
             );
         }
