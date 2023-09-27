@@ -59,7 +59,7 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                         () => {
                             return createNewDueTimeComponentBuilder(environmentInjector, 'Date/Time');
                         },
-                        'Change Until Date/Time for Canvas Assignment to',
+                        'Change the Canvas Assignment’s Available Until to', // TODO: Phrasing may need more work
                         environmentInjector
                     )
                 )
