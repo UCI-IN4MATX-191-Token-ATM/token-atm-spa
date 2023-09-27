@@ -231,7 +231,7 @@ export function createAssignmentFieldComponentBuilder(
 ): FormFieldComponentBuilder<
     FormField<[string, string], [string, string], FormFieldAppender<StringInputFieldComponent, StaticFormField<string>>>
 > {
-    return createFieldComponentWithLabel(StringInputFieldComponent, 'Assignment Name', environmentInjector)
+    return createFieldComponentWithLabel(StringInputFieldComponent, 'Canvas Assignment Name', environmentInjector)
         .appendField(new StaticFormField<string>())
         .editField((field) => {
             field.validator = async (value: typeof field) => {
