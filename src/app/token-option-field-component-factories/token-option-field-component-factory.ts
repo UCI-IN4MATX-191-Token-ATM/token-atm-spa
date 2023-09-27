@@ -225,6 +225,30 @@ export function createGradeThresholdComponentBuilder(
         });
 }
 
+export function createAssignmentFieldComponentBuilder(
+    canvasService: CanvasService,
+    environmentInjector: EnvironmentInjector
+): FormFieldComponentBuilder<
+    FormField<[string, string], [string, string], FormFieldAppender<StringInputFieldComponent, StaticFormField<string>>>
+> {
+    return createFieldComponentWithLabel(StringInputFieldComponent, 'Assignment Name', environmentInjector)
+        .appendField(new StaticFormField<string>())
+        .editField((field) => {
+            field.validator = async (value: typeof field) => {
+                value.fieldA.errorMessage = undefined;
+                const [assignmentName, courseId] = await value.destValue;
+                try {
+                    await canvasService.getAssignmentIdByName(courseId, assignmentName);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                } catch (err: any) {
+                    value.fieldA.errorMessage = err.toString();
+                    return false;
+                }
+                return true;
+            };
+        });
+}
+
 export function tokenOptionFieldComponentBuilder(
     environmentInjector: EnvironmentInjector
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

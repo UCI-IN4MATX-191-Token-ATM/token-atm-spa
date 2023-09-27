@@ -5,6 +5,7 @@ import { TokenATMConfigurationManagerService } from 'app/services/token-atm-conf
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { CreateTokenOptionModalComponent } from '../create-token-option-modal/create-token-option-modal.component';
 import { TokenOptionGroupManagementComponent } from '../token-option-group-management/token-option-group-management.component';
+import { ExportRequestModalComponent } from '../export-request-modal/export-request-modal.component';
 
 @Component({
     selector: 'app-token-option-group-display',
@@ -95,5 +96,21 @@ export class TokenOptionGroupDisplayComponent {
 
     get tokenOptionGroupMaxSize() {
         return TokenOptionGroup.TOKEN_OPTION_GROUP_MAX_SIZE;
+    }
+
+    onExportProcessedRequests(): void {
+        if (!this.group) return;
+        const group = this.group;
+        const modalRef = this.modalService.show(ExportRequestModalComponent, {
+            initialState: {
+                configuration: group.configuration,
+                filter: async (request) => request.tokenOptionGroupId == group.id,
+                titleSuffix: `Token Option Group (${group.name})`
+            },
+            class: 'modal-lg',
+            backdrop: 'static',
+            keyboard: false
+        });
+        if (modalRef.content) modalRef.content.modalRef = modalRef;
     }
 }

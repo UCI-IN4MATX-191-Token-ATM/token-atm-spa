@@ -1,0 +1,65 @@
+<div class="modal-header">
+    <h4 class="modal-title pull-left">Export Processed Requests{{ titleSuffix ? ' for ' + titleSuffix : '' }}</h4>
+    <button
+        type="button"
+        class="btn-close close pull-right"
+        aria-label="Close"
+        (click)="modalRef?.hide()"
+        [disabled]="isProcessing"
+    >
+        <span aria-hidden="true" class="visually-hidden">&times;</span>
+    </button>
+</div>
+<div class="modal-body message">
+    <ng-template #configFieldContainer></ng-template>
+    <div class="d-flex flex-column align-items-center">
+        <app-canvas-loading-toast *ngIf="!isInitialized"></app-canvas-loading-toast>
+        <ng-container *ngIf="exportInstance">
+            <div class="progress m-3 w-100">
+                <div
+                    class="progress-bar progress-bar-striped bg-success"
+                    role="progressbar"
+                    [style.width]="(exportInstance.progress * 100).toFixed(2) + '%'"
+                ></div>
+            </div>
+            <p>{{ exportInstance.progressDescription }}</p>
+        </ng-container>
+        <a *ngIf="fileURL !== undefined" class="btn btn-primary" target="_blank" [href]="fileURL" [download]="fileName"
+            >Save Exported File</a
+        >
+        <p *ngIf="message" class="fw-bold">{{ message }}</p>
+    </div>
+</div>
+<div class="modal-footer">
+    <div class="d-flex align-items-center">
+        <button
+            type="button"
+            class="btn btn-outline-secondary mx-2"
+            (click)="modalRef?.hide()"
+            [disabled]="isProcessing"
+        >
+            Close
+        </button>
+        <button
+            *ngIf="this.configuration && this.configField && !this.exportInstance && this.fileURL === undefined"
+            type="button"
+            class="btn btn-outline-primary"
+            (click)="onExport()"
+            [disabled]="isProcessing"
+        >
+            Export
+        </button>
+        <button
+            *ngIf="this.configuration && this.configField && this.fileURL"
+            type="button"
+            class="btn btn-danger"
+            (click)="onClearExport()"
+            [disabled]="isProcessing"
+        >
+            Clear Current Export
+        </button>
+        <button *ngIf="this.exportInstance" class="btn btn-danger" (click)="onStopExport()" [disabled]="isProcessing">
+            Stop
+        </button>
+    </div>
+</div>

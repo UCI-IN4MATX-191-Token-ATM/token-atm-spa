@@ -34,7 +34,7 @@ export class ConfigurationComponent implements CourseConfigurable {
         @Inject(CanvasService) private canvasService: CanvasService,
         @Inject(BsModalService) private modalSerivce: BsModalService,
         @Inject(TokenOptionResolverRegistry) private tokenOptionResolverRegistry: TokenOptionResolverRegistry,
-        @Inject(ModalManagerService) private modalManagerSerivce: ModalManagerService,
+        @Inject(ModalManagerService) private modalManagerService: ModalManagerService,
         @Inject(Router) private router: Router
     ) {}
 
@@ -48,7 +48,7 @@ export class ConfigurationComponent implements CourseConfigurable {
         try {
             await this.canvasService.getPageIdByName(this.course.id, 'Token ATM Configuration');
             this.isProcessing = false;
-            await this.modalManagerSerivce.createNotificationModal(
+            await this.modalManagerService.createNotificationModal(
                 `There is an existing configuration for this course.`
             );
             return;
@@ -144,10 +144,10 @@ export class ConfigurationComponent implements CourseConfigurable {
             );
             await this.configurationManagerService.updateTokenOptionGroup(moduleGroup);
             this.isProcessing = false;
-            await this.modalManagerSerivce.createNotificationModal('Testing Configuration Created!');
+            await this.modalManagerService.createNotificationModal('Testing Configuration Created!');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
-            await this.modalManagerSerivce.createNotificationModal(
+            await this.modalManagerService.createNotificationModal(
                 `Error occurred when creating test configuration: ${ErrorSerializer.serailize(err)}`,
                 'Error'
             );
@@ -158,7 +158,7 @@ export class ConfigurationComponent implements CourseConfigurable {
     async onDeleteAll(): Promise<void> {
         if (!this.course) return;
         this.isProcessing = true;
-        const [modalRef, result] = await this.modalManagerSerivce.createConfirmationModal(
+        const [modalRef, result] = await this.modalManagerService.createConfirmationModal(
             'Do you really want to delete all Token ATM related content from this course?',
             'Confirmation',
             true
@@ -173,10 +173,10 @@ export class ConfigurationComponent implements CourseConfigurable {
             const configuration = await this.configurationManagerService.getTokenATMConfiguration(this.course);
             await this.configurationManagerService.deleteAll(configuration);
             this.isProcessing = false;
-            await this.modalManagerSerivce.createNotificationModal('All Token ATM related content has been deleted!');
+            await this.modalManagerService.createNotificationModal('All Token ATM related content has been deleted!');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
-            await this.modalManagerSerivce.createNotificationModal(
+            await this.modalManagerService.createNotificationModal(
                 `Error occurred while deleting Token ATM related content for ${
                     this.course.name
                 }: ${actionNeededTemplate(
@@ -199,7 +199,7 @@ export class ConfigurationComponent implements CourseConfigurable {
     async onResetContent(): Promise<void> {
         if (!this.course) return;
         this.isProcessing = true;
-        const [modalRef, result] = await this.modalManagerSerivce.createConfirmationModal(
+        const [modalRef, result] = await this.modalManagerService.createConfirmationModal(
             'Do you really want to reset Token ATM for this course? \n\nThis will cause all information about token balances and requests to be deleted! \n\nNOTE: if any errors occur during a reset, there is NO WAY to recover from them! \n\nAs a precaution, please export the course content before resetting.',
             'Confirmation',
             true
@@ -213,10 +213,10 @@ export class ConfigurationComponent implements CourseConfigurable {
         try {
             const configuration = await this.configurationManagerService.getTokenATMConfiguration(this.course);
             await this.configurationManagerService.regenerateContent(configuration);
-            await this.modalManagerSerivce.createNotificationModal('Token ATM has been reset!');
+            await this.modalManagerService.createNotificationModal('Token ATM has been reset!');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
-            await this.modalManagerSerivce.createNotificationModal(
+            await this.modalManagerService.createNotificationModal(
                 `Error occurred while resetting Token ATM:${actionNeededTemplate(
                     `Please use Canvas to remove the Token ATM content by manually deleting: \n${tokenATMContentListTemplate(
                         'the',
@@ -237,7 +237,7 @@ export class ConfigurationComponent implements CourseConfigurable {
     async onMigrate(): Promise<void> {
         if (!this.course) return;
         this.isProcessing = true;
-        const [modalRef, result] = await this.modalManagerSerivce.createConfirmationModal(
+        const [modalRef, result] = await this.modalManagerService.createConfirmationModal(
             'Do you really want to start the migration of Token ATM for this course? \n\nThis will cause all information about token balances and requests to be deleted! \n\nAlso, all token option groups will be unpublished, and all token options will need to be saved again to complete the migration. \n\nNOTE: if any errors occur during migration, there is NO WAY to recover from them! \n\nAs a precaution, please export the course content before migrating.',
             'Confirmation',
             true
@@ -251,12 +251,12 @@ export class ConfigurationComponent implements CourseConfigurable {
         try {
             const configuration = await this.configurationManagerService.getTokenATMConfiguration(this.course);
             await this.configurationManagerService.regenerateContent(configuration, true);
-            await this.modalManagerSerivce.createNotificationModal(
+            await this.modalManagerService.createNotificationModal(
                 'Token ATM migration has started! \n\nYou need to manually save every token option again to complete the migration.'
             );
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
-            await this.modalManagerSerivce.createNotificationModal(
+            await this.modalManagerService.createNotificationModal(
                 `Error occurred when migrating Token ATM:${actionNeededTemplate(
                     `Please use Canvas to delete the Token ATM content by manually deleting: \n${tokenATMContentListTemplate(
                         'the',
