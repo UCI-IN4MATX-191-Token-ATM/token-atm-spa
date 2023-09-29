@@ -1033,7 +1033,7 @@ export class CanvasService {
             }
             if (override.studentIdsAsIndividualLevel.includes(studentId)) return false;
             if (targetOverride != undefined) continue;
-	    if (
+            if (
                 override.studentIdsAsIndividualLevel.length >= CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE ||
                 override.lockAt == undefined ||
                 compareAsc(override.lockAt, lockDate) != 0
