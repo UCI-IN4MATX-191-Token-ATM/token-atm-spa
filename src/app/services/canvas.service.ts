@@ -1032,13 +1032,14 @@ export class CanvasService {
                 titleCnt = parseInt(data[2] as string) + 1;
             }
             if (override.studentIdsAsIndividualLevel.includes(studentId)) return false;
-            if (
+            if (targetOverride != undefined) continue;
+	    if (
                 override.studentIdsAsIndividualLevel.length >= CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE ||
                 override.lockAt == undefined ||
                 compareAsc(override.lockAt, lockDate) != 0
             )
                 continue;
-            if(!targetOverride) targetOverride = override;
+            targetOverride = override;
         }
         if (!targetOverride) {
             await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
