@@ -20,7 +20,7 @@ export class TokenOptionRegistry {
         'spend-for-lab-switch': 'Spend Tokens for Switching Lab',
         'withdraw-lab-switch': 'Withdraw Lab Switch Request (For Teacher Only)',
         'spend-for-quiz-revision': 'Spend Tokens for Quiz Revision',
-        'spend-for-assignment-extension': 'Spend Tokens for Assignment Extension'
+        'spend-for-assignment-extension': 'Spend Tokens for Assignment Extension (No Longer Late)'
     };
 
     public getDescriptiveName(tokenOptionType: string): string | undefined {
