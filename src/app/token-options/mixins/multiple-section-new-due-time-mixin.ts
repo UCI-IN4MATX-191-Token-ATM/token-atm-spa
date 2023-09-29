@@ -22,12 +22,12 @@ export function MultipleSectionNewDueTimeMixin<TBase extends Constructor<IGridVi
             this.registerDataPointSource(() =>
                 this.newDueTime instanceof MultipleSectionDateMatcher
                     ? {
-                          colName: 'Change Until Date/Time for Canvas Assignment/Quiz to (with exceptions)',
+                          colName: 'Change Canvas Assignment/Quiz’s Available Until to (with exceptions)',
                           type: 'html',
                           value: this.newDueTime.toHTML()
                       }
                     : {
-                          colName: 'Change Until Date/Time for Canvas Assignment/Quiz to',
+                          colName: 'Change Canvas Assignment/Quiz’s Available Until to',
                           type: 'date',
                           value: this.newDueTime
                       }

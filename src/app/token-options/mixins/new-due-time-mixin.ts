@@ -19,7 +19,7 @@ export function NewDueTimeMixin<TBase extends Constructor<IGridViewDataSource>>(
         constructor(...args: any[]) {
             super(...args);
             this.registerDataPointSource(() => ({
-                colName: 'Change Until Date/Time for Canvas Assignment/Quiz to',
+                colName: 'Change Canvas Assignment/Quiz’s Available Until to',
                 type: 'date',
                 value: this.newDueTime
             }));
