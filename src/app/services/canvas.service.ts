@@ -1038,8 +1038,7 @@ export class CanvasService {
                 compareAsc(override.lockAt, lockDate) != 0
             )
                 continue;
-            targetOverride = override;
-            break;
+            if(!targetOverride) targetOverride = override;
         }
         if (!targetOverride) {
             await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
