@@ -197,7 +197,7 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
             );
         } else {
             await this.modalManagerService.createNotificationModal(
-                `You have not saved credentials with a password, so your column choices won't be preserved if you leave the "Token Options" page.`
+                'You have not saved credentials with a password, so your column choices won’t be preserved if you leave the "Token Options" page.'
             );
         }
         this.isProcessing = false;

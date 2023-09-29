@@ -95,7 +95,7 @@ export class BatchTokenBalanceAdjustmentModalComponent {
         if (this.selectedFile) {
             const results = await this.parseCSV(this.selectedFile, { header: this.hasHeader, preview: 2 });
             setPossibleHeaders(results);
-            // console.log("File's First Row:", this.firstRow);
+            // console.log('File’s First Row:', this.firstRow);
             // console.log('Results:', results);
             if (Array.isArray(this.firstRow)) {
                 // Check for matching Token ATM CSV Column Names

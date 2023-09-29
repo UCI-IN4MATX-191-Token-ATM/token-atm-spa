@@ -19,7 +19,7 @@ export class HasQuizSubmissionGuard extends RequestHandlerGuard {
             this.studentId
         );
         if (submission.workflowState == 'unsubmitted') {
-            onReject(`You haven't taken the quiz yet`);
+            onReject('You haven’t taken the quiz yet');
             return;
         }
     }

@@ -174,7 +174,7 @@ export class LoginComponent implements AfterViewInit {
     private sanitizeAndParseURL(url: string) {
         const sanitized = this.sanitizer.sanitize(SecurityContext.URL, url);
         if (sanitized == null || sanitized.startsWith('unsafe:')) {
-            throw new Error(`Provided Canvas URL (${url}) can't be sanitized.`);
+            throw new Error(`Provided Canvas URL (${url}) can’t be sanitized.`);
         }
         // TODO: handle protocol-less inputs.
         //       i.e., 'localhost:23457' or 'canvas.instructure.com'
@@ -214,14 +214,14 @@ export class LoginComponent implements AfterViewInit {
             const errMsgs: string[] = [];
             if (canvasCredentialValidation != undefined) {
                 errMsgs.push(
-                    `CANVAS\nToken ATM couldn't verify your credentials at: \n${this.credentials.canvasURL}\nDouble check that you are providing the correct Canvas URL and Access Token.\n`
+                    `CANVAS\nToken ATM couldn’t verify your credentials at: \n${this.credentials.canvasURL}\nDouble check that you are providing the correct Canvas URL and Access Token.\n`
                 );
                 errMsgs.push('Error Message:' + ErrorSerializer.serailize(canvasCredentialValidation));
             }
             if (qualtricsCredentialValidation != undefined) {
                 if (errMsgs.length != 0) errMsgs.push('\n--------------------\n');
                 errMsgs.push(
-                    `QUALTRICS\nToken ATM couldn't verify your credentials with Qualtrics. \nDouble check that you are providing the correct credentials, that your account has API access, and that the credentials have the scopes read:users and read:survey_responses.\n`
+                    'QUALTRICS\nToken ATM couldn’t verify your credentials with Qualtrics. \nDouble check that you are providing the correct credentials, that your account has API access, and that the credentials have the scopes read:users and read:survey_responses.\n'
                 );
                 errMsgs.push('Error Message:' + ErrorSerializer.serailize(qualtricsCredentialValidation));
             }
