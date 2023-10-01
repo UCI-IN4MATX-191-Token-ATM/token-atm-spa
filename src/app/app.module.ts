@@ -70,6 +70,11 @@ import { ExportRequestModalComponent } from './components/export-request-modal/e
 import { SelectFieldComponent } from './components/form-fields/select-field/select-field.component';
 import { CheckboxFieldComponent } from './components/form-fields/checkbox-field/checkbox-field.component';
 import { OptionalFieldComponent } from './components/form-fields/optional-field/optional-field.component';
+import { MatSelectModule } from '@angular/material/select';
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
+import { MatDividerModule } from '@angular/material/divider';
+import { MultipleSelectionFieldComponent } from './components/form-fields/selection-fields/multiple-selection-field/multiple-selection-field.component';
+import { SingleSelectionFieldComponent } from './components/form-fields/selection-fields/single-selection-field/single-selection-field.component';
 
 @NgModule({
     declarations: [
@@ -112,7 +117,9 @@ import { OptionalFieldComponent } from './components/form-fields/optional-field/
         ExportRequestModalComponent,
         SelectFieldComponent,
         CheckboxFieldComponent,
-        OptionalFieldComponent
+        OptionalFieldComponent,
+        MultipleSelectionFieldComponent,
+        SingleSelectionFieldComponent
     ],
     imports: [
         BrowserModule,
@@ -126,7 +133,10 @@ import { OptionalFieldComponent } from './components/form-fields/optional-field/
         TimepickerModule.forRoot(),
         TooltipModule.forRoot(),
         AgGridModule,
-        DragDropModule
+        DragDropModule,
+        MatSelectModule,
+        NgxMatSelectSearchModule,
+        MatDividerModule
     ],
     providers: [
         { provide: ErrorHandler, useClass: GlobalErrorHandler },
