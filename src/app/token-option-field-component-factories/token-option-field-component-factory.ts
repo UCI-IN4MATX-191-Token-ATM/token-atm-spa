@@ -3,12 +3,14 @@ import { DateTimeFieldComponent } from 'app/components/form-fields/date-time-fie
 import { ErrorMessageFieldComponent } from 'app/components/form-fields/error-message-field/error-message-field.component';
 import { MultipleSectionDateFieldComponent } from 'app/components/form-fields/multiple-section-date-field/multiple-section-date-field.component';
 import { NumberInputFieldComponent } from 'app/components/form-fields/number-input-field/number-input-field.component';
+import { SingleSelectionFieldComponent } from 'app/components/form-fields/selection-fields/single-selection-field/single-selection-field.component';
 import { StringInputFieldComponent } from 'app/components/form-fields/string-input-field/string-input-field.component';
 import { StringTextareaFieldComponent } from 'app/components/form-fields/string-textarea-field/string-textarea-field.component';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import type { CanvasService } from 'app/services/canvas.service';
 import type { ExtractDataType, TokenOption, TokenOptionData } from 'app/token-options/token-option';
+import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import type { ExtractDest, ExtractSrc, FormField } from 'app/utils/form-field/form-field';
 import type { FormFieldAppender } from 'app/utils/form-field/form-field-appender';
 import { FormFieldComponentBuilder, TupleAppend } from 'app/utils/form-field/form-field-component-builder';
@@ -126,28 +128,42 @@ export function createWithdrawTokenOptionComponentBuilder(
         .transformDest(async ([id]) => id);
 }
 
+interface QuizData {
+    id: string;
+    name: string;
+}
+
 export function createQuizFieldComponentBuilder(
     canvasService: CanvasService,
     environmentInjector: EnvironmentInjector
 ): FormFieldComponentBuilder<
-    FormField<[string, string], [string, string], FormFieldAppender<StringInputFieldComponent, StaticFormField<string>>>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    FormField<[string, QuizData | undefined], QuizData, any>
 > {
-    return createFieldComponentWithLabel(StringInputFieldComponent, 'Quiz Name', environmentInjector)
-        .appendField(new StaticFormField<string>())
+    return createFieldComponentWithLabel(SingleSelectionFieldComponent<QuizData>, 'Quiz Name', environmentInjector)
         .editField((field) => {
-            field.validator = async (value: typeof field) => {
-                value.fieldA.errorMessage = undefined;
-                const [quizName, courseId] = await value.destValue;
-                try {
-                    await canvasService.getQuizIdByName(courseId, quizName);
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                } catch (err: any) {
-                    value.fieldA.errorMessage = err.toString();
+            field.optionRenderer = (v) => v.name;
+            field.validator = async ([v, field]: [QuizData | undefined, SingleSelectionFieldComponent<QuizData>]) => {
+                field.errorMessage = undefined;
+                if (v == undefined) {
+                    field.errorMessage = 'Please select a Canvas quiz';
                     return false;
                 }
                 return true;
             };
-        });
+        })
+        .transformSrc(([courseId, quizData]: [string, QuizData | undefined]) => [
+            quizData,
+            async () =>
+                (await DataConversionHelper.convertAsyncIterableToList(await canvasService.getQuizzes(courseId))).map(
+                    (v) =>
+                        <QuizData>{
+                            id: v.id,
+                            name: v.title
+                        }
+                )
+        ])
+        .transformDest(async (value) => value as QuizData);
 }
 
 export function createStartTimeComponentBuilder(
@@ -225,28 +241,51 @@ export function createGradeThresholdComponentBuilder(
         });
 }
 
+interface AssignmentData {
+    id: string;
+    name: string;
+}
+
 export function createAssignmentFieldComponentBuilder(
     canvasService: CanvasService,
     environmentInjector: EnvironmentInjector
 ): FormFieldComponentBuilder<
-    FormField<[string, string], [string, string], FormFieldAppender<StringInputFieldComponent, StaticFormField<string>>>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    FormField<[string, AssignmentData | undefined], AssignmentData, any>
 > {
-    return createFieldComponentWithLabel(StringInputFieldComponent, 'Assignment Name', environmentInjector)
-        .appendField(new StaticFormField<string>())
+    return createFieldComponentWithLabel(
+        SingleSelectionFieldComponent<AssignmentData>,
+        'Assignment Name',
+        environmentInjector
+    )
         .editField((field) => {
-            field.validator = async (value: typeof field) => {
-                value.fieldA.errorMessage = undefined;
-                const [assignmentName, courseId] = await value.destValue;
-                try {
-                    await canvasService.getAssignmentIdByName(courseId, assignmentName);
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                } catch (err: any) {
-                    value.fieldA.errorMessage = err.toString();
+            field.optionRenderer = (v) => v.name;
+            field.validator = async ([v, field]: [
+                AssignmentData | undefined,
+                SingleSelectionFieldComponent<AssignmentData>
+            ]) => {
+                field.errorMessage = undefined;
+                if (v == undefined) {
+                    field.errorMessage = 'Please select a Canvas assignment';
                     return false;
                 }
                 return true;
             };
-        });
+        })
+        .transformSrc(([courseId, assignmentData]: [string, AssignmentData | undefined]) => [
+            assignmentData,
+            async () =>
+                (
+                    await DataConversionHelper.convertAsyncIterableToList(await canvasService.getAssignments(courseId))
+                ).map(
+                    (v) =>
+                        <AssignmentData>{
+                            id: v.id,
+                            name: v.name
+                        }
+                )
+        ])
+        .transformDest(async (value) => value as AssignmentData);
 }
 
 export function tokenOptionFieldComponentBuilder(

@@ -4,7 +4,7 @@
         <mat-form-field class="flex-grow-1" subscriptSizing="dynamic">
             <mat-select
                 [(ngModel)]="value"
-                [disabled]="isReadOnly || isProcessing"
+                [disabled]="isProcessing"
                 [disableRipple]="true"
                 [compareWith]="isEqual"
                 (valueChange)="onSelectValueChange($event)"
@@ -12,17 +12,18 @@
                 <mat-option>
                     <ngx-mat-select-search [(ngModel)]="filterText" placeholderLabel=""></ngx-mat-select-search>
                 </mat-option>
-                <mat-option *ngIf="allowUnselect">Click to unselect</mat-option>
+                <mat-option *ngIf="allowUnselect" [disabled]="isReadOnly">Click to unselect</mat-option>
                 <mat-optgroup
                     *ngIf="invalidOption"
                     label="Invalid Option"
                     class="warn-color"
                     [hidden]="!isInvalidOptionFiltered"
+                    [disabled]="isReadOnly"
                 >
                     <mat-option
                         [value]="invalidOption"
                         [hidden]="!isInvalidOptionFiltered"
-                        [disabled]="!isInvalidOptionSelected"
+                        [disabled]="!isInvalidOptionSelected || isReadOnly"
                     >
                         {{ optionRenderer(invalidOption) }}
                     </mat-option>
@@ -32,19 +33,16 @@
                     *ngFor="let option of validOptions; let i = index"
                     [value]="option"
                     [hidden]="!filteredValidOptionInds.has(i)"
+                    [disabled]="isReadOnly"
                 >
                     {{ optionRenderer(option) }}
                 </mat-option>
             </mat-select>
         </mat-form-field>
-        <button
-            type="button"
-            class="btn btn-outline-dark ms-2"
-            [disabled]="isReadOnly || isProcessing"
-            (click)="refreshOptions()"
-        >
+        <button type="button" class="btn btn-outline-dark ms-2" [disabled]="isProcessing" (click)="refreshOptions()">
             <i class="bi bi-arrow-clockwise"></i>
         </button>
     </div>
+    <p *ngIf="isProcessing">Loading...</p>
     <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
 </div>

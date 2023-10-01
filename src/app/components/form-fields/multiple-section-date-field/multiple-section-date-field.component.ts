@@ -7,8 +7,13 @@ import { ListFieldComponent } from '../list-field/list-field.component';
 import { v4 } from 'uuid';
 import { createFieldComponentWithLabel } from 'app/token-option-field-component-factories/token-option-field-component-factory';
 import { StringInputFieldComponent } from '../string-input-field/string-input-field.component';
-import { StaticFormField } from 'app/utils/form-field/static-form-field';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
+import { MultipleSelectionFieldComponent } from '../selection-fields/multiple-selection-field/multiple-selection-field.component';
+
+interface SectionData {
+    id: string;
+    name: string;
+}
 
 @Component({
     selector: 'app-multiple-section-date-field',
@@ -75,38 +80,27 @@ export class MultipleSectionDateFieldComponent
             if (!this.dateFieldBuilderFactory)
                 throw new Error('Failed to initialize list item for MultipleSectionDateFieldComponent');
             return createFieldComponentWithLabel(
-                StringInputFieldComponent,
-                'Section Names (separated by commas)',
+                MultipleSelectionFieldComponent<SectionData>,
+                'Section Names',
                 this.environmentInjector
             )
-                .appendField(new StaticFormField<string>())
                 .editField((field) => {
-                    field.validator = async (value: typeof field) => {
-                        value.fieldA.errorMessage = undefined;
-                        const [sectionNamesStr, courseId] = await value.destValue;
-                        const sectionNames = sectionNamesStr.split(',').map((value) => value.trim());
-                        const sections = await this.canvasService.getSections(courseId);
-                        const existSectionNames = new Set(
-                            (await DataConversionHelper.convertAsyncIterableToList(sections)).map(
-                                (section) => section.name
-                            )
-                        );
-                        let sectionCnt = 0;
-                        for (const sectionName of sectionNames) {
-                            if (sectionName.length == 0) continue;
-                            sectionCnt++;
-                            if (!existSectionNames.has(sectionName)) {
-                                value.fieldA.errorMessage = `Section ${sectionName} does not exist`;
-                                return false;
-                            }
-                        }
-                        if (sectionCnt == 0) {
-                            value.fieldA.errorMessage = 'No section is specified';
+                    field.optionRenderer = (v) => v.name;
+                    field.validator = async ([v, field]: [
+                        SectionData[],
+                        MultipleSelectionFieldComponent<SectionData>
+                    ]) => {
+                        field.errorMessage = undefined;
+                        if (v.length == 0) {
+                            field.errorMessage = 'Please select at least one Canvas section';
                             return false;
                         }
                         return true;
                     };
                 })
+                .transformDest(async (v) => ({
+                    data: v
+                }))
                 .appendBuilder(
                     createFieldComponentWithLabel(
                         StringInputFieldComponent,
@@ -126,25 +120,26 @@ export class MultipleSectionDateFieldComponent
                 .appendBuilder(this.dateFieldBuilderFactory())
                 .transformSrc(([override, courseId]: [DateOverride, string]) => {
                     return [
-                        override.sections.map((section) => section[0]).join(','),
-                        courseId,
+                        override.sections.map((section) => ({
+                            id: section[1],
+                            name: section[0]
+                        })),
+                        async () =>
+                            (
+                                await DataConversionHelper.convertAsyncIterableToList(
+                                    await this.canvasService.getSections(courseId)
+                                )
+                            ).map((v) => ({
+                                id: v.id,
+                                name: v.name
+                            })),
                         override.name,
                         override.date
                     ];
                 })
-                .transformDest(async ([sectionNamesStr, courseId, displayName, date]) => {
-                    const sectionNameIdMap = new Map<string, string>();
-                    for await (const section of await this.canvasService.getSections(courseId)) {
-                        sectionNameIdMap.set(section.name, section.id);
-                    }
-                    const sections: [string, string][] = [];
-                    for (let sectionName of sectionNamesStr.split(',')) {
-                        sectionName = sectionName.trim();
-                        if (sectionName.length == 0) continue;
-                        sections.push([sectionName, sectionNameIdMap.get(sectionName) as string]);
-                    }
+                .transformDest(async ([{ data: sections }, displayName, date]) => {
                     return {
-                        sections: sections,
+                        sections: sections.map((v) => [v.name, v.id] as [string, string]),
                         name: displayName,
                         date: date
                     };

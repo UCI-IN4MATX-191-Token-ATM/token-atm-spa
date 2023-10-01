@@ -458,6 +458,18 @@ export class CanvasService {
         throw new Error('Comment creation failed');
     }
 
+    public async getAssignments(courseId: string): Promise<PaginatedResult<Assignment>> {
+        return new PaginatedResult<Assignment>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments`, {
+                params: {
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => data.map((entry) => unwrapValidation(AssignmentDef.decode(entry)))
+        );
+    }
+
     public async getAssignment(courseId: string, assignmentId: string): Promise<Assignment> {
         return unwrapValidation(
             AssignmentDef.decode(
@@ -739,6 +751,19 @@ export class CanvasService {
         });
     }
 
+    public async getModules(courseId: string): Promise<PaginatedResult<CanvasModule>> {
+        return new PaginatedResult(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules`, {
+                params: {
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => {
+                return data.map((entry: unknown) => CanvasModule.deserialize(entry));
+            }
+        );
+    }
     public async getModuleIdByName(courseId: string, moduleName: string): Promise<string> {
         // TODO: Retrieve paginated result to avoid too many similar name
         const modules = new PaginatedResult(
@@ -1220,6 +1245,18 @@ export class CanvasService {
     ): Promise<AssignmentSubmission> {
         return AssignmentSubmission.deserialize(
             await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`)
+        );
+    }
+
+    public async getQuizzes(courseId: string): Promise<PaginatedResult<Quiz>> {
+        return new PaginatedResult<Quiz>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes`, {
+                params: {
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => data.map((entry) => Quiz.deserialize(entry))
         );
     }
 

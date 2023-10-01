@@ -34,15 +34,25 @@ export class SpendForAssignmentExtensionTokenOptionFieldComponentFactory extends
             tokenOptionFieldComponentBuilder(environmentInjector)
                 .appendBuilder(createAssignmentFieldComponentBuilder(this.canvasService, environmentInjector))
                 .transformSrc((value: SpendForAssignmentExtensionTokenOption | TokenOptionGroup) => {
-                    if (value instanceof TokenOptionGroup) return [value, ['', value.configuration.course.id]];
-                    else return [value, [value.assignmentName, value.group.configuration.course.id]];
+                    if (value instanceof TokenOptionGroup) return [value, [value.configuration.course.id, undefined]];
+                    else
+                        return [
+                            value,
+                            [
+                                value.group.configuration.course.id,
+                                {
+                                    id: value.assignmentId,
+                                    name: value.assignmentName
+                                }
+                            ]
+                        ];
                 })
-                .transformDest(async ([tokenOptionData, [assignmentName, courseId]]) => {
+                .transformDest(async ([tokenOptionData, { id: assignmentId, name: assignmentName }]) => {
                     return {
                         ...tokenOptionData,
                         type: 'spend-for-assignment-extension',
                         assignmentName,
-                        assignmentId: await this.canvasService.getAssignmentIdByName(courseId, assignmentName)
+                        assignmentId
                     };
                 }),
             SpendForAssignmentExtensionTokenOptionDataDef.is

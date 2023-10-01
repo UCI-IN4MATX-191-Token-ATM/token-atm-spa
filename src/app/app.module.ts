@@ -75,6 +75,7 @@ import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { MatDividerModule } from '@angular/material/divider';
 import { MultipleSelectionFieldComponent } from './components/form-fields/selection-fields/multiple-selection-field/multiple-selection-field.component';
 import { SingleSelectionFieldComponent } from './components/form-fields/selection-fields/single-selection-field/single-selection-field.component';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 @NgModule({
     declarations: [
@@ -136,7 +137,8 @@ import { SingleSelectionFieldComponent } from './components/form-fields/selectio
         DragDropModule,
         MatSelectModule,
         NgxMatSelectSearchModule,
-        MatDividerModule
+        MatDividerModule,
+        MatSlideToggleModule
     ],
     providers: [
         { provide: ErrorHandler, useClass: GlobalErrorHandler },

@@ -17,11 +17,17 @@ export class MultipleSelectionFieldComponent<T> extends BaseFormField<
 > {
     @Input() optionRenderer: (value: T) => string = (v) => (v as object).toString();
     @Input() isEqual: (a: T, b: T) => boolean = isEqual;
+    @Input() allowShowSelected = true;
     value: T[] = [];
     isProcessing = false;
 
+    onlyShowSelected = false;
+
     validOptions: T[] = [];
     invalidOptions: T[] = [];
+
+    disabledInvalidOptionInds = new Set<number>();
+    selectedInvalidOptionsCnt = 0;
 
     private _filterText = '';
     filteredInvalidOptionInds = new Set<number>();
@@ -79,6 +85,7 @@ export class MultipleSelectionFieldComponent<T> extends BaseFormField<
             invalidOptions.push(option);
         }
         this.invalidOptions = invalidOptions;
+        this.disabledInvalidOptionInds.clear();
         this.validOptions = options;
         this.value = selectedOptions;
         this.filterText = '';
@@ -92,15 +99,17 @@ export class MultipleSelectionFieldComponent<T> extends BaseFormField<
     private invalidOptionsValidate(value?: T[]): boolean {
         this.errorMessage = undefined;
         value = value ?? this.value;
-        const invalidOptions: T[] = [];
+        const selectedInvalidOptions: T[] = [];
         for (const selectedOption of value) {
-            if (this.invalidOptions.some((v) => this.isEqual(v, selectedOption))) invalidOptions.push(selectedOption);
+            if (this.invalidOptions.some((v) => this.isEqual(v, selectedOption)))
+                selectedInvalidOptions.push(selectedOption);
         }
-        if (invalidOptions.length != 0) {
+        this.selectedInvalidOptionsCnt = selectedInvalidOptions.length;
+        if (selectedInvalidOptions.length != 0) {
             this.errorMessage = `Selected ${this.invalidOptions.length} invalid ${pluralize(
                 'option',
                 this.invalidOptions.length
-            )}: ${invalidOptions.map((v) => this.optionRenderer(v)).join(', ')}.`;
+            )}: ${selectedInvalidOptions.map((v) => this.optionRenderer(v)).join(', ')}.`;
             return false;
         }
         return true;
@@ -116,9 +125,9 @@ export class MultipleSelectionFieldComponent<T> extends BaseFormField<
         return await this.validator([this.value, this]);
     }
 
-    onInvalidOptionDeselected(event: MatOptionSelectionChange, matOption: MatOption) {
+    onInvalidOptionDeselected(event: MatOptionSelectionChange, matOption: MatOption, ind: number) {
         if (event.isUserInput && !matOption.selected) {
-            matOption.disabled = true;
+            this.disabledInvalidOptionInds.add(ind);
             this.isInvalidOptionValidationOutdated = true;
         }
     }

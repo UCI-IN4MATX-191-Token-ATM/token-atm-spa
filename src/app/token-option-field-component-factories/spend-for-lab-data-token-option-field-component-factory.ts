@@ -46,7 +46,7 @@ export class SpendForLabDataTokenOptionFieldComponentFactory extends TokenOption
                     if (value instanceof TokenOptionGroup) {
                         return [
                             value,
-                            ['', value.configuration.course.id],
+                            [value.configuration.course.id, undefined],
                             set(new Date(), {
                                 hours: 0,
                                 minutes: 0,
@@ -70,7 +70,13 @@ export class SpendForLabDataTokenOptionFieldComponentFactory extends TokenOption
                     } else {
                         return [
                             value,
-                            [value.quizName, value.group.configuration.course.id],
+                            [
+                                value.group.configuration.course.id,
+                                {
+                                    id: value.quizId,
+                                    name: value.quizName
+                                }
+                            ],
                             value.startTime,
                             value.endTime,
                             value.newDueTime,
@@ -81,7 +87,7 @@ export class SpendForLabDataTokenOptionFieldComponentFactory extends TokenOption
                 .transformDest(
                     async ([
                         tokenOptionData,
-                        [quizName, courseId],
+                        { id: quizId, name: quizName },
                         startTime,
                         endTime,
                         newDueTime,
@@ -91,7 +97,7 @@ export class SpendForLabDataTokenOptionFieldComponentFactory extends TokenOption
                             ...tokenOptionData,
                             type: 'spend-for-lab-data',
                             quizName,
-                            quizId: await this.canvasService.getQuizIdByName(courseId, quizName),
+                            quizId,
                             startTime,
                             endTime,
                             newDueTime,

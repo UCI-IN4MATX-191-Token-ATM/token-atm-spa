@@ -5,11 +5,15 @@
             <mat-select
                 [(ngModel)]="value"
                 multiple
-                [disabled]="isReadOnly || isProcessing"
+                [disabled]="isProcessing"
                 [disableRipple]="true"
                 [compareWith]="isEqual"
                 (valueChange)="onSelectValueChange($event)"
             >
+                <mat-slide-toggle class="ms-1" [(ngModel)]="onlyShowSelected"
+                    >Only show selected options</mat-slide-toggle
+                >
+                <mat-divider *ngIf="allowShowSelected" class="m-1"></mat-divider>
                 <mat-option>
                     <ngx-mat-select-search [(ngModel)]="filterText" placeholderLabel=""></ngx-mat-select-search>
                 </mat-option>
@@ -17,14 +21,19 @@
                     *ngIf="invalidOptions.length !== 0"
                     label="Invalid Options"
                     class="warn-color"
-                    [hidden]="filteredInvalidOptionInds.size === 0"
+                    [hidden]="
+                        filteredInvalidOptionInds.size === 0 ||
+                        (onlyShowSelected && this.selectedInvalidOptionsCnt === 0)
+                    "
+                    [disabled]="isReadOnly"
                 >
                     <mat-option
                         *ngFor="let option of invalidOptions; let i = index"
                         #matOption
                         [value]="option"
-                        [hidden]="!filteredInvalidOptionInds.has(i)"
-                        (onSelectionChange)="onInvalidOptionDeselected($event, matOption)"
+                        [hidden]="!filteredInvalidOptionInds.has(i) || (onlyShowSelected && !matOption.selected)"
+                        (onSelectionChange)="onInvalidOptionDeselected($event, matOption, i)"
+                        [disabled]="isReadOnly || disabledInvalidOptionInds.has(i)"
                     >
                         {{ optionRenderer(option) }}
                     </mat-option>
@@ -32,21 +41,19 @@
                 <mat-divider *ngIf="filteredInvalidOptionInds.size !== 0" class="m-1"></mat-divider>
                 <mat-option
                     *ngFor="let option of validOptions; let i = index"
+                    #matOption
                     [value]="option"
-                    [hidden]="!filteredValidOptionInds.has(i)"
+                    [hidden]="!filteredValidOptionInds.has(i) || (onlyShowSelected && !matOption.selected)"
+                    [disabled]="isReadOnly"
                 >
                     {{ optionRenderer(option) }}
                 </mat-option>
             </mat-select>
         </mat-form-field>
-        <button
-            type="button"
-            class="btn btn-outline-dark ms-2"
-            [disabled]="isReadOnly || isProcessing"
-            (click)="refreshOptions()"
-        >
+        <button type="button" class="btn btn-outline-dark ms-2" [disabled]="isProcessing" (click)="refreshOptions()">
             <i class="bi bi-arrow-clockwise"></i>
         </button>
     </div>
+    <p *ngIf="isProcessing">Loading...</p>
     <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
 </div>

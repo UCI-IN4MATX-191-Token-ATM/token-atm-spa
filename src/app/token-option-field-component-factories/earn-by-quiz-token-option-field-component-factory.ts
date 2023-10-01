@@ -38,7 +38,7 @@ export class EarnByQuizTokenOptionFieldComponentFactory extends TokenOptionField
                     if (value instanceof TokenOptionGroup) {
                         return [
                             value,
-                            ['', value.configuration.course.id],
+                            [value.configuration.course.id, undefined],
                             set(new Date(), {
                                 hours: 0,
                                 minutes: 0,
@@ -50,18 +50,24 @@ export class EarnByQuizTokenOptionFieldComponentFactory extends TokenOptionField
                     } else {
                         return [
                             value,
-                            [value.quizName, value.group.configuration.course.id],
+                            [
+                                value.group.configuration.course.id,
+                                {
+                                    id: value.quizId,
+                                    name: value.quizName
+                                }
+                            ],
                             value.startTime,
                             value.gradeThreshold
                         ];
                     }
                 })
-                .transformDest(async ([tokenOptionData, [quizName, courseId], startTime, gradeThreshold]) => {
+                .transformDest(async ([tokenOptionData, { id: quizId, name: quizName }, startTime, gradeThreshold]) => {
                     return {
                         ...tokenOptionData,
                         type: 'earn-by-quiz',
                         quizName,
-                        quizId: await this.canvasService.getQuizIdByName(courseId, quizName),
+                        quizId,
                         startTime,
                         gradeThreshold
                     };

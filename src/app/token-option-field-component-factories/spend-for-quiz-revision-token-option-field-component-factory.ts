@@ -1,7 +1,7 @@
 import {
     TokenOptionFieldComponentFactory,
+    createAssignmentFieldComponentBuilder,
     createEndTimeComponentBuilder,
-    createFieldComponentWithLabel,
     createGradeThresholdComponentBuilder,
     createNewDueTimeComponentBuilder,
     createQuizFieldComponentBuilder,
@@ -11,8 +11,6 @@ import {
 import { Inject, type EnvironmentInjector, type ViewContainerRef, Injectable } from '@angular/core';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import type { FormField } from 'app/utils/form-field/form-field';
-import { StringInputFieldComponent } from 'app/components/form-fields/string-input-field/string-input-field.component';
-import { StaticFormField } from 'app/utils/form-field/static-form-field';
 import { CanvasService } from 'app/services/canvas.service';
 import { set } from 'date-fns';
 import {
@@ -36,32 +34,12 @@ export class SpendForQuizRevisionTokenOptionFieldComponentFactory extends TokenO
             any
         >
     ] {
-        const assignmentField = createFieldComponentWithLabel(
-            StringInputFieldComponent,
-            'Assignment Name',
-            environmentInjector
-        )
-            .appendField(new StaticFormField<string>())
-            .editField((field) => {
-                field.validator = async (value: typeof field) => {
-                    value.fieldA.errorMessage = undefined;
-                    const [assignmentName, courseId] = await value.destValue;
-                    try {
-                        await this.canvasService.getAssignmentIdByName(courseId, assignmentName);
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    } catch (err: any) {
-                        value.fieldA.errorMessage = err.toString();
-                        return false;
-                    }
-                    return true;
-                };
-            });
         return tokenOptionValidationWrapper(
             environmentInjector,
             tokenOptionFieldComponentBuilder(environmentInjector)
                 .appendBuilder(createQuizFieldComponentBuilder(this.canvasService, environmentInjector))
                 .appendBuilder(createGradeThresholdComponentBuilder(environmentInjector))
-                .appendBuilder(assignmentField)
+                .appendBuilder(createAssignmentFieldComponentBuilder(this.canvasService, environmentInjector))
                 .appendBuilder(createEndTimeComponentBuilder(environmentInjector))
                 .appendBuilder(
                     createNewDueTimeComponentBuilder(
@@ -73,9 +51,9 @@ export class SpendForQuizRevisionTokenOptionFieldComponentFactory extends TokenO
                     if (value instanceof TokenOptionGroup) {
                         return [
                             value,
-                            ['', value.configuration.course.id],
+                            [value.configuration.course.id, undefined],
                             1,
-                            ['', value.configuration.course.id],
+                            [value.configuration.course.id, undefined],
                             set(new Date(), {
                                 hours: 23,
                                 minutes: 59,
@@ -92,9 +70,21 @@ export class SpendForQuizRevisionTokenOptionFieldComponentFactory extends TokenO
                     } else {
                         return [
                             value,
-                            [value.quizName, value.group.configuration.course.id],
+                            [
+                                value.group.configuration.course.id,
+                                {
+                                    id: value.quizId,
+                                    name: value.quizName
+                                }
+                            ],
                             value.gradeThreshold,
-                            [value.assignmentName, value.group.configuration.course.id],
+                            [
+                                value.group.configuration.course.id,
+                                {
+                                    id: value.assignmentId,
+                                    name: value.assignmentName
+                                }
+                            ],
                             value.endTime,
                             value.newDueTime
                         ];
@@ -103,9 +93,9 @@ export class SpendForQuizRevisionTokenOptionFieldComponentFactory extends TokenO
                 .transformDest(
                     async ([
                         tokenOptionData,
-                        [quizName, quizCourseId],
+                        { id: quizId, name: quizName },
                         gradeThreshold,
-                        [assignmentName, assignmentCourseId],
+                        { id: assignmentId, name: assignmentName },
                         endTime,
                         newDueTime
                     ]) => {
@@ -113,13 +103,10 @@ export class SpendForQuizRevisionTokenOptionFieldComponentFactory extends TokenO
                             ...tokenOptionData,
                             type: 'spend-for-quiz-revision',
                             quizName,
-                            quizId: await this.canvasService.getQuizIdByName(quizCourseId, quizName),
+                            quizId,
                             assignmentName,
                             gradeThreshold,
-                            assignmentId: await this.canvasService.getAssignmentIdByName(
-                                assignmentCourseId,
-                                assignmentName
-                            ),
+                            assignmentId,
                             endTime,
                             newDueTime
                         };
