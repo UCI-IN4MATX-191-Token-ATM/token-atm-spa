@@ -21,7 +21,7 @@ export function ModuleMixin<TBase extends Constructor<IGridViewDataSource>>(Base
         constructor(...args: any[]) {
             super(...args);
             this.registerDataPointSource(() => ({
-                colName: 'Module Name',
+                colName: 'Canvas Module Name',
                 type: 'string',
                 value: this.moduleName
             }));

@@ -9,7 +9,7 @@ type HasEndTime = {
 
 export class EndTimeTransformer extends TokenOptionInstructionTransformer<HasEndTime> {
     public get infoDescription(): string {
-        return 'End At';
+        return 'Can Request Until';
     }
 
     public process(tokenOptions: TokenOption[]): string[] {

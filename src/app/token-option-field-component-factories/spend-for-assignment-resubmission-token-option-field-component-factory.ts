@@ -44,18 +44,22 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                 .appendBuilder(
                     createMultipleSectionDateComponentBuilder(
                         () => {
-                            return createFieldComponentWithLabel(DateTimeFieldComponent, 'Time', environmentInjector);
+                            return createFieldComponentWithLabel(
+                                DateTimeFieldComponent,
+                                'Date/Time',
+                                environmentInjector
+                            );
                         },
-                        'End Time',
+                        'Students Can Request Until',
                         environmentInjector
                     )
                 )
                 .appendBuilder(
                     createMultipleSectionDateComponentBuilder(
                         () => {
-                            return createNewDueTimeComponentBuilder(environmentInjector, 'Time');
+                            return createNewDueTimeComponentBuilder(environmentInjector, 'Date/Time');
                         },
-                        'New Due Time for Assignment',
+                        'Change the Canvas Assignment’s “Available Until” to', // TODO: Phrasing may need more work
                         environmentInjector
                     )
                 )

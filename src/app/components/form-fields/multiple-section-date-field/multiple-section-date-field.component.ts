@@ -76,7 +76,7 @@ export class MultipleSectionDateFieldComponent
                 throw new Error('Failed to initialize list item for MultipleSectionDateFieldComponent');
             return createFieldComponentWithLabel(
                 StringInputFieldComponent,
-                'Section Names (separated by commas)',
+                'Canvas Section Names (separated by commas)',
                 this.environmentInjector
             )
                 .appendField(new StaticFormField<string>())
@@ -96,12 +96,12 @@ export class MultipleSectionDateFieldComponent
                             if (sectionName.length == 0) continue;
                             sectionCnt++;
                             if (!existSectionNames.has(sectionName)) {
-                                value.fieldA.errorMessage = `Section ${sectionName} does not exist`;
+                                value.fieldA.errorMessage = `Canvas section "${sectionName}" does not exist`;
                                 return false;
                             }
                         }
                         if (sectionCnt == 0) {
-                            value.fieldA.errorMessage = 'No section is specified';
+                            value.fieldA.errorMessage = 'No Canvas section is specified';
                             return false;
                         }
                         return true;
@@ -110,7 +110,7 @@ export class MultipleSectionDateFieldComponent
                 .appendBuilder(
                     createFieldComponentWithLabel(
                         StringInputFieldComponent,
-                        'Display Name',
+                        'Short Display Name',
                         this.environmentInjector
                     ).editField((field) => {
                         field.validator = async ([field, value]: [StringInputFieldComponent, string]) => {

@@ -37,7 +37,7 @@ export class CreateConfigurationModalComponent implements OnInit {
             .appendBuilder(
                 createFieldComponentWithLabel(
                     StringTextareaFieldComponent,
-                    'Description of Token ATM Log Assignment',
+                    'Description for Token ATM Log Assignment on Canvas',
                     this.environmentInjector
                 )
             )

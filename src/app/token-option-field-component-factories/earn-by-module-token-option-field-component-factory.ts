@@ -30,7 +30,11 @@ export class EarnByModuleTokenOptionFieldComponentFactory extends TokenOptionFie
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         FormField<EarnByModuleTokenOption | TokenOptionGroup, EarnByModuleTokenOptionData, any>
     ] {
-        const moduleComp = createFieldComponentWithLabel(StringInputFieldComponent, 'Module Name', environmentInjector)
+        const moduleComp = createFieldComponentWithLabel(
+            StringInputFieldComponent,
+            'Canvas Module Name',
+            environmentInjector
+        )
             .appendField(new StaticFormField<string>())
             .editField((field) => {
                 field.validator = async (value: typeof field) => {

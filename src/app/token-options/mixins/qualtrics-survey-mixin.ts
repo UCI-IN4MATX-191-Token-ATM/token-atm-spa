@@ -57,7 +57,7 @@ export function QualtricsSurveyMixin<TBase extends Constructor<IGridViewDataSour
                 value: this.surveyId
             }));
             this.registerDataPointSource(() => ({
-                colName: 'Qualtrics Survey Field Name',
+                colName: 'Qualtrics Survey Field Name (from SSO)',
                 type: 'string',
                 value: this.fieldName
             }));

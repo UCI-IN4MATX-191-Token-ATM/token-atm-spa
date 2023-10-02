@@ -32,13 +32,13 @@ export class EditConfigurationModalComponent implements OnInit {
         if (!this.container || !this.configuration) throw new Error('Failed to initialize configuration editing modal'); // TODO: Double check phrasing
         const [renderer, field] = createFieldComponentWithLabel(
             StringInputFieldComponent,
-            'The suffix for the Canvas Assignment Group & Module names',
+            'The suffix for the Token ATM Canvas Assignment Group & Module names',
             this.environmentInjector
         )
             .appendBuilder(
                 createFieldComponentWithLabel(
                     StringTextareaFieldComponent,
-                    'Description of Token ATM Log Assignment',
+                    'Description for Token ATM Log Assignment on Canvas',
                     this.environmentInjector
                 )
             )

@@ -19,7 +19,7 @@ export function StartTimeMixin<TBase extends Constructor<IGridViewDataSource>>(B
         constructor(...args: any[]) {
             super(...args);
             this.registerDataPointSource(() => ({
-                colName: 'Start At',
+                colName: 'Can Request From',
                 type: 'date',
                 value: this.startTime
             }));
