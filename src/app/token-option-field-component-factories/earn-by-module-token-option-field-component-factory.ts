@@ -18,11 +18,15 @@ import { CanvasService } from 'app/services/canvas.service';
 import { set } from 'date-fns';
 import { SingleSelectionFieldComponent } from 'app/components/form-fields/selection-fields/single-selection-field/single-selection-field.component';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
+import * as t from 'io-ts';
+import { unwrapValidation } from 'app/utils/validation-unwrapper';
 
-interface ModuleData {
-    id: string;
-    name: string;
-}
+const ModuleDataDef = t.type({
+    id: t.string,
+    name: t.string
+});
+
+type ModuleData = t.TypeOf<typeof ModuleDataDef>;
 
 @Injectable()
 export class EarnByModuleTokenOptionFieldComponentFactory extends TokenOptionFieldComponentFactory<EarnByModuleTokenOption> {
@@ -37,11 +41,17 @@ export class EarnByModuleTokenOptionFieldComponentFactory extends TokenOptionFie
     ] {
         const moduleComp = createFieldComponentWithLabel(
             SingleSelectionFieldComponent<ModuleData>,
-            'Module Name',
+            'Canvas Module',
             environmentInjector
         )
             .editField((field) => {
                 field.optionRenderer = (v) => v.name;
+                field.copyPasteHandler = {
+                    serialize: async (v: ModuleData | undefined) =>
+                        v == undefined ? 'undefined' : JSON.stringify(ModuleDataDef.encode(v)),
+                    deserialize: async (v: string) =>
+                        v == 'undefined' ? undefined : unwrapValidation(ModuleDataDef.decode(JSON.parse(v)))
+                };
                 field.validator = async ([v, field]: [
                     ModuleData | undefined,
                     SingleSelectionFieldComponent<ModuleData>

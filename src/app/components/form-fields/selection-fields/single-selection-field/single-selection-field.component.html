@@ -9,6 +9,21 @@
                 [compareWith]="isEqual"
                 (valueChange)="onSelectValueChange($event)"
             >
+                <div class="d-flex align-items-center">
+                    <button *ngIf="copyPasteHandler" mat-icon-button title="Copy" class="ms-auto" (click)="onCopy()">
+                        <mat-icon>content_copy</mat-icon>
+                    </button>
+                    <button
+                        *ngIf="copyPasteHandler"
+                        mat-icon-button
+                        title="Paste"
+                        (click)="onPaste()"
+                        [disabled]="isReadOnly"
+                    >
+                        <mat-icon>content_paste</mat-icon>
+                    </button>
+                </div>
+                <mat-divider *ngIf="copyPasteHandler" class="m-1"></mat-divider>
                 <mat-option>
                     <ngx-mat-select-search [(ngModel)]="filterText" placeholderLabel=""></ngx-mat-select-search>
                 </mat-option>

@@ -15,7 +15,9 @@ import type { ExtractDest, ExtractSrc, FormField } from 'app/utils/form-field/fo
 import type { FormFieldAppender } from 'app/utils/form-field/form-field-appender';
 import { FormFieldComponentBuilder, TupleAppend } from 'app/utils/form-field/form-field-component-builder';
 import { StaticFormField } from 'app/utils/form-field/static-form-field';
+import { unwrapValidation } from 'app/utils/validation-unwrapper';
 import { compareDesc, set } from 'date-fns';
+import * as t from 'io-ts';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export abstract class TokenOptionFieldComponentFactory<T extends TokenOption<any>> {
@@ -128,10 +130,12 @@ export function createWithdrawTokenOptionComponentBuilder(
         .transformDest(async ([id]) => id);
 }
 
-interface QuizData {
-    id: string;
-    name: string;
-}
+const QuizDataDef = t.type({
+    id: t.string,
+    name: t.string
+});
+
+type QuizData = t.TypeOf<typeof QuizDataDef>;
 
 export function createQuizFieldComponentBuilder(
     canvasService: CanvasService,
@@ -140,9 +144,15 @@ export function createQuizFieldComponentBuilder(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     FormField<[string, QuizData | undefined], QuizData, any>
 > {
-    return createFieldComponentWithLabel(SingleSelectionFieldComponent<QuizData>, 'Quiz Name', environmentInjector)
+    return createFieldComponentWithLabel(SingleSelectionFieldComponent<QuizData>, 'Canvas Quiz', environmentInjector)
         .editField((field) => {
             field.optionRenderer = (v) => v.name;
+            field.copyPasteHandler = {
+                serialize: async (v: QuizData | undefined) =>
+                    v == undefined ? 'undefined' : JSON.stringify(QuizDataDef.encode(v)),
+                deserialize: async (v: string) =>
+                    v == 'undefined' ? undefined : unwrapValidation(QuizDataDef.decode(JSON.parse(v)))
+            };
             field.validator = async ([v, field]: [QuizData | undefined, SingleSelectionFieldComponent<QuizData>]) => {
                 field.errorMessage = undefined;
                 if (v == undefined) {
@@ -241,10 +251,12 @@ export function createGradeThresholdComponentBuilder(
         });
 }
 
-interface AssignmentData {
-    id: string;
-    name: string;
-}
+const AssignmentDataDef = t.type({
+    id: t.string,
+    name: t.string
+});
+
+type AssignmentData = t.TypeOf<typeof AssignmentDataDef>;
 
 export function createAssignmentFieldComponentBuilder(
     canvasService: CanvasService,
@@ -255,7 +267,7 @@ export function createAssignmentFieldComponentBuilder(
 > {
     return createFieldComponentWithLabel(
         SingleSelectionFieldComponent<AssignmentData>,
-        'Assignment Name',
+        'Canvas Assignment',
         environmentInjector
     )
         .editField((field) => {
@@ -265,6 +277,12 @@ export function createAssignmentFieldComponentBuilder(
                 SingleSelectionFieldComponent<AssignmentData>
             ]) => {
                 field.errorMessage = undefined;
+                field.copyPasteHandler = {
+                    serialize: async (v: AssignmentData | undefined) =>
+                        v == undefined ? 'undefined' : JSON.stringify(AssignmentDataDef.encode(v)),
+                    deserialize: async (v: string) =>
+                        v == 'undefined' ? undefined : unwrapValidation(AssignmentDataDef.decode(JSON.parse(v)))
+                };
                 if (v == undefined) {
                     field.errorMessage = 'Please select a Canvas assignment';
                     return false;

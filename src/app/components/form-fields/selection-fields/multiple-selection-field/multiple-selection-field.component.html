@@ -10,10 +10,28 @@
                 [compareWith]="isEqual"
                 (valueChange)="onSelectValueChange($event)"
             >
-                <mat-slide-toggle class="ms-1" [(ngModel)]="onlyShowSelected"
-                    >Only show selected options</mat-slide-toggle
-                >
-                <mat-divider *ngIf="allowShowSelected" class="m-1"></mat-divider>
+                <div class="d-flex align-items-center">
+                    <mat-slide-toggle
+                        *ngIf="allowShowSelected"
+                        class="ms-1"
+                        [(ngModel)]="onlyShowSelected"
+                        class="me-auto"
+                        >Only show selected options</mat-slide-toggle
+                    >
+                    <button *ngIf="copyPasteHandler" mat-icon-button title="Copy" (click)="onCopy()">
+                        <mat-icon>content_copy</mat-icon>
+                    </button>
+                    <button
+                        *ngIf="copyPasteHandler"
+                        mat-icon-button
+                        title="Paste"
+                        (click)="onPaste()"
+                        [disabled]="isReadOnly"
+                    >
+                        <mat-icon>content_paste</mat-icon>
+                    </button>
+                </div>
+                <mat-divider *ngIf="allowShowSelected || copyPasteHandler" class="m-1"></mat-divider>
                 <mat-option>
                     <ngx-mat-select-search [(ngModel)]="filterText" placeholderLabel=""></ngx-mat-select-search>
                 </mat-option>

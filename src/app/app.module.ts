@@ -76,6 +76,9 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MultipleSelectionFieldComponent } from './components/form-fields/selection-fields/multiple-selection-field/multiple-selection-field.component';
 import { SingleSelectionFieldComponent } from './components/form-fields/selection-fields/single-selection-field/single-selection-field.component';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 @NgModule({
     declarations: [
@@ -138,7 +141,10 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
         MatSelectModule,
         NgxMatSelectSearchModule,
         MatDividerModule,
-        MatSlideToggleModule
+        MatSlideToggleModule,
+        MatButtonModule,
+        MatIconModule,
+        MatSnackBarModule
     ],
     providers: [
         { provide: ErrorHandler, useClass: GlobalErrorHandler },

@@ -1,6 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, Inject, Input } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorSerializer } from 'app/utils/error-serailizer';
 import { BaseFormField } from 'app/utils/form-field/form-field';
+import type { FormFieldCopyPasteHandler } from 'app/utils/form-field/form-field-copy-paste-handler';
 import { isEqual } from 'lodash';
 
 @Component({
@@ -16,6 +18,7 @@ export class SingleSelectionFieldComponent<T> extends BaseFormField<
     @Input() optionRenderer: (value: T) => string = (v) => (v as object).toString();
     @Input() isEqual: (a: T, b: T) => boolean = isEqual;
     @Input() allowUnselect = false;
+    @Input() copyPasteHandler?: FormFieldCopyPasteHandler<T | undefined>;
     value?: T | undefined;
     isProcessing = false;
 
@@ -30,6 +33,10 @@ export class SingleSelectionFieldComponent<T> extends BaseFormField<
 
     isOptionSettingFailed = false;
     private optionFactory?: () => Promise<T[]>;
+
+    constructor(@Inject(MatSnackBar) private snackBar: MatSnackBar) {
+        super();
+    }
 
     public get filterText(): string {
         return this._filterText;
@@ -110,5 +117,44 @@ export class SingleSelectionFieldComponent<T> extends BaseFormField<
 
     onSelectValueChange(value: T | undefined) {
         if (this.isInvalidOptionSelected) this.invalidOptionsValidate(value);
+    }
+
+    async onCopy(): Promise<void> {
+        if (!this.copyPasteHandler) {
+            this.snackBar.open('Copy & Paste is not supported for this field', 'Dismiss', {
+                duration: 3000
+            });
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(await this.copyPasteHandler.serialize(this.value));
+            this.snackBar.open('Content Copied', 'Dismiss', {
+                duration: 3000
+            });
+        } catch (err: unknown) {
+            this.snackBar.open('Error occurred when copying', 'Dismiss', {
+                duration: 3000
+            });
+        }
+    }
+
+    async onPaste(): Promise<void> {
+        if (!this.copyPasteHandler) {
+            this.snackBar.open('Copy & Paste is not supported for this field', 'Dismiss', {
+                duration: 3000
+            });
+            return;
+        }
+        try {
+            const text = await navigator.clipboard.readText();
+            this.assignOptions(await this.copyPasteHandler.deserialize(text), this.validOptions);
+            this.snackBar.open('Content Pasted', 'Dismiss', {
+                duration: 3000
+            });
+        } catch (err: unknown) {
+            this.snackBar.open('Error occurred when pasting', 'Dismiss', {
+                duration: 3000
+            });
+        }
     }
 }

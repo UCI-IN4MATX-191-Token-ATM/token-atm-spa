@@ -9,11 +9,16 @@ import { createFieldComponentWithLabel } from 'app/token-option-field-component-
 import { StringInputFieldComponent } from '../string-input-field/string-input-field.component';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import { MultipleSelectionFieldComponent } from '../selection-fields/multiple-selection-field/multiple-selection-field.component';
+import * as t from 'io-ts';
+import { unwrapValidation } from 'app/utils/validation-unwrapper';
 
-interface SectionData {
-    id: string;
-    name: string;
-}
+const SectionDataDef = t.type({
+    id: t.string,
+    name: t.string
+});
+const SectionDataArrayDef = t.array(SectionDataDef);
+
+type SectionData = t.TypeOf<typeof SectionDataDef>;
 
 @Component({
     selector: 'app-multiple-section-date-field',
@@ -86,6 +91,11 @@ export class MultipleSectionDateFieldComponent
             )
                 .editField((field) => {
                     field.optionRenderer = (v) => v.name;
+                    field.copyPasteHandler = {
+                        serialize: async (value: SectionData[]) => JSON.stringify(SectionDataArrayDef.encode(value)),
+                        deserialize: async (value: string) =>
+                            unwrapValidation(SectionDataArrayDef.decode(JSON.parse(value)))
+                    };
                     field.validator = async ([v, field]: [
                         SectionData[],
                         MultipleSelectionFieldComponent<SectionData>
