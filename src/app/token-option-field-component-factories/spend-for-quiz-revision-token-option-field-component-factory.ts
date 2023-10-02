@@ -38,7 +38,7 @@ export class SpendForQuizRevisionTokenOptionFieldComponentFactory extends TokenO
     ] {
         const assignmentField = createFieldComponentWithLabel(
             StringInputFieldComponent,
-            'Canvas Assignment whose Available Until should change',
+            'Canvas Assignment whose “Available Until” should change',
             environmentInjector
         )
             .appendField(new StaticFormField<string>())
@@ -66,7 +66,7 @@ export class SpendForQuizRevisionTokenOptionFieldComponentFactory extends TokenO
                 .appendBuilder(
                     createNewDueTimeComponentBuilder(
                         environmentInjector,
-                        'Change Canvas Assignment’s Available Until to'
+                        'Change Canvas Assignment’s “Available Until” to'
                     )
                 )
                 .transformSrc((value: SpendForQuizRevisionTokenOption | TokenOptionGroup) => {
