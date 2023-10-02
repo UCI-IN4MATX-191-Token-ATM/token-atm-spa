@@ -68,7 +68,7 @@ export class RequestProcessManagerService {
             [quizSubmissionMap, assignmentIdMap] = await this.gatherQuizSubmissions(configuration, progressUpdate);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
-            progressUpdate.error(["Encountered an error while gathering students' quiz submissions", err]);
+            progressUpdate.error(['Encountered an error while gathering students’ quiz submissions', err]);
             this.finishRequestProcessing(progressUpdate, false);
             return;
         }

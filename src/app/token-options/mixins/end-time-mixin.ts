@@ -19,7 +19,7 @@ export function EndTimeMixin<TBase extends Constructor<IGridViewDataSource>>(Bas
         constructor(...args: any[]) {
             super(...args);
             this.registerDataPointSource(() => ({
-                colName: 'End At',
+                colName: 'Can Request Until',
                 type: 'date',
                 value: this.endTime
             }));

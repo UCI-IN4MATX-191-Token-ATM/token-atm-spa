@@ -86,7 +86,7 @@ export class MultipleSectionDateFieldComponent
                 throw new Error('Failed to initialize list item for MultipleSectionDateFieldComponent');
             return createFieldComponentWithLabel(
                 MultipleSelectionFieldComponent<SectionData>,
-                'Section Names',
+                'Canvas Sections',
                 this.environmentInjector
             )
                 .editField((field) => {
@@ -114,7 +114,7 @@ export class MultipleSectionDateFieldComponent
                 .appendBuilder(
                     createFieldComponentWithLabel(
                         StringInputFieldComponent,
-                        'Display Name',
+                        'Short Display Name',
                         this.environmentInjector
                     ).editField((field) => {
                         field.validator = async ([field, value]: [StringInputFieldComponent, string]) => {

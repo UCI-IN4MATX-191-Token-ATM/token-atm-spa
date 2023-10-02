@@ -44,7 +44,7 @@ export class SpendForQuizRevisionTokenOptionFieldComponentFactory extends TokenO
                 .appendBuilder(
                     createNewDueTimeComponentBuilder(
                         environmentInjector,
-                        'Until Time for Explanation Document Submission'
+                        'Change Canvas Assignment’s “Available Until” to'
                     )
                 )
                 .transformSrc((value: SpendForQuizRevisionTokenOption | TokenOptionGroup) => {

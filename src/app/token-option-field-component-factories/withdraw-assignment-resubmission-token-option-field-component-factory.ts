@@ -34,7 +34,7 @@ export class WithdrawAssignmentResubmissionTokenOptionFieldComponentFactory exte
                         async (value: TokenOption) =>
                             value instanceof SpendForAssignmentResubmissionTokenOption
                                 ? undefined
-                                : "Token option type invalid: should be 'Spend Tokens for Assignment Resubmission'",
+                                : "Token option type invalid: should be 'Spend Tokens for Assignment Resubmission on Canvas'", // TODO: state 'Canvas Assignment' or `on Canvas`
                         environmentInjector
                     )
                 )

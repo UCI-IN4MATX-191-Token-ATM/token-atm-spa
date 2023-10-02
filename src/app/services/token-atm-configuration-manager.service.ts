@@ -161,10 +161,10 @@ export class TokenATMConfigurationManagerService {
         );
         const questionPrompt =
             tokenOptionGroup.availableTokenOptions.length == 0
-                ? "There isn't anything you can request for via this quiz. If you think this is an error, please contact your instructor."
+                ? 'There isn’t anything you can request for via this quiz. If you think this is an error, please contact your instructor.'
                 : 'Make a request by choosing an option below (see the table above for the detailed description of each option)';
         const question = new MultipleChoiceQuestion(
-            'Choose a token option',
+            'Make a Request',
             questionPrompt,
             0,
             tokenOptionGroup.availableTokenOptions.map((tokenOption) => tokenOption.prompt)

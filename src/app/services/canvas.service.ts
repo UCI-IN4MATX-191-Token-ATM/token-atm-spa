@@ -1057,6 +1057,7 @@ export class CanvasService {
                 titleCnt = parseInt(data[2] as string) + 1;
             }
             if (override.studentIdsAsIndividualLevel.includes(studentId)) return false;
+            if (targetOverride != undefined) continue;
             if (
                 override.studentIdsAsIndividualLevel.length >= CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE ||
                 override.lockAt == undefined ||
@@ -1064,7 +1065,6 @@ export class CanvasService {
             )
                 continue;
             targetOverride = override;
-            break;
         }
         if (!targetOverride) {
             await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
@@ -1277,10 +1277,10 @@ export class CanvasService {
             if (result == undefined) {
                 result = quiz.id;
             } else {
-                throw new Error('Multiple quizzes found');
+                throw new Error('Multiple Canvas quizzes found');
             }
         }
-        if (!result) throw new Error('Quiz not found');
+        if (!result) throw new Error('Canvas Quiz not found');
         return result;
     }
 
@@ -1301,10 +1301,10 @@ export class CanvasService {
             if (result == undefined) {
                 result = assignment.id;
             } else {
-                throw new Error('Multiple assignments found');
+                throw new Error('Multiple Canvas assignments found');
             }
         }
-        if (!result) throw new Error('Assignment not found');
+        if (!result) throw new Error('Canvas assignment not found');
         return result;
     }
 

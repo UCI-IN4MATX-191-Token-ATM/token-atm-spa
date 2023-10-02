@@ -32,7 +32,7 @@ export class TokenOptionGroupManagementComponent implements OnInit {
         if (!this.value || !this.container) throw new Error('Failed to initialize token option group management modal');
         const [renderer, field] = createFieldComponentWithLabel(
             NumberInputFieldComponent,
-            'Group ID',
+            'Token Option Group ID',
             this.environmentInjector
         )
             .editField((field) => {
@@ -46,7 +46,7 @@ export class TokenOptionGroupManagementComponent implements OnInit {
             .appendBuilder(
                 createFieldComponentWithLabel(
                     StringInputFieldComponent,
-                    'Group Name',
+                    'Token Option Group Name',
                     this.environmentInjector
                 ).editField((field) => {
                     field.validator = async ([field, value]: [StringInputFieldComponent, string]) => {
@@ -62,7 +62,7 @@ export class TokenOptionGroupManagementComponent implements OnInit {
             .appendBuilder(
                 createFieldComponentWithLabel(
                     StringTextareaFieldComponent,
-                    'Group Description',
+                    'Token Option Group Information / Directions',
                     this.environmentInjector
                 ).editField((field) => {
                     field.rows = 4;
