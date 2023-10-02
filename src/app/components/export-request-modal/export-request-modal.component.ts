@@ -248,7 +248,7 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
                 this.fileName = exportedFile.name;
                 this.configField.isReadOnly = true;
             } else this.configField.isReadOnly = false;
-            if (exportedFile == null)
+            if (exportedFile === null)
                 this.message =
                     'Export finished, but there are no requests that satisfy the restrictions specified above.';
             this.isProcessing = false;
