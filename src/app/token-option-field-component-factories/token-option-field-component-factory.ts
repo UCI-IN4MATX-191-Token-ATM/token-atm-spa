@@ -260,16 +260,13 @@ type AssignmentData = t.TypeOf<typeof AssignmentDataDef>;
 
 export function createAssignmentFieldComponentBuilder(
     canvasService: CanvasService,
-    environmentInjector: EnvironmentInjector
+    environmentInjector: EnvironmentInjector,
+    label = 'Canvas Assignment'
 ): FormFieldComponentBuilder<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     FormField<[string, AssignmentData | undefined], AssignmentData, any>
 > {
-    return createFieldComponentWithLabel(
-        SingleSelectionFieldComponent<AssignmentData>,
-        'Canvas Assignment',
-        environmentInjector
-    )
+    return createFieldComponentWithLabel(SingleSelectionFieldComponent<AssignmentData>, label, environmentInjector)
         .editField((field) => {
             field.optionRenderer = (v) => v.name;
             field.validator = async ([v, field]: [

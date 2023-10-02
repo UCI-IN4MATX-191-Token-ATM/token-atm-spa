@@ -39,7 +39,13 @@ export class SpendForQuizRevisionTokenOptionFieldComponentFactory extends TokenO
             tokenOptionFieldComponentBuilder(environmentInjector)
                 .appendBuilder(createQuizFieldComponentBuilder(this.canvasService, environmentInjector))
                 .appendBuilder(createGradeThresholdComponentBuilder(environmentInjector))
-                .appendBuilder(createAssignmentFieldComponentBuilder(this.canvasService, environmentInjector))
+                .appendBuilder(
+                    createAssignmentFieldComponentBuilder(
+                        this.canvasService,
+                        environmentInjector,
+                        'Canvas Assignment whose “Available Until” should change'
+                    )
+                )
                 .appendBuilder(createEndTimeComponentBuilder(environmentInjector))
                 .appendBuilder(
                     createNewDueTimeComponentBuilder(
