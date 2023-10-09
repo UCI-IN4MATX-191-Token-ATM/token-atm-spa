@@ -546,13 +546,13 @@ export class CanvasService {
         return [submissionDate, result];
     }
 
-    public async getCourseStudentEnrollments(courseId: string): Promise<PaginatedResult<Student>> {
+    public async getCourseStudentEnrollments(courseId: string, pageSize = 100): Promise<PaginatedResult<Student>> {
         return new PaginatedResult<Student>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/users`, {
                 params: {
                     enrollment_type: ['student'],
                     enrollment_state: ['active'],
-                    per_page: 100
+                    per_page: pageSize
                 }
             }),
             async (url: string) => await this.paginatedRequestHandler(url),

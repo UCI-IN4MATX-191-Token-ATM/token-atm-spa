@@ -158,4 +158,20 @@ export class DevTestComponent {
         console.log(WithdrawAssignmentResubmissionTokenOptionDataDef.is(tokenOption));
         console.log(WithdrawAssignmentResubmissionTokenOptionDataDef.encode(tokenOption));
     }
+
+    async TestCanvasPaginationChange(): Promise<void> {
+        if (!this.course) return;
+        console.log('Checking Pagination...');
+        let count = 0;
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            for await (const stu of await this.canvasService.getCourseStudentEnrollments(this.course.id, 1)) {
+                console.log(stu);
+                count++;
+            }
+        } finally {
+            console.log('Count of students:', count);
+        }
+        console.log('No Pagination error found...');
+    }
 }
