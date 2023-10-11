@@ -1,12 +1,13 @@
-import { Component, Inject, Input } from '@angular/core';
+import { Component, Inject, Input, OnDestroy } from '@angular/core';
 import { ProcessedRequest } from 'app/data/processed-request';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { CanvasService } from 'app/services/canvas.service';
 import { StudentRecordManagerService } from 'app/services/student-record-manager.service';
 import { countAndNoun } from 'app/utils/pluralize';
 import type { BsModalRef } from 'ngx-bootstrap/modal';
-import * as CSVParse from 'papaparse';
+import type { ParseResult } from 'papaparse';
 import { AbstractControl, Validators } from '@angular/forms';
+import { CSVsService } from 'app/services/csvs.service';
 
 type PreviewColumnsIndex = {
     email?: number;
@@ -24,7 +25,7 @@ type MandatoryColumns = {
     templateUrl: './batch-token-balance-adjustment-modal.component.html',
     styleUrls: ['./batch-token-balance-adjustment-modal.component.sass']
 })
-export class BatchTokenBalanceAdjustmentModalComponent {
+export class BatchTokenBalanceAdjustmentModalComponent implements OnDestroy {
     isProcessing = false;
     @Input() configuration?: TokenATMConfiguration;
     modalRef?: BsModalRef<unknown>;
@@ -51,30 +52,11 @@ export class BatchTokenBalanceAdjustmentModalComponent {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     firstResult?: string[] | any;
 
-    private baselineConfig = {
-        skipEmptyLines: true,
-        dynamicTyping: false
-    };
-
     constructor(
         @Inject(StudentRecordManagerService) private managerService: StudentRecordManagerService,
-        @Inject(CanvasService) private canvasService: CanvasService
+        @Inject(CanvasService) private canvasService: CanvasService,
+        @Inject(CSVsService) private csvService: CSVsService
     ) {}
-
-    async parseCSV(file: File, options?: object) {
-        let promiseResolve: (results: CSVParse.ParseResult<unknown>) => void;
-        const promise = new Promise<CSVParse.ParseResult<unknown>>((resolve) => {
-            promiseResolve = resolve;
-        });
-        CSVParse.parse(file, {
-            ...this.baselineConfig,
-            ...options,
-            complete: async (results) => {
-                promiseResolve(results);
-            }
-        });
-        return promise;
-    }
 
     async onSelectFile(event: Event) {
         this.isProcessing = true;
@@ -86,14 +68,14 @@ export class BatchTokenBalanceAdjustmentModalComponent {
         this.clearPreview();
         // TODO: Remove Header reset once UI Interaction and User Toggle-able Headers work
         this.hasHeader = false;
-        const setPossibleHeaders = (results: CSVParse.ParseResult<unknown>) => {
+        const setPossibleHeaders = (results: ParseResult<unknown>) => {
             if (this.hasHeader) this.firstRow = results.meta?.fields;
             else {
                 this.firstRow = results.data[0] as string[];
             }
         };
         if (this.selectedFile) {
-            const results = await this.parseCSV(this.selectedFile, { header: this.hasHeader, preview: 2 });
+            const results = await this.csvService.parseCSV(this.selectedFile, { header: this.hasHeader, preview: 2 });
             setPossibleHeaders(results);
             // console.log('File’s First Row:', this.firstRow);
             // console.log('Results:', results);
@@ -188,17 +170,13 @@ export class BatchTokenBalanceAdjustmentModalComponent {
     //          - Update columnsUsed with actual user selections (w/ index as a string)
     //          - Disable interactions (header/column selection) once Import begins
     //       - Handle user turning headers off/on
-    //       - Parsing from & Unparsing to Excel formatted CSVs (https://www.papaparse.com/faq#encoding)
-    //       - Expose Parser Errors & Meta info (`results.errors` & `results.meta`)
     //       - Allow dry-run functionality to test CSV without updating Token ATM
-    //       - Update parser to use a stream to parse row by row (makes progress indeterminate)
-    //       - Use `URL.revokeObjectURL()` on Error CSV URL when modal event onHidden occurs
 
     async onImportCSV() {
         if (!this.selectedFile || !this.configuration || !this.columnsUsed) return;
         this.isProcessing = true;
         this.hasStarted = true;
-        const results = await this.parseCSV(this.selectedFile, { header: this.hasHeader });
+        const results = await this.csvService.parseCSV(this.selectedFile, { header: this.hasHeader });
         let cnt = 0;
         this.clearErrors();
         for (const record of results.data) {
@@ -272,10 +250,7 @@ export class BatchTokenBalanceAdjustmentModalComponent {
             }
         }
         this.updateProgress(cnt, results.data.length);
-        if (this.errorCollection) {
-            // console.log('Error CSV Text:', CSVParse.unparse(this.errorCollection));
-        }
-        this.makeErrorCSV();
+        await this.makeErrorCSV();
         this.isProcessing = false;
         // this.modalRef?.hide();
     }
@@ -285,28 +260,27 @@ export class BatchTokenBalanceAdjustmentModalComponent {
         if (this.errorCollection == null) {
             throw new Error('Error collector has not been initialized');
         }
-        const noLinebreaks = errorMessage.replaceAll(/[\n\r]/g, '  ');
+        const error_noLinebreaks = errorMessage.replaceAll(/[\n\r]/g, '  ');
         if (Array.isArray(record)) {
-            this.errorCollection.push([...record, `line ${line}`, noLinebreaks]);
+            this.errorCollection.push([...record, `line ${line}`, error_noLinebreaks]);
         } else {
             this.errorCollection.push({
                 ...record,
                 Line: `${line}`,
-                Error: noLinebreaks
+                Error: error_noLinebreaks
             });
         }
     }
 
-    makeErrorCSV() {
+    async makeErrorCSV() {
         if (this.errorCollection == null || this.errorCollection.length == 0) return;
 
-        this.errorsCSVFile = new File(
-            [CSVParse.unparse(this.errorCollection)],
-            `${this.cleanName(this.selectedFile?.name)}-Errors-${this.cleanName(new Date().toISOString())}.csv`,
-            { type: 'text/csv;charset=utf-8;' }
-        );
+        const importedFileName = this.selectedFile?.name == null ? 'Batch-CSV' : this.selectedFile?.name;
+        this.errorsCSVFile = await this.csvService.makeFile(new Map([[importedFileName, this.errorCollection]]), {
+            prefix: '',
+            suffix: 'Import-Errors'
+        });
         this.errorsCSVURL = window.URL.createObjectURL(this.errorsCSVFile);
-        // window.URL.revokeObjectURL(this.errorsCSVURL);
     }
 
     clearErrors() {
@@ -345,9 +319,7 @@ export class BatchTokenBalanceAdjustmentModalComponent {
         return `${countAndNoun(errorCount, 'error')} occured while processing`;
     }
 
-    cleanName(name?: string): string {
-        if (name == null) return 'Batch_CSV';
-        const cleanExpr = /\..{3,}?$|:/gm;
-        return name.replaceAll(cleanExpr, '');
+    ngOnDestroy(): void {
+        this.clearAll();
     }
 }

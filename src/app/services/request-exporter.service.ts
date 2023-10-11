@@ -2,12 +2,10 @@ import { Inject, Injectable } from '@angular/core';
 import { StudentRecordManagerService } from './student-record-manager.service';
 import type { ProcessedRequest } from 'app/data/processed-request';
 import type { Student } from 'app/data/student';
-import * as CSVParse from 'papaparse';
-import ZipFile from 'jszip';
-import sanitizeFileName from 'sanitize-filename';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { format } from 'date-fns';
 import { countAndNoun } from 'app/utils/pluralize';
+import { CSVsService } from './csvs.service';
 
 export function parseProcessedRequest(processedRequest: ProcessedRequest): Record<string, string> {
     return {
@@ -29,6 +27,7 @@ export class RequestExportInstance {
     constructor(
         private studentRecordManagerService: StudentRecordManagerService,
         private configuration: TokenATMConfiguration,
+        private csvService: CSVsService,
         private students: Student[],
         private fileName?: string,
         private requestFilter?: (request: ProcessedRequest) => Promise<boolean>,
@@ -41,7 +40,7 @@ export class RequestExportInstance {
 
     public get progressDescription(): string {
         if (this.students.length == 0) return '';
-        return `Exported request(s) for ${countAndNoun(this.curProgress, 'student enrollment')}, ${countAndNoun(
+        return `Exported requests for ${countAndNoun(this.curProgress, 'student enrollment')}, ${countAndNoun(
             this.students.length - this.curProgress,
             'student enrollment'
         )} remaining`;
@@ -76,23 +75,14 @@ export class RequestExportInstance {
             }
             this.curProgress++;
         }
-        const fileName = `Token-ATM-Requests-Export-${
-            this.fileName ? sanitizeFileName(this.fileName) + '-' : '' + format(new Date(), 'MM-dd-yyyy-HH-mm-ss')
-        }`;
+        const fixes = { prefix: 'Token-ATM-Requests-Export', suffix: '' };
+        const fName = this.fileName ? this.fileName : '';
         if (!this.classifier) {
             if (requestDataArray.length == 0) return null;
-            return new File([CSVParse.unparse(requestDataArray)], fileName + '.csv', {
-                type: 'text/csv;charset=utf-8;'
-            });
+            return this.csvService.makeFile(new Map([[fName, requestDataArray]]), fixes);
         } else {
             if (requestDataMap.size == 0) return null;
-            const zipFile = new ZipFile();
-            for (const [groupName, data] of requestDataMap.entries()) {
-                zipFile.file(sanitizeFileName(groupName) + '.csv', CSVParse.unparse(data));
-            }
-            return new File([await zipFile.generateAsync({ type: 'blob' })], fileName + '.zip', {
-                type: 'application/zip'
-            });
+            return this.csvService.makeFile(requestDataMap, undefined, fName, fixes);
         }
     }
 
@@ -106,7 +96,8 @@ export class RequestExportInstance {
 })
 export class RequestExporterService {
     constructor(
-        @Inject(StudentRecordManagerService) private studentRecordManagerService: StudentRecordManagerService
+        @Inject(StudentRecordManagerService) private studentRecordManagerService: StudentRecordManagerService,
+        @Inject(CSVsService) private csvService: CSVsService
     ) {}
 
     public createRequestExportInstance(
@@ -119,6 +110,7 @@ export class RequestExporterService {
         return new RequestExportInstance(
             this.studentRecordManagerService,
             configuration,
+            this.csvService,
             students,
             fileName,
             requestFilter,
