@@ -70,6 +70,7 @@ import { ExportRequestModalComponent } from './components/export-request-modal/e
 import { SelectFieldComponent } from './components/form-fields/select-field/select-field.component';
 import { CheckboxFieldComponent } from './components/form-fields/checkbox-field/checkbox-field.component';
 import { OptionalFieldComponent } from './components/form-fields/optional-field/optional-field.component';
+import { ReviewConfigurationDisplayComponent } from './components/review-configuration-display/review-configuration-display.component';
 
 @NgModule({
     declarations: [
@@ -112,7 +113,8 @@ import { OptionalFieldComponent } from './components/form-fields/optional-field/
         ExportRequestModalComponent,
         SelectFieldComponent,
         CheckboxFieldComponent,
-        OptionalFieldComponent
+        OptionalFieldComponent,
+        ReviewConfigurationDisplayComponent
     ],
     imports: [
         BrowserModule,
