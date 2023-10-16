@@ -19,7 +19,8 @@ import { set } from 'date-fns';
 import { SingleSelectionFieldComponent } from 'app/components/form-fields/selection-fields/single-selection-field/single-selection-field.component';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import * as t from 'io-ts';
-import { unwrapValidation } from 'app/utils/validation-unwrapper';
+import { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
+import { StaticFormField } from 'app/utils/form-field/static-form-field';
 
 const ModuleDataDef = t.type({
     id: t.string,
@@ -39,44 +40,74 @@ export class EarnByModuleTokenOptionFieldComponentFactory extends TokenOptionFie
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         FormField<EarnByModuleTokenOption | TokenOptionGroup, EarnByModuleTokenOptionData, any>
     ] {
-        const moduleComp = createFieldComponentWithLabel(
-            SingleSelectionFieldComponent<ModuleData>,
-            'Canvas Module',
-            environmentInjector
-        )
+        const moduleComp = new FormFieldComponentBuilder()
+            .setField(new StaticFormField<string>())
+            .appendBuilder(
+                createFieldComponentWithLabel(
+                    SingleSelectionFieldComponent<string>,
+                    'Canvas Module Name',
+                    environmentInjector
+                ).editField((field) => {
+                    field.copyPasteHandler = {
+                        serialize: async (v: string | undefined) => (v == undefined ? 'undefined' : JSON.stringify(v)),
+                        deserialize: async (v: string) => (v == 'undefined' ? undefined : JSON.parse(v))
+                    };
+                    field.validator = async ([v, field]: [
+                        string | undefined,
+                        SingleSelectionFieldComponent<string>
+                    ]) => {
+                        field.errorMessage = undefined;
+                        if (v == undefined) {
+                            field.errorMessage = 'Please select a Canvas module';
+                            return false;
+                        }
+                        return true;
+                    };
+                })
+            )
+            .appendVP(
+                async (field) =>
+                    [await field.destValue, field.fieldB] as [
+                        [string, string | undefined],
+                        SingleSelectionFieldComponent<string>
+                    ]
+            )
             .editField((field) => {
-                field.optionRenderer = (v) => v.name;
-                field.copyPasteHandler = {
-                    serialize: async (v: ModuleData | undefined) =>
-                        v == undefined ? 'undefined' : JSON.stringify(ModuleDataDef.encode(v)),
-                    deserialize: async (v: string) =>
-                        v == 'undefined' ? undefined : unwrapValidation(ModuleDataDef.decode(JSON.parse(v)))
-                };
-                field.validator = async ([v, field]: [
-                    ModuleData | undefined,
-                    SingleSelectionFieldComponent<ModuleData>
+                field.validator = async ([[courseId, name], selectionField]: [
+                    [string, string | undefined],
+                    SingleSelectionFieldComponent<string>
                 ]) => {
-                    field.errorMessage = undefined;
-                    if (v == undefined) {
-                        field.errorMessage = 'Please select a Canvas module';
+                    if (name === undefined) return false;
+                    try {
+                        await this.canvasService.getModuleIdByName(courseId, name);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    } catch (err: any) {
+                        selectionField.errorMessage = err.toString();
                         return false;
                     }
                     return true;
                 };
             })
             .transformSrc(([courseId, moduleData]: [string, ModuleData | undefined]) => [
-                moduleData,
-                async () =>
-                    (
-                        await DataConversionHelper.convertAsyncIterableToList(
-                            await this.canvasService.getModules(courseId)
-                        )
-                    ).map((v) => ({
-                        id: v.id,
-                        name: v.name
-                    }))
+                courseId,
+                [
+                    moduleData?.name,
+                    async () =>
+                        (
+                            await DataConversionHelper.convertAsyncIterableToList(
+                                await this.canvasService.getModules(courseId)
+                            )
+                        ).map((v) => v.name)
+                ]
             ])
-            .transformDest(async (value) => value as ModuleData);
+            .transformDest(async ([courseId, name]) => {
+                if (name == undefined) throw new Error('Invalid data');
+                const id = await this.canvasService.getModuleIdByName(courseId, name);
+                return {
+                    id,
+                    name
+                };
+            });
         return tokenOptionValidationWrapper(
             environmentInjector,
             tokenOptionFieldComponentBuilder(environmentInjector)

@@ -1385,6 +1385,18 @@ export class CanvasService {
         );
     }
 
+    public async getSectionsByNames(courseId: string, sectionNames: string[]): Promise<Section[]> {
+        if (new Set<string>(sectionNames).size != sectionNames.length)
+            throw new Error('Invalid data: cannot have multiple sections with the same name');
+        const sectionNameMap = new Map<string, Section>();
+        for await (const section of await this.getSections(courseId)) sectionNameMap.set(section.name, section);
+        return sectionNames.map((sectionName) => {
+            if (!sectionNameMap.has(sectionName))
+                throw new Error(`Invalid data: section with name ${sectionName} not found`);
+            return sectionNameMap.get(sectionName) as Section;
+        });
+    }
+
     public async getStudentSectionEnrollments(courseId: string, userId: string): Promise<PaginatedResult<string>> {
         return new PaginatedResult<string>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/enrollments`, {

@@ -1,7 +1,7 @@
 import { Component, EnvironmentInjector, Inject, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { CanvasService } from 'app/services/canvas.service';
 import type { FormField } from 'app/utils/form-field/form-field';
-import type { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
+import { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
 import { DateOverride, MultipleSectionDateMatcher } from 'app/utils/multiple-section-date-matcher';
 import { ListFieldComponent } from '../list-field/list-field.component';
 import { v4 } from 'uuid';
@@ -9,16 +9,7 @@ import { createFieldComponentWithLabel } from 'app/token-option-field-component-
 import { StringInputFieldComponent } from '../string-input-field/string-input-field.component';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import { MultipleSelectionFieldComponent } from '../selection-fields/multiple-selection-field/multiple-selection-field.component';
-import * as t from 'io-ts';
-import { unwrapValidation } from 'app/utils/validation-unwrapper';
-
-const SectionDataDef = t.type({
-    id: t.string,
-    name: t.string
-});
-const SectionDataArrayDef = t.array(SectionDataDef);
-
-type SectionData = t.TypeOf<typeof SectionDataDef>;
+import { StaticFormField } from 'app/utils/form-field/static-form-field';
 
 @Component({
     selector: 'app-multiple-section-date-field',
@@ -84,32 +75,53 @@ export class MultipleSectionDateFieldComponent
         this.listFieldComponent.fieldFactory = () => {
             if (!this.dateFieldBuilderFactory)
                 throw new Error('Failed to initialize list item for MultipleSectionDateFieldComponent');
-            return createFieldComponentWithLabel(
-                MultipleSelectionFieldComponent<SectionData>,
-                'Canvas Sections',
-                this.environmentInjector
-            )
+            return new FormFieldComponentBuilder()
+                .setField(new StaticFormField<string>())
+                .appendBuilder(
+                    createFieldComponentWithLabel(
+                        MultipleSelectionFieldComponent<string>,
+                        'Canvas Sections',
+                        this.environmentInjector
+                    ).editField((field) => {
+                        field.copyPasteHandler = {
+                            serialize: async (value: string[]) => JSON.stringify(value),
+                            deserialize: async (value: string) => JSON.parse(value)
+                        };
+                        field.validator = async ([v, field]: [string[], MultipleSelectionFieldComponent<string>]) => {
+                            field.errorMessage = undefined;
+                            if (v.length == 0) {
+                                field.errorMessage = 'Please select at least one Canvas section';
+                                return false;
+                            }
+                            return true;
+                        };
+                    })
+                )
+                .appendVP(
+                    async (field) =>
+                        [await field.destValue, field.fieldB] as [
+                            [string, string[]],
+                            MultipleSelectionFieldComponent<string>
+                        ]
+                )
                 .editField((field) => {
-                    field.optionRenderer = (v) => v.name;
-                    field.copyPasteHandler = {
-                        serialize: async (value: SectionData[]) => JSON.stringify(SectionDataArrayDef.encode(value)),
-                        deserialize: async (value: string) =>
-                            unwrapValidation(SectionDataArrayDef.decode(JSON.parse(value)))
-                    };
-                    field.validator = async ([v, field]: [
-                        SectionData[],
-                        MultipleSelectionFieldComponent<SectionData>
+                    field.validator = async ([[courseId, sectionNames], selectionField]: [
+                        [string, string[]],
+                        MultipleSelectionFieldComponent<string>
                     ]) => {
-                        field.errorMessage = undefined;
-                        if (v.length == 0) {
-                            field.errorMessage = 'Please select at least one Canvas section';
+                        if (sectionNames.length == 0) return false;
+                        try {
+                            await this.canvasService.getSectionsByNames(courseId, sectionNames);
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        } catch (err: any) {
+                            selectionField.errorMessage = err.toString();
                             return false;
                         }
                         return true;
                     };
                 })
-                .transformDest(async (v) => ({
-                    data: v
+                .transformDest(async ([courseId, sectionNames]) => ({
+                    data: await this.canvasService.getSectionsByNames(courseId, sectionNames)
                 }))
                 .appendBuilder(
                     createFieldComponentWithLabel(
@@ -130,19 +142,16 @@ export class MultipleSectionDateFieldComponent
                 .appendBuilder(this.dateFieldBuilderFactory())
                 .transformSrc(([override, courseId]: [DateOverride, string]) => {
                     return [
-                        override.sections.map((section) => ({
-                            id: section[1],
-                            name: section[0]
-                        })),
-                        async () =>
-                            (
-                                await DataConversionHelper.convertAsyncIterableToList(
-                                    await this.canvasService.getSections(courseId)
-                                )
-                            ).map((v) => ({
-                                id: v.id,
-                                name: v.name
-                            })),
+                        courseId,
+                        [
+                            override.sections.map((section) => section[0]),
+                            async () =>
+                                (
+                                    await DataConversionHelper.convertAsyncIterableToList(
+                                        await this.canvasService.getSections(courseId)
+                                    )
+                                ).map((v) => v.name)
+                        ],
                         override.name,
                         override.date
                     ];

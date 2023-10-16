@@ -1,26 +1,33 @@
-import { Component, Inject, Input } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorSerializer } from 'app/utils/error-serailizer';
 import { BaseFormField } from 'app/utils/form-field/form-field';
 import type { FormFieldCopyPasteHandler } from 'app/utils/form-field/form-field-copy-paste-handler';
 import { isEqual } from 'lodash';
+import { filter, firstValueFrom, takeUntil } from 'rxjs';
+import { v4 } from 'uuid';
 
 @Component({
     selector: 'app-single-selection-field',
     templateUrl: './single-selection-field.component.html',
     styleUrls: ['./single-selection-field.component.sass']
 })
-export class SingleSelectionFieldComponent<T> extends BaseFormField<
-    [T | undefined, () => Promise<T[]>],
-    T | undefined,
-    [T | undefined, SingleSelectionFieldComponent<T>]
-> {
+export class SingleSelectionFieldComponent<T>
+    extends BaseFormField<
+        [T | undefined, () => Promise<T[]>],
+        T | undefined,
+        [T | undefined, SingleSelectionFieldComponent<T>]
+    >
+    implements OnDestroy
+{
     @Input() optionRenderer: (value: T) => string = (v) => (v as object).toString();
     @Input() isEqual: (a: T, b: T) => boolean = isEqual;
     @Input() allowUnselect = false;
     @Input() copyPasteHandler?: FormFieldCopyPasteHandler<T | undefined>;
     value?: T | undefined;
-    isProcessing = false;
+    srcValueTaskCnt = 0;
+    srcValueTasks: string[] = [];
+    srcValueTaskStatus$ = new EventEmitter<string>();
 
     options: T[] = [];
 
@@ -34,8 +41,14 @@ export class SingleSelectionFieldComponent<T> extends BaseFormField<
     isOptionSettingFailed = false;
     private optionFactory?: () => Promise<T[]>;
 
+    _onDestroy$ = new EventEmitter<void>();
+
     constructor(@Inject(MatSnackBar) private snackBar: MatSnackBar) {
         super();
+    }
+
+    public get isProcessing(): boolean {
+        return this.srcValueTaskCnt != 0;
     }
 
     public get filterText(): string {
@@ -57,17 +70,31 @@ export class SingleSelectionFieldComponent<T> extends BaseFormField<
     public override set srcValue([selectedOption, optionFactory]: [T | undefined, () => Promise<T[]>]) {
         (async () => {
             if (this.isOptionSettingFailed) return;
-            this.isProcessing = true;
+            const taskId = v4();
+            this.srcValueTasks.push(taskId);
+            this.srcValueTaskCnt++;
+            let isTaskTurn = false;
             try {
                 this.optionFactory = optionFactory;
                 const options = await this.optionFactory();
+                if (this.srcValueTasks[0] != taskId)
+                    await firstValueFrom(
+                        this.srcValueTaskStatus$.pipe(
+                            filter((v) => v == taskId),
+                            takeUntil(this._onDestroy$)
+                        )
+                    );
+                isTaskTurn = true;
                 this.assignOptions(selectedOption, options);
-                this.invalidOptionsValidate();
             } catch (err: unknown) {
-                this.errorMessage = `Error occured when setting options: ${ErrorSerializer.serailize(err)}`;
+                if (this.isOptionSettingFailed) return;
                 this.isOptionSettingFailed = true;
+                this.errorMessage = `Error occured when setting options: ${ErrorSerializer.serailize(err)}`;
             } finally {
-                this.isProcessing = false;
+                this.srcValueTaskCnt--;
+                const ind = this.srcValueTasks.indexOf(taskId);
+                this.srcValueTasks.splice(ind, 1);
+                if (isTaskTurn && this.srcValueTasks.length != 0) this.srcValueTaskStatus$.emit(this.srcValueTasks[0]);
             }
         })();
     }
@@ -83,6 +110,7 @@ export class SingleSelectionFieldComponent<T> extends BaseFormField<
         this.validOptions = options;
         this.value = selectedOption;
         this.filterText = '';
+        this.invalidOptionsValidate();
     }
 
     refreshOptions() {
@@ -156,5 +184,11 @@ export class SingleSelectionFieldComponent<T> extends BaseFormField<
                 duration: 3000
             });
         }
+    }
+
+    ngOnDestroy(): void {
+        this._onDestroy$.emit();
+        this._onDestroy$.complete();
+        this.srcValueTaskStatus$.complete();
     }
 }

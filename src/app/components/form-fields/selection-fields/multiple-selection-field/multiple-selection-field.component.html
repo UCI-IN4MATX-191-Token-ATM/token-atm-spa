@@ -18,6 +18,16 @@
                         class="me-auto"
                         >Only show selected options</mat-slide-toggle
                     >
+                    <button
+                        *ngIf="allowUnselectAll"
+                        mat-icon-button
+                        color="warn"
+                        title="Unselect All"
+                        (click)="onUnselectAll()"
+                        [disabled]="isReadOnly"
+                    >
+                        <mat-icon>cancel</mat-icon>
+                    </button>
                     <button *ngIf="copyPasteHandler" mat-icon-button title="Copy" (click)="onCopy()">
                         <mat-icon>content_copy</mat-icon>
                     </button>
@@ -31,7 +41,10 @@
                         <mat-icon>content_paste</mat-icon>
                     </button>
                 </div>
-                <mat-divider *ngIf="allowShowSelected || copyPasteHandler" class="m-1"></mat-divider>
+                <mat-divider
+                    *ngIf="allowShowSelected || allowUnselectAll || copyPasteHandler"
+                    class="m-1"
+                ></mat-divider>
                 <mat-option>
                     <ngx-mat-select-search [(ngModel)]="filterText" placeholderLabel=""></ngx-mat-select-search>
                 </mat-option>

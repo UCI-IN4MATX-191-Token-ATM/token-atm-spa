@@ -1,4 +1,4 @@
-import { Component, Inject, Input } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, OnDestroy } from '@angular/core';
 import type { MatOption, MatOptionSelectionChange } from '@angular/material/core';
 import { ErrorSerializer } from 'app/utils/error-serailizer';
 import { BaseFormField } from 'app/utils/form-field/form-field';
@@ -6,23 +6,27 @@ import type { FormFieldCopyPasteHandler } from 'app/utils/form-field/form-field-
 import { pluralize } from 'app/utils/pluralize';
 import { isEqual } from 'lodash';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { filter, firstValueFrom, takeUntil } from 'rxjs';
+import { v4 } from 'uuid';
 
 @Component({
     selector: 'app-multiple-selection-field',
     templateUrl: './multiple-selection-field.component.html',
     styleUrls: ['./multiple-selection-field.component.sass']
 })
-export class MultipleSelectionFieldComponent<T> extends BaseFormField<
-    [T[], () => Promise<T[]>],
-    T[],
-    [T[], MultipleSelectionFieldComponent<T>]
-> {
+export class MultipleSelectionFieldComponent<T>
+    extends BaseFormField<[T[], () => Promise<T[]>], T[], [T[], MultipleSelectionFieldComponent<T>]>
+    implements OnDestroy
+{
     @Input() optionRenderer: (value: T) => string = (v) => (v as object).toString();
     @Input() isEqual: (a: T, b: T) => boolean = isEqual;
     @Input() allowShowSelected = true;
+    @Input() allowUnselectAll = true;
     @Input() copyPasteHandler?: FormFieldCopyPasteHandler<T[]>;
     value: T[] = [];
-    isProcessing = false;
+    srcValueTaskCnt = 0;
+    srcValueTasks: string[] = [];
+    srcValueTaskStatus$ = new EventEmitter<string>();
 
     onlyShowSelected = false;
 
@@ -41,8 +45,14 @@ export class MultipleSelectionFieldComponent<T> extends BaseFormField<
 
     isInvalidOptionValidationOutdated = false;
 
+    _onDestroy$ = new EventEmitter<void>();
+
     constructor(@Inject(MatSnackBar) private snackBar: MatSnackBar) {
         super();
+    }
+
+    public get isProcessing(): boolean {
+        return this.srcValueTaskCnt != 0;
     }
 
     public get filterText(): string {
@@ -66,17 +76,32 @@ export class MultipleSelectionFieldComponent<T> extends BaseFormField<
     public override set srcValue([selectedOptions, optionFactory]: [T[], () => Promise<T[]>]) {
         (async () => {
             if (this.isOptionSettingFailed) return;
-            this.isProcessing = true;
+            const taskId = v4();
+            this.srcValueTasks.push(taskId);
+            this.srcValueTaskCnt++;
+            let isTaskTurn = false;
             try {
                 this.optionFactory = optionFactory;
                 const options = await this.optionFactory();
+                if (this.srcValueTasks[0] != taskId)
+                    await firstValueFrom(
+                        this.srcValueTaskStatus$.pipe(
+                            filter((v) => v == taskId),
+                            takeUntil(this._onDestroy$)
+                        )
+                    );
+                isTaskTurn = true;
+                if (this.isOptionSettingFailed) return;
                 this.assignOptions(selectedOptions, options);
-                this.invalidOptionsValidate();
             } catch (err: unknown) {
-                this.errorMessage = `Error occured when setting options: ${ErrorSerializer.serailize(err)}`;
+                if (this.isOptionSettingFailed) return;
                 this.isOptionSettingFailed = true;
+                this.errorMessage = `Error occured when setting options: ${ErrorSerializer.serailize(err)}`;
             } finally {
-                this.isProcessing = false;
+                this.srcValueTaskCnt--;
+                const ind = this.srcValueTasks.indexOf(taskId);
+                this.srcValueTasks.splice(ind, 1);
+                if (isTaskTurn && this.srcValueTasks.length != 0) this.srcValueTaskStatus$.emit(this.srcValueTasks[0]);
             }
         })();
     }
@@ -96,6 +121,7 @@ export class MultipleSelectionFieldComponent<T> extends BaseFormField<
         this.validOptions = options;
         this.value = selectedOptions;
         this.filterText = '';
+        this.invalidOptionsValidate();
     }
 
     refreshOptions() {
@@ -145,6 +171,11 @@ export class MultipleSelectionFieldComponent<T> extends BaseFormField<
         this.invalidOptionsValidate(value);
     }
 
+    onUnselectAll() {
+        this.value = [];
+        for (let i = 0; i < this.invalidOptions.length; i++) this.disabledInvalidOptionInds.add(i);
+    }
+
     async onCopy(): Promise<void> {
         if (!this.copyPasteHandler) {
             this.snackBar.open('Copy & Paste is not supported for this field', 'Dismiss', {
@@ -182,5 +213,11 @@ export class MultipleSelectionFieldComponent<T> extends BaseFormField<
                 duration: 3000
             });
         }
+    }
+
+    ngOnDestroy(): void {
+        this._onDestroy$.emit();
+        this._onDestroy$.complete();
+        this.srcValueTaskStatus$.complete();
     }
 }
