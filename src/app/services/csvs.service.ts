@@ -79,7 +79,7 @@ export class CSVsService {
             [await this.zipObject.generateAsync({ type: 'blob' })],
             sanitizeFileName(
                 this.filenameTemplate(
-                    typeof zipName === 'string' ? zipName : '',
+                    zipName ?? '',
                     zipFixes
                         ? zipFixes
                         : {

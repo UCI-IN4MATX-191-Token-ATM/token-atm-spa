@@ -275,7 +275,7 @@ export class BatchTokenBalanceAdjustmentModalComponent implements OnDestroy {
     async makeErrorCSV() {
         if (this.errorCollection == null || this.errorCollection.length == 0) return;
 
-        const importedFileName = this.selectedFile?.name == null ? 'Batch-CSV' : this.selectedFile?.name;
+        const importedFileName = this.selectedFile?.name ?? 'Batch-CSV';
         this.errorsCSVFile = await this.csvService.makeFile(new Map([[importedFileName, this.errorCollection]]), {
             prefix: '',
             suffix: 'Import-Errors'

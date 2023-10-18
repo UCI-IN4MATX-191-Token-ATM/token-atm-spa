@@ -76,7 +76,7 @@ export class RequestExportInstance {
             this.curProgress++;
         }
         const fixes = { prefix: 'Token-ATM-Requests-Export', suffix: '' };
-        const fName = this.fileName ? this.fileName : '';
+        const fName = this.fileName ?? '';
         if (!this.classifier) {
             if (requestDataArray.length == 0) return null;
             return this.csvService.makeFile(new Map([[fName, requestDataArray]]), fixes);
