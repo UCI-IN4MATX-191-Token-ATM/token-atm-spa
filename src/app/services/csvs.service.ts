@@ -10,9 +10,6 @@ type Fixes = { prefix: string; suffix: string };
     providedIn: 'root'
 })
 export class CSVsService {
-    private zipObject = new ZipFile();
-    private currentDate: Date | undefined;
-
     private baselineParseConfig = {
         skipEmptyLines: true,
         dynamicTyping: false
@@ -46,7 +43,6 @@ export class CSVsService {
         zipName?: string,
         zipFixes?: Fixes
     ): Promise<File> {
-        this.currentDate = undefined;
         if (namesAndContent.size === 0) {
             throw new Error('No filename or data provided to make a file');
         } else if (namesAndContent.size === 1 && zipName === undefined && zipFixes === undefined) {
@@ -58,9 +54,13 @@ export class CSVsService {
 
     private makeCSVFile(nameAndContent: [string, Record<string, string>[]], fixes?: Fixes) {
         const [filename, data] = nameAndContent;
-        return new File([CSVParse.unparse(data)], sanitizeFileName(this.filenameTemplate(filename, fixes) + '.csv'), {
-            type: 'text/csv;charset=utf-8;'
-        });
+        return new File(
+            [CSVParse.unparse(data)],
+            sanitizeFileName(this.filenameTemplate(filename, new Date(), fixes) + '.csv'),
+            {
+                type: 'text/csv;charset=utf-8;'
+            }
+        );
     }
 
     private async makeZipFile(
@@ -70,16 +70,20 @@ export class CSVsService {
         zipFixes?: Fixes
     ) {
         const zipFile = new ZipFile();
-        this.zipObject = zipFile;
+        const generationDate = new Date();
         for (const [filename, data] of namesAndContent.entries()) {
-            zipFile.file(sanitizeFileName(this.filenameTemplate(filename, fixes) + '.csv'), CSVParse.unparse(data));
+            zipFile.file(
+                sanitizeFileName(this.filenameTemplate(filename, generationDate, fixes) + '.csv'),
+                CSVParse.unparse(data)
+            );
         }
         // TODO: Call any functions to add more files here. E.g., Readme or Data Dictionary generator
         return new File(
-            [await this.zipObject.generateAsync({ type: 'blob' })],
+            [await zipFile.generateAsync({ type: 'blob' })],
             sanitizeFileName(
                 this.filenameTemplate(
                     zipName ?? '',
+                    generationDate,
                     zipFixes
                         ? zipFixes
                         : {
@@ -94,9 +98,9 @@ export class CSVsService {
         );
     }
 
-    private filenameTemplate(filename: string, fixes?: Fixes): string {
-        if (this.currentDate == null) this.currentDate = new Date();
-        return [fixes?.prefix, filename, fixes?.suffix, formatISO(this.currentDate, { format: 'basic' })]
+    private filenameTemplate(filename: string, date?: Date, fixes?: Fixes): string {
+        const taggedDate = date ?? new Date();
+        return [fixes?.prefix, filename, fixes?.suffix, formatISO(taggedDate, { format: 'basic' })]
             .filter((x) => x)
             .join('_');
     }
