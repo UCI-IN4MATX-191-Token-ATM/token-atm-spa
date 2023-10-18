@@ -260,14 +260,14 @@ export class BatchTokenBalanceAdjustmentModalComponent implements OnDestroy {
         if (this.errorCollection == null) {
             throw new Error('Error collector has not been initialized');
         }
-        const error_noLinebreaks = errorMessage.replaceAll(/[\n\r]/g, '  ');
+        const errorNoLinebreaks = errorMessage.replaceAll(/[\n\r]/g, '  ');
         if (Array.isArray(record)) {
-            this.errorCollection.push([...record, `line ${line}`, error_noLinebreaks]);
+            this.errorCollection.push([...record, `line ${line}`, errorNoLinebreaks]);
         } else {
             this.errorCollection.push({
                 ...record,
                 Line: `${line}`,
-                Error: error_noLinebreaks
+                Error: errorNoLinebreaks
             });
         }
     }
