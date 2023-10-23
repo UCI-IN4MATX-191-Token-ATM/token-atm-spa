@@ -1,5 +1,6 @@
 import * as t from 'io-ts';
 import type { Constructor } from 'app/utils/mixin-helper';
+import type { IGridViewDataSource } from './grid-view-data-source-mixin';
 
 interface SurveyIDData {
     surveyId: string;
@@ -40,11 +41,26 @@ export const QualtricsSurveyMixinDataDef = t.intersection([
 export type QualtricsSurveyMixinData = t.TypeOf<typeof QualtricsSurveyMixinDataDef>;
 export type RawQualtricsSurveyMixinData = t.OutputOf<typeof QualtricsSurveyMixinDataDef>;
 
-export type IQualtricsSurvey = QualtricsSurveyMixinData;
+export type IQualtricsSurvey = QualtricsSurveyMixinData & IGridViewDataSource;
 
-export function QualtricsSurveyMixin<TBase extends Constructor>(Base: TBase) {
+export function QualtricsSurveyMixin<TBase extends Constructor<IGridViewDataSource>>(Base: TBase) {
     return class extends Base implements IQualtricsSurvey {
         surveyId = '';
         fieldName = '';
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        constructor(...args: any[]) {
+            super(...args);
+            this.registerDataPointSource(() => ({
+                colName: 'Qualtrics Survey ID',
+                type: 'string',
+                value: this.surveyId
+            }));
+            this.registerDataPointSource(() => ({
+                colName: 'Qualtrics Survey Field Name (from SSO)',
+                type: 'string',
+                value: this.fieldName
+            }));
+        }
     };
 }

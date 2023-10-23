@@ -47,7 +47,7 @@ export class StudentRecordManagerService {
             err.message =
                 err.message +
                 actionNeededTemplate(
-                    `Please use Canvas to manually change this student's grade in the Token ATM Log assignment to ${rollbackTokenBalance}. \nFailure to do so could cause the token balance of this student be incorrect. \nAlso, deleting the last two comments in Token ATM Log (ignoring those that start with "Please ignore the characters below") could help avoid confusion. One comment is the report for this incomplete request, while the other is a comment like xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).`
+                    `Please use Canvas to manually change this student’s grade in the Token ATM Log assignment to ${rollbackTokenBalance}. \nFailure to do so could cause the token balance of this student be incorrect. \n\nAlso, deleting the last two comments in Token ATM Log (ignoring those that start with "Please ignore the characters below") could help avoid confusion. One comment is the report for this incomplete request, while the other is a comment like xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).`
                 );
             throw err;
         }

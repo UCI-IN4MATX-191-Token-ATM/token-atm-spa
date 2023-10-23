@@ -3,9 +3,23 @@
 </div>
 <ng-template #tokenOptionPanel>
     <ng-container *ngIf="configuration">
-        <div class="container mt-3">
-            <div class="row align-items-end mb-2">
-                <button class="col-auto btn btn-outline-success ms-auto" (click)="onCreateTokenOptionGroup()">
+        <div *ngIf="!isGridView; else gridView" class="container mt-3">
+            <div class="row mb-2">
+                <div class="col-auto btn-group me-auto">
+                    <button type="button" class="btn btn-outline-primary" (click)="onSwitchToGridView()">
+                        Switch to Grid View
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" (click)="onOpenGridViewInNewWindow()">
+                        Open Grid View in New Window
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" (click)="onConfigureGridView()">
+                        <i class="bi bi-gear-fill"></i>
+                    </button>
+                </div>
+                <button class="col-auto btn btn-outline-primary mx-2" (click)="onExportProcessedRequests()">
+                    Export Processed Requests
+                </button>
+                <button class="col-auto btn btn-outline-success" (click)="onCreateTokenOptionGroup()">
                     New Token Option Group
                 </button>
             </div>
@@ -13,5 +27,97 @@
                 <app-token-option-group-display [group]="group"></app-token-option-group-display>
             </div>
         </div>
+        <ng-template #gridView>
+            <div class="d-flex flex-column vh-100">
+                <div class="row justify-content-around m-2">
+                    <button class="col-5 btn btn-outline-secondary" (click)="onSwitchToDefaultView()">
+                        Switch Back To Token Options
+                    </button>
+                    <button
+                        class="col-5 btn btn-outline-primary"
+                        [disabled]="isProcessing"
+                        (click)="onSaveCurColumnPreferences()"
+                    >
+                        Save Current Column Preferences
+                    </button>
+                </div>
+                <app-grid-view-display
+                    class="flex-grow-1 overflow-auto"
+                    [data]="gridViewData"
+                    (columnChange)="onColumnChange($event)"
+                ></app-grid-view-display>
+            </div>
+        </ng-template>
     </ng-container>
+</ng-template>
+
+<ng-template #configureGridViewModal>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Configure Grid View</h4>
+        <div class="pull-right d-flex align-items-center">
+            <button
+                type="button"
+                class="btn btn-primary me-4"
+                [disabled]="isProcessing"
+                (click)="onSaveGridViewPreferences()"
+            >
+                Save
+            </button>
+            <button
+                type="button"
+                class="btn-close close"
+                aria-label="Close"
+                (click)="configureGridViewModalRef?.hide()"
+            >
+                <span aria-hidden="true" class="visually-hidden">&times;</span>
+            </button>
+        </div>
+    </div>
+    <div class="modal-body">
+        <p *ngIf="!canSaveGridViewPreferences" class="text-danger mx-auto my-2">
+            You have not saved credentials with a password, so your column choices won't be preserved if you leave the
+            "Token Options" page.
+        </p>
+        <div class="row mb-2">
+            <div class="offset-1 col-4 d-flex justify-content-center align-items-center">
+                <button
+                    type="button"
+                    class="btn btn-outline-danger"
+                    [disabled]="shownColumns.length === 0"
+                    (click)="onClearShownColumns()"
+                >
+                    Clear
+                </button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="offset-1 col-4 d-flex flex-column">
+                <h3 class="text-center">Shown Columns</h3>
+                <!-- https://material.angular.io/cdk/drag-drop/overview#transferring-items-between-lists -->
+                <div
+                    cdkDropList
+                    #shownList="cdkDropList"
+                    class="example-list"
+                    [cdkDropListData]="shownColumns"
+                    [cdkDropListConnectedTo]="[availableList]"
+                    (cdkDropListDropped)="drop($event)"
+                >
+                    <div class="example-box" *ngFor="let item of shownColumns" cdkDrag>{{ item }}</div>
+                </div>
+            </div>
+            <div class="offset-2 col-4 d-flex flex-column">
+                <h3 class="text-center">Available Columns</h3>
+                <div
+                    cdkDropList
+                    #availableList="cdkDropList"
+                    class="example-list"
+                    [cdkDropListData]="availableColumns"
+                    [cdkDropListConnectedTo]="[shownList]"
+                    (cdkDropListDropped)="drop($event)"
+                >
+                    <div class="example-box" *ngFor="let item of availableColumns" cdkDrag>{{ item }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </ng-template>

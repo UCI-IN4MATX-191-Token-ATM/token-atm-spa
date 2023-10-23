@@ -21,9 +21,15 @@
         <div *ngIf="hoverFocus">
             <div class="btn-group" dropdown>
                 <span class="bi bi-three-dots-vertical fs-5 mx-3 is-link" dropdownToggle></span>
-                <ul class="dropdown-menu dropdown-menu-right border-dark text-center" *dropdownMenu>
+                <ul class="dropdown-menu dropdown-menu-right border-dark text-center px-2" *dropdownMenu>
                     <li class="is-link" (click)="onMove()">
                         <span><i class="bi bi-arrows-move me-2"></i>Move</span>
+                    </li>
+                    <li class="divider dropdown-divider"></li>
+                    <li class="is-link" (click)="onExportProcessedRequests()">
+                        <span class="text-nowrap"
+                            ><i class="bi bi-box-arrow-up-right me-2"></i>Export Processed Requests</span
+                        >
                     </li>
                     <li class="divider dropdown-divider"></li>
                     <li class="is-link" (click)="onDelete()">

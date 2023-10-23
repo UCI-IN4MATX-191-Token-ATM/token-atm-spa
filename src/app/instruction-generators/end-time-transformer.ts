@@ -9,7 +9,7 @@ type HasEndTime = {
 
 export class EndTimeTransformer extends TokenOptionInstructionTransformer<HasEndTime> {
     public get infoDescription(): string {
-        return 'End At';
+        return 'Can Request Until';
     }
 
     public process(tokenOptions: TokenOption[]): string[] {
@@ -20,30 +20,7 @@ export class EndTimeTransformer extends TokenOptionInstructionTransformer<HasEnd
             if (endTime instanceof Date) {
                 return format(endTime, 'MMM dd, yyyy kk:mm:ss');
             } else {
-                return [
-                    '<table style="border-collapse: collapse; width: 100%;">',
-                    '<tbody>',
-                    ...endTime.overrides.map((override) => {
-                        return [
-                            `<tr>`,
-                            `<td style="text-align: end; text-wrap: nowrap">${override.name}:</td>`,
-                            `<td style="text-align: start; text-wrap: nowrap">${format(
-                                override.date,
-                                'MMM dd, yyyy kk:mm:ss'
-                            )}</td>`,
-                            `</tr>`
-                        ].join('');
-                    }),
-                    '<tr>',
-                    '<td style="text-align: end; text-wrap: nowrap">Default:</td>',
-                    `<td style="text-align: start; text-wrap: nowrap">${format(
-                        endTime.defaultDate,
-                        'MMM dd, yyyy kk:mm:ss'
-                    )}</td>`,
-                    '</tr>',
-                    '</tbody>',
-                    '</table>'
-                ].join('');
+                return endTime.toHTML();
             }
         });
     }

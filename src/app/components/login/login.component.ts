@@ -70,14 +70,14 @@ export class LoginComponent implements AfterViewInit {
             'Qualtrics Client ID',
             'text',
             '',
-            'Please access the Account Settings page on Qualtrics and click the "Qualtrics IDs" tab. \nAfter that, clicks "OAuth Client Manager" tab. Press the "New Client" button. \nPlease follow the instruction to create a new client. \nToken ATM *requires* two permissions: read:survey_responses and read:users. \nAfter creation, please copy & paste the Client ID and the Client Secret that pop up. \nExample: m2fdch523fe62h7ds896b06587fhn650'
+            'Please access the Account Settings page on Qualtrics and click the "Qualtrics IDs" tab. \nAfter that, click the "OAuth Client Manager" tab. Press the "New Client" button. \nPlease follow the instructions to create a new client. \nToken ATM *requires* two permissions: read:survey_responses and read:users. \nAfter creation, please copy & paste the Client ID and the Client Secret that pop up. \nExample: m2fdch523fe62h7ds896b06587fhn650'
         ),
         qualtricsClientSecret: new FormItemInfo(
             'qualtricsClientSecret',
             'Qualtrics Client Secret',
             'password',
             '',
-            'Please see the tooltip for the Qualtris Client ID for more information. \nPlease note that you can no longer access the Client Secret again once you close the window that pops up after the creation. You will need to create a new Client in that case. \nExample: ye8gf6hGdscTFPn3zVs4Z3YI0amMk2zbccx2KJbhKv0JFrbsKFiOKPvctMYP6UjT'
+            'Please see the tooltip for the Qualtrics Client ID for more information. \nPlease note that you can no longer access the Client Secret again once you close the window that pops up after the creation. You will need to create a "New Client" in that case. \nExample: ye8gf6hGdscTFPn3zVs4Z3YI0amMk2zbccx2KJbhKv0JFrbsKFiOKPvctMYP6UjT'
         )
     };
 
@@ -135,10 +135,7 @@ export class LoginComponent implements AfterViewInit {
     }
 
     openLink() {
-        window.open(
-            'https://docs.google.com/document/d/1KzO0Aic923z5rmvbmKJJ43suaz4IwG4RhmAtLUyVfeY/edit?usp=sharing',
-            '_blank'
-        );
+        window.open('https://docs.google.com/document/d/1H4cvBXV7wwVp1IA2squ0mtrug5HkDVlBf4qKhh1o_vQ/view', '_blank');
     }
 
     getCredentialsFormItemInfoMap(): CredentialsFormItemInfoMap {
@@ -177,7 +174,7 @@ export class LoginComponent implements AfterViewInit {
     private sanitizeAndParseURL(url: string) {
         const sanitized = this.sanitizer.sanitize(SecurityContext.URL, url);
         if (sanitized == null || sanitized.startsWith('unsafe:')) {
-            throw new Error(`Provided Canvas URL (${url}) can't be sanitized.`);
+            throw new Error(`Provided Canvas URL (${url}) can’t be sanitized.`);
         }
         // TODO: handle protocol-less inputs.
         //       i.e., 'localhost:23457' or 'canvas.instructure.com'
@@ -217,14 +214,14 @@ export class LoginComponent implements AfterViewInit {
             const errMsgs: string[] = [];
             if (canvasCredentialValidation != undefined) {
                 errMsgs.push(
-                    `CANVAS\nToken ATM couldn't verify your credentials at: \n${this.credentials.canvasURL}\nDouble check that you are providing the correct Canvas URL and Access Token.\n`
+                    `CANVAS\nToken ATM couldn’t verify your credentials at: \n${this.credentials.canvasURL}\nDouble check that you are providing the correct Canvas URL and Access Token.\n`
                 );
                 errMsgs.push('Error Message:' + ErrorSerializer.serailize(canvasCredentialValidation));
             }
             if (qualtricsCredentialValidation != undefined) {
                 if (errMsgs.length != 0) errMsgs.push('\n--------------------\n');
                 errMsgs.push(
-                    `QUALTRICS\nToken ATM couldn't verify your credentials with Qualtrics. \nDouble check that you are providing the correct credentials, that your account has API access, and that the credentials have the scopes read:users and read:survey_responses.\n`
+                    'QUALTRICS\nToken ATM couldn’t verify your credentials with Qualtrics. \nDouble check that you are providing the correct credentials, that your account has API access, and that the credentials have the scopes read:users and read:survey_responses.\n'
                 );
                 errMsgs.push('Error Message:' + ErrorSerializer.serailize(qualtricsCredentialValidation));
             }

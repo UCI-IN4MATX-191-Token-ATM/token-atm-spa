@@ -9,7 +9,7 @@ type HasNewDueTime = {
 
 export class NewDueTimeTransformer extends TokenOptionInstructionTransformer<HasNewDueTime> {
     public get infoDescription(): string {
-        return 'Extend Assignment/Quiz Lock Date To';
+        return 'Allows Submitting Canvas Assignment/Quiz Until'; // TODO: Phrasing may need more work
     }
 
     public process(tokenOptions: TokenOption[]): string[] {
@@ -20,30 +20,7 @@ export class NewDueTimeTransformer extends TokenOptionInstructionTransformer<Has
             if (newDueTime instanceof Date) {
                 return format(newDueTime, 'MMM dd, yyyy kk:mm:ss');
             } else {
-                return [
-                    '<table style="border-collapse: collapse; width: 100%;">',
-                    '<tbody>',
-                    ...newDueTime.overrides.map((override) => {
-                        return [
-                            `<tr>`,
-                            `<td style="text-align: end; text-wrap: nowrap">${override.name}:</td>`,
-                            `<td style="text-align: start; text-wrap: nowrap">${format(
-                                override.date,
-                                'MMM dd, yyyy kk:mm:ss'
-                            )}</td>`,
-                            `</tr>`
-                        ].join('');
-                    }),
-                    '<tr>',
-                    '<td style="text-align: end; text-wrap: nowrap">Default:</td>',
-                    `<td style="text-align: start; text-wrap: nowrap">${format(
-                        newDueTime.defaultDate,
-                        'MMM dd, yyyy kk:mm:ss'
-                    )}</td>`,
-                    '</tr>',
-                    '</tbody>',
-                    '</table>'
-                ].join('');
+                return newDueTime.toHTML();
             }
         });
     }

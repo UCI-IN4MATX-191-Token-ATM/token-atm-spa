@@ -6,6 +6,8 @@ import { TokenOptionRegistry } from 'app/token-options/token-option-registry';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { MoveTokenOptionModalComponent } from '../move-token-option-modal/move-token-option-modal.component';
 import { TokenOptionManagementComponent } from '../token-option-management/token-option-management.component';
+import { actionNeededTemplate } from 'app/utils/string-templates';
+import { ExportRequestModalComponent } from '../export-request-modal/export-request-modal.component';
 
 @Component({
     selector: 'app-token-option-display',
@@ -77,10 +79,27 @@ export class TokenOptionDisplayComponent {
         const updateResult = await this.configurationManagerService.updateTokenOptionGroup(group);
         if (!updateResult)
             await this.modalManagerService.createNotificationModal(
-                // TODO: Should this use the action needed heading?
                 // TODO: Add direct link to the Quiz needing "Save It Now"
-                'Auto update failed. \nSome students have already taken the Canvas quiz that corresponds to the token option group that this token option belongs to. \n\nPlease click the "Save It Now" button in the quiz management page on Canvas to manually update.'
+                actionNeededTemplate(
+                    'Auto update failed. \nSome students have already taken the Canvas quiz that corresponds to the token option group that this token option belongs to. \n\nPlease click the "Save It Now" button in the quiz management page on Canvas to manually update.'
+                )
             );
         confirmationRef.hide();
+    }
+
+    onExportProcessedRequests(): void {
+        if (!this.option) return;
+        const option = this.option;
+        const modalRef = this.modalService.show(ExportRequestModalComponent, {
+            initialState: {
+                configuration: option.group.configuration,
+                filter: async (request) => request.tokenOptionId == option.id,
+                titleSuffix: `Token Option (${option.name})`
+            },
+            class: 'modal-lg',
+            backdrop: 'static',
+            keyboard: false
+        });
+        if (modalRef.content) modalRef.content.modalRef = modalRef;
     }
 }

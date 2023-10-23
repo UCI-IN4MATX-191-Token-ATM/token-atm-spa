@@ -1,10 +1,11 @@
 import { Component, Inject, Input } from '@angular/core';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
-import type { TokenOptionGroup } from 'app/data/token-option-group';
+import { TokenOptionGroup } from 'app/data/token-option-group';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import type { TokenOption } from 'app/token-options/token-option';
 import { countAndNoun } from 'app/utils/pluralize';
+import { actionNeededTemplate } from 'app/utils/string-templates';
 import type { BsModalRef } from 'ngx-bootstrap/modal';
 
 enum MoveOperation {
@@ -59,11 +60,12 @@ export class MoveTokenOptionModalComponent {
                 .map((value) => value?.name ?? '');
             const numTokenOptionGroupsString = countAndNoun(possibleResultErrors.length, 'token option group');
             await this.modalManagerService.createNotificationModal(
-                // TODO: Does this need an Action Required Header?
                 // TODO: Add direct link to the Quiz needing "Save It Now"
-                `Auto update failed for ${numTokenOptionGroupsString}: ${possibleResultErrors.join(
-                    ', '
-                )}. \n\nPlease go to Canvas and click the "Save It Now" button in the quiz management page of the quiz or quizzes that the ${numTokenOptionGroupsString} mentioned above belong to.`
+                actionNeededTemplate(
+                    `Auto update failed for ${numTokenOptionGroupsString}: ${possibleResultErrors.join(
+                        ', '
+                    )}. \n\nPlease go to Canvas and click the "Save It Now" button in the quiz management page of the quiz or quizzes that the ${numTokenOptionGroupsString} mentioned above belong to.`
+                )
             );
         }
         this.modalRef?.hide();
@@ -91,6 +93,10 @@ export class MoveTokenOptionModalComponent {
     onSelectTokenOptionGroup(group: TokenOptionGroup) {
         this.selectedGroup = group;
         this.selectedOption = undefined;
+    }
+
+    get tokenOptionGroupMaxSize() {
+        return TokenOptionGroup.TOKEN_OPTION_GROUP_MAX_SIZE;
     }
 
     get validTokenOptions(): TokenOption[] | undefined {

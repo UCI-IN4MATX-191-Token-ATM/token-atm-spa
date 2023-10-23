@@ -23,7 +23,7 @@ export class SurveyParticipationGuard extends RequestHandlerGuard {
         );
         if (!result) {
             onReject(
-                "You did not complete the survey. Or your default email address on Canvas doesn't match the email connected with the Qualtrics Survey."
+                'You did not complete the survey. Or your default email address on Canvas doesn’t match the email connected with the Qualtrics Survey.'
             );
         }
     }

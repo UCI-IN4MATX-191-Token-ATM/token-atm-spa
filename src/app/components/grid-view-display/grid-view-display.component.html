@@ -1,0 +1,9 @@
+<ag-grid-angular
+    *ngIf="gridViewData && gridViewColDef"
+    class="ag-theme-alpine w-100 h-100"
+    [rowData]="gridViewData"
+    [columnDefs]="gridViewColDef"
+    [enableCellTextSelection]="true"
+    (firstDataRendered)="onFirstDataRendered($event)"
+    (displayedColumnsChanged)="columnChange.emit($event)"
+></ag-grid-angular>
