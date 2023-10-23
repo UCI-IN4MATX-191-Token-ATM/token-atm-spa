@@ -4,7 +4,7 @@ import ZipFile from 'jszip';
 import sanitizeFileName from 'sanitize-filename';
 import { formatISO } from 'date-fns';
 
-type Fixes = { prefix: string; suffix: string };
+type Affixes = { prefix: string; suffix: string };
 
 @Injectable({
     providedIn: 'root'
@@ -39,9 +39,9 @@ export class CSVsService {
 
     public async makeFile(
         namesAndContent: Map<string, Record<string, string>[]>,
-        fixes?: Fixes,
+        fixes?: Affixes,
         zipName?: string,
-        zipFixes?: Fixes
+        zipFixes?: Affixes
     ): Promise<File> {
         if (namesAndContent.size === 0) {
             throw new Error('No filename or data provided to make a file');
@@ -52,7 +52,7 @@ export class CSVsService {
         }
     }
 
-    private makeCSVFile(nameAndContent: [string, Record<string, string>[]], fixes?: Fixes) {
+    private makeCSVFile(nameAndContent: [string, Record<string, string>[]], fixes?: Affixes) {
         const [filename, data] = nameAndContent;
         return new File(
             [CSVParse.unparse(data)],
@@ -65,9 +65,9 @@ export class CSVsService {
 
     private async makeZipFile(
         namesAndContent: Map<string, Record<string, string>[]>,
-        fixes?: Fixes,
+        fixes?: Affixes,
         zipName?: string,
-        zipFixes?: Fixes
+        zipFixes?: Affixes
     ) {
         const zipFile = new ZipFile();
         const generationDate = new Date();
@@ -98,7 +98,7 @@ export class CSVsService {
         );
     }
 
-    private filenameTemplate(filename: string, date?: Date, fixes?: Fixes): string {
+    private filenameTemplate(filename: string, date?: Date, fixes?: Affixes): string {
         const taggedDate = date ?? new Date();
         return [fixes?.prefix, filename, fixes?.suffix, formatISO(taggedDate, { format: 'basic' })]
             .filter((x) => x)
