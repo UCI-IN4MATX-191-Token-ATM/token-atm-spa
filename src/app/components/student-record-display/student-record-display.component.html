@@ -18,8 +18,7 @@
                                         Email: {{ studentRecord.student.email }}
                                     </li>
                                     <li class="list-group-item">
-                                        <!-- TODO: Update to use Angular Pipe for pluralize utility -->
-                                        Current Balance: {{ balanceString(studentRecord.tokenBalance) }}
+                                        Current Balance: {{ studentRecord.tokenBalance | countAndNoun : 'Token' }}
                                     </li>
                                 </ul>
                             </div>
