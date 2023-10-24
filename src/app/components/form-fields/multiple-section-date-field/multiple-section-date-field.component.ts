@@ -10,6 +10,10 @@ import { StringInputFieldComponent } from '../string-input-field/string-input-fi
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import { MultipleSelectionFieldComponent } from '../selection-fields/multiple-selection-field/multiple-selection-field.component';
 import { StaticFormField } from 'app/utils/form-field/static-form-field';
+import * as t from 'io-ts';
+import { unwrapValidation } from 'app/utils/validation-unwrapper';
+
+const stringArrayDataDef = t.array(t.string);
 
 @Component({
     selector: 'app-multiple-section-date-field',
@@ -85,7 +89,8 @@ export class MultipleSectionDateFieldComponent
                     ).editField((field) => {
                         field.copyPasteHandler = {
                             serialize: async (value: string[]) => JSON.stringify(value),
-                            deserialize: async (value: string) => JSON.parse(value)
+                            deserialize: async (value: string) =>
+                                unwrapValidation(stringArrayDataDef.decode(JSON.parse(value)))
                         };
                         field.validator = async ([v, field]: [string[], MultipleSelectionFieldComponent<string>]) => {
                             field.errorMessage = undefined;

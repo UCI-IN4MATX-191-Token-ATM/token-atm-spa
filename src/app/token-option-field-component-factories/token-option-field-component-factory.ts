@@ -15,6 +15,7 @@ import type { ExtractDest, ExtractSrc, FormField } from 'app/utils/form-field/fo
 import type { FormFieldAppender } from 'app/utils/form-field/form-field-appender';
 import { FormFieldComponentBuilder, TupleAppend } from 'app/utils/form-field/form-field-component-builder';
 import { StaticFormField } from 'app/utils/form-field/static-form-field';
+import { unwrapValidation } from 'app/utils/validation-unwrapper';
 import { compareDesc, set } from 'date-fns';
 import * as t from 'io-ts';
 
@@ -153,7 +154,8 @@ export function createQuizFieldComponentBuilder(
             ).editField((field) => {
                 field.copyPasteHandler = {
                     serialize: async (v: string | undefined) => (v == undefined ? 'undefined' : JSON.stringify(v)),
-                    deserialize: async (v: string) => (v == 'undefined' ? undefined : JSON.parse(v))
+                    deserialize: async (v: string) =>
+                        v == 'undefined' ? undefined : unwrapValidation(t.string.decode(JSON.parse(v)))
                 };
                 field.validator = async ([v, field]: [string | undefined, SingleSelectionFieldComponent<string>]) => {
                     field.errorMessage = undefined;
@@ -305,7 +307,8 @@ export function createAssignmentFieldComponentBuilder(
                 (field) => {
                     field.copyPasteHandler = {
                         serialize: async (v: string | undefined) => (v == undefined ? 'undefined' : JSON.stringify(v)),
-                        deserialize: async (v: string) => (v == 'undefined' ? undefined : JSON.parse(v))
+                        deserialize: async (v: string) =>
+                            v == 'undefined' ? undefined : unwrapValidation(t.string.decode(JSON.parse(v)))
                     };
                     field.validator = async ([v, field]: [
                         string | undefined,

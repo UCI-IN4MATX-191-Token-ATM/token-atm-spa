@@ -21,6 +21,7 @@ import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import * as t from 'io-ts';
 import { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
 import { StaticFormField } from 'app/utils/form-field/static-form-field';
+import { unwrapValidation } from 'app/utils/validation-unwrapper';
 
 const ModuleDataDef = t.type({
     id: t.string,
@@ -50,7 +51,8 @@ export class EarnByModuleTokenOptionFieldComponentFactory extends TokenOptionFie
                 ).editField((field) => {
                     field.copyPasteHandler = {
                         serialize: async (v: string | undefined) => (v == undefined ? 'undefined' : JSON.stringify(v)),
-                        deserialize: async (v: string) => (v == 'undefined' ? undefined : JSON.parse(v))
+                        deserialize: async (v: string) =>
+                            v == 'undefined' ? undefined : unwrapValidation(t.string.decode(JSON.parse(v)))
                     };
                     field.validator = async ([v, field]: [
                         string | undefined,
