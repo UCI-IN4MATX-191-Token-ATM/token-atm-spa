@@ -253,6 +253,7 @@ export class RequestProcessManagerService {
                     assignmentIdMap.get(group.quizId)
                 );
                 if (this._isStopTriggered) return [studentRecord, requests];
+                if (!quizSubmissionDetail) continue;
                 const request = await this.requestResolverRegistry.resolveRequest(group, quizSubmissionDetail);
                 if (!request) {
                     requests.push(
