@@ -79,6 +79,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { CountAndNounPipe, PluralizePipe } from './utils/pluralize';
 
 @NgModule({
     declarations: [
@@ -123,7 +124,9 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
         CheckboxFieldComponent,
         OptionalFieldComponent,
         MultipleSelectionFieldComponent,
-        SingleSelectionFieldComponent
+        SingleSelectionFieldComponent,
+        CountAndNounPipe,
+        PluralizePipe
     ],
     imports: [
         BrowserModule,

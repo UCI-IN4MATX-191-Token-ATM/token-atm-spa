@@ -225,7 +225,7 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
             this.exportInstance = this.requestExporterService.createRequestExportInstance(
                 this.configuration,
                 students,
-                undefined,
+                this.titleSuffix,
                 async (request: ProcessedRequest) => {
                     if (this.filter && !(await this.filter(request))) return false;
                     if (
