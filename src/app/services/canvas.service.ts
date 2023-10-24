@@ -482,8 +482,23 @@ export class CanvasService {
         studentId: string,
         quizSubmissionAttempt = 1,
         { assignmentId = undefined }: { assignmentId?: string } = {}
-    ): Promise<[Date, string[]]> {
+    ): Promise<[Date, string[]] | undefined> {
         if (!assignmentId) assignmentId = await this.getAssignmentIdByQuizId(courseId, quizId);
+        const pastSubmissions = (
+            await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`, {
+                params: {
+                    include: ['submission_history']
+                }
+            })
+        ).submission_history;
+        let curSubmission = undefined;
+        for (const submission of pastSubmissions) {
+            if (submission.attempt == quizSubmissionAttempt) {
+                curSubmission = submission;
+                break;
+            }
+        }
+        if (!curSubmission) return undefined;
         const questions = new PaginatedResult<QuizQuestionResponse>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions`, {
                 params: {
@@ -518,26 +533,14 @@ export class CanvasService {
                 questionOptions.get(question.id)?.set(option.id, option.text);
             }
         }
-        const pastSubmissions = (
-            await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`, {
-                params: {
-                    include: ['submission_history']
-                }
-            })
-        ).submission_history;
         const questionAnswers = new Map<string, string>();
-        let submissionDate = new Date();
-        for (const submission of pastSubmissions) {
-            if (submission.attempt != quizSubmissionAttempt) continue;
-            submissionDate = parseISO(submission.submitted_at);
-            const submissionData = submission.submission_data;
-            for (const answer of submissionData) {
-                if (answer.answer_id == undefined) continue;
-                const textAnswer = questionOptions.get(answer.question_id)?.get(answer.answer_id);
-                if (!textAnswer) continue;
-                questionAnswers.set(answer.question_id, textAnswer);
-            }
-            break;
+        const submissionDate = parseISO(curSubmission.submitted_at);
+        const submissionData = curSubmission.submission_data;
+        for (const answer of submissionData) {
+            if (answer.answer_id == undefined) continue;
+            const textAnswer = questionOptions.get(answer.question_id)?.get(answer.answer_id);
+            if (!textAnswer) continue;
+            questionAnswers.set(answer.question_id, textAnswer);
         }
         const result = [];
         for await (const question of questions) {
