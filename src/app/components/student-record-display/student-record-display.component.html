@@ -18,7 +18,7 @@
                                         Email: {{ studentRecord.student.email }}
                                     </li>
                                     <li class="list-group-item">
-                                        Current Balance: {{ balanceString(studentRecord.tokenBalance) }}
+                                        Current Balance: {{ studentRecord.tokenBalance | countAndNoun : 'Token' }}
                                     </li>
                                 </ul>
                             </div>
