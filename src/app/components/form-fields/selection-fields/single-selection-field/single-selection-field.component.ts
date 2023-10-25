@@ -123,7 +123,7 @@ export class SingleSelectionFieldComponent<T>
         value = value ?? this.value;
         if (value == undefined) return true;
         if (!!value && !!this.invalidOption && this.isEqual(value, this.invalidOption)) {
-            this.errorMessage = `Selected option is invalid.`;
+            this.errorMessage = `Selection is invalid.`;
             return false;
         }
         return true;

@@ -139,8 +139,8 @@ export class MultipleSelectionFieldComponent<T>
         }
         this.selectedInvalidOptionsCnt = selectedInvalidOptions.length;
         if (selectedInvalidOptions.length != 0) {
-            this.errorMessage = `Selected ${this.invalidOptions.length} invalid ${pluralize(
-                'option',
+            this.errorMessage = `Found ${this.invalidOptions.length} invalid ${pluralize(
+                'selection',
                 this.invalidOptions.length
             )}: ${selectedInvalidOptions.map((v) => this.optionRenderer(v)).join(', ')}.`;
             return false;
