@@ -1,0 +1,63 @@
+<div class="m-3">
+    <label class="form-label">{{ label }}</label>
+    <div class="d-flex align-items-center">
+        <mat-form-field class="flex-grow-1" subscriptSizing="dynamic">
+            <mat-select
+                [(ngModel)]="value"
+                [disabled]="isProcessing"
+                [disableRipple]="true"
+                [compareWith]="isEqual"
+                (valueChange)="onSelectValueChange($event)"
+            >
+                <div class="d-flex align-items-center">
+                    <button *ngIf="copyPasteHandler" mat-icon-button title="Copy" class="ms-auto" (click)="onCopy()">
+                        <mat-icon>content_copy</mat-icon>
+                    </button>
+                    <button
+                        *ngIf="copyPasteHandler"
+                        mat-icon-button
+                        title="Paste"
+                        (click)="onPaste()"
+                        [disabled]="isReadOnly"
+                    >
+                        <mat-icon>content_paste</mat-icon>
+                    </button>
+                </div>
+                <mat-divider *ngIf="copyPasteHandler" class="m-1"></mat-divider>
+                <mat-option>
+                    <ngx-mat-select-search [(ngModel)]="filterText" placeholderLabel=""></ngx-mat-select-search>
+                </mat-option>
+                <mat-option *ngIf="allowUnselect" [disabled]="isReadOnly">Click to unselect</mat-option>
+                <mat-optgroup
+                    *ngIf="invalidOption"
+                    label="Invalid Selection"
+                    class="warn-color"
+                    [hidden]="!isInvalidOptionFiltered"
+                    [disabled]="isReadOnly"
+                >
+                    <mat-option
+                        [value]="invalidOption"
+                        [hidden]="!isInvalidOptionFiltered"
+                        [disabled]="!isInvalidOptionSelected || isReadOnly"
+                    >
+                        {{ optionRenderer(invalidOption) }}
+                    </mat-option>
+                </mat-optgroup>
+                <mat-divider *ngIf="isInvalidOptionFiltered" class="m-1"></mat-divider>
+                <mat-option
+                    *ngFor="let option of validOptions; let i = index"
+                    [value]="option"
+                    [hidden]="!filteredValidOptionInds.has(i)"
+                    [disabled]="isReadOnly"
+                >
+                    {{ optionRenderer(option) }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+        <button type="button" class="btn btn-outline-dark ms-2" [disabled]="isProcessing" (click)="refreshOptions()">
+            <i class="bi bi-arrow-clockwise"></i>
+        </button>
+    </div>
+    <p *ngIf="isProcessing">Loading...</p>
+    <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
+</div>

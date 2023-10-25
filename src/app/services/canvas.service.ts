@@ -458,6 +458,18 @@ export class CanvasService {
         throw new Error('Comment creation failed');
     }
 
+    public async getAssignments(courseId: string): Promise<PaginatedResult<Assignment>> {
+        return new PaginatedResult<Assignment>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments`, {
+                params: {
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => data.map((entry) => unwrapValidation(AssignmentDef.decode(entry)))
+        );
+    }
+
     public async getAssignment(courseId: string, assignmentId: string): Promise<Assignment> {
         return unwrapValidation(
             AssignmentDef.decode(
@@ -742,6 +754,19 @@ export class CanvasService {
         });
     }
 
+    public async getModules(courseId: string): Promise<PaginatedResult<CanvasModule>> {
+        return new PaginatedResult(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules`, {
+                params: {
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => {
+                return data.map((entry: unknown) => CanvasModule.deserialize(entry));
+            }
+        );
+    }
     public async getModuleIdByName(courseId: string, moduleName: string): Promise<string> {
         // TODO: Retrieve paginated result to avoid too many similar name
         const modules = new PaginatedResult(
@@ -1226,6 +1251,18 @@ export class CanvasService {
         );
     }
 
+    public async getQuizzes(courseId: string): Promise<PaginatedResult<Quiz>> {
+        return new PaginatedResult<Quiz>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes`, {
+                params: {
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => data.map((entry) => Quiz.deserialize(entry))
+        );
+    }
+
     public async getQuizIdByName(courseId: string, quizName: string) {
         const quizzes = new PaginatedResult<Quiz>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes`, {
@@ -1349,6 +1386,18 @@ export class CanvasService {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (data: any) => data.map((entry: any) => Section.deserialize(entry))
         );
+    }
+
+    public async getSectionsByNames(courseId: string, sectionNames: string[]): Promise<Section[]> {
+        if (new Set<string>(sectionNames).size != sectionNames.length)
+            throw new Error('Invalid data: cannot have multiple sections with the same name');
+        const sectionNameMap = new Map<string, Section>();
+        for await (const section of await this.getSections(courseId)) sectionNameMap.set(section.name, section);
+        return sectionNames.map((sectionName) => {
+            if (!sectionNameMap.has(sectionName))
+                throw new Error(`Invalid data: section with name ${sectionName} not found`);
+            return sectionNameMap.get(sectionName) as Section;
+        });
     }
 
     public async getStudentSectionEnrollments(courseId: string, userId: string): Promise<PaginatedResult<string>> {

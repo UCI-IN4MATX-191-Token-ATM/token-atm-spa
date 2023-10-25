@@ -70,6 +70,15 @@ import { ExportRequestModalComponent } from './components/export-request-modal/e
 import { SelectFieldComponent } from './components/form-fields/select-field/select-field.component';
 import { CheckboxFieldComponent } from './components/form-fields/checkbox-field/checkbox-field.component';
 import { OptionalFieldComponent } from './components/form-fields/optional-field/optional-field.component';
+import { MatSelectModule } from '@angular/material/select';
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
+import { MatDividerModule } from '@angular/material/divider';
+import { MultipleSelectionFieldComponent } from './components/form-fields/selection-fields/multiple-selection-field/multiple-selection-field.component';
+import { SingleSelectionFieldComponent } from './components/form-fields/selection-fields/single-selection-field/single-selection-field.component';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { CountAndNounPipe, PluralizePipe } from './utils/pluralize';
 
 @NgModule({
@@ -114,6 +123,8 @@ import { CountAndNounPipe, PluralizePipe } from './utils/pluralize';
         SelectFieldComponent,
         CheckboxFieldComponent,
         OptionalFieldComponent,
+        MultipleSelectionFieldComponent,
+        SingleSelectionFieldComponent,
         CountAndNounPipe,
         PluralizePipe
     ],
@@ -129,7 +140,14 @@ import { CountAndNounPipe, PluralizePipe } from './utils/pluralize';
         TimepickerModule.forRoot(),
         TooltipModule.forRoot(),
         AgGridModule,
-        DragDropModule
+        DragDropModule,
+        MatSelectModule,
+        NgxMatSelectSearchModule,
+        MatDividerModule,
+        MatSlideToggleModule,
+        MatButtonModule,
+        MatIconModule,
+        MatSnackBarModule
     ],
     providers: [
         { provide: ErrorHandler, useClass: GlobalErrorHandler },
