@@ -20,6 +20,7 @@ import { QualtricsService } from 'app/services/qualtrics.service';
 export class DevTestComponent {
     course?: Course;
     qualtricsSurveyId = 'SV_560f6LnM1eF0VdI';
+    qualtricsFieldName = 'Email';
 
     constructor(
         @Inject(TokenATMConfigurationManagerService) private manager: TokenATMConfigurationManagerService,
@@ -179,5 +180,17 @@ export class DevTestComponent {
 
     async resetQualtricsSurveyCache(): Promise<void> {
         this.qualtricsService.clearCache();
+    }
+
+    async checkQualtricsResponseSchema(): Promise<void> {
+        console.log('Schema Response:', await this.qualtricsService.getSurveyResponseSchema(this.qualtricsSurveyId));
+    }
+
+    async checkForFieldInQualtricsSurvey(): Promise<void> {
+        await this.qualtricsService.checkResponseSchemaForField(this.qualtricsSurveyId, this.qualtricsFieldName);
+    }
+
+    async getSurveyFields(): Promise<void> {
+        console.log('All Survey Fields:', await this.qualtricsService.getSurveyFieldSchemas(this.qualtricsSurveyId));
     }
 }

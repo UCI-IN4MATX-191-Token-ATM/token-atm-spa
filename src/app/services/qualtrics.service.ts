@@ -16,6 +16,8 @@ export class QualtricsService {
     private static WAIT_SECONDS = 2;
     private participationCache: Map<string, Set<string>> = new Map<string, Set<string>>();
     private surveyIdCache: Set<string> = new Set<string>();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private surveySchemaCache: Map<string, any> = new Map<string, any>();
 
     constructor(@Inject(AxiosService) private axiosService: AxiosService) {}
 
@@ -209,5 +211,45 @@ export class QualtricsService {
     public clearCache(): void {
         this.participationCache.clear();
         this.surveyIdCache.clear();
+        this.surveySchemaCache.clear();
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private async cacheSurveyResponseSchema(surveyId: string): Promise<void> {
+        const data = await this.apiRequest(`/API/v3/surveys/${surveyId}/response-schema`, {
+            method: 'get',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        this.surveySchemaCache.set(surveyId, data);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public async getSurveyResponseSchema(surveyId: string): Promise<any> {
+        if (!this.surveySchemaCache.has(surveyId)) await this.cacheSurveyResponseSchema(surveyId);
+        return structuredClone(this.surveySchemaCache.get(surveyId));
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public async getSurveyFieldSchemas(surveyId: string): Promise<Map<string, any>> {
+        const data = (await this.getSurveyResponseSchema(surveyId)).result?.properties?.values?.properties;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return new Map<string, any>(data != null ? Object.entries(data) : null);
+    }
+
+    public async checkResponseSchemaForField(surveyId: string, fieldName: string): Promise<void> {
+        const data = await this.getSurveyFieldSchemas(surveyId);
+        const names = new Set<string>();
+        for (const [propName, propSchema] of data) {
+            // Filters for only specific type of data
+            if (propSchema?.dataType === 'embeddedData') {
+                names.add(propName); // Include JSON prop. name
+                if (propSchema?.exportTag) names.add(propSchema.exportTag); // Include Export Tag name
+            }
+        }
+        if (!names.has(fieldName)) {
+            throw new Error(`Field name ("${fieldName}") not found in Survey`);
+        }
     }
 }
