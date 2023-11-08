@@ -24,6 +24,12 @@ export class FormFieldComponentBuilder<F extends FormField<any, any, any>> {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public setField<F1 extends FormField<any, any, any>>(field: F1): FormFieldComponentBuilder<F1> {
+        for (const component of this._components) component.destroy();
+        return new FormFieldComponentBuilder([], field);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public appendComp<F1 extends FormField<any, any, any>>(
         compRef: ComponentRef<F1>
     ): FormFieldComponentBuilder<FormFieldAppender<F, F1>> {

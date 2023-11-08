@@ -1,0 +1,90 @@
+<div class="m-3">
+    <label class="form-label">{{ label }}</label>
+    <div class="d-flex align-items-center">
+        <mat-form-field class="flex-grow-1" subscriptSizing="dynamic">
+            <mat-select
+                [(ngModel)]="value"
+                multiple
+                [disabled]="isProcessing"
+                [disableRipple]="true"
+                [compareWith]="isEqual"
+                (valueChange)="onSelectValueChange($event)"
+            >
+                <div class="d-flex align-items-center">
+                    <mat-slide-toggle
+                        *ngIf="allowShowSelected"
+                        class="ms-1"
+                        [(ngModel)]="onlyShowSelected"
+                        class="me-auto"
+                        >Only show selected options</mat-slide-toggle
+                    >
+                    <button
+                        *ngIf="allowUnselectAll"
+                        mat-icon-button
+                        color="warn"
+                        title="Unselect All"
+                        (click)="onUnselectAll()"
+                        [disabled]="isReadOnly"
+                    >
+                        <mat-icon>cancel</mat-icon>
+                    </button>
+                    <button *ngIf="copyPasteHandler" mat-icon-button title="Copy" (click)="onCopy()">
+                        <mat-icon>content_copy</mat-icon>
+                    </button>
+                    <button
+                        *ngIf="copyPasteHandler"
+                        mat-icon-button
+                        title="Paste"
+                        (click)="onPaste()"
+                        [disabled]="isReadOnly"
+                    >
+                        <mat-icon>content_paste</mat-icon>
+                    </button>
+                </div>
+                <mat-divider
+                    *ngIf="allowShowSelected || allowUnselectAll || copyPasteHandler"
+                    class="m-1"
+                ></mat-divider>
+                <mat-option>
+                    <ngx-mat-select-search [(ngModel)]="filterText" placeholderLabel=""></ngx-mat-select-search>
+                </mat-option>
+                <mat-optgroup
+                    *ngIf="invalidOptions.length !== 0"
+                    label="Invalid Selections"
+                    class="warn-color"
+                    [hidden]="
+                        filteredInvalidOptionInds.size === 0 ||
+                        (onlyShowSelected && this.selectedInvalidOptionsCnt === 0)
+                    "
+                    [disabled]="isReadOnly"
+                >
+                    <mat-option
+                        *ngFor="let option of invalidOptions; let i = index"
+                        #matOption
+                        [value]="option"
+                        [hidden]="!filteredInvalidOptionInds.has(i) || (onlyShowSelected && !matOption.selected)"
+                        (onSelectionChange)="onInvalidOptionDeselected($event, matOption, i)"
+                        [disabled]="isReadOnly || disabledInvalidOptionInds.has(i)"
+                    >
+                        {{ optionRenderer(option) }}
+                    </mat-option>
+                </mat-optgroup>
+                <mat-divider *ngIf="filteredInvalidOptionInds.size !== 0" class="m-1"></mat-divider>
+                <mat-option
+                    *ngFor="let option of validOptions; let i = index"
+                    #matOption
+                    [value]="option"
+                    [hidden]="!filteredValidOptionInds.has(i) || (onlyShowSelected && !matOption.selected)"
+                    [disabled]="isReadOnly"
+                >
+                    {{ optionRenderer(option) }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+        <button type="button" class="btn btn-outline-dark ms-2" [disabled]="isProcessing" (click)="refreshOptions()">
+            <i class="bi bi-arrow-clockwise"></i>
+        </button>
+    </div>
+    <p *ngIf="isProcessing">Loading...</p>
+    <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
+</div>

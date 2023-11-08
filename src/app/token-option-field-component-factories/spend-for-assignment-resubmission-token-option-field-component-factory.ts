@@ -35,11 +35,10 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
             any
         >
     ] {
-        const assignmentField = createAssignmentFieldComponentBuilder(this.canvasService, environmentInjector);
         return tokenOptionValidationWrapper(
             environmentInjector,
             tokenOptionFieldComponentBuilder(environmentInjector)
-                .appendBuilder(assignmentField)
+                .appendBuilder(createAssignmentFieldComponentBuilder(this.canvasService, environmentInjector))
                 .appendBuilder(createStartTimeComponentBuilder(environmentInjector))
                 .appendBuilder(
                     createMultipleSectionDateComponentBuilder(
@@ -67,7 +66,7 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                     if (value instanceof TokenOptionGroup) {
                         return [
                             value,
-                            ['', value.configuration.course.id],
+                            [value.configuration.course.id, undefined],
                             set(new Date(), {
                                 hours: 0,
                                 minutes: 0,
@@ -96,7 +95,13 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                     } else {
                         return [
                             value,
-                            [value.assignmentName, value.group.configuration.course.id],
+                            [
+                                value.group.configuration.course.id,
+                                {
+                                    id: value.assignmentId,
+                                    name: value.assignmentName
+                                }
+                            ],
                             value.startTime,
                             [value.group.configuration.course.id, value.endTime],
                             [value.group.configuration.course.id, value.newDueTime]
@@ -104,12 +109,18 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                     }
                 })
                 .transformDest(
-                    async ([tokenOptionData, [assignmentName, courseId], startTime, endTime, newDueTime]) => {
+                    async ([
+                        tokenOptionData,
+                        { id: assignmentId, name: assignmentName },
+                        startTime,
+                        endTime,
+                        newDueTime
+                    ]) => {
                         return {
                             ...tokenOptionData,
                             type: 'spend-for-assignment-resubmission',
                             assignmentName,
-                            assignmentId: await this.canvasService.getAssignmentIdByName(courseId, assignmentName),
+                            assignmentId,
                             startTime,
                             endTime,
                             newDueTime

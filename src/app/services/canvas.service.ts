@@ -458,6 +458,18 @@ export class CanvasService {
         throw new Error('Comment creation failed');
     }
 
+    public async getAssignments(courseId: string): Promise<PaginatedResult<Assignment>> {
+        return new PaginatedResult<Assignment>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments`, {
+                params: {
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => data.map((entry) => unwrapValidation(AssignmentDef.decode(entry)))
+        );
+    }
+
     public async getAssignment(courseId: string, assignmentId: string): Promise<Assignment> {
         return unwrapValidation(
             AssignmentDef.decode(
@@ -482,8 +494,23 @@ export class CanvasService {
         studentId: string,
         quizSubmissionAttempt = 1,
         { assignmentId = undefined }: { assignmentId?: string } = {}
-    ): Promise<[Date, string[]]> {
+    ): Promise<[Date, string[]] | undefined> {
         if (!assignmentId) assignmentId = await this.getAssignmentIdByQuizId(courseId, quizId);
+        const pastSubmissions = (
+            await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`, {
+                params: {
+                    include: ['submission_history']
+                }
+            })
+        ).submission_history;
+        let curSubmission = undefined;
+        for (const submission of pastSubmissions) {
+            if (submission.attempt == quizSubmissionAttempt) {
+                curSubmission = submission;
+                break;
+            }
+        }
+        if (!curSubmission) return undefined;
         const questions = new PaginatedResult<QuizQuestionResponse>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions`, {
                 params: {
@@ -518,26 +545,14 @@ export class CanvasService {
                 questionOptions.get(question.id)?.set(option.id, option.text);
             }
         }
-        const pastSubmissions = (
-            await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`, {
-                params: {
-                    include: ['submission_history']
-                }
-            })
-        ).submission_history;
         const questionAnswers = new Map<string, string>();
-        let submissionDate = new Date();
-        for (const submission of pastSubmissions) {
-            if (submission.attempt != quizSubmissionAttempt) continue;
-            submissionDate = parseISO(submission.submitted_at);
-            const submissionData = submission.submission_data;
-            for (const answer of submissionData) {
-                if (answer.answer_id == undefined) continue;
-                const textAnswer = questionOptions.get(answer.question_id)?.get(answer.answer_id);
-                if (!textAnswer) continue;
-                questionAnswers.set(answer.question_id, textAnswer);
-            }
-            break;
+        const submissionDate = parseISO(curSubmission.submitted_at);
+        const submissionData = curSubmission.submission_data;
+        for (const answer of submissionData) {
+            if (answer.answer_id == undefined) continue;
+            const textAnswer = questionOptions.get(answer.question_id)?.get(answer.answer_id);
+            if (!textAnswer) continue;
+            questionAnswers.set(answer.question_id, textAnswer);
         }
         const result = [];
         for await (const question of questions) {
@@ -739,6 +754,19 @@ export class CanvasService {
         });
     }
 
+    public async getModules(courseId: string): Promise<PaginatedResult<CanvasModule>> {
+        return new PaginatedResult(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules`, {
+                params: {
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => {
+                return data.map((entry: unknown) => CanvasModule.deserialize(entry));
+            }
+        );
+    }
     public async getModuleIdByName(courseId: string, moduleName: string): Promise<string> {
         // TODO: Retrieve paginated result to avoid too many similar name
         const modules = new PaginatedResult(
@@ -1223,6 +1251,18 @@ export class CanvasService {
         );
     }
 
+    public async getQuizzes(courseId: string): Promise<PaginatedResult<Quiz>> {
+        return new PaginatedResult<Quiz>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes`, {
+                params: {
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => data.map((entry) => Quiz.deserialize(entry))
+        );
+    }
+
     public async getQuizIdByName(courseId: string, quizName: string) {
         const quizzes = new PaginatedResult<Quiz>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes`, {
@@ -1346,6 +1386,18 @@ export class CanvasService {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (data: any) => data.map((entry: any) => Section.deserialize(entry))
         );
+    }
+
+    public async getSectionsByNames(courseId: string, sectionNames: string[]): Promise<Section[]> {
+        if (new Set<string>(sectionNames).size != sectionNames.length)
+            throw new Error('Invalid data: cannot have multiple sections with the same name');
+        const sectionNameMap = new Map<string, Section>();
+        for await (const section of await this.getSections(courseId)) sectionNameMap.set(section.name, section);
+        return sectionNames.map((sectionName) => {
+            if (!sectionNameMap.has(sectionName))
+                throw new Error(`Invalid data: section with name ${sectionName} not found`);
+            return sectionNameMap.get(sectionName) as Section;
+        });
     }
 
     public async getStudentSectionEnrollments(courseId: string, userId: string): Promise<PaginatedResult<string>> {

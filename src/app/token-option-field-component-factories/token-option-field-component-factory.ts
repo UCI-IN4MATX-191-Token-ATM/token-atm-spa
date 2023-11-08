@@ -3,17 +3,21 @@ import { DateTimeFieldComponent } from 'app/components/form-fields/date-time-fie
 import { ErrorMessageFieldComponent } from 'app/components/form-fields/error-message-field/error-message-field.component';
 import { MultipleSectionDateFieldComponent } from 'app/components/form-fields/multiple-section-date-field/multiple-section-date-field.component';
 import { NumberInputFieldComponent } from 'app/components/form-fields/number-input-field/number-input-field.component';
+import { SingleSelectionFieldComponent } from 'app/components/form-fields/selection-fields/single-selection-field/single-selection-field.component';
 import { StringInputFieldComponent } from 'app/components/form-fields/string-input-field/string-input-field.component';
 import { StringTextareaFieldComponent } from 'app/components/form-fields/string-textarea-field/string-textarea-field.component';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import type { CanvasService } from 'app/services/canvas.service';
 import type { ExtractDataType, TokenOption, TokenOptionData } from 'app/token-options/token-option';
+import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import type { ExtractDest, ExtractSrc, FormField } from 'app/utils/form-field/form-field';
 import type { FormFieldAppender } from 'app/utils/form-field/form-field-appender';
 import { FormFieldComponentBuilder, TupleAppend } from 'app/utils/form-field/form-field-component-builder';
 import { StaticFormField } from 'app/utils/form-field/static-form-field';
+import { unwrapValidation } from 'app/utils/validation-unwrapper';
 import { compareDesc, set } from 'date-fns';
+import * as t from 'io-ts';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export abstract class TokenOptionFieldComponentFactory<T extends TokenOption<any>> {
@@ -126,26 +130,82 @@ export function createWithdrawTokenOptionComponentBuilder(
         .transformDest(async ([id]) => id);
 }
 
+const QuizDataDef = t.type({
+    id: t.string,
+    name: t.string
+});
+
+type QuizData = t.TypeOf<typeof QuizDataDef>;
+
 export function createQuizFieldComponentBuilder(
     canvasService: CanvasService,
     environmentInjector: EnvironmentInjector
 ): FormFieldComponentBuilder<
-    FormField<[string, string], [string, string], FormFieldAppender<StringInputFieldComponent, StaticFormField<string>>>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    FormField<[string, QuizData | undefined], QuizData, any>
 > {
-    return createFieldComponentWithLabel(StringInputFieldComponent, 'Canvas Quiz Name', environmentInjector)
-        .appendField(new StaticFormField<string>())
+    return new FormFieldComponentBuilder()
+        .setField(new StaticFormField<string>())
+        .appendBuilder(
+            createFieldComponentWithLabel(
+                SingleSelectionFieldComponent<string>,
+                'Canvas Quiz',
+                environmentInjector
+            ).editField((field) => {
+                field.copyPasteHandler = {
+                    serialize: async (v: string | undefined) => (v == undefined ? 'undefined' : JSON.stringify(v)),
+                    deserialize: async (v: string) =>
+                        v == 'undefined' ? undefined : unwrapValidation(t.string.decode(JSON.parse(v)))
+                };
+                field.validator = async ([v, field]: [string | undefined, SingleSelectionFieldComponent<string>]) => {
+                    field.errorMessage = undefined;
+                    if (v == undefined) {
+                        field.errorMessage = 'Please select a Canvas quiz';
+                        return false;
+                    }
+                    return true;
+                };
+            })
+        )
+        .appendVP(
+            async (field) =>
+                [await field.destValue, field.fieldB] as [
+                    [string, string | undefined],
+                    SingleSelectionFieldComponent<string>
+                ]
+        )
         .editField((field) => {
-            field.validator = async (value: typeof field) => {
-                value.fieldA.errorMessage = undefined;
-                const [quizName, courseId] = await value.destValue;
+            field.validator = async ([[courseId, name], selectionField]: [
+                [string, string | undefined],
+                SingleSelectionFieldComponent<string>
+            ]) => {
+                if (name === undefined) return false;
                 try {
-                    await canvasService.getQuizIdByName(courseId, quizName);
+                    await canvasService.getQuizIdByName(courseId, name);
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 } catch (err: any) {
-                    value.fieldA.errorMessage = err.toString();
+                    selectionField.errorMessage = err.toString();
                     return false;
                 }
                 return true;
+            };
+        })
+        .transformSrc(([courseId, quizData]: [string, QuizData | undefined]) => [
+            courseId,
+            [
+                quizData?.name,
+                async () =>
+                    (
+                        await DataConversionHelper.convertAsyncIterableToList(await canvasService.getQuizzes(courseId))
+                    ).map((v) => v.title)
+            ]
+        ])
+        .transformDest(async ([courseId, name]) => {
+            if (name == undefined) throw new Error('Invalid data');
+            const id = await canvasService.getQuizIdByName(courseId, name);
+            return {
+                id,
+                name
             };
         });
 }
@@ -225,26 +285,86 @@ export function createGradeThresholdComponentBuilder(
         });
 }
 
+const AssignmentDataDef = t.type({
+    id: t.string,
+    name: t.string
+});
+
+type AssignmentData = t.TypeOf<typeof AssignmentDataDef>;
+
 export function createAssignmentFieldComponentBuilder(
     canvasService: CanvasService,
-    environmentInjector: EnvironmentInjector
+    environmentInjector: EnvironmentInjector,
+    label = 'Canvas Assignment'
 ): FormFieldComponentBuilder<
-    FormField<[string, string], [string, string], FormFieldAppender<StringInputFieldComponent, StaticFormField<string>>>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    FormField<[string, AssignmentData | undefined], AssignmentData, any>
 > {
-    return createFieldComponentWithLabel(StringInputFieldComponent, 'Canvas Assignment Name', environmentInjector)
-        .appendField(new StaticFormField<string>())
+    return new FormFieldComponentBuilder()
+        .setField(new StaticFormField<string>())
+        .appendBuilder(
+            createFieldComponentWithLabel(SingleSelectionFieldComponent<string>, label, environmentInjector).editField(
+                (field) => {
+                    field.copyPasteHandler = {
+                        serialize: async (v: string | undefined) => (v == undefined ? 'undefined' : JSON.stringify(v)),
+                        deserialize: async (v: string) =>
+                            v == 'undefined' ? undefined : unwrapValidation(t.string.decode(JSON.parse(v)))
+                    };
+                    field.validator = async ([v, field]: [
+                        string | undefined,
+                        SingleSelectionFieldComponent<string>
+                    ]) => {
+                        field.errorMessage = undefined;
+                        if (v == undefined) {
+                            field.errorMessage = 'Please select a Canvas assignment';
+                            return false;
+                        }
+                        return true;
+                    };
+                }
+            )
+        )
+        .appendVP(
+            async (field) =>
+                [await field.destValue, field.fieldB] as [
+                    [string, string | undefined],
+                    SingleSelectionFieldComponent<string>
+                ]
+        )
         .editField((field) => {
-            field.validator = async (value: typeof field) => {
-                value.fieldA.errorMessage = undefined;
-                const [assignmentName, courseId] = await value.destValue;
+            field.validator = async ([[courseId, name], selectionField]: [
+                [string, string | undefined],
+                SingleSelectionFieldComponent<string>
+            ]) => {
+                if (name === undefined) return false;
                 try {
-                    await canvasService.getAssignmentIdByName(courseId, assignmentName);
+                    await canvasService.getAssignmentIdByName(courseId, name);
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 } catch (err: any) {
-                    value.fieldA.errorMessage = err.toString();
+                    selectionField.errorMessage = err.toString();
                     return false;
                 }
                 return true;
+            };
+        })
+        .transformSrc(([courseId, assignmentData]: [string, AssignmentData | undefined]) => [
+            courseId,
+            [
+                assignmentData?.name,
+                async () =>
+                    (
+                        await DataConversionHelper.convertAsyncIterableToList(
+                            await canvasService.getAssignments(courseId)
+                        )
+                    ).map((v) => v.name)
+            ]
+        ])
+        .transformDest(async ([courseId, name]) => {
+            if (name == undefined) throw new Error('Invalid data');
+            const id = await canvasService.getAssignmentIdByName(courseId, name);
+            return {
+                id,
+                name
             };
         });
 }
