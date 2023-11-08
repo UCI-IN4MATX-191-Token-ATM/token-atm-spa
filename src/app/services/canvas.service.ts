@@ -1402,4 +1402,30 @@ export class CanvasService {
         } while (studentIds.hasNextPage());
         return students;
     }
+
+    /**
+     * Retrieves the IANA time zone for the course.
+     * @param courseId The Canvas course ID.
+     * @returns A string with the course's IANA time zone name
+     */
+    public async getCourseTimeZone(courseId: string): Promise<string> {
+        return (await this.apiRequest(`/api/v1/courses/${courseId}`))['time_zone'];
+    }
+
+    /**
+     * Throws an error when the local Token ATM time zone doesn't match the Canvas Course time zone.
+     * @param courseId The Canvas course ID.
+     * @throws Error message reports the mismatched time zones.
+     */
+    public async checkSameTimeZone(courseId: string): Promise<void> {
+        const data = await this.getCourseTimeZone(courseId);
+        const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (data !== localTimeZone) {
+            throw new Error(
+                `Canvas Course and Token ATM Time Zones do not match.\n` +
+                    `Canvas Course: ${data}\n` +
+                    `    Token ATM: ${localTimeZone}`
+            );
+        }
+    }
 }

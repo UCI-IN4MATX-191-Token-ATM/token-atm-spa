@@ -158,4 +158,15 @@ export class DevTestComponent {
         console.log(WithdrawAssignmentResubmissionTokenOptionDataDef.is(tokenOption));
         console.log(WithdrawAssignmentResubmissionTokenOptionDataDef.encode(tokenOption));
     }
+
+    async timeZoneCheck(): Promise<void> {
+        if (!this.course) return;
+        const courseTimeZone = await this.canvasService.getCourseTimeZone(this.course.id);
+        const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const match = courseTimeZone === localTimeZone;
+        console.log(
+            `Time zones ${match ? '' : 'do not '}match. ${courseTimeZone} ${match ? '' : '!'}= ${localTimeZone}`
+        );
+        this.canvasService.checkSameTimeZone(this.course.id);
+    }
 }
