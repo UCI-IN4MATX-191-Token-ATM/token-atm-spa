@@ -175,19 +175,24 @@ export class DevTestComponent {
     }
 
     async checkQualtricsSurveyExists(): Promise<void> {
-        console.log('Survey Exists?:', this.qualtricsService.checkSurveyId(this.qualtricsSurveyId));
+        await this.qualtricsService.checkSurveyExists(this.qualtricsSurveyId);
+        console.log('No error occurred when looking for', this.qualtricsSurveyId);
     }
 
     async resetQualtricsSurveyCache(): Promise<void> {
         this.qualtricsService.clearCache();
+        console.log('All caches in Qualtrics Service cleared.');
     }
 
     async checkQualtricsResponseSchema(): Promise<void> {
-        console.log('Schema Response:', await this.qualtricsService.getSurveyResponseSchema(this.qualtricsSurveyId));
+        console.log('Response Schema:', await this.qualtricsService.getSurveyResponseSchema(this.qualtricsSurveyId));
     }
 
     async checkForFieldInQualtricsSurvey(): Promise<void> {
         await this.qualtricsService.checkResponseSchemaForField(this.qualtricsSurveyId, this.qualtricsFieldName);
+        console.log(
+            `No error occurred while looking for field '${this.qualtricsFieldName}' in survey '${this.qualtricsSurveyId}'.`
+        );
     }
 
     async getSurveyFields(): Promise<void> {

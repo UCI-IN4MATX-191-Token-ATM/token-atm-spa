@@ -252,4 +252,17 @@ export class QualtricsService {
             throw new Error(`Field name ("${fieldName}") not found in Survey`);
         }
     }
+
+    public async checkSurveyExists(surveyId: string): Promise<void> {
+        try {
+            await this.getSurveyResponseSchema(surveyId);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            if (error?.isAxiosError && error?.response?.status == 404) {
+                throw new Error(`Survey '${surveyId}' not Found on Qualtrics.`);
+            } else {
+                throw error;
+            }
+        }
+    }
 }
