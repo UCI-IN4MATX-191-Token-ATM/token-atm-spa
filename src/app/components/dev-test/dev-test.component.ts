@@ -10,6 +10,7 @@ import {
     WithdrawAssignmentResubmissionTokenOptionDataDef,
     type WithdrawAssignmentResubmissionTokenOptionData
 } from 'app/token-options/withdraw-assignment-resubmission-token-option';
+import { QualtricsService } from 'app/services/qualtrics.service';
 
 @Component({
     selector: 'app-dev-test',
@@ -18,11 +19,13 @@ import {
 })
 export class DevTestComponent {
     course?: Course;
+    qualtricsSurveyId = 'SV_560f6LnM1eF0VdI';
 
     constructor(
         @Inject(TokenATMConfigurationManagerService) private manager: TokenATMConfigurationManagerService,
         @Inject(CanvasService) private canvasService: CanvasService,
-        @Inject(TokenOptionResolverRegistry) private tokenOptionResolverRegistry: TokenOptionResolverRegistry
+        @Inject(TokenOptionResolverRegistry) private tokenOptionResolverRegistry: TokenOptionResolverRegistry,
+        @Inject(QualtricsService) private qualtricsService: QualtricsService
     ) {}
 
     async configureCourse(course: Course): Promise<void> {
@@ -168,5 +171,13 @@ export class DevTestComponent {
             `Time zones ${match ? '' : 'do not '}match. ${courseTimeZone} ${match ? '' : '!'}= ${localTimeZone}`
         );
         this.canvasService.checkSameTimeZone(this.course.id);
+    }
+
+    async checkQualtricsSurveyExists(): Promise<void> {
+        console.log('Survey Exists?:', this.qualtricsService.checkSurveyId(this.qualtricsSurveyId));
+    }
+
+    async resetQualtricsSurveyCache(): Promise<void> {
+        this.qualtricsService.clearCache();
     }
 }

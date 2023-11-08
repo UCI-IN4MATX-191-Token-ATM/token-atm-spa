@@ -18,4 +18,11 @@
     <button class="btn btn-danger my-3" (click)="onResetStudentRecord()">Reset all student records</button>
     <button class="btn btn-danger my-3" (click)="onMyOperation()">On My Operation</button>
     <button class="btn btn-primary my-3" (click)="timeZoneCheck()">Check Course Time Zone</button>
+    <div class="my-3">
+        <input [(ngModel)]="qualtricsSurveyId" type="text" name="qualtricsSurveyId" />
+        <button disabled class="btn btn-primary m-1" (click)="checkQualtricsSurveyExists()">
+            Check Qualtrics Survey Exists
+        </button>
+        <button class="btn btn-primary" (click)="resetQualtricsSurveyCache()">Reset Survey ID Cache</button>
+    </div>
 </div>
