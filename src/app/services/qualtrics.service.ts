@@ -250,7 +250,7 @@ export class QualtricsService {
             }
         }
         if (!names.has(fieldName)) {
-            throw new Error(`Field name ("${fieldName}") not found in Survey`);
+            throw new Error(`Field name '${fieldName}', from SSO authentication, not found in Survey`);
         }
     }
 
