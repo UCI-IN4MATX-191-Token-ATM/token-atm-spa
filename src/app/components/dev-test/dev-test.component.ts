@@ -21,6 +21,9 @@ export class DevTestComponent {
     course?: Course;
     qualtricsSurveyId = 'SV_560f6LnM1eF0VdI';
     qualtricsFieldName = 'Email';
+    private testPagePublished?: boolean = undefined;
+    private testPageId?: string;
+    testPageName = 'Token ATM Configuration';
 
     constructor(
         @Inject(TokenATMConfigurationManagerService) private manager: TokenATMConfigurationManagerService,
@@ -197,5 +200,38 @@ export class DevTestComponent {
 
     async getSurveyFields(): Promise<void> {
         console.log('All Survey Fields:', await this.qualtricsService.getSurveyFieldSchemas(this.qualtricsSurveyId));
+    }
+
+    async getConfigurationPageId(): Promise<void> {
+        if (!this.course) return;
+        this.testPageId = await this.canvasService.getPageIdByName(this.course.id, this.testPageName);
+    }
+
+    clearPageId(): void {
+        this.testPageId = undefined;
+    }
+
+    async isConfigurationPagePublished(text = ''): Promise<void> {
+        if (!this.course) return;
+        if (!this.testPageId) {
+            await this.getConfigurationPageId();
+            if (!this.testPageId) return;
+        }
+        this.testPagePublished = await this.canvasService.isPagePublished(this.course.id, this.testPageId);
+        const str = this.testPagePublished ? '' : 'NOT ';
+        console.log(`${this.testPageName} Page is ${text}${str}published`);
+    }
+
+    async switchConfigurationPagePublishedState(): Promise<void> {
+        if (!this.course) return;
+        if (!this.testPageId) {
+            await this.getConfigurationPageId();
+            if (!this.testPageId) return;
+        }
+        if (this.testPagePublished == null) {
+            this.testPagePublished = await this.canvasService.isPagePublished(this.course.id, this.testPageId);
+        }
+        await this.canvasService.modifyPagePublishedState(this.course.id, this.testPageId, !this.testPagePublished);
+        this.isConfigurationPagePublished('now ');
     }
 }

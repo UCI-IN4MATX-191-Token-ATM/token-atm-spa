@@ -39,4 +39,14 @@
             <button class="btn btn-primary" (click)="getSurveyFields()">Get Survey Fields</button>
         </div>
     </span>
+    <div class="my-3">
+        <label>
+            Canvas Page Name:
+            <input [(ngModel)]="testPageName" type="text" name="testPageName" (ngModelChange)="clearPageId()" />
+        </label>
+        <button class="btn btn-primary m-1" (click)="isConfigurationPagePublished()">is Published?</button>
+        <button class="btn btn-primary" (click)="switchConfigurationPagePublishedState()">
+            Switch Published State
+        </button>
+    </div>
 </div>

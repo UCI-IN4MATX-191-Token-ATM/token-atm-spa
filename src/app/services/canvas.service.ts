@@ -1480,4 +1480,20 @@ export class CanvasService {
             );
         }
     }
+
+    public async isPagePublished(courseId: string, pageId: string): Promise<boolean | undefined> {
+        return (await this.apiRequest(`/api/v1/courses/${courseId}/pages/${pageId}`))?.published;
+    }
+
+    public async modifyPagePublishedState(courseId: string, pageId: string, published: boolean): Promise<void> {
+        await this.safeGuardForPage(courseId, pageId);
+        await this.apiRequest(`/api/v1/courses/${courseId}/pages/${pageId}`, {
+            method: 'put',
+            data: {
+                wiki_page: {
+                    published: published
+                }
+            }
+        });
+    }
 }
