@@ -18,21 +18,25 @@
     <button class="btn btn-danger my-3" (click)="onResetStudentRecord()">Reset all student records</button>
     <button class="btn btn-danger my-3" (click)="onMyOperation()">On My Operation</button>
     <button class="btn btn-primary my-3" (click)="timeZoneCheck()">Check Course Time Zone</button>
-    <div class="my-3">
-        <label>
-            Qualtrics Survey Id:
-            <input [(ngModel)]="qualtricsSurveyId" type="text" name="qualtricsSurveyId" />
-        </label>
-        <button class="btn btn-primary m-1" (click)="checkQualtricsSurveyExists()">Check Survey Exists</button>
-        <button class="btn btn-primary" (click)="resetQualtricsSurveyCache()">Reset Survey Cache</button>
-    </div>
-    <div class="my-3">
-        <button class="btn btn-primary" (click)="checkQualtricsResponseSchema()">Check Response Schema</button>
-        <label class="m-1">
-            Field Name:
-            <input [(ngModel)]="qualtricsFieldName" type="text" name="qualtricsFieldName" />
-        </label>
-        <button class="btn btn-primary m-1" (click)="checkForFieldInQualtricsSurvey()">Check If Field in Survey</button>
-        <button class="btn btn-primary" (click)="getSurveyFields()">Get Survey Fields</button>
-    </div>
+    <span class="border rounded">
+        <div class="px-3 pt-3 mb-2">
+            <label>
+                Qualtrics Survey Id:
+                <input [(ngModel)]="qualtricsSurveyId" type="text" name="qualtricsSurveyId" />
+            </label>
+            <button class="btn btn-primary m-1" (click)="checkQualtricsSurveyExists()">Check Survey Exists</button>
+            <button class="btn btn-primary" (click)="resetQualtricsSurveyCache()">Reset Survey Cache</button>
+        </div>
+        <div class="px-3 pb-3 mt-2">
+            <button class="btn btn-primary" (click)="checkQualtricsResponseSchema()">Check Response Schema</button>
+            <label class="m-1">
+                Field Name:
+                <input [(ngModel)]="qualtricsFieldName" type="text" name="qualtricsFieldName" />
+            </label>
+            <button class="btn btn-primary m-1" (click)="checkForFieldInQualtricsSurvey()">
+                Check If Field in Survey
+            </button>
+            <button class="btn btn-primary" (click)="getSurveyFields()">Get Survey Fields</button>
+        </div>
+    </span>
 </div>
