@@ -239,6 +239,7 @@ export class QualtricsService {
     }
 
     public async checkResponseSchemaForField(surveyId: string, fieldName: string): Promise<void> {
+        await this.checkSurveyExists(surveyId);
         const data = await this.getSurveyFieldSchemas(surveyId);
         const names = new Set<string>();
         for (const [propName, propSchema] of data) {
