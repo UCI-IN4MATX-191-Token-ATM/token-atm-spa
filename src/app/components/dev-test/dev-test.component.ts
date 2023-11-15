@@ -242,4 +242,12 @@ export class DevTestComponent {
         const bool = await this.canvasService.isAssignmentPublished(this.course.id, assignmentId);
         console.log(`Canvas Assignment '${this.testAssignmentName}' is ${bool ? '' : 'NOT '}published.`);
     }
+
+    async switchAssignmentPublishedState(): Promise<void> {
+        if (!this.course) return;
+        const assignmentId = await this.canvasService.getAssignmentIdByName(this.course.id, this.testAssignmentName);
+        const bool = await this.canvasService.isAssignmentPublished(this.course.id, assignmentId);
+        await this.canvasService.modifyAssignmentPublishedState(this.course.id, assignmentId, !bool);
+        console.log(`Canvas Assignment '${this.testAssignmentName}' is now ${!bool ? '' : 'NOT '}published.`);
+    }
 }

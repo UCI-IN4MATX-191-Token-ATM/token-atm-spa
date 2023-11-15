@@ -1506,4 +1506,16 @@ export class CanvasService {
             })
         )?.published;
     }
+
+    public async modifyAssignmentPublishedState(
+        courseId: string,
+        assignmentId: string,
+        published: boolean
+    ): Promise<void> {
+        await this.safeGuardForAssignment(courseId, assignmentId);
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`, {
+            method: 'put',
+            data: { assignment: { published: published } }
+        });
+    }
 }
