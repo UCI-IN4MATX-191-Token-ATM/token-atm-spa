@@ -1496,4 +1496,14 @@ export class CanvasService {
             }
         });
     }
+
+    public async isAssignmentPublished(courseId: string, assignmentId: string): Promise<boolean | undefined> {
+        return (
+            await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`, {
+                params: {
+                    override_assignment_dates: false
+                }
+            })
+        )?.published;
+    }
 }

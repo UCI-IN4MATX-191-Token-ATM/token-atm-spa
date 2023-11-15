@@ -24,6 +24,7 @@ export class DevTestComponent {
     private testPagePublished?: boolean = undefined;
     private testPageId?: string;
     testPageName = 'Token ATM Configuration';
+    testAssignmentName = 'Token ATM Log';
 
     constructor(
         @Inject(TokenATMConfigurationManagerService) private manager: TokenATMConfigurationManagerService,
@@ -233,5 +234,12 @@ export class DevTestComponent {
         }
         await this.canvasService.modifyPagePublishedState(this.course.id, this.testPageId, !this.testPagePublished);
         this.isConfigurationPagePublished('now ');
+    }
+
+    async isAssignmentPublished(): Promise<void> {
+        if (!this.course) return;
+        const assignmentId = await this.canvasService.getAssignmentIdByName(this.course.id, this.testAssignmentName);
+        const bool = await this.canvasService.isAssignmentPublished(this.course.id, assignmentId);
+        console.log(`Canvas Assignment '${this.testAssignmentName}' is ${bool ? '' : 'NOT '}published.`);
     }
 }

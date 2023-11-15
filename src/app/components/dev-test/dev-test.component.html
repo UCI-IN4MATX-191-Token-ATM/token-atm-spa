@@ -49,4 +49,11 @@
             Switch Published State
         </button>
     </div>
+    <div class="my-3">
+        <label>
+            Canvas Assignment:
+            <input [(ngModel)]="testAssignmentName" type="text" name="testAssignmentName" />
+        </label>
+        <button class="btn btn-primary m-1" (click)="isAssignmentPublished()">is Published?</button>
+    </div>
 </div>
