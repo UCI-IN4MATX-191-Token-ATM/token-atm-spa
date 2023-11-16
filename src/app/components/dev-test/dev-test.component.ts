@@ -11,6 +11,9 @@ import {
     type WithdrawAssignmentResubmissionTokenOptionData
 } from 'app/token-options/withdraw-assignment-resubmission-token-option';
 import { QualtricsService } from 'app/services/qualtrics.service';
+import { pluralize } from 'app/utils/pluralize';
+import { filter, map, uniqWith, isEqual } from 'lodash';
+import type { AssignmentDate } from 'app/data/assignment-date';
 
 @Component({
     selector: 'app-dev-test',
@@ -258,5 +261,56 @@ export class DevTestComponent {
             `All Dates for '${this.testAssignmentName}':`,
             await this.canvasService.getAssignmentAllDates(this.course.id, assignmentId)
         );
+    }
+
+    async compareDatesToNow(): Promise<void> {
+        if (!this.course) return;
+        const assignmentId = await this.canvasService.getAssignmentIdByName(this.course.id, this.testAssignmentName);
+        const data = await this.canvasService.getAssignmentAllDates(this.course.id, assignmentId);
+        const dateLevels = {
+            default: filter(data, 'isDefaultLevel'),
+            section: filter(data, 'isSectionLevel'),
+            individual: filter(data, 'isIndividualLevel')
+        };
+
+        const NOW = new Date();
+        const paragraphArray: string[] = [];
+        paragraphArray.push(`For '${this.testAssignmentName}', `);
+        for (const [level, dates] of Object.entries(dateLevels)) {
+            const sectionArray: string[] = [
+                `  There ${dates.length != 1 ? 'are' : 'is'} ${
+                    dates.length === 0 ? 'no' : `${dates.length} possible`
+                } ${pluralize(`${level} time-set`, dates.length)}.`
+            ];
+            if (dates.length !== 0) {
+                for (const e of ['dueAt', 'unlockAt', 'lockAt']) {
+                    const el = e as 'dueAt' | 'unlockAt' | 'lockAt';
+                    const valid = filter(dates, el);
+                    if (valid.length === 0) continue;
+                    const uniqValidTimes = uniqWith(map(valid, el) as Date[], isEqual);
+
+                    sectionArray.push(
+                        `\n    ${filter(uniqValidTimes, (x) => x < NOW).length}/${uniqValidTimes.length} ${pluralize(
+                            `unique '${el}' time`,
+                            uniqValidTimes.length
+                        )} ${uniqValidTimes.length != 1 ? 'are' : 'is'} set in the past.`
+                    );
+                    if (level === 'section') {
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                        const withFutureDates = filter(valid, (x: AssignmentDate) => x[el]! >= NOW);
+                        if (withFutureDates.length > 0) {
+                            sectionArray.push(
+                                `\n      ${pluralize('Section', withFutureDates.length)} set in future: ${map(
+                                    withFutureDates,
+                                    'title'
+                                ).join(', ')}`
+                            );
+                        }
+                    }
+                }
+            }
+            paragraphArray.push(sectionArray.join(''));
+        }
+        console.log(paragraphArray.join('\n'));
     }
 }

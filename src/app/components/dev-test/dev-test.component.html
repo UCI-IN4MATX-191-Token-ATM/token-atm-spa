@@ -49,13 +49,18 @@
             Switch Published State
         </button>
     </div>
-    <div class="my-3">
-        <label>
-            Canvas Assignment:
-            <input [(ngModel)]="testAssignmentName" type="text" name="testAssignmentName" />
-        </label>
-        <button class="btn btn-primary m-1" (click)="isAssignmentPublished()">is Published?</button>
-        <button class="btn btn-warning m-1" (click)="switchAssignmentPublishedState()">Switch Published State</button>
-        <button class="btn btn-primary" (click)="getAssignmentDates()">Get All Dates</button>
-    </div>
+    <span class="border rounded">
+        <div class="px-3 pt-3 mb-2">
+            <label>
+                Canvas Assignment:
+                <input [(ngModel)]="testAssignmentName" type="text" name="testAssignmentName" />
+            </label>
+            <button class="btn btn-primary m-1" (click)="isAssignmentPublished()">is Published?</button>
+            <button class="btn btn-warning" (click)="switchAssignmentPublishedState()">Switch Published State</button>
+        </div>
+        <div class="px-3 pb-3 mt-2">
+            <button class="btn btn-primary" (click)="getAssignmentDates()">Get All Dates</button>
+            <button class="btn btn-primary m-1" (click)="compareDatesToNow()">Compare All Dates to Now</button>
+        </div>
+    </span>
 </div>
