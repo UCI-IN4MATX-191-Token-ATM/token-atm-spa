@@ -20,6 +20,7 @@ import { AssignmentSubmission } from 'app/data/assignment-submission';
 import { ExponentialBackoffExecutor } from 'app/utils/exponential-backoff-executor';
 import { Section } from 'app/data/section';
 import { unwrapValidation } from 'app/utils/validation-unwrapper';
+import { AssignmentDateDef, type AssignmentDate } from 'app/data/assignment-date';
 
 type QuizQuestionResponse = {
     id: string;
@@ -1533,5 +1534,17 @@ export class CanvasService {
             method: 'put',
             data: { assignment: { published: published } }
         });
+    }
+
+    public async getAssignmentAllDates(courseId: string, assignmentId: string): Promise<AssignmentDate[]> {
+        const data = (
+            await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`, {
+                params: {
+                    override_assignment_dates: false,
+                    all_dates: true
+                }
+            })
+        )?.all_dates;
+        return data.map((entry: unknown) => unwrapValidation(AssignmentDateDef.decode(entry)));
     }
 }

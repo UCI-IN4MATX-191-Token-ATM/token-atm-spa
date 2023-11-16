@@ -250,4 +250,13 @@ export class DevTestComponent {
         await this.canvasService.modifyAssignmentPublishedState(this.course.id, assignmentId, !bool);
         console.log(`Canvas Assignment '${this.testAssignmentName}' is now ${!bool ? '' : 'NOT '}published.`);
     }
+
+    async getAssignmentDates(): Promise<void> {
+        if (!this.course) return;
+        const assignmentId = await this.canvasService.getAssignmentIdByName(this.course.id, this.testAssignmentName);
+        console.log(
+            `All Dates for '${this.testAssignmentName}':`,
+            await this.canvasService.getAssignmentAllDates(this.course.id, assignmentId)
+        );
+    }
 }
