@@ -20,7 +20,8 @@ export class TokenOptionRegistry {
         'spend-for-lab-switch': 'Spend Tokens for Switching Lab',
         'withdraw-lab-switch': 'Withdraw Lab Switch Request (For Teacher Only)',
         'spend-for-quiz-revision': 'Spend Tokens for Revision Assignment on Canvas after not passing Canvas Quiz',
-        'spend-for-assignment-extension': 'Spend Tokens for Canvas Assignment Extension (No Longer Marked Late)'
+        'spend-for-assignment-extension': 'Spend Tokens for Canvas Assignment Extension (No Longer Marked Late)',
+        'spend-for-passing-assignment': 'Spend Tokens for Assignment / Quiz Grade'
     };
 
     public getDescriptiveName(tokenOptionType: string): string | undefined {
