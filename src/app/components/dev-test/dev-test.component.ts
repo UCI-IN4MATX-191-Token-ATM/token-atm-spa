@@ -175,7 +175,7 @@ export class DevTestComponent {
         console.log(
             `Time zones ${match ? '' : 'do not '}match. ${courseTimeZone} ${match ? '' : '!'}= ${localTimeZone}`
         );
-        this.canvasService.checkSameTimeZone(this.course.id);
+        await this.canvasService.checkSameTimeZone(this.course.id);
     }
 
     async checkQualtricsSurveyExists(): Promise<void> {
