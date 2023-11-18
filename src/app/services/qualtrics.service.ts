@@ -15,9 +15,6 @@ export class QualtricsService {
     #qualtricsURL?: string;
     private static WAIT_SECONDS = 2;
     private participationCache: Map<string, Set<string>> = new Map<string, Set<string>>();
-    private surveyIdCache: Set<string> = new Set<string>();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private surveySchemaCache: Map<string, any> = new Map<string, any>();
 
     constructor(@Inject(AxiosService) private axiosService: AxiosService) {}
 
@@ -178,57 +175,18 @@ export class QualtricsService {
         return this.participationCache.get(surveyId)?.has(participationId) ?? false;
     }
 
-    private async cacheSurveyIds(offset?: string): Promise<void> {
-        // NOTE: List Survey API requires greater API scope,
-        //       so this code won't work at the moment (requires `read:surveys`)
-        const data = await this.apiRequest(`/API/v3/surveys${offset ?? ''}`, {
-            method: 'get',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        console.log(data); // TODO: Double check JSON
-        console.log('Offset string:', offset); // TODO: Double check
-        const ids: string[] =
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            data.results?.elements?.map((x: any) => x.id).filter((x: any) => x) ?? new Array<string>();
-        for (const id of ids) {
-            this.surveyIdCache.add(id);
-        }
-        const next: string | null = data.results?.nextPage;
-        console.log(next);
-        if (next) {
-            console.log('Generated API request:', `/API/v3/surveys${next ?? ''}`);
-            // this.cacheSurveyIds(data.results.nextPage); // TODO: Compare above before executing
-        }
-    }
-
-    public async checkSurveyId(surveyId: string): Promise<boolean> {
-        if (this.surveyIdCache.size === 0) await this.cacheSurveyIds();
-        return this.surveyIdCache.has(surveyId);
-    }
-
     public clearCache(): void {
         this.participationCache.clear();
-        this.surveyIdCache.clear();
-        this.surveySchemaCache.clear();
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private async cacheSurveyResponseSchema(surveyId: string): Promise<void> {
-        const data = await this.apiRequest(`/API/v3/surveys/${surveyId}/response-schema`, {
-            method: 'get',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        this.surveySchemaCache.set(surveyId, data);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public async getSurveyResponseSchema(surveyId: string): Promise<any> {
-        if (!this.surveySchemaCache.has(surveyId)) await this.cacheSurveyResponseSchema(surveyId);
-        return structuredClone(this.surveySchemaCache.get(surveyId));
+        return await this.apiRequest(`/API/v3/surveys/${surveyId}/response-schema`, {
+            method: 'get',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
