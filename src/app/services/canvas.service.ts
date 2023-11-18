@@ -420,6 +420,22 @@ export class CanvasService {
         });
     }
 
+    public async gradeSubmissionWithPercentage(
+        courseId: string,
+        studentId: string,
+        assignmentId: string,
+        scorePercentage: number
+    ): Promise<void> {
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`, {
+            method: 'put',
+            data: {
+                submission: {
+                    posted_grade: (scorePercentage * 100).toFixed(2) + '%'
+                }
+            }
+        });
+    }
+
     public async gradeSubmissionWithPostingComment(
         courseId: string,
         studentId: string,
