@@ -3,10 +3,11 @@
     <input
         type="number"
         class="form-control"
-        id="'input' + fieldId"
+        [id]="'input' + fieldId"
         [(ngModel)]="value"
         [readonly]="isReadOnly"
         [disabled]="isReadOnly"
+        step="any"
     />
     <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
 </div>

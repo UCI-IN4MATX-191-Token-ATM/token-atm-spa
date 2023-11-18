@@ -264,12 +264,14 @@ export function createMultipleSectionDateComponentBuilder(
 }
 
 export function createGradeThresholdComponentBuilder(
-    environmentInjector: EnvironmentInjector
+    environmentInjector: EnvironmentInjector,
+    label = 'Passing Grade Threshold',
+    shortLabel = 'Grade threshold'
 ): FormFieldComponentBuilder<NumberInputFieldComponent> {
     return new FormFieldComponentBuilder()
         .setComp(createComponent(NumberInputFieldComponent, { environmentInjector: environmentInjector }))
         .editField((field) => {
-            field.label = 'Passing Grade Threshold';
+            field.label = label;
             field.validator = async ([field, value]: [NumberInputFieldComponent, number]) => {
                 field.errorMessage = undefined;
                 if (typeof value != 'number') {
@@ -277,7 +279,7 @@ export function createGradeThresholdComponentBuilder(
                     return false;
                 }
                 if (value < 0 || value > 1) {
-                    field.errorMessage = 'Grade threshold needs to be a number between 0 and 1 (inclusive). E.g, 0.7';
+                    field.errorMessage = `${shortLabel} needs to be a number between 0 and 1 (inclusive). E.g, 0.7`;
                     return false;
                 }
                 return true;
