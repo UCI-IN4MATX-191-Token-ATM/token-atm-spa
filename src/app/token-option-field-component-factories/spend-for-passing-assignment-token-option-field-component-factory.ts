@@ -41,7 +41,7 @@ export class SpendForPassingAssignmentTokenOptionFieldComponentFactory extends T
                         'Canvas Assignment / Quiz'
                     )
                 )
-                .appendBuilder(createGradeThresholdComponentBuilder(environmentInjector))
+                .appendBuilder(createGradeThresholdComponentBuilder(environmentInjector, 'Grade Threshold'))
                 .appendBuilder(createExcludeTokenOptionsComponentBuilder(environmentInjector))
                 .transformSrc((value: SpendForPassingAssignmentTokenOption | TokenOptionGroup) => {
                     if (value instanceof TokenOptionGroup)
