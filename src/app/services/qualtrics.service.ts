@@ -178,4 +178,50 @@ export class QualtricsService {
     public clearCache(): void {
         this.participationCache.clear();
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public async getSurveyResponseSchema(surveyId: string): Promise<any> {
+        return await this.apiRequest(`/API/v3/surveys/${surveyId}/response-schema`, {
+            method: 'get',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public async getSurveyFieldSchemas(surveyId: string): Promise<Map<string, any>> {
+        const data = (await this.getSurveyResponseSchema(surveyId)).result?.properties?.values?.properties;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return new Map<string, any>(data != null ? Object.entries(data) : null);
+    }
+
+    public async checkResponseSchemaForField(surveyId: string, fieldName: string): Promise<void> {
+        await this.checkSurveyExists(surveyId);
+        const data = await this.getSurveyFieldSchemas(surveyId);
+        const names = new Set<string>();
+        for (const [propName, propSchema] of data) {
+            // Filters for only specific type of data
+            if (propSchema?.dataType === 'embeddedData') {
+                names.add(propName); // Include JSON prop. name
+                if (propSchema?.exportTag) names.add(propSchema.exportTag); // Include Export Tag name
+            }
+        }
+        if (!names.has(fieldName)) {
+            throw new Error(`Field name '${fieldName}', from SSO authentication, not found in Survey`);
+        }
+    }
+
+    public async checkSurveyExists(surveyId: string): Promise<void> {
+        try {
+            await this.getSurveyResponseSchema(surveyId);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            if (error?.isAxiosError && error?.response?.status == 404) {
+                throw new Error(`Survey '${surveyId}' not Found on Qualtrics.`);
+            } else {
+                throw error;
+            }
+        }
+    }
 }

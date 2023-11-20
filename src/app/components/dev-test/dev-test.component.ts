@@ -10,6 +10,7 @@ import {
     WithdrawAssignmentResubmissionTokenOptionDataDef,
     type WithdrawAssignmentResubmissionTokenOptionData
 } from 'app/token-options/withdraw-assignment-resubmission-token-option';
+import { QualtricsService } from 'app/services/qualtrics.service';
 
 @Component({
     selector: 'app-dev-test',
@@ -18,11 +19,18 @@ import {
 })
 export class DevTestComponent {
     course?: Course;
+    qualtricsSurveyId = 'SV_560f6LnM1eF0VdI';
+    qualtricsFieldName = 'Email';
+    private testPagePublished?: boolean = undefined;
+    private testPageId?: string;
+    testPageName = 'Token ATM Configuration';
+    testAssignmentName = 'Token ATM Log';
 
     constructor(
         @Inject(TokenATMConfigurationManagerService) private manager: TokenATMConfigurationManagerService,
         @Inject(CanvasService) private canvasService: CanvasService,
-        @Inject(TokenOptionResolverRegistry) private tokenOptionResolverRegistry: TokenOptionResolverRegistry
+        @Inject(TokenOptionResolverRegistry) private tokenOptionResolverRegistry: TokenOptionResolverRegistry,
+        @Inject(QualtricsService) private qualtricsService: QualtricsService
     ) {}
 
     async configureCourse(course: Course): Promise<void> {
@@ -157,5 +165,89 @@ export class DevTestComponent {
         console.log(tokenOption);
         console.log(WithdrawAssignmentResubmissionTokenOptionDataDef.is(tokenOption));
         console.log(WithdrawAssignmentResubmissionTokenOptionDataDef.encode(tokenOption));
+    }
+
+    async timeZoneCheck(): Promise<void> {
+        if (!this.course) return;
+        const courseTimeZone = await this.canvasService.getCourseTimeZone(this.course.id);
+        const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const match = courseTimeZone === localTimeZone;
+        console.log(
+            `Time zones ${match ? '' : 'do not '}match. ${courseTimeZone} ${match ? '' : '!'}= ${localTimeZone}`
+        );
+        await this.canvasService.checkSameTimeZone(this.course.id);
+    }
+
+    async checkQualtricsSurveyExists(): Promise<void> {
+        await this.qualtricsService.checkSurveyExists(this.qualtricsSurveyId);
+        console.log('No error occurred when looking for', this.qualtricsSurveyId);
+    }
+
+    async resetQualtricsSurveyCache(): Promise<void> {
+        this.qualtricsService.clearCache();
+        console.log('All caches in Qualtrics Service cleared.');
+    }
+
+    async checkQualtricsResponseSchema(): Promise<void> {
+        console.log('Response Schema:', await this.qualtricsService.getSurveyResponseSchema(this.qualtricsSurveyId));
+    }
+
+    async checkForFieldInQualtricsSurvey(): Promise<void> {
+        await this.qualtricsService.checkResponseSchemaForField(this.qualtricsSurveyId, this.qualtricsFieldName);
+        console.log(
+            `No error occurred while looking for field '${this.qualtricsFieldName}' in survey '${this.qualtricsSurveyId}'.`
+        );
+    }
+
+    async getSurveyFields(): Promise<void> {
+        console.log('All Survey Fields:', await this.qualtricsService.getSurveyFieldSchemas(this.qualtricsSurveyId));
+    }
+
+    async getConfigurationPageId(): Promise<void> {
+        if (!this.course) return;
+        this.testPageId = await this.canvasService.getPageIdByName(this.course.id, this.testPageName);
+    }
+
+    clearPageId(): void {
+        this.testPageId = undefined;
+    }
+
+    async isConfigurationPagePublished(text = ''): Promise<void> {
+        if (!this.course) return;
+        if (!this.testPageId) {
+            await this.getConfigurationPageId();
+            if (!this.testPageId) return;
+        }
+        this.testPagePublished = await this.canvasService.isPagePublished(this.course.id, this.testPageId);
+        const str = this.testPagePublished ? '' : 'NOT ';
+        console.log(`${this.testPageName} Page is ${text}${str}published`);
+    }
+
+    async switchConfigurationPagePublishedState(): Promise<void> {
+        if (!this.course) return;
+        if (!this.testPageId) {
+            await this.getConfigurationPageId();
+            if (!this.testPageId) return;
+        }
+        if (this.testPagePublished == null) {
+            this.testPagePublished = await this.canvasService.isPagePublished(this.course.id, this.testPageId);
+        }
+        await this.canvasService.modifyPagePublishedState(this.course.id, this.testPageId, !this.testPagePublished);
+        this.isConfigurationPagePublished('now ');
+    }
+
+    async isAssignmentPublished(): Promise<void> {
+        if (!this.course) return;
+        const assignmentId = await this.canvasService.getAssignmentIdByName(this.course.id, this.testAssignmentName);
+        const bool = await this.canvasService.isAssignmentPublished(this.course.id, assignmentId);
+        console.log(`Canvas Assignment '${this.testAssignmentName}' is ${bool ? '' : 'NOT '}published.`);
+    }
+
+    async switchAssignmentPublishedState(): Promise<void> {
+        if (!this.course) return;
+        const assignmentId = await this.canvasService.getAssignmentIdByName(this.course.id, this.testAssignmentName);
+        const bool = await this.canvasService.isAssignmentPublished(this.course.id, assignmentId);
+        await this.canvasService.modifyAssignmentPublishedState(this.course.id, assignmentId, !bool);
+        console.log(`Canvas Assignment '${this.testAssignmentName}' is now ${!bool ? '' : 'NOT '}published.`);
     }
 }

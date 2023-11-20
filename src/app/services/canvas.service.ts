@@ -1470,4 +1470,68 @@ export class CanvasService {
         } while (studentIds.hasNextPage());
         return students;
     }
+
+    /**
+     * Retrieves the IANA time zone for the course.
+     * @param courseId The Canvas course ID.
+     * @returns A string with the course's IANA time zone name
+     */
+    public async getCourseTimeZone(courseId: string): Promise<string> {
+        return (await this.apiRequest(`/api/v1/courses/${courseId}`))['time_zone'];
+    }
+
+    /**
+     * Throws an error when the local Token ATM time zone doesn't match the Canvas Course time zone.
+     * @param courseId The Canvas course ID.
+     * @throws Error message reports the mismatched time zones.
+     */
+    public async checkSameTimeZone(courseId: string): Promise<void> {
+        const data = await this.getCourseTimeZone(courseId);
+        const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (data !== localTimeZone) {
+            throw new Error(
+                `Canvas Course and Token ATM Time Zones do not match.\n` +
+                    `Canvas Course: ${data}\n` +
+                    `    Token ATM: ${localTimeZone}`
+            );
+        }
+    }
+
+    public async isPagePublished(courseId: string, pageId: string): Promise<boolean | undefined> {
+        return (await this.apiRequest(`/api/v1/courses/${courseId}/pages/${pageId}`))?.published;
+    }
+
+    public async modifyPagePublishedState(courseId: string, pageId: string, published: boolean): Promise<void> {
+        await this.safeGuardForPage(courseId, pageId);
+        await this.apiRequest(`/api/v1/courses/${courseId}/pages/${pageId}`, {
+            method: 'put',
+            data: {
+                wiki_page: {
+                    published: published
+                }
+            }
+        });
+    }
+
+    public async isAssignmentPublished(courseId: string, assignmentId: string): Promise<boolean | undefined> {
+        return (
+            await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`, {
+                params: {
+                    override_assignment_dates: false
+                }
+            })
+        )?.published;
+    }
+
+    public async modifyAssignmentPublishedState(
+        courseId: string,
+        assignmentId: string,
+        published: boolean
+    ): Promise<void> {
+        await this.safeGuardForAssignment(courseId, assignmentId);
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`, {
+            method: 'put',
+            data: { assignment: { published: published } }
+        });
+    }
 }

@@ -70,6 +70,7 @@ import { ExportRequestModalComponent } from './components/export-request-modal/e
 import { SelectFieldComponent } from './components/form-fields/select-field/select-field.component';
 import { CheckboxFieldComponent } from './components/form-fields/checkbox-field/checkbox-field.component';
 import { OptionalFieldComponent } from './components/form-fields/optional-field/optional-field.component';
+import { ReviewConfigurationDisplayComponent } from './components/review-configuration-display/review-configuration-display.component';
 import { MatSelectModule } from '@angular/material/select';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { MatDividerModule } from '@angular/material/divider';
@@ -123,6 +124,7 @@ import { CountAndNounPipe, PluralizePipe } from './utils/pluralize';
         SelectFieldComponent,
         CheckboxFieldComponent,
         OptionalFieldComponent,
+        ReviewConfigurationDisplayComponent,
         MultipleSelectionFieldComponent,
         SingleSelectionFieldComponent,
         CountAndNounPipe,
