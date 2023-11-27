@@ -4,7 +4,7 @@ import { ErrorSerializer } from 'app/utils/error-serailizer';
 import { BaseFormField } from 'app/utils/form-field/form-field';
 import type { FormFieldCopyPasteHandler } from 'app/utils/form-field/form-field-copy-paste-handler';
 import { pluralize } from 'app/utils/pluralize';
-import { isEqual } from 'lodash';
+import { isEqual } from 'lodash-es';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { filter, firstValueFrom, takeUntil } from 'rxjs';
 import { v4 } from 'uuid';

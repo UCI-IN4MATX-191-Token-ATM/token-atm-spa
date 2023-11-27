@@ -12,7 +12,7 @@ import {
 } from 'app/token-options/withdraw-assignment-resubmission-token-option';
 import { QualtricsService } from 'app/services/qualtrics.service';
 import { pluralize } from 'app/utils/pluralize';
-import { filter, map, uniqWith, isEqual } from 'lodash';
+import { filter, map, uniqWith, isEqual } from 'lodash-es';
 import type { AssignmentDate } from 'app/data/assignment-date';
 
 @Component({

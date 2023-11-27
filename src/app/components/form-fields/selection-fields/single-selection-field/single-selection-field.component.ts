@@ -3,7 +3,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorSerializer } from 'app/utils/error-serailizer';
 import { BaseFormField } from 'app/utils/form-field/form-field';
 import type { FormFieldCopyPasteHandler } from 'app/utils/form-field/form-field-copy-paste-handler';
-import { isEqual } from 'lodash';
+import { isEqual } from 'lodash-es';
 import { filter, firstValueFrom, takeUntil } from 'rxjs';
 import { v4 } from 'uuid';
 
