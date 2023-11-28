@@ -404,4 +404,21 @@ export class TokenATMConfigurationManagerService {
     }
 
     // TODO: support reordering of token option groups and token options
+
+    public async isTokenATMLogPublished(configuration: TokenATMConfiguration): Promise<boolean> {
+        const logId = await this.canvasService.getAssignmentIdByName(
+            configuration.course.id,
+            TokenATMConfigurationManagerService.TOKEN_ATM_LOG_ASSIGNMENT_NAME
+        );
+        if (logId !== configuration.logAssignmentId) {
+            throw new Error(
+                'Token ATM Log assignment on Canvas doesn’t match the ID saved by Token ATM.\nThe Token ATM Configuration needs to be updated/checked.'
+            );
+        }
+        return (await this.canvasService.isAssignmentPublished(configuration.course.id, logId)) ?? false;
+    }
+
+    public async publishTokenATMLog(configuration: TokenATMConfiguration): Promise<void> {
+        this.canvasService.modifyAssignmentPublishedState(configuration.course.id, configuration.logAssignmentId, true);
+    }
 }

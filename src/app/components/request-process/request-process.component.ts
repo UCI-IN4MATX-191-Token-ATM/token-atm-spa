@@ -41,6 +41,20 @@ export class RequestProcessComponent implements CourseConfigurable {
 
     public async onStartRequestProcessing(): Promise<void> {
         if (!this.configuration) return;
+        if (!(await this.configurationManager.isTokenATMLogPublished(this.configuration))) {
+            const confirmPublish = await this.modalManagerService.createConfirmationModalWithoutRef(
+                'The Token ATM Log assignment on Canvas must be published to process student requests.\n\nWould you like Token ATM to publish this assignment for you?',
+                'Publish Token ATM Log?',
+                false,
+                'I’ll publish it myself.',
+                'Yes, publish it for me.'
+            );
+            if (confirmPublish) {
+                await this.configurationManager.publishTokenATMLog(this.configuration);
+            } else {
+                return;
+            }
+        }
         this.isReconfigureFinished = false;
         this.isStopRequested = false;
         this.requestProcessManagerService.startRequestProcessing(this.configuration).subscribe({
