@@ -20,6 +20,8 @@ import { QualtricsService } from 'app/services/qualtrics.service';
 
 @Injectable()
 export class EarnBySurveyTokenOptionFieldComponentFactory extends TokenOptionFieldComponentFactory<EarnBySurveyTokenOption> {
+    private cachedId?: string = undefined;
+
     constructor(@Inject(QualtricsService) private qualtricsService: QualtricsService) {
         super();
     }
@@ -39,10 +41,35 @@ export class EarnBySurveyTokenOptionFieldComponentFactory extends TokenOptionFie
                 const surveyId = await field.destValue;
                 if (surveyId.trim() === '') {
                     field.errorMessage = 'A Survey ID must be supplied.';
+                    this.cachedId = undefined;
                     return false;
                 }
                 try {
                     await this.qualtricsService.checkSurveyExists(surveyId);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                } catch (err: any) {
+                    field.errorMessage = err.toString();
+                    this.cachedId = undefined;
+                    return false;
+                }
+                this.cachedId = surveyId;
+                return true;
+            };
+        });
+        const surveyFieldNameComp = createFieldComponentWithLabel(
+            StringInputFieldComponent,
+            'Survey Field Name for Respondent’s Email (from SSO)',
+            environmentInjector
+        ).editField((field) => {
+            field.validator = async () => {
+                field.errorMessage = undefined;
+                const fieldName = await field.destValue;
+                if (this.cachedId == null) {
+                    field.errorMessage = 'A valid Survey ID must be supplied above.';
+                    return false;
+                }
+                try {
+                    await this.qualtricsService.checkResponseSchemaForField(this.cachedId, fieldName);
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 } catch (err: any) {
                     field.errorMessage = err.toString();
@@ -51,11 +78,6 @@ export class EarnBySurveyTokenOptionFieldComponentFactory extends TokenOptionFie
                 return true;
             };
         });
-        const surveyFieldNameComp = createFieldComponentWithLabel(
-            StringInputFieldComponent,
-            'Survey Field Name for Respondent’s Email (from SSO)',
-            environmentInjector
-        );
         return tokenOptionValidationWrapper(
             environmentInjector,
             tokenOptionFieldComponentBuilder(environmentInjector)
