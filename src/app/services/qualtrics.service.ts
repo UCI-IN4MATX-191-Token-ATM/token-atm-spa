@@ -218,7 +218,9 @@ export class QualtricsService {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             if (error?.isAxiosError && error?.response?.status == 404) {
-                throw new Error(`Survey '${surveyId}' not Found on Qualtrics.`);
+                throw new Error(
+                    `Survey '${surveyId}' not found on Qualtrics. Check if this survey is associated with your account.`
+                );
             } else {
                 throw error;
             }
