@@ -6,7 +6,7 @@ import {
     tokenOptionFieldComponentBuilder,
     tokenOptionValidationWrapper
 } from './token-option-field-component-factory';
-import { Injectable, type EnvironmentInjector, type ViewContainerRef, Inject, createComponent } from '@angular/core';
+import { Injectable, type EnvironmentInjector, type ViewContainerRef, Inject } from '@angular/core';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import type { FormField } from 'app/utils/form-field/form-field';
 import { StringInputFieldComponent } from 'app/components/form-fields/string-input-field/string-input-field.component';
@@ -29,51 +29,45 @@ export class EarnBySurveyTokenOptionFieldComponentFactory extends TokenOptionFie
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         FormField<EarnBySurveyTokenOption | TokenOptionGroup, EarnBySurveyTokenOptionData, any>
     ] {
-        const surveyFieldNameComp = createComponent(StringInputFieldComponent, {
-            environmentInjector: environmentInjector
-        });
-        surveyFieldNameComp.instance.label = 'Survey Field Name for Respondent’s Email (from SSO)';
+        const surveyFieldNameComp = createFieldComponentWithLabel(
+            StringInputFieldComponent,
+            'Survey Field Name for Respondent’s Email (from SSO)',
+            environmentInjector
+        );
 
         const surveyDetailsCombinedComp = createFieldComponentWithLabel(
             StringInputFieldComponent,
             'Qualtrics Survey ID',
             environmentInjector
         )
-            .appendComp(surveyFieldNameComp)
+            .appendBuilder(surveyFieldNameComp)
             .editField((field) => {
-                // Survey ID validator
-                field.fieldA.validator = async (value) => {
-                    field.fieldA.errorMessage = undefined;
-                    const inputComp = value[0];
-                    const surveyId = await value[0].destValue;
+                field.validator = async (value: typeof field) => {
+                    const idInput = value.fieldA;
+                    const nameInput = value.fieldB;
+                    idInput.errorMessage = undefined;
+                    nameInput.errorMessage = undefined;
+                    const surveyId = await idInput.destValue;
+                    const fieldName = await nameInput.destValue;
+                    const nameErrorForIdError = 'A valid Survey ID must be supplied above.';
                     if (surveyId.trim() === '') {
-                        inputComp.errorMessage = 'A Survey ID must be supplied.';
+                        idInput.errorMessage = 'A Survey ID must be supplied.';
+                        nameInput.errorMessage = nameErrorForIdError;
                         return false;
                     }
                     try {
                         await this.qualtricsService.checkSurveyExists(surveyId);
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     } catch (err: any) {
-                        inputComp.errorMessage = err.toString();
-                        return false;
-                    }
-                    return true;
-                };
-                // Survey Field Name Validator
-                field.fieldB.validator = async (value) => {
-                    field.fieldB.errorMessage = undefined;
-                    const inputComp = value[0];
-                    const fieldName = await value[0].destValue;
-                    const surveyId = await field.fieldA.destValue;
-                    if (field.fieldA.errorMessage != undefined) {
-                        inputComp.errorMessage = 'A valid Survey ID must be supplied above.';
+                        idInput.errorMessage = err.toString();
+                        nameInput.errorMessage = nameErrorForIdError;
                         return false;
                     }
                     try {
                         await this.qualtricsService.checkResponseSchemaForField(surveyId, fieldName);
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     } catch (err: any) {
-                        inputComp.errorMessage = err.toString();
+                        nameInput.errorMessage = err.toString();
                         return false;
                     }
                     return true;
