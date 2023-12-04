@@ -29,26 +29,25 @@ export class EarnBySurveyTokenOptionFieldComponentFactory extends TokenOptionFie
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         FormField<EarnBySurveyTokenOption | TokenOptionGroup, EarnBySurveyTokenOptionData, any>
     ] {
-        const surveyFieldNameComp = createFieldComponentWithLabel(
-            StringInputFieldComponent,
-            'Survey Field Name for Respondent’s Email (from SSO)',
-            environmentInjector
-        );
-
         const surveyDetailsCombinedComp = createFieldComponentWithLabel(
             StringInputFieldComponent,
             'Qualtrics Survey ID',
             environmentInjector
         )
-            .appendBuilder(surveyFieldNameComp)
+            .appendBuilder(
+                createFieldComponentWithLabel(
+                    StringInputFieldComponent,
+                    'Survey Field Name for Respondent’s Email (from SSO)',
+                    environmentInjector
+                )
+            )
             .editField((field) => {
                 field.validator = async (value: typeof field) => {
+                    const [surveyId, fieldName] = await value.destValue;
                     const idInput = value.fieldA;
                     const nameInput = value.fieldB;
                     idInput.errorMessage = undefined;
                     nameInput.errorMessage = undefined;
-                    const surveyId = await idInput.destValue;
-                    const fieldName = await nameInput.destValue;
                     const nameErrorForIdError = 'A valid Survey ID must be supplied above.';
                     if (surveyId.trim() === '') {
                         idInput.errorMessage = 'A Survey ID must be supplied.';
