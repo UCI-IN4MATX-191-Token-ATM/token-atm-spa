@@ -419,6 +419,10 @@ export class TokenATMConfigurationManagerService {
     }
 
     public async publishTokenATMLog(configuration: TokenATMConfiguration): Promise<void> {
-        this.canvasService.modifyAssignmentPublishedState(configuration.course.id, configuration.logAssignmentId, true);
+        await this.canvasService.modifyAssignmentPublishedState(
+            configuration.course.id,
+            configuration.logAssignmentId,
+            true
+        );
     }
 }
