@@ -41,6 +41,9 @@ export class RequestProcessComponent implements CourseConfigurable {
 
     public async onStartRequestProcessing(): Promise<void> {
         if (!this.configuration) return;
+        if (!(await this.configurationManager.isTokenATMLogPublished(this.configuration))) {
+            if (!(await this.onPublishLog())) return;
+        }
         this.isReconfigureFinished = false;
         this.isStopRequested = false;
         this.requestProcessManagerService.startRequestProcessing(this.configuration).subscribe({
@@ -85,5 +88,24 @@ export class RequestProcessComponent implements CourseConfigurable {
             (this.requestProcessManagerService.isRunning && this.isStopRequested) ||
             (!this.requestProcessManagerService.isRunning && !this.isReconfigureFinished)
         );
+    }
+
+    public async onPublishLog(): Promise<boolean> {
+        if (!this.configuration) return false;
+        const [confirmationRef, result] = await this.modalManagerService.createConfirmationModal(
+            'The Token ATM Log assignment on Canvas must be published to process student requests.\n\nWould you like Token ATM to publish this assignment for you?',
+            'Publish Token ATM Log?',
+            false,
+            'I’ll publish it myself.',
+            'Yes, publish it for me.'
+        );
+        if (result) {
+            await this.configurationManager.publishTokenATMLog(this.configuration);
+            confirmationRef.hide();
+            return true;
+        } else {
+            confirmationRef.hide();
+            return false;
+        }
     }
 }
