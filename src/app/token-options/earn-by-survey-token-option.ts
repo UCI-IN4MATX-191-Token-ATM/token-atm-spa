@@ -6,6 +6,7 @@ import { EndTimeMixin, EndTimeMixinDataDef } from './mixins/end-time-mixin';
 import { ToJSONMixin } from './mixins/to-json-mixin';
 import { unwrapValidationFunc } from 'app/utils/validation-unwrapper';
 import { FromDataMixin } from './mixins/from-data-mixin';
+import { RequireCredentials } from 'app/services/credential-manager.service';
 
 // export class EarnBySurveyTokenOption extends TokenOption {
 //     private _surveyId: string;
@@ -122,6 +123,7 @@ export type EarnBySurveyTokenOptionData = t.TypeOf<typeof EarnBySurveyTokenOptio
  */
 export type RawEarnBySurveyTokenOptionData = t.OutputOf<typeof EarnBySurveyTokenOptionDataDef>;
 
+@RequireCredentials('qualtrics')
 export class EarnBySurveyTokenOption extends FromDataMixin(
     ToJSONMixin(
         EndTimeMixin(StartTimeMixin(QualtricsSurveyMixin(ATokenOption))),

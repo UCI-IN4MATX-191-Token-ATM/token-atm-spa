@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@angular/core';
 import { ConfirmationModalComponent } from 'app/components/confirmation-modal/confirmation-modal.component';
 import { NotificationModalComponent } from 'app/components/notification-modal/notification-modal.component';
 import { BsModalRef, BsModalService, ModalOptions } from 'ngx-bootstrap/modal';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
     providedIn: 'root'
@@ -65,7 +66,9 @@ export class ModalManagerService {
         yesText = 'Yes'
     ): Promise<boolean> {
         const [modalRef, result] = await this.createConfirmationModal(message, heading, isDanger, noText, yesText);
+        const onHiddenPromise = modalRef.onHidden ? firstValueFrom(modalRef.onHidden) : undefined;
         modalRef.hide();
+        if (onHiddenPromise) await onHiddenPromise;
         return result;
     }
 

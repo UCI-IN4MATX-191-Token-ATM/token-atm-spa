@@ -20,6 +20,7 @@ import { AssignmentSubmission } from 'app/data/assignment-submission';
 import { ExponentialBackoffExecutor } from 'app/utils/exponential-backoff-executor';
 import { Section } from 'app/data/section';
 import { unwrapValidation } from 'app/utils/validation-unwrapper';
+import type { CanvasCredential } from 'app/data/token-atm-credentials';
 
 type QuizQuestionResponse = {
     id: string;
@@ -49,7 +50,10 @@ export class CanvasService {
         return this.#url != undefined && this.#accessToken != undefined;
     }
 
-    public async configureCredential(url: string, accessToken: string): Promise<unknown | undefined> {
+    public async configureCredential({
+        canvasURL: url,
+        canvasAccessToken: accessToken
+    }: CanvasCredential): Promise<unknown | undefined> {
         this.#url = url;
         this.#accessToken = accessToken;
         try {
@@ -60,7 +64,7 @@ export class CanvasService {
         return undefined;
     }
 
-    public async clearCredential() {
+    public clearCredential() {
         this.#url = undefined;
         this.#accessToken = undefined;
     }

@@ -1,9 +1,9 @@
 <div class="m-3">
     <label [for]="'input' + fieldId" class="form-label">{{ label }}</label>
     <input
-        type="string"
+        [type]="type"
         class="form-control"
-        id="'input' + fieldId"
+        [id]="'input' + fieldId"
         [(ngModel)]="value"
         [readonly]="isReadOnly"
         [disabled]="isReadOnly"

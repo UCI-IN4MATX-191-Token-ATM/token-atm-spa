@@ -11,6 +11,10 @@
                     <span class="bi bi-dot"></span>
                     Migrating <span class="bi bi-exclamation-triangle-fill text-warning"></span> Save to Complete
                 </ng-container>
+                <ng-container *ngIf="!hasRequiredCredentials">
+                    <span class="bi bi-dot"></span>
+                    <span class="bi bi-exclamation-triangle-fill text-danger"></span> Missing Credentials
+                </ng-container>
             </span>
         </div>
         <div *ngIf="hoverFocus">

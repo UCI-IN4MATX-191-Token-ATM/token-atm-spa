@@ -1,17 +1,10 @@
-export class TokenATMCredentials {
-    canvasURL = '';
-    canvasAccessToken = '';
-    qualtricsDataCenter = '';
-    qualtricsClientID = '';
-    qualtricsClientSecret = '';
+export type CanvasCredential = {
+    canvasURL: string;
+    canvasAccessToken: string;
+};
 
-    public toJSON(): unknown {
-        return {
-            canvasURL: this.canvasURL,
-            canvasAccessToken: this.canvasAccessToken,
-            qualtricsDataCenter: this.qualtricsDataCenter,
-            qualtricsClientID: this.qualtricsClientID,
-            qualtricsClientSecret: this.qualtricsClientSecret
-        };
-    }
-}
+export type TokenATMCredentials = {
+    canvas: CanvasCredential;
+} & {
+    [K in string]?: object;
+};

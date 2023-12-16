@@ -3,6 +3,7 @@ import type { AxiosRequestConfig } from 'axios';
 import { unzipRaw } from 'unzipit';
 import { AxiosService, IPCCompatibleAxiosResponse, isNetworkOrServerError } from './axios.service';
 import { ExponentialBackoffExecutor } from 'app/utils/exponential-backoff-executor';
+import type { QualtricsCredential } from 'app/credential-handlers/qualtrics-credential-handler';
 
 @Injectable({
     providedIn: 'root'
@@ -22,11 +23,24 @@ export class QualtricsService {
         return this.#dataCenter != undefined && this.#clientID != undefined && this.#clientSecret != undefined;
     }
 
-    public async configureCredential(
-        dataCenter: string,
-        clientID: string,
-        clientSecret: string
-    ): Promise<unknown | undefined> {
+    public async validateCredential({
+        qualtricsDataCenter: dataCenter,
+        qualtricsClientID: clientID,
+        qualtricsClientSecret: clientSecret
+    }: QualtricsCredential): Promise<unknown | undefined> {
+        try {
+            await this.requestQualtricsAccessToken(dataCenter, clientID, clientSecret);
+        } catch (err: unknown) {
+            return err;
+        }
+        return undefined;
+    }
+
+    public async configureCredential({
+        qualtricsDataCenter: dataCenter,
+        qualtricsClientID: clientID,
+        qualtricsClientSecret: clientSecret
+    }: QualtricsCredential): Promise<unknown | undefined> {
         this.#dataCenter = dataCenter;
         this.#clientID = clientID;
         this.#clientSecret = clientSecret;
@@ -47,17 +61,20 @@ export class QualtricsService {
         this.#qualtricsAccessToken = undefined;
     }
 
-    private async refreshQualtricsAccessToken() {
+    private async requestQualtricsAccessToken(
+        dataCenter?: string,
+        clientID?: string,
+        clientSecret?: string
+    ): Promise<string | undefined> {
+        if (!dataCenter || !clientID || !clientSecret) throw new Error('Credentials for Qualtrics are invalid');
         const executor = async () => {
-            if (!this.#qualtricsURL || !this.#clientID || !this.#clientSecret)
-                throw new Error('Credentials for Qualtrics are invalid');
             return (
                 await this.axiosService.request({
-                    url: this.#qualtricsURL + '/oauth2/token',
+                    url: `https://${dataCenter}.qualtrics.com` + '/oauth2/token',
                     method: 'post',
                     auth: {
-                        username: this.#clientID,
-                        password: this.#clientSecret
+                        username: clientID,
+                        password: clientSecret
                     },
                     params: {
                         grant_type: 'client_credentials',
@@ -69,13 +86,19 @@ export class QualtricsService {
         const data = await ExponentialBackoffExecutor.execute(
             executor,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            async (_, err: any | undefined) => !isNetworkOrServerError(err)
+            async (_, err: any | undefined) => {
+                return !isNetworkOrServerError(err);
+            }
         );
-        if (typeof data['access_token'] == 'string') {
-            this.#qualtricsAccessToken = data['access_token'];
-        } else {
-            this.#qualtricsAccessToken = undefined;
-        }
+        return typeof data['access_token'] == 'string' ? data['access_token'] : undefined;
+    }
+
+    private async refreshQualtricsAccessToken() {
+        this.#qualtricsAccessToken = await this.requestQualtricsAccessToken(
+            this.#dataCenter,
+            this.#clientID,
+            this.#clientSecret
+        );
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
