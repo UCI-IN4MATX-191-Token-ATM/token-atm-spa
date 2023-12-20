@@ -83,6 +83,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { CountAndNounPipe, PluralizePipe } from './utils/pluralize';
 import { OptionalCredentialManagementComponent } from './components/optional-credential-management/optional-credential-management.component';
 import { CREDENTIAL_HANDLER_INJECT_TOKEN, REGISTERED_CREDENTIAL_HANDLERS } from './services/credential-manager.service';
+import { MultipleChoiceModalComponent } from './components/multiple-choice-modal/multiple-choice-modal.component';
 
 @NgModule({
     declarations: [
@@ -131,7 +132,8 @@ import { CREDENTIAL_HANDLER_INJECT_TOKEN, REGISTERED_CREDENTIAL_HANDLERS } from 
         SingleSelectionFieldComponent,
         CountAndNounPipe,
         PluralizePipe,
-        OptionalCredentialManagementComponent
+        OptionalCredentialManagementComponent,
+        MultipleChoiceModalComponent
     ],
     imports: [
         BrowserModule,

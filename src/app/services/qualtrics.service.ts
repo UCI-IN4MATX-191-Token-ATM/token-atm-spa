@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@angular/core';
 import type { AxiosRequestConfig } from 'axios';
 import { unzipRaw } from 'unzipit';
 import { AxiosService, IPCCompatibleAxiosResponse, isNetworkOrServerError } from './axios.service';
-import { ExponentialBackoffExecutor } from 'app/utils/exponential-backoff-executor';
 import type { QualtricsCredential } from 'app/credential-handlers/qualtrics-credential-handler';
+import { ExponentialBackoffExecutorService } from './exponential-backoff-executor.service';
 
 @Injectable({
     providedIn: 'root'
@@ -15,9 +15,14 @@ export class QualtricsService {
     #qualtricsAccessToken?: string;
     #qualtricsURL?: string;
     private static WAIT_SECONDS = 2;
+    private static RETRY_MSG = 'Fail to communicate with Qualtrics. Retrying...';
     private participationCache: Map<string, Set<string>> = new Map<string, Set<string>>();
 
-    constructor(@Inject(AxiosService) private axiosService: AxiosService) {}
+    constructor(
+        @Inject(AxiosService) private axiosService: AxiosService,
+        @Inject(ExponentialBackoffExecutorService)
+        private exponentialBackoffExecutorService: ExponentialBackoffExecutorService
+    ) {}
 
     public hasCredentialConfigured(): boolean {
         return this.#dataCenter != undefined && this.#clientID != undefined && this.#clientSecret != undefined;
@@ -83,12 +88,13 @@ export class QualtricsService {
                 })
             ).data;
         };
-        const data = await ExponentialBackoffExecutor.execute(
+        const data = await this.exponentialBackoffExecutorService.execute(
             executor,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             async (_, err: any | undefined) => {
                 return !isNetworkOrServerError(err);
-            }
+            },
+            QualtricsService.RETRY_MSG
         );
         return typeof data['access_token'] == 'string' ? data['access_token'] : undefined;
     }
@@ -125,10 +131,11 @@ export class QualtricsService {
                     });
                     return result;
                 };
-                return await ExponentialBackoffExecutor.execute(
+                return await this.exponentialBackoffExecutorService.execute(
                     executor,
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    async (_, err: any | undefined) => !isNetworkOrServerError(err)
+                    async (_, err: any | undefined) => !isNetworkOrServerError(err),
+                    QualtricsService.RETRY_MSG
                 );
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {

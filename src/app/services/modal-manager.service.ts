@@ -1,8 +1,16 @@
 import { Inject, Injectable } from '@angular/core';
 import { ConfirmationModalComponent } from 'app/components/confirmation-modal/confirmation-modal.component';
+import { MultipleChoiceModalComponent } from 'app/components/multiple-choice-modal/multiple-choice-modal.component';
 import { NotificationModalComponent } from 'app/components/notification-modal/notification-modal.component';
 import { BsModalRef, BsModalService, ModalOptions } from 'ngx-bootstrap/modal';
 import { firstValueFrom } from 'rxjs';
+
+export type ModalChoice = {
+    key?: string;
+    name: string;
+    bsColor?: string;
+    action?: () => Promise<void>;
+};
 
 @Injectable({
     providedIn: 'root'
@@ -98,5 +106,35 @@ export class ModalManagerService {
         await promise;
         modalRef.hide();
         return;
+    }
+
+    public async createMultipleChoiceModalWithoutRef(
+        message: string,
+        choices: ModalChoice[],
+        closeChoice?: ModalChoice,
+        heading = 'Multiple Choice Modal'
+    ): Promise<string> {
+        let modalResolve: (v: string) => void;
+        const promise = new Promise<string>((resolve) => {
+            modalResolve = resolve;
+        });
+        const modalRef = this.modalService.show(MultipleChoiceModalComponent, {
+            initialState: {
+                message: message,
+                choices: choices,
+                closeChoice: closeChoice,
+                heading: heading,
+                onResolve: (v: string) => {
+                    modalResolve(v);
+                }
+            },
+            backdrop: 'static',
+            keyboard: false
+        });
+        const onHiddenPromise = modalRef.onHidden ? firstValueFrom(modalRef.onHidden) : undefined;
+        const result = await promise;
+        modalRef.hide();
+        if (onHiddenPromise) await onHiddenPromise;
+        return result;
     }
 }

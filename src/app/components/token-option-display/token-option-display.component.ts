@@ -8,7 +8,6 @@ import { MoveTokenOptionModalComponent } from '../move-token-option-modal/move-t
 import { TokenOptionManagementComponent } from '../token-option-management/token-option-management.component';
 import { actionNeededTemplate } from 'app/utils/string-templates';
 import { ExportRequestModalComponent } from '../export-request-modal/export-request-modal.component';
-import { Router } from '@angular/router';
 import { CredentialManagerService } from 'app/services/credential-manager.service';
 
 @Component({
@@ -26,8 +25,7 @@ export class TokenOptionDisplayComponent {
         @Inject(ModalManagerService) private modalManagerService: ModalManagerService,
         @Inject(TokenATMConfigurationManagerService)
         private configurationManagerService: TokenATMConfigurationManagerService,
-        @Inject(CredentialManagerService) private credentialManagerService: CredentialManagerService,
-        @Inject(Router) private router: Router
+        @Inject(CredentialManagerService) private credentialManagerService: CredentialManagerService
     ) {}
 
     getAbsValue(value: number): number {
@@ -36,24 +34,6 @@ export class TokenOptionDisplayComponent {
 
     async onViewTokenOption() {
         if (!this.option) return;
-        if (!this.hasRequiredCredentials) {
-            const res = await this.modalManagerService.createConfirmationModalWithoutRef(
-                `The token option you selected cannot be viewed / edited until credentials for the following services are provided: ${[
-                    ...this.credentialManagerService.getMissingCredentialsDescription(this.option)
-                ].join(
-                    ','
-                )}.\n\nDo you want to go back to the login screen and provide these credentials?\n\nNote: If you no longer want this token option, you can delete it using the dropdown menu at the right side of the token option.`,
-                'Missing Credentials',
-                false,
-                'Cancel',
-                'Yes, Go Back to the Login Screen'
-            );
-            if (res) {
-                this.credentialManagerService.clear();
-                this.router.navigate(['/login']);
-            }
-            return;
-        }
         const modalRef = this.modalService.show(TokenOptionManagementComponent, {
             initialState: {
                 tokenOptionType: this.option.type,

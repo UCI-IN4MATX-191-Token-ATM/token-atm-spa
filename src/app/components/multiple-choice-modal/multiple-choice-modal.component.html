@@ -1,0 +1,27 @@
+<ng-container *ngIf="onResolve">
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">{{ heading }}</h4>
+        <button
+            *ngIf="closeChoice"
+            type="button"
+            class="btn-close close pull-right"
+            aria-label="Close"
+            (click)="onSelect(closeChoice)"
+            [disabled]="isProcessing"
+        >
+            <span aria-hidden="true" class="visually-hidden">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body message" [innerHTML]="message"></div>
+    <div class="modal-footer">
+        <button
+            *ngFor="let choice of choices"
+            type="button"
+            class="btn m-2"
+            [class]="'btn-' + (choice.bsColor ?? 'outline-dark')"
+            (click)="onSelect(choice)"
+            [disabled]="isProcessing"
+            [innerHTML]="choice.name"
+        ></button>
+    </div>
+</ng-container>

@@ -17,10 +17,10 @@ import { AssignmentOverride, AssignmentOverrideDef } from 'app/data/assignment-o
 import { CanvasModule } from 'app/data/canvas-module';
 import { Assignment, AssignmentDef } from 'app/data/assignment';
 import { AssignmentSubmission } from 'app/data/assignment-submission';
-import { ExponentialBackoffExecutor } from 'app/utils/exponential-backoff-executor';
 import { Section } from 'app/data/section';
 import { unwrapValidation } from 'app/utils/validation-unwrapper';
 import type { CanvasCredential } from 'app/data/token-atm-credentials';
+import { ExponentialBackoffExecutorService } from './exponential-backoff-executor.service';
 
 type QuizQuestionResponse = {
     id: string;
@@ -40,11 +40,16 @@ type StudentGradeInfo = {
 })
 export class CanvasService {
     private static ASSIGNMENT_OVERRIDE_MAX_SIZE = 35;
+    private static RETRY_MSG = 'Fail to communicate with Canvas. Retrying...';
 
     #url?: string;
     #accessToken?: string;
 
-    constructor(@Inject(AxiosService) private axiosService: AxiosService) {}
+    constructor(
+        @Inject(AxiosService) private axiosService: AxiosService,
+        @Inject(ExponentialBackoffExecutorService)
+        private exponentialBackoffExecutorService: ExponentialBackoffExecutorService
+    ) {}
 
     public hasCredentialConfigured(): boolean {
         return this.#url != undefined && this.#accessToken != undefined;
@@ -85,10 +90,11 @@ export class CanvasService {
                 }
             });
         };
-        return await ExponentialBackoffExecutor.execute(
+        return await this.exponentialBackoffExecutorService.execute(
             executor,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            async (_, err: any | undefined) => !isNetworkOrServerError(err)
+            async (_, err: any | undefined) => !isNetworkOrServerError(err),
+            CanvasService.RETRY_MSG
         );
     }
 
@@ -107,10 +113,11 @@ export class CanvasService {
                 }
             });
         };
-        return await ExponentialBackoffExecutor.execute(
+        return await this.exponentialBackoffExecutorService.execute(
             executor,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            async (_, err: any | undefined) => !isNetworkOrServerError(err)
+            async (_, err: any | undefined) => !isNetworkOrServerError(err),
+            CanvasService.RETRY_MSG
         );
     }
 

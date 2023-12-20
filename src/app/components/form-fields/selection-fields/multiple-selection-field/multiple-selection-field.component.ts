@@ -75,14 +75,13 @@ export class MultipleSelectionFieldComponent<T>
 
     public override set srcValue([selectedOptions, optionFactory]: [T[], () => Promise<T[]>]) {
         (async () => {
-            if (this.isOptionSettingFailed) return;
             const taskId = v4();
             this.srcValueTasks.push(taskId);
             this.srcValueTaskCnt++;
-            let isTaskTurn = false;
+            let isTaskTurn = false,
+                isAssigningOptions = false;
             try {
                 this.optionFactory = optionFactory;
-                const options = await this.optionFactory();
                 if (this.srcValueTasks[0] != taskId)
                     await firstValueFrom(
                         this.srcValueTaskStatus$.pipe(
@@ -91,12 +90,14 @@ export class MultipleSelectionFieldComponent<T>
                         )
                     );
                 isTaskTurn = true;
-                if (this.isOptionSettingFailed) return;
+                const options = await this.optionFactory();
+                isAssigningOptions = true;
+                this.isOptionSettingFailed = false;
                 this.assignOptions(selectedOptions, options);
             } catch (err: unknown) {
-                if (this.isOptionSettingFailed) return;
                 this.isOptionSettingFailed = true;
                 this.errorMessage = `Error occured when setting options: ${ErrorSerializer.serailize(err)}`;
+                if (!isAssigningOptions) this.assignOptions(selectedOptions, []);
             } finally {
                 this.srcValueTaskCnt--;
                 const ind = this.srcValueTasks.indexOf(taskId);
@@ -130,7 +131,7 @@ export class MultipleSelectionFieldComponent<T>
     }
 
     private invalidOptionsValidate(value?: T[]): boolean {
-        this.errorMessage = undefined;
+        if (!this.isOptionSettingFailed) this.errorMessage = undefined;
         value = value ?? this.value;
         const selectedInvalidOptions: T[] = [];
         for (const selectedOption of value) {
@@ -138,7 +139,7 @@ export class MultipleSelectionFieldComponent<T>
                 selectedInvalidOptions.push(selectedOption);
         }
         this.selectedInvalidOptionsCnt = selectedInvalidOptions.length;
-        if (selectedInvalidOptions.length != 0) {
+        if (selectedInvalidOptions.length != 0 && !this.isOptionSettingFailed) {
             this.errorMessage = `Found ${this.invalidOptions.length} invalid ${pluralize(
                 'selection',
                 this.invalidOptions.length

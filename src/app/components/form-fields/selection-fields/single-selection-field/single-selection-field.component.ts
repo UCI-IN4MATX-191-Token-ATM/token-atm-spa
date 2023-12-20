@@ -69,14 +69,13 @@ export class SingleSelectionFieldComponent<T>
 
     public override set srcValue([selectedOption, optionFactory]: [T | undefined, () => Promise<T[]>]) {
         (async () => {
-            if (this.isOptionSettingFailed) return;
             const taskId = v4();
             this.srcValueTasks.push(taskId);
             this.srcValueTaskCnt++;
-            let isTaskTurn = false;
+            let isTaskTurn = false,
+                isAssigningOptions = false;
             try {
                 this.optionFactory = optionFactory;
-                const options = await this.optionFactory();
                 if (this.srcValueTasks[0] != taskId)
                     await firstValueFrom(
                         this.srcValueTaskStatus$.pipe(
@@ -85,11 +84,14 @@ export class SingleSelectionFieldComponent<T>
                         )
                     );
                 isTaskTurn = true;
+                const options = await this.optionFactory();
+                isAssigningOptions = true;
+                this.isOptionSettingFailed = false;
                 this.assignOptions(selectedOption, options);
             } catch (err: unknown) {
-                if (this.isOptionSettingFailed) return;
                 this.isOptionSettingFailed = true;
                 this.errorMessage = `Error occured when setting options: ${ErrorSerializer.serailize(err)}`;
+                if (!isAssigningOptions) this.assignOptions(selectedOption, []);
             } finally {
                 this.srcValueTaskCnt--;
                 const ind = this.srcValueTasks.indexOf(taskId);
@@ -119,10 +121,10 @@ export class SingleSelectionFieldComponent<T>
     }
 
     private invalidOptionsValidate(value?: T): boolean {
-        this.errorMessage = undefined;
+        if (!this.isOptionSettingFailed) this.errorMessage = undefined;
         value = value ?? this.value;
         if (value == undefined) return true;
-        if (!!value && !!this.invalidOption && this.isEqual(value, this.invalidOption)) {
+        if (!!value && !!this.invalidOption && this.isEqual(value, this.invalidOption) && !this.isOptionSettingFailed) {
             this.errorMessage = `Selection is invalid.`;
             return false;
         }

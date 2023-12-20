@@ -12,6 +12,7 @@ export class FormItemComponent implements OnInit {
     uuid = '';
     @Input() info = new FormItemInfo();
     @Input() data = '';
+    @Input() disabled = false;
     @Output() dataChange = new EventEmitter<string>();
 
     ngOnInit(): void {

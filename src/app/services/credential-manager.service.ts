@@ -134,8 +134,30 @@ export class CredentialManagerService {
         return false;
     }
 
+    public hasMissingCredentialsByClass(value: object): boolean {
+        const credentials = (value as ClassRequiresCredentials)[REQUIRED_CREDENTIALS_SYMBOL];
+        if (!credentials) return false;
+        for (const key of credentials) {
+            const handler = this._credentialHandlers.get(key);
+            if (!handler || !handler.isConfigured()) return true;
+        }
+        return false;
+    }
+
     public getMissingCredentialsDescription(value: object): Set<string> {
         const credentials = (value.constructor as ClassRequiresCredentials)[REQUIRED_CREDENTIALS_SYMBOL];
+        if (!credentials) return new Set<string>();
+        const res = new Set<string>();
+        for (const key of credentials) {
+            const handler = this._credentialHandlers.get(key);
+            if (!handler) res.add(key);
+            else if (!handler.isConfigured()) res.add(handler.descriptiveName);
+        }
+        return res;
+    }
+
+    public getMissingCredentialsDescriptionByClass(value: object): Set<string> {
+        const credentials = (value as ClassRequiresCredentials)[REQUIRED_CREDENTIALS_SYMBOL];
         if (!credentials) return new Set<string>();
         const res = new Set<string>();
         for (const key of credentials) {

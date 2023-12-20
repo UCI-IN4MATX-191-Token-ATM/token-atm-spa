@@ -112,6 +112,7 @@ export class RequestProcessComponent implements CourseConfigurable {
             'Yes, publish it for me.'
         );
         if (result) {
+            if (confirmationRef.content) confirmationRef.content.disableButton = true;
             await this.configurationManager.publishTokenATMLog(this.configuration);
             confirmationRef.hide();
             return true;

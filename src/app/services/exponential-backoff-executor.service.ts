@@ -1,9 +1,18 @@
-export class ExponentialBackoffExecutor {
-    public static async execute<T>(
+import { Inject, Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
+@Injectable({
+    providedIn: 'root'
+})
+export class ExponentialBackoffExecutorService {
+    constructor(@Inject(MatSnackBar) private snackBar: MatSnackBar) {}
+
+    public async execute<T>(
         executor: () => Promise<T>,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resultChecker: (result: T | undefined, err: any | undefined) => Promise<boolean> = async (_, err) =>
             err != undefined ? false : true,
+        retryMessage?: string,
         retryCnt = 5,
         startWaitTime = 250,
         growthRate = 2
@@ -29,7 +38,11 @@ export class ExponentialBackoffExecutor {
                 }
             } else if (curRetryCnt < retryCnt) {
                 curRetryCnt++;
-                console.log(`Retrying... wait for ${curWaitTime} ms`);
+                console.log(`Retrying... Message: ${retryMessage}. Wait for ${curWaitTime} ms`);
+                if (retryMessage)
+                    this.snackBar.open(retryMessage, 'Dismiss', {
+                        duration: curWaitTime
+                    });
                 await new Promise((resolve) => setTimeout(resolve, curWaitTime));
                 curWaitTime *= growthRate;
             } else {

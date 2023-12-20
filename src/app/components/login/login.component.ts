@@ -86,9 +86,20 @@ export class LoginComponent implements AfterViewInit {
         });
     }
 
-    onDeleteCredentials(): void {
+    async onDeleteCredentials(): Promise<void> {
         this.isProcessing = true;
+        const [modalRef, result] = await this.modalManagerService.createConfirmationModal(
+            'Do you really want to delete saved credentials?',
+            'Confirmation',
+            true
+        );
+        if (!result) {
+            modalRef.hide();
+            this.isProcessing = false;
+            return;
+        }
         this.storageManagerService.clearCredentials();
+        modalRef.hide();
         this.retrieveCredentialModalRef?.hide();
         this.isProcessing = false;
     }
@@ -139,7 +150,9 @@ export class LoginComponent implements AfterViewInit {
             });
             return;
         }
+        this.isProcessing = true;
         await this.onSubmitCredential();
+        this.isProcessing = false;
     }
 
     async onSaveCredentials(): Promise<void> {
