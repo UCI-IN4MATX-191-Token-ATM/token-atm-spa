@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarRef, TextOnlySnackBar } from '@angular/material/snack-bar';
+import { first } from 'rxjs';
 
 @Injectable({
     providedIn: 'root'
@@ -18,7 +19,9 @@ export class ExponentialBackoffExecutorService {
         growthRate = 2
     ): Promise<T> {
         let curRetryCnt = 0,
-            curWaitTime = startWaitTime;
+            curWaitTime = startWaitTime,
+            isRetryMessageDismissed = false;
+        let snackBarRef: MatSnackBarRef<TextOnlySnackBar> | undefined = undefined;
         // eslint-disable-next-line no-constant-condition
         while (true) {
             let result: T | undefined = undefined,
@@ -31,6 +34,7 @@ export class ExponentialBackoffExecutorService {
                 error = err;
             }
             if (await resultChecker(result, error)) {
+                if (snackBarRef && !isRetryMessageDismissed) snackBarRef.dismiss();
                 if (error != undefined) {
                     throw error;
                 } else {
@@ -39,13 +43,22 @@ export class ExponentialBackoffExecutorService {
             } else if (curRetryCnt < retryCnt) {
                 curRetryCnt++;
                 console.log(`Retrying... Message: ${retryMessage}. Wait for ${curWaitTime} ms`);
-                if (retryMessage)
-                    this.snackBar.open(retryMessage, 'Dismiss', {
-                        duration: curWaitTime
-                    });
+                if (retryMessage) {
+                    if (!snackBarRef || isRetryMessageDismissed) {
+                        isRetryMessageDismissed = false;
+                        snackBarRef = this.snackBar.open(retryMessage, 'Dismiss');
+                        snackBarRef
+                            .afterDismissed()
+                            .pipe(first())
+                            .subscribe(() => {
+                                isRetryMessageDismissed = true;
+                            });
+                    }
+                }
                 await new Promise((resolve) => setTimeout(resolve, curWaitTime));
                 curWaitTime *= growthRate;
             } else {
+                if (snackBarRef && !isRetryMessageDismissed) snackBarRef.dismiss();
                 if (error != undefined) {
                     throw error;
                 } else {
