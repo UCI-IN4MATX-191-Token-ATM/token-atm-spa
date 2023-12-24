@@ -2,7 +2,7 @@
     <label [for]="'textarea' + fieldId" class="form-label">{{ label }}</label>
     <textarea
         class="form-control"
-        id="'textarea' + fieldId"
+        [id]="'textarea' + fieldId"
         [(ngModel)]="value"
         [rows]="rows"
         [readonly]="isReadOnly"

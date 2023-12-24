@@ -29,3 +29,48 @@
         </div>
     </ng-template>
 </div>
+
+<ng-template #missingCredentialModal>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Missing Credentials</h4>
+        <button
+            type="button"
+            class="btn-close close pull-right"
+            aria-label="Close"
+            (click)="missingCredentialPromiseResolve?.('cancel')"
+        >
+            <span aria-hidden="true" class="visually-hidden">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <p>
+            To process requests for token options you've configured, you need to provide credentials for the following
+            service(s):
+            <b>{{ missingCredentialMsg }}</b
+            >.
+        </p>
+        <p>
+            You can check the "Token Options" page for details. Click "Back to Login" to go back to the login screen and
+            provide these credentials.
+        </p>
+        <p>
+            You could also choose to start the request processing anyway. However, if any student makes a valid request
+            to a token option that requires missing credentials, an error will occur.
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button
+            type="button"
+            class="btn btn-outline-secondary mx-2"
+            (click)="missingCredentialPromiseResolve?.('cancel')"
+        >
+            Cancel
+        </button>
+        <button type="button" class="btn btn-primary mx-2" (click)="missingCredentialPromiseResolve?.('login')">
+            Back to Login
+        </button>
+        <button type="button" class="btn btn-danger mx-2" (click)="missingCredentialPromiseResolve?.('proceed')">
+            Start Anyway
+        </button>
+    </div>
+</ng-template>

@@ -1,6 +1,19 @@
 import { Injectable } from '@angular/core';
 import type { TokenOption } from './token-option';
 import { WithdrawLabSwitchTokenOption } from './withdraw-lab-switch-token-option';
+import { BasicTokenOption } from './basic-token-option';
+import { EarnByQuizTokenOption } from './earn-by-quiz-token-option';
+import { EarnByModuleTokenOption } from './earn-by-module-token-option';
+import { EarnBySurveyTokenOption } from './earn-by-survey-token-option';
+import { SpendForAssignmentResubmissionTokenOption } from './spend-for-assignment-resubmission-token-option';
+import { SpendForLabDataTokenOption } from './spend-for-lab-data-token-option';
+import { SpendForLabSwitchTokenOption } from './spend-for-lab-switch-token-option';
+import { WithdrawAssignmentResubmissionTokenOption } from './withdraw-assignment-resubmission-token-option';
+import { WithdrawLabDataTokenOption } from './withdraw-lab-data-token-option';
+import { SpendForQuizRevisionTokenOption } from './spend-for-quiz-revision-token-option';
+import { SpendForAssignmentExtensionTokenOption } from './spend-for-assignment-extension-token-option';
+import { SpendForPassingAssignmentTokenOption } from './spend-for-passing-assignment-token-option';
+import type { Constructor } from 'app/utils/mixin-helper';
 
 @Injectable({
     providedIn: 'root'
@@ -24,8 +37,31 @@ export class TokenOptionRegistry {
         'spend-for-passing-assignment': 'Spend Tokens for Assignment / Quiz Grade'
     };
 
+    private static TOKEN_OPTION_CLASS_REGISTRY: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [key: string]: Constructor<TokenOption>;
+    } = {
+        basic: BasicTokenOption,
+        'earn-by-quiz': EarnByQuizTokenOption,
+        'earn-by-module': EarnByModuleTokenOption,
+        'earn-by-survey': EarnBySurveyTokenOption,
+        'spend-for-assignment-resubmission': SpendForAssignmentResubmissionTokenOption,
+        'spend-for-lab-data': SpendForLabDataTokenOption,
+        'spend-for-lab-switch': SpendForLabSwitchTokenOption,
+        'withdraw-assignment-resubmission': WithdrawAssignmentResubmissionTokenOption,
+        'withdraw-lab-data': WithdrawLabDataTokenOption,
+        'withdraw-lab-switch': WithdrawLabSwitchTokenOption,
+        'spend-for-quiz-revision': SpendForQuizRevisionTokenOption,
+        'spend-for-assignment-extension': SpendForAssignmentExtensionTokenOption,
+        'spend-for-passing-assignment': SpendForPassingAssignmentTokenOption
+    };
+
     public getDescriptiveName(tokenOptionType: string): string | undefined {
         return TokenOptionRegistry.DESCRIPTIVE_NAME_REGISTRY[tokenOptionType];
+    }
+
+    public getTokenOptionClass(tokenOptionType: string): Constructor<TokenOption> | undefined {
+        return TokenOptionRegistry.TOKEN_OPTION_CLASS_REGISTRY[tokenOptionType];
     }
 
     public getRegisteredTokenOptionsDescriptiveNames(): [string, string][] {

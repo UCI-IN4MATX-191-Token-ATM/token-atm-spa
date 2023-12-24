@@ -81,6 +81,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { CountAndNounPipe, PluralizePipe } from './utils/pluralize';
+import { OptionalCredentialManagementComponent } from './components/optional-credential-management/optional-credential-management.component';
+import { CREDENTIAL_HANDLER_INJECT_TOKEN, REGISTERED_CREDENTIAL_HANDLERS } from './services/credential-manager.service';
+import { MultipleChoiceModalComponent } from './components/multiple-choice-modal/multiple-choice-modal.component';
 
 @NgModule({
     declarations: [
@@ -128,7 +131,9 @@ import { CountAndNounPipe, PluralizePipe } from './utils/pluralize';
         MultipleSelectionFieldComponent,
         SingleSelectionFieldComponent,
         CountAndNounPipe,
-        PluralizePipe
+        PluralizePipe,
+        OptionalCredentialManagementComponent,
+        MultipleChoiceModalComponent
     ],
     imports: [
         BrowserModule,
@@ -171,6 +176,11 @@ import { CountAndNounPipe, PluralizePipe } from './utils/pluralize';
         })),
         ...REGISTERED_TOKEN_OPTION_FIELD_COMPONENT_FACTORIES.map((cls) => ({
             provide: TOKEN_OPTION_FIELD_COMPONENT_FACTORY_INJECTION_TOKEN,
+            useClass: cls,
+            multi: true
+        })),
+        ...REGISTERED_CREDENTIAL_HANDLERS.map((cls) => ({
+            provide: CREDENTIAL_HANDLER_INJECT_TOKEN,
             useClass: cls,
             multi: true
         }))

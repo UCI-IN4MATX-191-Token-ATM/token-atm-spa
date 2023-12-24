@@ -1,145 +1,170 @@
-import { Injectable } from '@angular/core';
+import {
+    EnvironmentInjector,
+    Inject,
+    Injectable,
+    InjectionToken,
+    Optional,
+    Type,
+    ViewContainerRef
+} from '@angular/core';
+import type { FormField } from 'app/utils/form-field/form-field';
 import type { TokenATMCredentials } from 'app/data/token-atm-credentials';
-import { CryptoHelper } from 'app/utils/crypto-helper';
-import { Base64 } from 'js-base64';
+import { CanvasService } from './canvas.service';
+
+export interface CredentialHandler<T extends object> {
+    key: string;
+    descriptiveName: string;
+    documentLink: string;
+    has(credentials: TokenATMCredentials): boolean;
+    get(credentials: TokenATMCredentials): T | undefined;
+    set(credentials: TokenATMCredentials, credential: T): void;
+    delete(credentials: TokenATMCredentials): void;
+    validate(credential: T): Promise<unknown | undefined>;
+    configure(credential: T): Promise<void>;
+    clear(): void;
+    generateErrorMessage(credential: T): string;
+    isConfigured(): boolean;
+    buildFormFieldComponent(
+        environmentInjector: EnvironmentInjector
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ): [(viewContainerRef: ViewContainerRef) => void, FormField<T, T, any>];
+}
+
+export const REGISTERED_CREDENTIAL_HANDLERS: Type<CredentialHandler<object>>[] = [];
+
+export const CREDENTIAL_HANDLER_INJECT_TOKEN = new InjectionToken<CredentialHandler<object>[]>('CREDENTIAL_HANDLERS');
+
+export function RegisterCredentialHandler(cls: Type<CredentialHandler<object>>) {
+    REGISTERED_CREDENTIAL_HANDLERS.push(cls);
+}
+
+const REQUIRED_CREDENTIALS_SYMBOL = Symbol('REQUIRED_CREDENTIALS');
+
+type ClassRequiresCredentials = {
+    [REQUIRED_CREDENTIALS_SYMBOL]?: Set<string>;
+};
+
+export function RequireCredentials(credentials: string | string[]) {
+    return (value: unknown) => {
+        const cls = value as ClassRequiresCredentials;
+        if (!Array.isArray(credentials)) credentials = [credentials];
+        if (!Object.hasOwn(cls, REQUIRED_CREDENTIALS_SYMBOL)) {
+            const value = cls[REQUIRED_CREDENTIALS_SYMBOL];
+            Object.defineProperty(cls, REQUIRED_CREDENTIALS_SYMBOL, {
+                value: value ? structuredClone(value) : new Set<string>(),
+                writable: false
+            });
+        }
+        credentials.forEach((x) => cls[REQUIRED_CREDENTIALS_SYMBOL]?.add(x));
+    };
+}
 
 @Injectable({
     providedIn: 'root'
 })
 export class CredentialManagerService {
-    #storageKey?: CryptoKey;
-    #storage = new Map<string, string>();
-    #isStorageInitialized = false;
-    #isStoring = false;
-    #hasUpdate = false;
+    private _credentialHandlers = new Map<string, CredentialHandler<object>>();
 
-    private getStoredItem(key: string, isRequired = true): string {
-        const result = localStorage.getItem(key);
-        if (!isRequired) return result ?? '';
-        if (result == null) throw new Error(`${key} not found in localStorage`);
+    constructor(
+        @Optional() @Inject(CREDENTIAL_HANDLER_INJECT_TOKEN) credentialHandlers: CredentialHandler<object>[],
+        @Inject(CanvasService) private canvasService: CanvasService
+    ) {
+        if (credentialHandlers)
+            credentialHandlers.forEach((handler) => this._credentialHandlers.set(handler.key, handler));
+    }
+
+    public getRegisteredCredentials(): string[] {
+        return [...this._credentialHandlers.keys()];
+    }
+
+    public getHandlers(): CredentialHandler<object>[] {
+        return [...this._credentialHandlers.values()];
+    }
+
+    public getHandler(key: string): CredentialHandler<object> {
+        const res = this._credentialHandlers.get(key);
+        if (res === undefined) throw new Error(`Credential Handler with key ${key} not found`);
+        return res;
+    }
+
+    public isConfigured(key: string): boolean {
+        const handler = this._credentialHandlers.get(key);
+        if (!handler) return false;
+        return handler.isConfigured();
+    }
+
+    public async configure(credentials: TokenATMCredentials): Promise<void> {
+        for (const handler of this._credentialHandlers.values()) {
+            const credential = handler.get(credentials);
+            if (!credential) continue;
+            await handler.configure(credential);
+        }
+    }
+
+    public async validate(credentials: TokenATMCredentials): Promise<[string, object, unknown][]> {
+        const result: [string, object, unknown][] = [];
+        for (const handler of this._credentialHandlers.values()) {
+            const credential = handler.get(credentials);
+            if (!credential) continue;
+            result.push([handler.key, credential, await handler.validate(credential)]);
+        }
         return result;
     }
 
-    public async storeCredentials(credentials: TokenATMCredentials, password: string): Promise<void> {
-        const salt = window.crypto.getRandomValues(new Uint8Array(32));
-        const key = await CryptoHelper.deriveAESKey(password, salt);
-        const [iv, data] = await CryptoHelper.encryptAES(key, JSON.stringify(credentials));
-        localStorage.setItem('salt', Base64.fromUint8Array(salt));
-        localStorage.setItem('iv', Base64.fromUint8Array(iv));
-        localStorage.setItem('data', Base64.fromUint8Array(data));
-        this.initStorage(key);
+    public hasCredential(credentials: TokenATMCredentials, credential: string): boolean {
+        const handler = this._credentialHandlers.get(credential);
+        if (!handler) return false;
+        return handler.has(credentials);
     }
 
-    private async initStorageKey(key: CryptoKey): Promise<void> {
-        const generatedKey = await CryptoHelper.generateAESKey(true);
-        localStorage.setItem(
-            'storage_key',
-            Base64.fromUint8Array(
-                await CryptoHelper.encryptAESRawWithIV(
-                    key,
-                    new Uint8Array(await window.crypto.subtle.exportKey('raw', generatedKey))
-                )
-            )
-        );
-        this.#storageKey = await window.crypto.subtle.importKey(
-            'raw',
-            await CryptoHelper.decryptAESRawWithIV(key, Base64.toUint8Array(this.getStoredItem('storage_key'))),
-            {
-                name: 'AES-GCM'
-            },
-            false,
-            ['encrypt', 'decrypt']
-        );
-    }
-
-    private async initStorage(key: CryptoKey): Promise<void> {
-        localStorage.removeItem('storage_data');
-        this.initStorageKey(key);
-        this.#storage.clear();
-        this.#isStorageInitialized = true;
-    }
-
-    private async loadStorage(key: CryptoKey): Promise<void> {
-        const oldKey = await window.crypto.subtle.importKey(
-            'raw',
-            await CryptoHelper.decryptAESRawWithIV(key, Base64.toUint8Array(this.getStoredItem('storage_key'))),
-            {
-                name: 'AES-GCM'
-            },
-            false,
-            ['encrypt', 'decrypt']
-        );
-        const storedData = localStorage.getItem('storage_data');
-        if (storedData == null) {
-            this.#storage.clear();
-        } else {
-            this.#storage = new Map<string, string>(
-                JSON.parse(await CryptoHelper.decryptAESWithIV(oldKey, Base64.toUint8Array(storedData)))
-            );
-        }
-        await this.initStorageKey(key);
-        this.#isStorageInitialized = true;
-        await this.saveStorage();
-    }
-
-    public async retrieveCredentials(password: string): Promise<TokenATMCredentials> {
-        const salt = new Uint8Array(Base64.toUint8Array(this.getStoredItem('salt')));
-        const key = await CryptoHelper.deriveAESKey(password, salt);
-        const iv = new Uint8Array(Base64.toUint8Array(this.getStoredItem('iv')));
-        const encryptedData = new Uint8Array(Base64.toUint8Array(this.getStoredItem('data')));
-        const data = await CryptoHelper.decryptAES(key, encryptedData, iv);
-        if (localStorage.getItem('storage_key') == null) {
-            await this.initStorage(key);
-        } else {
-            await this.loadStorage(key);
-        }
-
-        return JSON.parse(data);
-    }
-
-    public get isStorageInitialized(): boolean {
-        return this.#isStorageInitialized;
-    }
-
-    public async updateEntry(key: string, value: string): Promise<void> {
-        if (!this.isStorageInitialized || !this.#storageKey) throw new Error('Secure storage is not initialized!');
-        if (value == this.#storage.get(key)) return;
-        this.#storage.set(key, value);
-        await this.saveStorage();
-    }
-
-    public async saveStorage(): Promise<void> {
-        if (!this.isStorageInitialized || !this.#storageKey) throw new Error('Secure storage is not initialized!');
-        this.#hasUpdate = true;
-        if (this.#isStoring) return;
-        while (this.#hasUpdate) {
-            this.#hasUpdate = false;
-            this.#isStoring = true;
-            const storageData = JSON.stringify(Array.from(this.#storage.entries()));
-            const encryptedData = await CryptoHelper.encryptAESWithIV(this.#storageKey, storageData);
-            if (this.#hasUpdate) continue;
-            localStorage.setItem('storage_data', Base64.fromUint8Array(encryptedData));
-            this.#isStoring = false;
+    public clear(): void {
+        this.canvasService.clearCredential();
+        for (const handler of this._credentialHandlers.values()) {
+            handler.clear();
         }
     }
 
-    public getEntry(key: string): string | undefined {
-        return this.#storage.get(key);
+    public hasMissingCredentials(value: object): boolean {
+        const credentials = (value.constructor as ClassRequiresCredentials)[REQUIRED_CREDENTIALS_SYMBOL];
+        if (!credentials) return false;
+        for (const key of credentials) {
+            const handler = this._credentialHandlers.get(key);
+            if (!handler || !handler.isConfigured()) return true;
+        }
+        return false;
     }
 
-    public hasCredentials(): boolean {
-        return (
-            localStorage.getItem('salt') != null &&
-            localStorage.getItem('iv') != null &&
-            localStorage.getItem('data') != null
-        );
+    public hasMissingCredentialsByClass(value: object): boolean {
+        const credentials = (value as ClassRequiresCredentials)[REQUIRED_CREDENTIALS_SYMBOL];
+        if (!credentials) return false;
+        for (const key of credentials) {
+            const handler = this._credentialHandlers.get(key);
+            if (!handler || !handler.isConfigured()) return true;
+        }
+        return false;
     }
 
-    public clearCredentials(): void {
-        localStorage.removeItem('salt');
-        localStorage.removeItem('iv');
-        localStorage.removeItem('data');
-        localStorage.removeItem('storage_key');
-        localStorage.removeItem('storage_data');
+    public getMissingCredentialsDescription(value: object): Set<string> {
+        const credentials = (value.constructor as ClassRequiresCredentials)[REQUIRED_CREDENTIALS_SYMBOL];
+        if (!credentials) return new Set<string>();
+        const res = new Set<string>();
+        for (const key of credentials) {
+            const handler = this._credentialHandlers.get(key);
+            if (!handler) res.add(key);
+            else if (!handler.isConfigured()) res.add(handler.descriptiveName);
+        }
+        return res;
+    }
+
+    public getMissingCredentialsDescriptionByClass(value: object): Set<string> {
+        const credentials = (value as ClassRequiresCredentials)[REQUIRED_CREDENTIALS_SYMBOL];
+        if (!credentials) return new Set<string>();
+        const res = new Set<string>();
+        for (const key of credentials) {
+            const handler = this._credentialHandlers.get(key);
+            if (!handler) res.add(key);
+            else if (!handler.isConfigured()) res.add(handler.descriptiveName);
+        }
+        return res;
     }
 }

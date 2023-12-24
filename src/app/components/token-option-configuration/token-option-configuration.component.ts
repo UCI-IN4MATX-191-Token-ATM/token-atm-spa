@@ -7,7 +7,7 @@ import type { CourseConfigurable } from '../dashboard/dashboard-routing';
 import { TokenOptionGroupManagementComponent } from '../token-option-group-management/token-option-group-management.component';
 import type { GridViewData } from 'app/token-options/mixins/grid-view-data-source-mixin';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, CDK_DRAG_CONFIG } from '@angular/cdk/drag-drop';
-import { CredentialManagerService } from 'app/services/credential-manager.service';
+import { StorageManagerService } from 'app/services/storage-manager.service';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import type { DisplayedColumnsChangedEvent } from 'ag-grid-community';
 import { ExportRequestModalComponent } from '../export-request-modal/export-request-modal.component';
@@ -36,7 +36,7 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
         @Inject(TokenATMConfigurationManagerService)
         private configurationManagerService: TokenATMConfigurationManagerService,
         @Inject(BsModalService) private modalService: BsModalService,
-        @Inject(CredentialManagerService) private credentialManagerService: CredentialManagerService,
+        @Inject(StorageManagerService) private storageManagerService: StorageManagerService,
         @Inject(ModalManagerService) private modalManagerService: ModalManagerService
     ) {}
 
@@ -71,8 +71,8 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
 
     loadGridViewColumnPreferences() {
         if (!this.configuration) return;
-        if (this.credentialManagerService.isStorageInitialized && !this.hasInitializedFromStorage) {
-            const value = this.credentialManagerService.getEntry('gridViewColumnPreferences');
+        if (this.storageManagerService.isStorageInitialized && !this.hasInitializedFromStorage) {
+            const value = this.storageManagerService.getEntry('gridViewColumnPreferences');
             if (value != undefined) [this.savedShownColumns, this.savedAvailableColumns] = JSON.parse(value);
             this.hasInitializedFromStorage = true;
         }
@@ -160,7 +160,7 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
     }
 
     get canSaveGridViewPreferences(): boolean {
-        return this.credentialManagerService.isStorageInitialized;
+        return this.storageManagerService.isStorageInitialized;
     }
 
     async onSaveGridViewPreferences(): Promise<void> {
@@ -168,7 +168,7 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
         this.savedShownColumns = this.shownColumns.slice(0);
         this.savedAvailableColumns = this.availableColumns.slice(0);
         if (this.canSaveGridViewPreferences) {
-            await this.credentialManagerService.updateEntry(
+            await this.storageManagerService.updateEntry(
                 'gridViewColumnPreferences',
                 JSON.stringify([this.savedShownColumns, this.savedAvailableColumns])
             );
@@ -191,7 +191,7 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
         this.savedAvailableColumns.splice(0, 0, ...this.savedShownColumns.filter((v) => !newColSet.has(v)));
         this.savedShownColumns = this.curShownColumns;
         if (this.canSaveGridViewPreferences) {
-            await this.credentialManagerService.updateEntry(
+            await this.storageManagerService.updateEntry(
                 'gridViewColumnPreferences',
                 JSON.stringify([this.savedShownColumns, this.savedAvailableColumns])
             );

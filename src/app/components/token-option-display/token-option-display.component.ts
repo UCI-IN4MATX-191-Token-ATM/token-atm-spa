@@ -8,6 +8,7 @@ import { MoveTokenOptionModalComponent } from '../move-token-option-modal/move-t
 import { TokenOptionManagementComponent } from '../token-option-management/token-option-management.component';
 import { actionNeededTemplate } from 'app/utils/string-templates';
 import { ExportRequestModalComponent } from '../export-request-modal/export-request-modal.component';
+import { CredentialManagerService } from 'app/services/credential-manager.service';
 
 @Component({
     selector: 'app-token-option-display',
@@ -23,14 +24,15 @@ export class TokenOptionDisplayComponent {
         @Inject(TokenOptionRegistry) private tokenOptionRegistry: TokenOptionRegistry,
         @Inject(ModalManagerService) private modalManagerService: ModalManagerService,
         @Inject(TokenATMConfigurationManagerService)
-        private configurationManagerService: TokenATMConfigurationManagerService
+        private configurationManagerService: TokenATMConfigurationManagerService,
+        @Inject(CredentialManagerService) private credentialManagerService: CredentialManagerService
     ) {}
 
     getAbsValue(value: number): number {
         return Math.abs(value);
     }
 
-    onViewTokenOption() {
+    async onViewTokenOption() {
         if (!this.option) return;
         const modalRef = this.modalService.show(TokenOptionManagementComponent, {
             initialState: {
@@ -47,6 +49,11 @@ export class TokenOptionDisplayComponent {
     get descriptiveName(): string | undefined {
         if (!this.option) return undefined;
         return this.tokenOptionRegistry.getDescriptiveName(this.option.type);
+    }
+
+    get hasRequiredCredentials(): boolean {
+        if (!this.option) return true;
+        return !this.credentialManagerService.hasMissingCredentials(this.option);
     }
 
     async onMove(): Promise<void> {

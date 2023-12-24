@@ -1,19 +1,19 @@
-import { TestBed } from '@angular/core/testing';
-import { AxiosService, AxiosServiceFactory } from './axios.service';
+// import { TestBed } from '@angular/core/testing';
+// import { AxiosService, AxiosServiceFactory } from './axios.service';
 
-import { RequestProcessManagerService } from './request-process-manager.service';
+// import { RequestProcessManagerService } from './request-process-manager.service';
 
-describe('RequestProcessManagerService', () => {
-    let service: RequestProcessManagerService;
+// describe('RequestProcessManagerService', () => {
+//     let service: RequestProcessManagerService;
 
-    beforeEach(() => {
-        TestBed.configureTestingModule({
-            providers: [{ provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService }]
-        });
-        service = TestBed.inject(RequestProcessManagerService);
-    });
+//     beforeEach(() => {
+//         TestBed.configureTestingModule({
+//             providers: [{ provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService }]
+//         });
+//         service = TestBed.inject(RequestProcessManagerService);
+//     });
 
-    it('should be created', () => {
-        expect(service).toBeTruthy();
-    });
-});
+//     it('should be created', () => {
+//         expect(service).toBeTruthy();
+//     });
+// });

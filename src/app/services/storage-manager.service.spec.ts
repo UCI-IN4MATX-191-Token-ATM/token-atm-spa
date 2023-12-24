@@ -1,13 +1,13 @@
 // import { TestBed } from '@angular/core/testing';
 
-// import { CredentialManagerService } from './credential-manager.service';
+// import { StorageManagerService } from './storage-manager.service';
 
-// describe('CredentialManagerService', () => {
-//     let service: CredentialManagerService;
+// describe('StorageManagerService', () => {
+//     let service: StorageManagerService;
 
 //     beforeEach(() => {
 //         TestBed.configureTestingModule({});
-//         service = TestBed.inject(CredentialManagerService);
+//         service = TestBed.inject(StorageManagerService);
 //     });
 
 //     it('should be created', () => {

@@ -9,6 +9,7 @@ import { v4 } from 'uuid';
 })
 export class StringInputFieldComponent extends BaseDirectFormField<string, [StringInputFieldComponent, string]> {
     fieldId = v4();
+    type = 'string';
 
     public override async validate(): Promise<boolean> {
         return await this._validator([this, await this.destValue]);
