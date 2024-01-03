@@ -1286,7 +1286,9 @@ export class CanvasService {
                 }
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
-            (data: unknown[]) => data.map((entry) => Quiz.deserialize(entry))
+            (data: unknown[]) =>
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                data.filter((x: any) => x.assignment_id !== null).map((entry) => Quiz.deserialize(entry))
         );
     }
 
@@ -1299,7 +1301,9 @@ export class CanvasService {
                 }
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
-            (data: unknown[]) => data.map((entry) => Quiz.deserialize(entry))
+            (data: unknown[]) =>
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                data.filter((x: any) => x.assignment_id !== null).map((entry) => Quiz.deserialize(entry))
         );
         let result: string | undefined = undefined;
         for await (const quiz of quizzes) {
