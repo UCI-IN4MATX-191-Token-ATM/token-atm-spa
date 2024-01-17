@@ -1,9 +1,10 @@
 import type { TokenOption } from 'app/token-options/token-option';
-import { format, isValid } from 'date-fns';
+import { format } from 'date-fns';
 import { TokenOptionInstructionTransformer } from './token-option-instruction-transformer';
+import { MultipleSectionDateMatcher } from 'app/utils/multiple-section-date-matcher';
 
 type HasStartTime = {
-    startTime: Date;
+    startTime: Date | MultipleSectionDateMatcher;
 };
 
 export class StartTimeTransformer extends TokenOptionInstructionTransformer<HasStartTime> {
@@ -14,12 +15,20 @@ export class StartTimeTransformer extends TokenOptionInstructionTransformer<HasS
     public process(tokenOptions: TokenOption[]): string[] {
         return tokenOptions.map((tokenOption) => {
             const convertedObject = this.validate(tokenOption);
-            return convertedObject == undefined ? '' : format(convertedObject.startTime, 'MMM dd, yyyy kk:mm:ss');
+            if (convertedObject == undefined) return '';
+            const startTime = convertedObject.startTime;
+            if (startTime instanceof Date) {
+                return format(startTime, 'MMM dd, yyyy kk:mm:ss');
+            } else {
+                return startTime.toHTML();
+            }
         });
     }
 
     public validate(tokenOption: TokenOption): HasStartTime | undefined {
         const value = (tokenOption as unknown as HasStartTime).startTime;
-        return value != undefined && isValid(value) ? (tokenOption as unknown as HasStartTime) : undefined;
+        return value != undefined && (value instanceof Date || value instanceof MultipleSectionDateMatcher)
+            ? (tokenOption as unknown as HasStartTime)
+            : undefined;
     }
 }

@@ -35,6 +35,8 @@ export class MultipleSectionDateFieldComponent
         FormField<Date, Date, any>
     >;
 
+    @Input() defaultDateValueProvider?: () => Date;
+
     @ViewChild('defaultDateContainer', { read: ViewContainerRef, static: true })
     defaultDateContainerRef?: ViewContainerRef;
     @ViewChild(ListFieldComponent, { static: true }) listFieldComponent?: ListFieldComponent<
@@ -76,6 +78,14 @@ export class MultipleSectionDateFieldComponent
         }
         if (!this._defaultDateField || !this.listFieldComponent) return;
         const [courseId, value] = srcValue;
+        this.listFieldComponent.defaultFieldSrcValueProvider = () => [
+            {
+                sections: [],
+                name: '',
+                date: this.defaultDateValueProvider ? this.defaultDateValueProvider() : new Date()
+            },
+            courseId
+        ];
         this.listFieldComponent.fieldFactory = () => {
             if (!this.dateFieldBuilderFactory)
                 throw new Error('Failed to initialize list item for MultipleSectionDateFieldComponent');
@@ -167,16 +177,6 @@ export class MultipleSectionDateFieldComponent
                         name: displayName,
                         date: date
                     };
-                })
-                .editField((field) => {
-                    field.srcValue = [
-                        {
-                            sections: [],
-                            name: '',
-                            date: new Date()
-                        },
-                        courseId
-                    ];
                 })
                 .build();
         };

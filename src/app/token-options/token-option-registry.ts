@@ -14,6 +14,7 @@ import { SpendForQuizRevisionTokenOption } from './spend-for-quiz-revision-token
 import { SpendForAssignmentExtensionTokenOption } from './spend-for-assignment-extension-token-option';
 import { SpendForPassingAssignmentTokenOption } from './spend-for-passing-assignment-token-option';
 import type { Constructor } from 'app/utils/mixin-helper';
+import { PlaceholderTokenOption } from './placeholder-token-option';
 
 @Injectable({
     providedIn: 'root'
@@ -34,7 +35,8 @@ export class TokenOptionRegistry {
         'withdraw-lab-switch': 'Withdraw Lab Switch Request (For Teacher Only)',
         'spend-for-quiz-revision': 'Spend Tokens for Revision Assignment on Canvas after not passing Canvas Quiz',
         'spend-for-assignment-extension': 'Spend Tokens for Canvas Assignment Extension (No Longer Marked Late)',
-        'spend-for-passing-assignment': 'Spend Tokens for Assignment / Quiz Grade'
+        'spend-for-passing-assignment': 'Spend Tokens for Assignment / Quiz Grade',
+        'placeholder-token-option': 'Placeholder Token Option'
     };
 
     private static TOKEN_OPTION_CLASS_REGISTRY: {
@@ -53,7 +55,8 @@ export class TokenOptionRegistry {
         'withdraw-lab-switch': WithdrawLabSwitchTokenOption,
         'spend-for-quiz-revision': SpendForQuizRevisionTokenOption,
         'spend-for-assignment-extension': SpendForAssignmentExtensionTokenOption,
-        'spend-for-passing-assignment': SpendForPassingAssignmentTokenOption
+        'spend-for-passing-assignment': SpendForPassingAssignmentTokenOption,
+        'placeholder-token-option': PlaceholderTokenOption
     };
 
     public getDescriptiveName(tokenOptionType: string): string | undefined {

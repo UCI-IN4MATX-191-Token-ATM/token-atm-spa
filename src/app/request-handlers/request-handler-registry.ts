@@ -18,6 +18,7 @@ import { WithdrawLabSwitchRequestHandler } from './withdraw-lab-switch-request-h
 import { SpendForQuizRevisionRequestHandler } from './spend-for-quiz-revision-request-handler';
 import { SpendForAssignmentExtensionRequestHandler } from './spend-for-assignment-extension-request-handler';
 import { SpendForPassingAssignmentRequestHandler } from './spend-for-passing-assignment-request-handler';
+import { PlaceholderRequestHandler } from './placeholder-request-handler';
 
 type GenericRequestHandler = RequestHandler<TokenOption, TokenATMRequest<TokenOption>>;
 
@@ -34,7 +35,8 @@ export const REGISTERED_REQUEST_HANDLERS: Type<GenericRequestHandler>[] = [
     WithdrawLabSwitchRequestHandler,
     SpendForQuizRevisionRequestHandler,
     SpendForAssignmentExtensionRequestHandler,
-    SpendForPassingAssignmentRequestHandler
+    SpendForPassingAssignmentRequestHandler,
+    PlaceholderRequestHandler
 ];
 
 export const REQUEST_HANDLER_INJECT_TOKEN = new InjectionToken<GenericRequestHandler[]>('REQUEST_HANDLERS');

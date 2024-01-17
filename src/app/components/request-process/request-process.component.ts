@@ -19,8 +19,7 @@ import { CredentialManagerService } from 'app/services/credential-manager.servic
 export class RequestProcessComponent implements CourseConfigurable {
     course?: Course;
     configuration?: TokenATMConfiguration;
-    isReconfigureFinished = true;
-    isStopRequested = false;
+    isProcessing = false;
     progress?: number;
     message?: string;
     individualProgress?: number;
@@ -46,18 +45,23 @@ export class RequestProcessComponent implements CourseConfigurable {
 
     public onStopRequestProcessing(): void {
         if (!this.requestProcessManagerService.isRunning) return;
-        this.isStopRequested = true;
+        this.isProcessing = true;
         this.requestProcessManagerService.stopRequestProcessing();
     }
 
     public async onStartRequestProcessing(): Promise<void> {
         if (!this.configuration) return;
-        if (!(await this.checkMissingCredentials())) return;
-        if (!(await this.configurationManager.isTokenATMLogPublished(this.configuration))) {
-            if (!(await this.onPublishLog())) return;
+        this.isProcessing = true;
+        if (!(await this.checkMissingCredentials())) {
+            this.isProcessing = false;
+            return;
         }
-        this.isReconfigureFinished = false;
-        this.isStopRequested = false;
+        if (!(await this.configurationManager.isTokenATMLogPublished(this.configuration))) {
+            if (!(await this.onPublishLog())) {
+                this.isProcessing = false;
+                return;
+            }
+        }
         this.requestProcessManagerService.startRequestProcessing(this.configuration).subscribe({
             next: ([progress, message]: [progress: number, message: string]) => {
                 if (progress <= -1) {
@@ -79,6 +83,7 @@ export class RequestProcessComponent implements CourseConfigurable {
                 await this.onRequestProcessingComplete(false);
             }
         });
+        this.isProcessing = false;
     }
 
     public async onRequestProcessingComplete(recogfiure = true): Promise<void> {
@@ -86,20 +91,13 @@ export class RequestProcessComponent implements CourseConfigurable {
         this.message = undefined;
         this.individualProgress = undefined;
         this.individualMessage = undefined;
+        this.isProcessing = true;
         if (this.course && recogfiure) await this.configureCourse(this.course);
-        this.isStopRequested = false;
-        this.isReconfigureFinished = true;
+        this.isProcessing = false;
     }
 
     get isProcessingRequest(): boolean {
         return this.requestProcessManagerService.isRunning;
-    }
-
-    get isRunning(): boolean {
-        return (
-            (this.requestProcessManagerService.isRunning && this.isStopRequested) ||
-            (!this.requestProcessManagerService.isRunning && !this.isReconfigureFinished)
-        );
     }
 
     public async onPublishLog(): Promise<boolean> {

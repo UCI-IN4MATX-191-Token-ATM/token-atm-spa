@@ -50,7 +50,14 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                             );
                         },
                         'Students Can Request Until',
-                        environmentInjector
+                        environmentInjector,
+                        () =>
+                            set(new Date(), {
+                                hours: 23,
+                                minutes: 59,
+                                seconds: 59,
+                                milliseconds: 999
+                            })
                     )
                 )
                 .appendBuilder(
@@ -59,7 +66,14 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                             return createNewDueTimeComponentBuilder(environmentInjector, 'Date/Time');
                         },
                         'Change the Canvas Assignment’s “Available Until” to', // TODO: Phrasing may need more work
-                        environmentInjector
+                        environmentInjector,
+                        () =>
+                            set(new Date(), {
+                                hours: 23,
+                                minutes: 59,
+                                seconds: 59,
+                                milliseconds: 999
+                            })
                     )
                 )
                 .transformSrc((value: SpendForAssignmentResubmissionTokenOption | TokenOptionGroup) => {
