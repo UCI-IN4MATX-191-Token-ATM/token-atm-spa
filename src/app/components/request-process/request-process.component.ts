@@ -86,13 +86,13 @@ export class RequestProcessComponent implements CourseConfigurable {
         this.isProcessing = false;
     }
 
-    public async onRequestProcessingComplete(recogfiure = true): Promise<void> {
+    public async onRequestProcessingComplete(reconfigure = true): Promise<void> {
         this.progress = undefined;
         this.message = undefined;
         this.individualProgress = undefined;
         this.individualMessage = undefined;
         this.isProcessing = true;
-        if (this.course && recogfiure) await this.configureCourse(this.course);
+        if (this.course && reconfigure) await this.configureCourse(this.course);
         this.isProcessing = false;
     }
 

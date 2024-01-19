@@ -18,7 +18,7 @@ export class NewDueTimeTransformer extends TokenOptionInstructionTransformer<Has
             if (convertedObject == undefined) return '';
             const newDueTime = convertedObject.newDueTime;
             if (newDueTime instanceof Date) {
-                return format(newDueTime, 'MMM dd, yyyy kk:mm:ss');
+                return format(newDueTime, 'MMM dd, yyyy HH:mm:ss');
             } else {
                 return newDueTime.toHTML();
             }

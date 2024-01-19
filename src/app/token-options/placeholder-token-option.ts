@@ -11,14 +11,14 @@ import {
     OptionalMultipleSectionEndTimeMixin,
     OptionalMultipleSectionEndTimeMixinDataDef
 } from './mixins/optional-multiple-section-end-time-mixin';
-import { MultipleReqeustsMixin, MultipleReqeustsMixinDataDef } from './mixins/multiple-requests-mixin';
+import { MultipleRequestsMixin, MultipleRequestsMixinDataDef } from './mixins/multiple-requests-mixin';
 import { ExcludeTokenOptionIdsMixin, ExcludeTokenOptionIdsMixinDataDef } from './mixins/exclude-token-option-ids-mixin';
 
 export const PlaceholderTokenOptionDataDef = t.intersection([
     TokenOptionDataDef,
     OptionalMultipleSectionStartTimeMixinDataDef,
     OptionalMultipleSectionEndTimeMixinDataDef,
-    MultipleReqeustsMixinDataDef,
+    MultipleRequestsMixinDataDef,
     ExcludeTokenOptionIdsMixinDataDef
 ]);
 
@@ -27,7 +27,7 @@ export type PlaceholderTokenOptionData = t.TypeOf<typeof PlaceholderTokenOptionD
 export class PlaceholderTokenOption extends FromDataMixin(
     ToJSONMixin(
         ExcludeTokenOptionIdsMixin(
-            MultipleReqeustsMixin(
+            MultipleRequestsMixin(
                 OptionalMultipleSectionEndTimeMixin(OptionalMultipleSectionStartTimeMixin(ATokenOption))
             )
         ),

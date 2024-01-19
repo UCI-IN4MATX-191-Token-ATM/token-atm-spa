@@ -18,7 +18,7 @@ export class StartTimeTransformer extends TokenOptionInstructionTransformer<HasS
             if (convertedObject == undefined) return '';
             const startTime = convertedObject.startTime;
             if (startTime instanceof Date) {
-                return format(startTime, 'MMM dd, yyyy kk:mm:ss');
+                return format(startTime, 'MMM dd, yyyy HH:mm:ss');
             } else {
                 return startTime.toHTML();
             }

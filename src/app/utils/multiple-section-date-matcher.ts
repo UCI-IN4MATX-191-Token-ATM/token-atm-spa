@@ -45,7 +45,7 @@ export class MultipleSectionDateMatcher implements MultipleSectionDateMatcherDat
 
     public toHTML(): string {
         if (this._overrides.length == 0) {
-            return format(this.defaultDate, 'MMM dd, yyyy kk:mm:ss');
+            return format(this.defaultDate, 'MMM dd, yyyy HH:mm:ss');
         }
         return [
             '<table style="border-collapse: collapse; width: 100%;">',
@@ -56,7 +56,7 @@ export class MultipleSectionDateMatcher implements MultipleSectionDateMatcherDat
                     `<td style="text-align: end; text-wrap: nowrap">${override.name}:</td>`,
                     `<td style="text-align: start; text-wrap: nowrap">${format(
                         override.date,
-                        'MMM dd, yyyy kk:mm:ss'
+                        'MMM dd, yyyy HH:mm:ss'
                     )}</td>`,
                     `</tr>`
                 ].join('');
@@ -65,7 +65,7 @@ export class MultipleSectionDateMatcher implements MultipleSectionDateMatcherDat
             '<td style="text-align: end; text-wrap: nowrap">Default:</td>',
             `<td style="text-align: start; text-wrap: nowrap">${format(
                 this.defaultDate,
-                'MMM dd, yyyy kk:mm:ss'
+                'MMM dd, yyyy HH:mm:ss'
             )}</td>`,
             '</tr>',
             '</tbody>',

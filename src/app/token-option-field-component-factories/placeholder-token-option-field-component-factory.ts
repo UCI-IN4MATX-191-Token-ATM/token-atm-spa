@@ -173,19 +173,19 @@ export class PlaceholderTokenOptionFieldComponentFactory extends TokenOptionFiel
                                         })
                                 ]
                             ],
-                            [value.allowedReqeustCnt != 1, value.allowedReqeustCnt],
+                            [value.allowedRequestCnt != 1, value.allowedRequestCnt],
                             [value.excludeTokenOptionIds.join(','), value.group.configuration]
                         ];
                     }
                 })
                 .transformDest(
-                    async ([tokenOptionData, startTime, endTime, allowedReqeustCnt, excludeTokenOptionIds]) => {
+                    async ([tokenOptionData, startTime, endTime, allowedRequestCnt, excludeTokenOptionIds]) => {
                         return {
                             ...tokenOptionData,
                             type: 'placeholder-token-option',
                             startTime: startTime ?? null,
                             endTime: endTime ?? null,
-                            allowedReqeustCnt: allowedReqeustCnt ?? 1,
+                            allowedRequestCnt: allowedRequestCnt ?? 1,
                             excludeTokenOptionIds
                         };
                     }
