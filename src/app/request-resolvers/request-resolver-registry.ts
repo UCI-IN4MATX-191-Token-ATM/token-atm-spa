@@ -17,6 +17,7 @@ import { WithdrawLabSwitchRequestResolver } from './withdraw-lab-switch-request-
 import { SpendForQuizRevisionRequestResolver } from './spend-for-quiz-revision-request-resolver';
 import { SpendForAssignmentExtensionRequestResolver } from './spend-for-assignment-extension-request-resolver';
 import { SpendForPassingAssignmentRequestResolver } from './spend-for-passing-assignment-request-resolver';
+import { PlaceholderRequestResolver } from './placeholder-request-resolver';
 
 type GenericRequestResolver = RequestResolver<TokenOption, TokenATMRequest<TokenOption>>;
 
@@ -33,7 +34,8 @@ export const REGISTERED_REQUEST_RESOLVERS: Type<GenericRequestResolver>[] = [
     WithdrawLabSwitchRequestResolver,
     SpendForQuizRevisionRequestResolver,
     SpendForAssignmentExtensionRequestResolver,
-    SpendForPassingAssignmentRequestResolver
+    SpendForPassingAssignmentRequestResolver,
+    PlaceholderRequestResolver
 ];
 
 export const REQUEST_RESOLVER_INJECT_TOKEN = new InjectionToken<GenericRequestResolver[]>('REQUEST_RESOLVERS');

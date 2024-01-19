@@ -24,6 +24,7 @@ import { WithdrawLabSwitchTokenOptionFieldComponentFactory } from './withdraw-la
 import { SpendForQuizRevisionTokenOptionFieldComponentFactory } from './spend-for-quiz-revision-token-option-field-component-factory';
 import { SpendForAssignmentExtensionTokenOptionFieldComponentFactory } from './spend-for-assignment-extension-token-option-field-component-factory';
 import { SpendForPassingAssignmentTokenOptionFieldComponentFactory } from './spend-for-passing-assignment-token-option-field-component-factory';
+import { PlaceholderTokenOptionFieldComponentFactory } from './placeholder-token-option-field-component-factory';
 
 export const REGISTERED_TOKEN_OPTION_FIELD_COMPONENT_FACTORIES: Type<TokenOptionFieldComponentFactory<TokenOption>>[] =
     [
@@ -39,7 +40,8 @@ export const REGISTERED_TOKEN_OPTION_FIELD_COMPONENT_FACTORIES: Type<TokenOption
         WithdrawLabSwitchTokenOptionFieldComponentFactory,
         SpendForQuizRevisionTokenOptionFieldComponentFactory,
         SpendForAssignmentExtensionTokenOptionFieldComponentFactory,
-        SpendForPassingAssignmentTokenOptionFieldComponentFactory
+        SpendForPassingAssignmentTokenOptionFieldComponentFactory,
+        PlaceholderTokenOptionFieldComponentFactory
     ];
 
 export const TOKEN_OPTION_FIELD_COMPONENT_FACTORY_INJECTION_TOKEN = new InjectionToken<

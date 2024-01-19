@@ -123,9 +123,9 @@ export class StudentRecordManagerService {
             configuration.logAssignmentId,
             `Your request to ${processedRequest.tokenOptionName} has been processed.\nResult: ${
                 processedRequest.isApproved ? 'Approved' : '*REJECTED*'
-            }\nSubmitted at: ${format(processedRequest.submittedTime, 'MMM dd, yyyy kk:mm:ss')}\nProcessed at: ${format(
+            }\nSubmitted at: ${format(processedRequest.submittedTime, 'MMM dd, yyyy HH:mm:ss')}\nProcessed at: ${format(
                 processedRequest.processedTime,
-                'MMM dd, yyyy kk:mm:ss'
+                'MMM dd, yyyy HH:mm:ss'
             )}\nToken Balance Change: ${oldTokenBalance} -> ${studentRecord.tokenBalance}${
                 processedRequest.message != '' ? `\nMessage: ${processedRequest.message}` : ''
             }`
