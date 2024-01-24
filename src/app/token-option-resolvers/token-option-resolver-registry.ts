@@ -18,6 +18,7 @@ import { SpendForQuizRevisionTokenOption } from 'app/token-options/spend-for-qui
 import { SpendForAssignmentExtensionTokenOption } from 'app/token-options/spend-for-assignment-extension-token-option';
 import { SpendForPassingAssignmentTokenOption } from 'app/token-options/spend-for-passing-assignment-token-option';
 import { PlaceholderTokenOption } from 'app/token-options/placeholder-token-option';
+import { SpendForAdditionalPointsTokenOption } from 'app/token-options/spend-for-additional-points-token-option';
 
 export const REGISTERED_TOKEN_OPTION_RESOLVERS: Type<TokenOptionResolver<TokenOption>>[] = [];
 
@@ -42,7 +43,8 @@ export const DEFAULT_TOKEN_OPTION_RESOLVERS: {
     'spend-for-quiz-revision': SpendForQuizRevisionTokenOption,
     'spend-for-assignment-extension': SpendForAssignmentExtensionTokenOption,
     'spend-for-passing-assignment': SpendForPassingAssignmentTokenOption,
-    'placeholder-token-option': PlaceholderTokenOption
+    'placeholder-token-option': PlaceholderTokenOption,
+    'spend-for-additional-points': SpendForAdditionalPointsTokenOption
 };
 
 interface ITokenOptionType {

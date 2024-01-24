@@ -19,6 +19,7 @@ import { SpendForQuizRevisionRequestHandler } from './spend-for-quiz-revision-re
 import { SpendForAssignmentExtensionRequestHandler } from './spend-for-assignment-extension-request-handler';
 import { SpendForPassingAssignmentRequestHandler } from './spend-for-passing-assignment-request-handler';
 import { PlaceholderRequestHandler } from './placeholder-request-handler';
+import { SpendForAdditionalPointsRequestHandler } from './spend-for-additional-points-request-handler';
 
 type GenericRequestHandler = RequestHandler<TokenOption, TokenATMRequest<TokenOption>>;
 
@@ -36,7 +37,8 @@ export const REGISTERED_REQUEST_HANDLERS: Type<GenericRequestHandler>[] = [
     SpendForQuizRevisionRequestHandler,
     SpendForAssignmentExtensionRequestHandler,
     SpendForPassingAssignmentRequestHandler,
-    PlaceholderRequestHandler
+    PlaceholderRequestHandler,
+    SpendForAdditionalPointsRequestHandler
 ];
 
 export const REQUEST_HANDLER_INJECT_TOKEN = new InjectionToken<GenericRequestHandler[]>('REQUEST_HANDLERS');
