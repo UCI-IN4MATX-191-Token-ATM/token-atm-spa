@@ -46,7 +46,7 @@ export function addPointsToPercentOrPointsType(
     }
 }
 
-function parseCanvasPercentsAndPoints(postedGrade: string): number {
+export function parseCanvasPercentsAndPoints(postedGrade: string): number {
     const isPercent = postedGrade.endsWith('%');
     const isFloat = postedGrade.includes('.');
     const numString = isPercent ? postedGrade.slice(0, postedGrade.length - 1) : postedGrade;
