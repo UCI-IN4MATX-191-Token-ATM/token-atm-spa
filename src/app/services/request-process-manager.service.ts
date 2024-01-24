@@ -130,7 +130,7 @@ export class RequestProcessManagerService {
                             progressUpdate.error([
                                 `Encountered an error while handling request to ${
                                     processedRequest ? processedRequest.tokenOptionName : request.tokenOption.name
-                                } submitted at ${format(request.submittedTime, 'MMM dd, yyyy kk:mm:ss')} by student ${
+                                } submitted at ${format(request.submittedTime, 'MMM dd, yyyy HH:mm:ss')} by student ${
                                     student.name + (student.email == '' ? '' : `(${student.email})`)
                                 }`,
                                 err
@@ -152,7 +152,7 @@ export class RequestProcessManagerService {
                                 processedRequest.tokenOptionName
                             } submitted at ${format(
                                 processedRequest.submittedTime,
-                                'MMM dd, yyyy kk:mm:ss'
+                                'MMM dd, yyyy HH:mm:ss'
                             )} by student ${student.name + (student.email == '' ? '' : `(${student.email})`)}`,
                             err
                         ]);

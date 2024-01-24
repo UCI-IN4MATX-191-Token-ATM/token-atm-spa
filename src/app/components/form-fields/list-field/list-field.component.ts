@@ -13,6 +13,7 @@ export class ListFieldComponent<F extends FormField<any, any, any>>
     implements OnInit, FormField<ExtractSrc<F>[], ExtractDest<F>[], F[]>
 {
     @Input() fieldFactory?: () => [(viewContainerRef: ViewContainerRef) => void, F];
+    @Input() defaultFieldSrcValueProvider?: () => ExtractSrc<F>;
     @ViewChild('container', { read: ViewContainerRef, static: true }) viewContainerRef?: ViewContainerRef;
     private delayedInitValue?: ExtractSrc<F>[];
     private isInitialized = false;
@@ -27,6 +28,7 @@ export class ListFieldComponent<F extends FormField<any, any, any>>
             item = this.viewContainerRef.createComponent(ListFieldItemWrapperComponent);
         item.instance.renderer = renderer;
         if (value != undefined) field.srcValue = value;
+        else if (this.defaultFieldSrcValueProvider) field.srcValue = this.defaultFieldSrcValueProvider();
         firstValueFrom(item.instance.remove).then(() => {
             const itemInd = this.itemRefs.indexOf(item);
             if (itemInd != -1) {

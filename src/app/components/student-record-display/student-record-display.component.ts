@@ -41,7 +41,7 @@ export class StudentRecordDisplayComponent {
     }
 
     formatDate(date: Date): string {
-        return format(date, 'MMM dd, yyyy kk:mm:ss');
+        return format(date, 'MMM dd, yyyy HH:mm:ss');
     }
 
     async onAddManualChange(): Promise<void> {

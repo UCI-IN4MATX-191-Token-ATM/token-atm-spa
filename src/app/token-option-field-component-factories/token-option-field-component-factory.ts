@@ -254,11 +254,13 @@ export function createMultipleSectionDateComponentBuilder(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     dateFieldBuilderFactory: () => FormFieldComponentBuilder<FormField<Date, Date, any>>,
     label: string,
-    environmentInjector: EnvironmentInjector
+    environmentInjector: EnvironmentInjector,
+    defaultDateProvider?: () => Date
 ): FormFieldComponentBuilder<MultipleSectionDateFieldComponent> {
     return createFieldComponentWithLabel(MultipleSectionDateFieldComponent, label, environmentInjector).editField(
         (field) => {
             field.dateFieldBuilderFactory = dateFieldBuilderFactory;
+            if (defaultDateProvider) field.defaultDateValueProvider = defaultDateProvider;
         }
     );
 }
