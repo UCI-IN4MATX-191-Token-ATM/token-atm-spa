@@ -431,6 +431,9 @@ export class CanvasService {
         });
     }
 
+    /**
+     * Warning! Has no internal guards to protect assignments/submissions.
+     */
     public async gradeSubmissionWithPercentage(
         courseId: string,
         studentId: string,
@@ -442,6 +445,29 @@ export class CanvasService {
             data: {
                 submission: {
                     posted_grade: (scorePercentage * 100).toFixed(2) + '%'
+                }
+            }
+        });
+    }
+
+    /**
+     * Warning! Has no internal guards to protect assignments/submissions.
+     */
+    public async postSubmissionGradeWithComment(
+        courseId: string,
+        studentId: string,
+        assignmentId: string,
+        postedGrade: string,
+        newComment: string
+    ): Promise<void> {
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`, {
+            method: 'put',
+            data: {
+                comment: {
+                    text_comment: newComment
+                },
+                submission: {
+                    posted_grade: postedGrade
                 }
             }
         });
@@ -1548,5 +1574,45 @@ export class CanvasService {
             method: 'put',
             data: { assignment: { published: published } }
         });
+    }
+
+    public async getAssignmentGradingTypeAndPointsPossible(
+        courseId: string,
+        assignmentId: string
+    ): Promise<{ gradingType: string; pointsPossible: number }> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`);
+        if (typeof data['grading_type'] != 'string' || typeof data['points_possible'] != 'number') {
+            throw new Error('Invalid data');
+        }
+        return { gradingType: data['grading_type'], pointsPossible: data['points_possible'] };
+    }
+
+    public async getSubmissionGradeAndScore(
+        courseId: string,
+        assignmentId: string,
+        studentId: string
+    ): Promise<{ grade: string; score: number; gradeMatchesCurrentSubmission: boolean }> {
+        const data = await this.apiRequest(
+            `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`
+        );
+        if (
+            typeof data['grade'] != 'string' ||
+            typeof data['score'] != 'number' ||
+            typeof data['grade_matches_current_submission'] != 'boolean'
+        ) {
+            throw new Error('Invalid data');
+        }
+        if (typeof data['entered_grade'] === 'string' || typeof data['entered_score'] === 'number') {
+            if (data['grade'] !== data['entered_grade'] || data['score'] !== data['entered_score']) {
+                throw new Error(
+                    `Warning: Entered & Actual submission scores don’t match. Grade: ${data['entered_grade']} & ${data['grade']}. Score: ${data['entered_score']} & ${data['score']}`
+                );
+            }
+        }
+        return {
+            grade: data['grade'],
+            score: data['score'],
+            gradeMatchesCurrentSubmission: data['grade_matches_current_submission']
+        };
     }
 }
