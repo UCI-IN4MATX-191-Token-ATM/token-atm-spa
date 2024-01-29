@@ -3,12 +3,11 @@ import {
     createAssignmentFieldComponentBuilder,
     createExcludeTokenOptionsComponentBuilder,
     createFieldComponentWithLabel,
-    createGradeThresholdComponentBuilder,
     tokenOptionFieldComponentBuilder,
     tokenOptionValidationWrapper
 } from './token-option-field-component-factory';
 import { TokenOptionGroup } from 'app/data/token-option-group';
-import { Injectable, type EnvironmentInjector, type ViewContainerRef, Inject } from '@angular/core';
+import { Injectable, type EnvironmentInjector, type ViewContainerRef, Inject, createComponent } from '@angular/core';
 import type { FormField } from 'app/utils/form-field/form-field';
 import {
     SpendForAdditionalPointsTokenOptionDataDef,
@@ -18,6 +17,9 @@ import {
 import { CanvasService } from 'app/services/canvas.service';
 import { OptionalFieldComponent } from 'app/components/form-fields/optional-field/optional-field.component';
 import { NumberInputFieldComponent } from 'app/components/form-fields/number-input-field/number-input-field.component';
+import { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
+import { StringInputFieldComponent } from 'app/components/form-fields/string-input-field/string-input-field.component';
+import { parseCanvasPercentsAndPoints } from 'app/utils/canvas-grading';
 
 @Injectable()
 export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends TokenOptionFieldComponentFactory<SpendForAdditionalPointsTokenOption> {
@@ -36,17 +38,16 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
     ] {
         return tokenOptionValidationWrapper(
             // TODO: Add Validator for Assignment grading type
-            //       Replace Grade Threshold Component for Canvas points/percent Component
             environmentInjector,
             tokenOptionFieldComponentBuilder(environmentInjector)
                 .appendBuilder(
                     createAssignmentFieldComponentBuilder(
                         this.canvasService,
                         environmentInjector,
-                        'Canvas Assignment / Quiz'
+                        'Canvas Assignment / Quiz to Add Points'
                     )
                 )
-                .appendBuilder(createGradeThresholdComponentBuilder(environmentInjector, 'Grade Threshold'))
+                .appendBuilder(createAdditionalCanvasScoreComponentBuilder(environmentInjector))
                 .appendBuilder(
                     createFieldComponentWithLabel(
                         OptionalFieldComponent<NumberInputFieldComponent>,
@@ -79,7 +80,7 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                         return [
                             value,
                             [value.configuration.course.id, undefined],
-                            1,
+                            '',
                             [false, 1],
                             ['', value.configuration]
                         ];
@@ -93,7 +94,7 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                                     name: value.assignmentName
                                 }
                             ],
-                            value.gradeThreshold,
+                            value.additionalScore,
                             [value.allowedRequestCnt != 1, value.allowedRequestCnt],
                             [value.excludeTokenOptionIds.join(','), value.group.configuration]
                         ];
@@ -102,7 +103,7 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                     async ([
                         tokenOptionData,
                         { id: assignmentId, name: assignmentName },
-                        gradeThreshold,
+                        additionalScore,
                         allowedRequestCnt,
                         excludeTokenOptionIds
                     ]) => {
@@ -111,7 +112,7 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                             type: 'spend-for-additional-points',
                             assignmentName,
                             assignmentId,
-                            gradeThreshold,
+                            additionalScore,
                             allowedRequestCnt: allowedRequestCnt ?? 1,
                             excludeTokenOptionIds
                         };
@@ -124,4 +125,25 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
     public get type(): string {
         return 'spend-for-additional-points';
     }
+}
+
+export function createAdditionalCanvasScoreComponentBuilder(
+    environmentInjector: EnvironmentInjector,
+    label = 'Score to Add (number adds points, number followed by ‘%’ adds percentage)',
+    shortLabel = 'Added Score'
+): FormFieldComponentBuilder<StringInputFieldComponent> {
+    return new FormFieldComponentBuilder()
+        .setComp(createComponent(StringInputFieldComponent, { environmentInjector: environmentInjector }))
+        .editField((field) => {
+            field.label = label;
+            field.validator = async ([field, value]: [StringInputFieldComponent, string]) => {
+                field.errorMessage = undefined;
+                const result = parseCanvasPercentsAndPoints(value);
+                if (isNaN(result)) {
+                    field.errorMessage = `${shortLabel} needs to be a number (e.g, 10.5) or percentage (e.g., 80%).`;
+                    return false;
+                }
+                return true;
+            };
+        });
 }

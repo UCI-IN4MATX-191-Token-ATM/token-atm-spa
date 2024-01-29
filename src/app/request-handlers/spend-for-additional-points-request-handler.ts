@@ -44,9 +44,9 @@ export class SpendForAdditionalPointsRequestHandler extends RequestHandler<
             ]);
             await guardExecutor.check();
             if (!guardExecutor.isRejected) {
-                const isAddingPercent = true; // TODO: Update to use input form
-                let toAdd = parseCanvasPercentsAndPoints('0'); // TODO: Update to use input form
-                toAdd = request.tokenOption.gradeThreshold;
+                const addScoreInputText = request.tokenOption.additionalScore;
+                const isAddingPercent = addScoreInputText.endsWith('%');
+                const toAdd = parseCanvasPercentsAndPoints(addScoreInputText);
                 const addScoreFunc = isAddingPercent ? addPercentToPointsOrPercentType : addPointsToPercentOrPointsType;
                 const { grade, score, gradeMatchesCurrentSubmission } =
                     await this.canvasService.getSubmissionGradeAndScore(
@@ -54,11 +54,13 @@ export class SpendForAdditionalPointsRequestHandler extends RequestHandler<
                         request.tokenOption.assignmentId,
                         studentRecord.student.id
                     );
+                // TODO: Handle / find the actual current Submission, or add to all submissions
                 if (!gradeMatchesCurrentSubmission) {
-                    throw new Error('Was about to add points to an out-of-date assignment score.');
+                    throw new Error('Was about to add to an out-of-date Canvas submission score.');
                 }
                 const current = gradingType === 'points' ? score.toString() : grade;
                 const newPostedGrade = addScoreFunc(toAdd, current, pointsPossible);
+                // Note: `toAddStr` uses score function, because canvas-grading.ts defaults to using only 2 decimal points
                 const toAddStr = addScoreFunc(toAdd, isAddingPercent ? '0%' : '0', pointsPossible); // TODO: use input text
                 const assignmentComment = `Request for ${request.tokenOption.name} was approved.\nChange: ${current} => ${newPostedGrade}\nAdded ${toAddStr} to ${current} of ${pointsPossible} points.`;
                 this.canvasService.postSubmissionGradeWithComment(
