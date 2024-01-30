@@ -46,7 +46,15 @@ export function addPointsToPercentOrPointsType(
     }
 }
 
+/**
+ * @param postedGrade The score or grade posted on canvas as a string.
+ * @returns The parsed number in decimals, or NaN if not correctly parsable.
+ */
 export function parseCanvasPercentsAndPoints(postedGrade: string): number {
+    const checkNonNumber = /[^\d.%]/m;
+    if (postedGrade.match(checkNonNumber) || postedGrade.split('.').length > 2 || postedGrade.split('%').length > 2) {
+        return Number.NaN;
+    }
     const isPercent = postedGrade.endsWith('%');
     const isFloat = postedGrade.includes('.');
     const numString = isPercent ? postedGrade.slice(0, postedGrade.length - 1) : postedGrade;

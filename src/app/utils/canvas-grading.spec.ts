@@ -1,4 +1,8 @@
-import { addPercentToPointsOrPercentType, addPointsToPercentOrPointsType } from './canvas-grading';
+import {
+    addPercentToPointsOrPercentType,
+    addPointsToPercentOrPointsType,
+    parseCanvasPercentsAndPoints
+} from './canvas-grading';
 
 type addingScoreTypesTestingParameters = { input: [number, string, number]; result: string };
 
@@ -253,4 +257,33 @@ describe('Cross Type Conversions', () => {
     pointsToPercentTests.forEach((params) => {
         addingScores(params, addPointsToPercentOrPointsType, false);
     });
+});
+
+describe('Testing Canvas Score Inputs that should fail to parse.', () => {
+    const parseFailures = [
+        '',
+        '200%A',
+        'a100',
+        '55a%',
+        'a',
+        'A',
+        '0xffe',
+        '1,000',
+        '1 000',
+        '1_000_000',
+        '1.0.0',
+        '%%0',
+        '%0%',
+        '0%0%',
+        '0.0%0.0',
+        '0%0.0%0'
+    ];
+
+    function testNaN(testString: string) {
+        it(`${testString} should not be a number.`, () => {
+            expect(parseCanvasPercentsAndPoints(testString)).toBeNaN();
+        });
+    }
+
+    parseFailures.forEach(testNaN);
 });
