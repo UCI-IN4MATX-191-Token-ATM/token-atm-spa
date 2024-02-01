@@ -10,6 +10,7 @@ import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import type { CanvasService } from 'app/services/canvas.service';
 import type { ExtractDataType, TokenOption, TokenOptionData } from 'app/token-options/token-option';
+import { CanvasGradingType } from 'app/utils/canvas-grading';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import type { ExtractDest, ExtractSrc, FormField } from 'app/utils/form-field/form-field';
 import type { FormFieldAppender } from 'app/utils/form-field/form-field-appender';
@@ -299,11 +300,33 @@ type AssignmentData = t.TypeOf<typeof AssignmentDataDef>;
 export function createAssignmentFieldComponentBuilder(
     canvasService: CanvasService,
     environmentInjector: EnvironmentInjector,
-    label = 'Canvas Assignment'
+    label = 'Canvas Assignment',
+    validGradingTypes?: (keyof typeof CanvasGradingType)[]
 ): FormFieldComponentBuilder<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     FormField<[string, AssignmentData | undefined], AssignmentData, any>
 > {
+    async function validateGradingType(
+        validTypes: (keyof typeof CanvasGradingType)[] | undefined,
+        courseId: string,
+        assignmentName: string,
+        assignmentId: string,
+        selectionField: SingleSelectionFieldComponent<string>
+    ): Promise<boolean> {
+        if (validTypes === undefined) return true;
+        const { gradingType } = await canvasService.getAssignmentGradingTypeAndPointsPossible(courseId, assignmentId);
+        if (validTypes.includes(gradingType)) {
+            return true;
+        } else {
+            const displayNames = validTypes.map((x) => CanvasGradingType[x]) as string[];
+            if (displayNames.length > 1) {
+                displayNames[displayNames.length - 1] = `or ${displayNames[displayNames.length - 1]}`;
+            }
+            const nameList = displayNames.length == 2 ? displayNames.join(' ') : displayNames.join(', ');
+            selectionField.errorMessage = `${assignmentName} must display its grade as ${nameList}`;
+        }
+        return false;
+    }
     return new FormFieldComponentBuilder()
         .setField(new StaticFormField<string>())
         .appendBuilder(
@@ -340,15 +363,18 @@ export function createAssignmentFieldComponentBuilder(
                 [string, string | undefined],
                 SingleSelectionFieldComponent<string>
             ]) => {
+                let assignmentId;
                 if (name === undefined) return false;
                 try {
-                    await canvasService.getAssignmentIdByName(courseId, name);
+                    assignmentId = await canvasService.getAssignmentIdByName(courseId, name);
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 } catch (err: any) {
                     selectionField.errorMessage = err.toString();
                     return false;
                 }
-                return true;
+                return (
+                    true && (await validateGradingType(validGradingTypes, courseId, name, assignmentId, selectionField))
+                );
             };
         })
         .transformSrc(([courseId, assignmentData]: [string, AssignmentData | undefined]) => [

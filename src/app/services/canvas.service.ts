@@ -21,6 +21,7 @@ import { Section } from 'app/data/section';
 import { unwrapValidation } from 'app/utils/validation-unwrapper';
 import type { CanvasCredential } from 'app/data/token-atm-credentials';
 import { ExponentialBackoffExecutorService } from './exponential-backoff-executor.service';
+import type { CanvasGradingType } from 'app/utils/canvas-grading';
 
 type QuizQuestionResponse = {
     id: string;
@@ -1579,12 +1580,15 @@ export class CanvasService {
     public async getAssignmentGradingTypeAndPointsPossible(
         courseId: string,
         assignmentId: string
-    ): Promise<{ gradingType: string; pointsPossible: number }> {
+    ): Promise<{ gradingType: keyof typeof CanvasGradingType; pointsPossible: number }> {
         const data = await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`);
         if (typeof data['grading_type'] != 'string' || typeof data['points_possible'] != 'number') {
             throw new Error('Invalid data');
         }
-        return { gradingType: data['grading_type'], pointsPossible: data['points_possible'] };
+        return {
+            gradingType: data['grading_type'] as keyof typeof CanvasGradingType,
+            pointsPossible: data['points_possible']
+        };
     }
 
     public async getSubmissionGradeAndScore(
