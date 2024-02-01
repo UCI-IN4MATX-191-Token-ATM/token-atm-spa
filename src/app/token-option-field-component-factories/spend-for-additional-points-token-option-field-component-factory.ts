@@ -20,6 +20,7 @@ import { NumberInputFieldComponent } from 'app/components/form-fields/number-inp
 import { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
 import { StringInputFieldComponent } from 'app/components/form-fields/string-input-field/string-input-field.component';
 import { parseCanvasPercentsAndPoints } from 'app/utils/canvas-grading';
+import { StaticFormField } from 'app/utils/form-field/static-form-field';
 
 @Injectable()
 export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends TokenOptionFieldComponentFactory<SpendForAdditionalPointsTokenOption> {
@@ -72,28 +73,28 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                 )
                 .appendBuilder(createExcludeTokenOptionsComponentBuilder(environmentInjector))
                 .transformSrc((value: SpendForAdditionalPointsTokenOption | TokenOptionGroup) => {
-                    if (value instanceof TokenOptionGroup)
-                        return [
-                            value,
-                            [value.configuration.course.id, undefined],
-                            '',
-                            [false, 1],
-                            ['', value.configuration]
-                        ];
-                    else
+                    if (value instanceof TokenOptionGroup) {
+                        const courseId = value.configuration.course.id;
+                        return [value, [courseId, [courseId, undefined]], '', [false, 1], ['', value.configuration]];
+                    } else {
+                        const courseId = value.group.configuration.course.id;
                         return [
                             value,
                             [
-                                value.group.configuration.course.id,
-                                {
-                                    id: value.assignmentId,
-                                    name: value.assignmentName
-                                }
+                                courseId,
+                                [
+                                    courseId,
+                                    {
+                                        id: value.assignmentId,
+                                        name: value.assignmentName
+                                    }
+                                ]
                             ],
                             value.additionalScore,
                             [value.allowedRequestCnt != 1, value.allowedRequestCnt],
                             [value.excludeTokenOptionIds.join(','), value.group.configuration]
                         ];
+                    }
                 })
                 .transformDest(
                     async ([
@@ -123,41 +124,68 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
     }
 }
 
+type AssignmentFormField = FormField<
+    [
+        string,
+        (
+            | {
+                  id: string;
+                  name: string;
+              }
+            | undefined
+        )
+    ],
+    {
+        id: string;
+        name: string;
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any
+>;
+
 function createPointsOrPercentageAssignmentComponentBuilder(
     canvasService: CanvasService,
     environmentInjector: EnvironmentInjector
 ) {
-    return createAssignmentFieldComponentBuilder(
+    const assignmentField = createAssignmentFieldComponentBuilder(
         canvasService,
         environmentInjector,
         'Canvas Assignment / Quiz to Add Points'
-    )
-        .appendVP(async (field) => field)
-        .editField((field) => {
-            console.log('field: ', field);
-
-            field.validator = async (value) => {
-                console.log('value: ', value);
-                try {
-                    const { id, name } = await value.destValue;
-                    // TODO: Use courseId rather than '26'
-                    const { gradingType } = await canvasService.getAssignmentGradingTypeAndPointsPossible('26', id);
-                    console.log(id, name, gradingType);
-                    if (gradingType === 'percent' || gradingType === 'points') {
-                        return true;
-                    } else {
-                        console.log('Improper Assignment Type!'); // TODO: Have error message actually display
-                        value.errorMessage = `${name} must display its grade as Points or Percentage`;
+    );
+    return (
+        new FormFieldComponentBuilder()
+            .setField(new StaticFormField<string>())
+            .appendBuilder(assignmentField)
+            .appendVP(async (field) => [await field.fieldA.destValue, field.fieldB] as [string, AssignmentFormField])
+            .editField((field) => {
+                field.validator = async ([courseId, assignmentField]) => {
+                    try {
+                        const { id, name } = await assignmentField.destValue;
+                        const { gradingType } = await canvasService.getAssignmentGradingTypeAndPointsPossible(
+                            courseId,
+                            id
+                        );
+                        console.log(id, name, gradingType);
+                        if (gradingType === 'percent' || gradingType === 'points') {
+                            return true;
+                        } else {
+                            console.log('Improper Assignment Type!'); // TODO: Have error message actually display
+                            assignmentField.errorMessage = `${name} must display its grade as Points or Percentage`;
+                        }
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    } catch (error: any) {
+                        if (error?.message !== 'Invalid data') {
+                            throw error;
+                        }
                     }
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                } catch (error: any) {
-                    if (error?.message !== 'Invalid data') {
-                        throw error;
-                    }
-                }
-                return false;
-            };
-        });
+                    return false;
+                };
+            })
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            .transformDest(async ([_, { id, name }]) => {
+                return { id, name };
+            })
+    );
 }
 
 export function createAdditionalCanvasScoreComponentBuilder(
