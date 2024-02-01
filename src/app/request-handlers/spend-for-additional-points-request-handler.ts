@@ -62,7 +62,7 @@ export class SpendForAdditionalPointsRequestHandler extends RequestHandler<
                 const newPostedGrade = addScoreFunc(toAdd, current, pointsPossible);
                 // Note: `toAddStr` uses score function, because canvas-grading.ts defaults to using only 2 decimal points
                 const toAddStr = addScoreFunc(toAdd, isAddingPercent ? '0%' : '0', pointsPossible); // TODO: use input text
-                const assignmentComment = `Request for ${request.tokenOption.name} was approved.\nChange: ${current} => ${newPostedGrade}\nAdded ${toAddStr} to ${current} of ${pointsPossible} points.`;
+                const assignmentComment = `Request for ${request.tokenOption.name} was approved.\nAdded ${toAddStr} to ${current} of ${pointsPossible} points.\nChange: ${current} => ${newPostedGrade}`;
                 this.canvasService.postSubmissionGradeWithComment(
                     configuration.course.id,
                     studentRecord.student.id,
