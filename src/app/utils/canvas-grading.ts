@@ -1,6 +1,19 @@
 // type CanvasGradingTypes = 'pass_fail' | 'percent' | 'points';
 // type UnsupportedGradingTypes = 'letter_grade' | 'gpa_scale';
 
+/**
+ * Keys are grading types provided by Canvas.
+ * Values are display names use in Canvas UI.
+ */
+export enum CanvasGradingType {
+    pass_fail = 'Complete/Incomplete',
+    percent = 'Percentage',
+    points = 'Points',
+    letter_grade = 'Letter Grade',
+    gpa_scale = 'GPA Scale',
+    not_graded = 'Not Graded'
+}
+
 // 'points' allows:
 //      a number, which can be > assignment.points_possible
 
