@@ -41,11 +41,7 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
             environmentInjector,
             tokenOptionFieldComponentBuilder(environmentInjector)
                 .appendBuilder(
-                    createAssignmentFieldComponentBuilder(
-                        this.canvasService,
-                        environmentInjector,
-                        'Canvas Assignment / Quiz to Add Points'
-                    )
+                    createPointsOrPercentageAssignmentComponentBuilder(this.canvasService, environmentInjector)
                 )
                 .appendBuilder(createAdditionalCanvasScoreComponentBuilder(environmentInjector))
                 .appendBuilder(
@@ -125,6 +121,43 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
     public get type(): string {
         return 'spend-for-additional-points';
     }
+}
+
+function createPointsOrPercentageAssignmentComponentBuilder(
+    canvasService: CanvasService,
+    environmentInjector: EnvironmentInjector
+) {
+    return createAssignmentFieldComponentBuilder(
+        canvasService,
+        environmentInjector,
+        'Canvas Assignment / Quiz to Add Points'
+    )
+        .appendVP(async (field) => field)
+        .editField((field) => {
+            console.log('field: ', field);
+
+            field.validator = async (value) => {
+                console.log('value: ', value);
+                try {
+                    const { id, name } = await value.destValue;
+                    // TODO: Use courseId rather than '26'
+                    const { gradingType } = await canvasService.getAssignmentGradingTypeAndPointsPossible('26', id);
+                    console.log(id, name, gradingType);
+                    if (gradingType === 'percent' || gradingType === 'points') {
+                        return true;
+                    } else {
+                        console.log('Improper Assignment Type!'); // TODO: Have error message actually display
+                        value.errorMessage = `${name} must display its grade as Points or Percentage`;
+                    }
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                } catch (error: any) {
+                    if (error?.message !== 'Invalid data') {
+                        throw error;
+                    }
+                }
+                return false;
+            };
+        });
 }
 
 export function createAdditionalCanvasScoreComponentBuilder(
