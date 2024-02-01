@@ -323,7 +323,7 @@ export function createAssignmentFieldComponentBuilder(
                 displayNames[displayNames.length - 1] = `or ${displayNames[displayNames.length - 1]}`;
             }
             const nameList = displayNames.length == 2 ? displayNames.join(' ') : displayNames.join(', ');
-            selectionField.errorMessage = `${assignmentName} must display its grade as ${nameList}`;
+            selectionField.errorMessage = `${assignmentName} must display its grade as ${nameList} to work`;
         }
         return false;
     }
