@@ -6,6 +6,7 @@ import { NumberInputFieldComponent } from 'app/components/form-fields/number-inp
 import { SingleSelectionFieldComponent } from 'app/components/form-fields/selection-fields/single-selection-field/single-selection-field.component';
 import { StringInputFieldComponent } from 'app/components/form-fields/string-input-field/string-input-field.component';
 import { StringTextareaFieldComponent } from 'app/components/form-fields/string-textarea-field/string-textarea-field.component';
+import type { AssignmentGroupData } from 'app/data/assignment-group';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import type { CanvasService } from 'app/services/canvas.service';
@@ -396,6 +397,84 @@ export function createAssignmentFieldComponentBuilder(
                 id,
                 name
             };
+        });
+}
+
+type SelectionFormField<T> = FormField<
+    [string, T | undefined],
+    T,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any
+>;
+export type AssignmentGroupSelectionFormField = SelectionFormField<AssignmentGroupData>;
+export function createAssignmentGroupComponentBuilder(
+    canvasService: CanvasService,
+    environmentInjector: EnvironmentInjector,
+    label = 'Canvas Assignment Group'
+): FormFieldComponentBuilder<AssignmentGroupSelectionFormField> {
+    return new FormFieldComponentBuilder()
+        .setField(new StaticFormField<string>())
+        .appendBuilder(
+            createFieldComponentWithLabel(SingleSelectionFieldComponent<string>, label, environmentInjector).editField(
+                (field) => {
+                    field.copyPasteHandler = {
+                        serialize: async (v: string | undefined) => (v == undefined ? 'undefined' : JSON.stringify(v)),
+                        deserialize: async (v: string) =>
+                            v == 'undefined' ? undefined : unwrapValidation(t.string.decode(JSON.parse(v)))
+                    };
+                    field.validator = async ([v, field]: [
+                        string | undefined,
+                        SingleSelectionFieldComponent<string>
+                    ]) => {
+                        field.errorMessage = undefined;
+                        if (v == undefined) {
+                            field.errorMessage = 'Please select a Canvas assignment group';
+                            return false;
+                        }
+                        return true;
+                    };
+                }
+            )
+        )
+        .appendVP(
+            async (field) =>
+                [await field.destValue, field.fieldB] as [
+                    [string, string | undefined],
+                    SingleSelectionFieldComponent<string>
+                ]
+        )
+        .editField((field) => {
+            field.validator = async ([[courseId, name], selectionField]: [
+                [string, string | undefined],
+                SingleSelectionFieldComponent<string>
+            ]) => {
+                if (name === undefined) return false;
+                try {
+                    await canvasService.getAssignmentGroupIdByName(courseId, name);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                } catch (err: any) {
+                    selectionField.errorMessage = err.toString();
+                    return false;
+                }
+                return true;
+            };
+        })
+        .transformSrc(([courseId, assignmentGroupData]: [string, AssignmentGroupData | undefined]) => [
+            courseId,
+            [
+                assignmentGroupData?.name,
+                async () =>
+                    (
+                        await DataConversionHelper.convertAsyncIterableToList(
+                            await canvasService.getAssignmentGroups(courseId)
+                        )
+                    ).map((v) => v.name)
+            ]
+        ])
+        .transformDest(async ([courseId, name]) => {
+            if (name == undefined) throw new Error('Invalid data');
+            const id = await canvasService.getAssignmentGroupIdByName(courseId, name);
+            return { id, name };
         });
 }
 
