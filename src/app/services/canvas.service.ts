@@ -22,6 +22,7 @@ import { unwrapValidation } from 'app/utils/validation-unwrapper';
 import type { CanvasCredential } from 'app/data/token-atm-credentials';
 import { ExponentialBackoffExecutorService } from './exponential-backoff-executor.service';
 import type { CanvasGradingType } from 'app/utils/canvas-grading';
+import { AssignmentGroupDef, type AssignmentGroup } from 'app/data/assignment-group';
 
 type QuizQuestionResponse = {
     id: string;
@@ -867,7 +868,20 @@ export class CanvasService {
         return data.id;
     }
 
+    public async getAssignmentGroups(courseId: string): Promise<PaginatedResult<AssignmentGroup>> {
+        return new PaginatedResult<AssignmentGroup>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignment_groups`, {
+                params: {
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => data.map((entry) => unwrapValidation(AssignmentGroupDef.decode(entry)))
+        );
+    }
+
     public async getAssignmentGroupIdByName(courseId: string, assignmentGroupName: string) {
+        // TODO: Use getAssignmentGroups method
         const assignmentGroups = new PaginatedResult<[string, string]>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignment_groups`, {
                 params: {
