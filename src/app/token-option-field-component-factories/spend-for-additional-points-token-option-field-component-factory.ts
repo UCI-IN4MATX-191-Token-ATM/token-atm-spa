@@ -1,6 +1,8 @@
 import {
+    AssignmentGroupSelectionFormField,
     TokenOptionFieldComponentFactory,
     createAssignmentFieldComponentBuilder,
+    createAssignmentGroupComponentBuilder,
     createExcludeTokenOptionsComponentBuilder,
     createFieldComponentWithLabel,
     tokenOptionFieldComponentBuilder,
@@ -37,7 +39,6 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
         >
     ] {
         return tokenOptionValidationWrapper(
-            // TODO: Add Validator for Assignment grading type
             environmentInjector,
             tokenOptionFieldComponentBuilder(environmentInjector)
                 .appendBuilder(
@@ -49,6 +50,18 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                     )
                 )
                 .appendBuilder(createAdditionalCanvasScoreComponentBuilder(environmentInjector))
+                .appendBuilder(
+                    createFieldComponentWithLabel(
+                        OptionalFieldComponent<AssignmentGroupSelectionFormField>,
+                        'Base max possible points on a Canvas Assignment Group',
+                        environmentInjector
+                    ).editField((field) => {
+                        field.fieldBuilder = createAssignmentGroupComponentBuilder(
+                            this.canvasService,
+                            environmentInjector
+                        );
+                    })
+                )
                 .appendBuilder(
                     createFieldComponentWithLabel(
                         OptionalFieldComponent<NumberInputFieldComponent>,
@@ -78,24 +91,28 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                 .appendBuilder(createExcludeTokenOptionsComponentBuilder(environmentInjector))
                 .transformSrc((value: SpendForAdditionalPointsTokenOption | TokenOptionGroup) => {
                     if (value instanceof TokenOptionGroup) {
+                        const courseId = value.configuration.course.id;
                         return [
                             value,
-                            [value.configuration.course.id, undefined],
+                            [courseId, undefined],
                             '',
+                            [false, [courseId, undefined]],
                             [false, 1],
                             ['', value.configuration]
                         ];
                     } else {
+                        const courseId = value.group.configuration.course.id;
                         return [
                             value,
                             [
-                                value.group.configuration.course.id,
+                                courseId,
                                 {
                                     id: value.assignmentId,
                                     name: value.assignmentName
                                 }
                             ],
                             value.additionalScore,
+                            [false, [courseId, undefined]],
                             [value.allowedRequestCnt != 1, value.allowedRequestCnt],
                             [value.excludeTokenOptionIds.join(','), value.group.configuration]
                         ];
@@ -106,9 +123,12 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                         tokenOptionData,
                         { id: assignmentId, name: assignmentName },
                         additionalScore,
+                        assignmentGroupData,
                         allowedRequestCnt,
                         excludeTokenOptionIds
                     ]) => {
+                        // TODO: Add search criteria and assignmentGroupData to token option
+                        assignmentGroupData;
                         return {
                             ...tokenOptionData,
                             type: 'spend-for-additional-points',
