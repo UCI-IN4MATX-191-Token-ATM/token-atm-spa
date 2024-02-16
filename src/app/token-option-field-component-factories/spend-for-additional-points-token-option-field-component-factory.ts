@@ -92,7 +92,6 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                 )
                 .appendBuilder(createExcludeTokenOptionsComponentBuilder(environmentInjector))
                 .transformSrc((value: SpendForAdditionalPointsTokenOption | TokenOptionGroup) => {
-                    // TODO: Collect and use changeMaxPossiblePoints from TokenOption
                     if (value instanceof TokenOptionGroup) {
                         const courseId = value.configuration.course.id;
                         return [
