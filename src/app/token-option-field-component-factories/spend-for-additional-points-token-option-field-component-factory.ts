@@ -22,6 +22,8 @@ import { NumberInputFieldComponent } from 'app/components/form-fields/number-inp
 import { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
 import { StringInputFieldComponent } from 'app/components/form-fields/string-input-field/string-input-field.component';
 import { parseCanvasPercentsAndPoints } from 'app/utils/canvas-grading';
+import type { AssignmentGroupMixinData } from 'app/token-options/mixins/assignment-group-mixin';
+import type { AssignmentGroup } from 'app/data/assignment-group';
 
 @Injectable()
 export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends TokenOptionFieldComponentFactory<SpendForAdditionalPointsTokenOption> {
@@ -103,6 +105,20 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                         ];
                     } else {
                         const courseId = value.group.configuration.course.id;
+                        const convertedPropNames =
+                            value.changeMaxPossiblePoints == null
+                                ? undefined
+                                : ([
+                                      value.changeMaxPossiblePoints[0],
+                                      {
+                                          name: value.changeMaxPossiblePoints[1].groupName,
+                                          id: value.changeMaxPossiblePoints[1].groupId
+                                      }
+                                  ] as [string, AssignmentGroup]);
+                        const maxPointsSelection =
+                            value.changeMaxPossiblePoints == null
+                                ? [false, [courseId, convertedPropNames as undefined]]
+                                : [true, [courseId, convertedPropNames as [string, AssignmentGroup]]];
                         return [
                             value,
                             [
@@ -113,7 +129,7 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                                 }
                             ],
                             value.additionalScore,
-                            [false, [courseId, undefined]],
+                            maxPointsSelection as [boolean, [string, undefined]] | [boolean, [string, AssignmentGroup]],
                             [value.allowedRequestCnt != 1, value.allowedRequestCnt],
                             [value.excludeTokenOptionIds.join(','), value.group.configuration]
                         ];
@@ -129,11 +145,11 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                         excludeTokenOptionIds
                     ]) => {
                         const selectionTuple = assignmentGroupData
-                            ? [
+                            ? ([
                                   'assignmentGroup',
                                   { groupName: assignmentGroupData.name, groupId: assignmentGroupData.id }
-                              ]
-                            : null;
+                              ] as [string, AssignmentGroupMixinData])
+                            : undefined;
                         return {
                             ...tokenOptionData,
                             type: 'spend-for-additional-points',
