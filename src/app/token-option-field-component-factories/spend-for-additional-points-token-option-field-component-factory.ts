@@ -146,7 +146,7 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                     ]) => {
                         const selectionTuple = assignmentGroupData
                             ? ([
-                                  'assignmentGroup',
+                                  'assignment-group',
                                   { groupName: assignmentGroupData.name, groupId: assignmentGroupData.id }
                               ] as [string, AssignmentGroupMixinData])
                             : undefined;
