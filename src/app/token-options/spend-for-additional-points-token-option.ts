@@ -7,31 +7,33 @@ import { ToJSONMixin } from './mixins/to-json-mixin';
 import { ExcludeTokenOptionIdsMixin, ExcludeTokenOptionIdsMixinDataDef } from './mixins/exclude-token-option-ids-mixin';
 import { MultipleRequestsMixin, MultipleRequestsMixinDataDef } from './mixins/multiple-requests-mixin';
 import { AdditionalCanvasScoreMixinDataDef, AdditionalCanvasScoreMixin } from './mixins/additional-canvas-score-mixin';
-// import {
-//     OptionalMaxPointsSelectionMixin,
-//     OptionalMaxPointsSelectionMixinDataDef
-// } from './mixins/optional-max-points-selection';
+import {
+    OptionalMaxPointsSelectionMixin,
+    OptionalMaxPointsSelectionMixinDataDef
+} from './mixins/optional-max-points-selection';
 
-// TODO: Fix type inference for Optional Max Points Selection
+// Note: t.intersection seems to have an upper limit of DataDefs
+//       once there are 6 all the types are labeled as t.mixed
+//       Using multiple t.intersection's works around this.
 export const SpendForAdditionalPointsTokenOptionDataDef = t.intersection([
-    TokenOptionDataDef,
-    AssignmentMixinDataDef,
-    AdditionalCanvasScoreMixinDataDef,
-    // OptionalMaxPointsSelectionMixinDataDef,
-    MultipleRequestsMixinDataDef,
-    ExcludeTokenOptionIdsMixinDataDef
+    t.intersection([TokenOptionDataDef, AssignmentMixinDataDef, AdditionalCanvasScoreMixinDataDef]),
+    t.intersection([
+        OptionalMaxPointsSelectionMixinDataDef,
+        MultipleRequestsMixinDataDef,
+        ExcludeTokenOptionIdsMixinDataDef
+    ])
 ]);
 
 export type SpendForAdditionalPointsTokenOptionData = t.TypeOf<typeof SpendForAdditionalPointsTokenOptionDataDef>;
+export type RawSpendForAdditionalPointsTokenOptionData = t.OutputOf<typeof SpendForAdditionalPointsTokenOptionDataDef>;
 
 export class SpendForAdditionalPointsTokenOption extends FromDataMixin(
     ToJSONMixin(
-        // ExcludeTokenOptionIdsMixin(
-        //     MultipleRequestsMixin(
-        //         OptionalMaxPointsSelectionMixin(AdditionalCanvasScoreMixin(AssignmentMixin(ATokenOption)))
-        //     )
-        // ),
-        ExcludeTokenOptionIdsMixin(MultipleRequestsMixin(AdditionalCanvasScoreMixin(AssignmentMixin(ATokenOption)))),
+        ExcludeTokenOptionIdsMixin(
+            MultipleRequestsMixin(
+                OptionalMaxPointsSelectionMixin(AdditionalCanvasScoreMixin(AssignmentMixin(ATokenOption)))
+            )
+        ),
         SpendForAdditionalPointsTokenOptionDataDef.encode
     ),
     unwrapValidationFunc(SpendForAdditionalPointsTokenOptionDataDef.decode),
