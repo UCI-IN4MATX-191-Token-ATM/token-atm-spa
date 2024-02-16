@@ -7,7 +7,7 @@ import { AssignmentGroupMixinData, AssignmentGroupMixinDataDef } from './assignm
 const Selectable = t.tuple([t.string, AssignmentGroupMixinDataDef]);
 
 export const OptionalMaxPointsSelectionMixinDataDef = t.strict({
-    changeMaxPossiblePoints: t.union([Selectable, t.null])
+    changeMaxPossiblePoints: t.union([Selectable, t.undefined])
 });
 
 export type OptionalMaxPointsSelectionMixinData = t.TypeOf<typeof OptionalMaxPointsSelectionMixinDataDef>;
@@ -17,13 +17,13 @@ export type IOptionalMaxPointsSelection = OptionalMaxPointsSelectionMixinData & 
 
 export function OptionalMaxPointsSelectionMixin<TBase extends Constructor<IGridViewDataSource>>(Base: TBase) {
     return class extends Base implements IOptionalMaxPointsSelection {
-        changeMaxPossiblePoints: [string, AssignmentGroupMixinData] | null = null;
+        changeMaxPossiblePoints: [string, AssignmentGroupMixinData] | undefined = undefined;
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         constructor(...args: any[]) {
             super(...args);
             this.registerDataPointSource(() =>
-                this.changeMaxPossiblePoints !== null
+                this.changeMaxPossiblePoints != null
                     ? {
                           colName: 'Base Max Possible Points on',
                           type: 'string',
