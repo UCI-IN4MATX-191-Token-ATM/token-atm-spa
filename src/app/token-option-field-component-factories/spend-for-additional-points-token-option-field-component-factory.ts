@@ -90,6 +90,7 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                 )
                 .appendBuilder(createExcludeTokenOptionsComponentBuilder(environmentInjector))
                 .transformSrc((value: SpendForAdditionalPointsTokenOption | TokenOptionGroup) => {
+                    // TODO: Collect and use changeMaxPossiblePoints from TokenOption
                     if (value instanceof TokenOptionGroup) {
                         const courseId = value.configuration.course.id;
                         return [
@@ -127,14 +128,19 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                         allowedRequestCnt,
                         excludeTokenOptionIds
                     ]) => {
-                        // TODO: Add search criteria and assignmentGroupData to token option
-                        assignmentGroupData;
+                        const selectionTuple = assignmentGroupData
+                            ? [
+                                  'assignmentGroup',
+                                  { groupName: assignmentGroupData.name, groupId: assignmentGroupData.id }
+                              ]
+                            : null;
                         return {
                             ...tokenOptionData,
                             type: 'spend-for-additional-points',
                             assignmentName,
                             assignmentId,
                             additionalScore,
+                            changeMaxPossiblePoints: selectionTuple,
                             allowedRequestCnt: allowedRequestCnt ?? 1,
                             excludeTokenOptionIds
                         };
