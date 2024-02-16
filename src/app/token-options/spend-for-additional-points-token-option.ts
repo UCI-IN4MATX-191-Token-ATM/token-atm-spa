@@ -7,11 +7,17 @@ import { ToJSONMixin } from './mixins/to-json-mixin';
 import { ExcludeTokenOptionIdsMixin, ExcludeTokenOptionIdsMixinDataDef } from './mixins/exclude-token-option-ids-mixin';
 import { MultipleRequestsMixin, MultipleRequestsMixinDataDef } from './mixins/multiple-requests-mixin';
 import { AdditionalCanvasScoreMixinDataDef, AdditionalCanvasScoreMixin } from './mixins/additional-canvas-score-mixin';
+// import {
+//     OptionalMaxPointsSelectionMixin,
+//     OptionalMaxPointsSelectionMixinDataDef
+// } from './mixins/optional-max-points-selection';
 
+// TODO: Fix type inference for Optional Max Points Selection
 export const SpendForAdditionalPointsTokenOptionDataDef = t.intersection([
     TokenOptionDataDef,
     AssignmentMixinDataDef,
     AdditionalCanvasScoreMixinDataDef,
+    // OptionalMaxPointsSelectionMixinDataDef,
     MultipleRequestsMixinDataDef,
     ExcludeTokenOptionIdsMixinDataDef
 ]);
@@ -20,6 +26,11 @@ export type SpendForAdditionalPointsTokenOptionData = t.TypeOf<typeof SpendForAd
 
 export class SpendForAdditionalPointsTokenOption extends FromDataMixin(
     ToJSONMixin(
+        // ExcludeTokenOptionIdsMixin(
+        //     MultipleRequestsMixin(
+        //         OptionalMaxPointsSelectionMixin(AdditionalCanvasScoreMixin(AssignmentMixin(ATokenOption)))
+        //     )
+        // ),
         ExcludeTokenOptionIdsMixin(MultipleRequestsMixin(AdditionalCanvasScoreMixin(AssignmentMixin(ATokenOption)))),
         SpendForAdditionalPointsTokenOptionDataDef.encode
     ),
