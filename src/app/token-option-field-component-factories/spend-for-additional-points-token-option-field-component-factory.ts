@@ -105,20 +105,34 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                         ];
                     } else {
                         const courseId = value.group.configuration.course.id;
-                        const convertedPropNames =
-                            value.changeMaxPossiblePoints == null
-                                ? undefined
-                                : ([
-                                      value.changeMaxPossiblePoints[0],
-                                      {
-                                          name: value.changeMaxPossiblePoints[1].groupName,
-                                          id: value.changeMaxPossiblePoints[1].groupId
-                                      }
-                                  ] as [string, AssignmentGroup]);
+                        // Code to adapt when more than just assignment groups can be selected
+                        // const convertedPropNames =
+                        //     value.changeMaxPossiblePoints == null
+                        //         ? undefined
+                        //         : ([
+                        //               value.changeMaxPossiblePoints[0],
+                        //               {
+                        //                   name: value.changeMaxPossiblePoints[1].groupName,
+                        //                   id: value.changeMaxPossiblePoints[1].groupId
+                        //               }
+                        //           ] as [string, AssignmentGroup]);
+                        // const maxPointsSelection =
+                        //     value.changeMaxPossiblePoints == null
+                        //         ? [false, [courseId, convertedPropNames as undefined]]
+                        //         : [true, [courseId, convertedPropNames as [string, AssignmentGroup]]];
                         const maxPointsSelection =
                             value.changeMaxPossiblePoints == null
-                                ? [false, [courseId, convertedPropNames as undefined]]
-                                : [true, [courseId, convertedPropNames as [string, AssignmentGroup]]];
+                                ? [false, [courseId, undefined]]
+                                : [
+                                      true,
+                                      [
+                                          courseId,
+                                          {
+                                              name: value.changeMaxPossiblePoints[1].groupName,
+                                              id: value.changeMaxPossiblePoints[1].groupId
+                                          }
+                                      ]
+                                  ];
                         return [
                             value,
                             [
