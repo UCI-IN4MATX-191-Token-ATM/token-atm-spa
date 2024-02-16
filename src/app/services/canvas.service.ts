@@ -880,23 +880,10 @@ export class CanvasService {
         );
     }
 
-    public async getAssignmentGroupIdByName(courseId: string, assignmentGroupName: string) {
-        // TODO: Use getAssignmentGroups method
-        const assignmentGroups = new PaginatedResult<[string, string]>(
-            await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignment_groups`, {
-                params: {
-                    per_page: 100
-                }
-            }),
-            async (url: string) => await this.paginatedRequestHandler(url),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (data: any) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                return data.map((entry: any) => [entry.id, entry.name]);
-            }
-        );
+    public async getAssignmentGroupIdByName(courseId: string, assignmentGroupName: string): Promise<string> {
+        const assignmentGroups = await this.getAssignmentGroups(courseId);
         let result: string | undefined = undefined;
-        for await (const [id, name] of assignmentGroups) {
+        for await (const { id, name } of assignmentGroups) {
             if (name != assignmentGroupName) continue;
             if (result == undefined) {
                 result = id;
@@ -1359,7 +1346,7 @@ export class CanvasService {
         return result;
     }
 
-    public async getAssignmentIdByName(courseId: string, assignmentName: string) {
+    public async getAssignmentIdByName(courseId: string, assignmentName: string): Promise<string> {
         const assignments = new PaginatedResult<Assignment>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments`, {
                 params: {
