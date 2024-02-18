@@ -12,9 +12,9 @@ import {
     OptionalMaxPointsSelectionMixinDataDef
 } from './mixins/optional-max-points-selection';
 
-// Note: t.intersection seems to have an upper limit of DataDefs
-//       once there are 6 all the types are labeled as t.mixed
-//       Using multiple t.intersection's works around this.
+// Note: t.intersection seems to have an upper limit of DataDefs.
+//       Once there are 6 all the types are labeled as t.mixed.
+//       Using multiple t.intersections works around this.
 export const SpendForAdditionalPointsTokenOptionDataDef = t.intersection([
     t.intersection([TokenOptionDataDef, AssignmentMixinDataDef, AdditionalCanvasScoreMixinDataDef]),
     t.intersection([
