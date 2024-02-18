@@ -1578,6 +1578,17 @@ export class CanvasService {
         });
     }
 
+    public async getAssignmentGradingType(
+        courseId: string,
+        assignmentId: string
+    ): Promise<keyof typeof CanvasGradingType> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`);
+        if (typeof data['grading_type'] != 'string') {
+            throw new Error('Invalid data');
+        }
+        return data['grading_type'] as keyof typeof CanvasGradingType;
+    }
+
     public async getAssignmentGradingTypeAndPointsPossible(
         courseId: string,
         assignmentId: string

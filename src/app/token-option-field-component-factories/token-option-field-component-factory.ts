@@ -315,7 +315,7 @@ export function createAssignmentFieldComponentBuilder(
         selectionField: SingleSelectionFieldComponent<string>
     ): Promise<boolean> {
         if (validTypes === undefined) return true;
-        const { gradingType } = await canvasService.getAssignmentGradingTypeAndPointsPossible(courseId, assignmentId);
+        const gradingType = await canvasService.getAssignmentGradingType(courseId, assignmentId);
         if (validTypes.includes(gradingType)) {
             return true;
         } else {
