@@ -287,3 +287,6 @@ describe('Testing Canvas Score Inputs that should fail to parse.', () => {
 
     parseFailures.forEach(testNaN);
 });
+
+// TODO: Add tests for collectPointsPossible
+//       - null/NaN 'points_possible', null skip value, unique skip property, etc.
