@@ -21,7 +21,7 @@ import { Section } from 'app/data/section';
 import { unwrapValidation } from 'app/utils/validation-unwrapper';
 import type { CanvasCredential } from 'app/data/token-atm-credentials';
 import { ExponentialBackoffExecutorService } from './exponential-backoff-executor.service';
-import type { CanvasGradingType } from 'app/utils/canvas-grading';
+import { collectPointsPossible, type CanvasGradingType } from 'app/utils/canvas-grading';
 import { AssignmentGroupDef, type AssignmentGroup } from 'app/data/assignment-group';
 
 type QuizQuestionResponse = {
@@ -1619,5 +1619,25 @@ export class CanvasService {
             score: data['score'],
             gradeMatchesCurrentSubmission: data['grade_matches_current_submission']
         };
+    }
+
+    public async getTotalPointsPossibleInAnAssignmentGroup(
+        courseId: string,
+        assignmentGroupId: string,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        skipCountingIf?: { [x: string]: any }
+    ): Promise<number> {
+        const data = await this.apiRequest(
+            `/api/v1/courses/${courseId}/assignment_groups/${assignmentGroupId}?include[]=assignments`
+        );
+        if (data['assignments'] == null) {
+            throw new Error('Invalid data');
+        }
+        return data['assignments'].reduce(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (accumulator: number, currentAssignment: any) =>
+                accumulator + collectPointsPossible(currentAssignment, skipCountingIf),
+            0
+        ) as number;
     }
 }

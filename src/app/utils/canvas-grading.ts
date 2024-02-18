@@ -80,3 +80,35 @@ function convertNumberToMaxDecimalString(num: number, maxDecimals = 2): string {
     // fixes Javascript rounding, now rounds away from 0 and attempts to maintain an arbirary number of decimal places
     return `${sign * (Math.round((num * sign + Number.EPSILON) * 10 ** maxDecimals) / 10 ** maxDecimals)}`;
 }
+
+/**
+ * Collects the value for the 'points_possible' property of a Canvas Assignment JSON object.
+ * @param canvasAssignmentJSON Raw JSON object. (Assumed to be a Canvas Assignment)
+ * @param skipCountingIf Optionally used to skip this assignment's points possible. Takes an
+ * object where if any of the key-value pairs strictly equal (===) the same properties in the
+ * canvasAssignmentJSON, then 0 is returned.
+ *
+ * If a given value is an array, the array's elements are used for the strict equality check.
+ * @returns the Canvas Assignment's points possible or 0
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function collectPointsPossible(canvasAssignmentJSON: any, skipCountingIf?: { [x: string]: any }): number {
+    const currentPointsPossible: number = (canvasAssignmentJSON['points_possible'] ?? 0) as number;
+    const skip = (): boolean => {
+        if (currentPointsPossible === 0 || skipCountingIf == null) {
+            return false;
+        }
+        return Object.entries(skipCountingIf).some(([prop, check]) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const propEquality = (compare: any) => {
+                return canvasAssignmentJSON[prop] === compare;
+            };
+            if (Array.isArray(check)) {
+                return check.some(propEquality);
+            } else {
+                return propEquality(check);
+            }
+        });
+    };
+    return skip() ? 0 : currentPointsPossible;
+}
