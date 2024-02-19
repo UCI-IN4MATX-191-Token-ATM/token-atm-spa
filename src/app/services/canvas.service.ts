@@ -1607,13 +1607,13 @@ export class CanvasService {
         courseId: string,
         assignmentId: string,
         studentId: string
-    ): Promise<{ grade: string; score: number; gradeMatchesCurrentSubmission: boolean }> {
+    ): Promise<{ grade: string | null; score: number | null; gradeMatchesCurrentSubmission: boolean }> {
         const data = await this.apiRequest(
             `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`
         );
         if (
-            typeof data['grade'] != 'string' ||
-            typeof data['score'] != 'number' ||
+            !(typeof data['grade'] === 'string' || data['grade'] === null) ||
+            !(typeof data['score'] === 'number' || data['score'] === null) ||
             typeof data['grade_matches_current_submission'] != 'boolean'
         ) {
             throw new Error('Invalid data');
