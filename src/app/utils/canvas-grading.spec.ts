@@ -1,4 +1,8 @@
 import {
+    CanvasGradeScorePossible,
+    CanvasGradingType,
+    UpdatePostedGrade,
+    addPercentOrPointsToCanvasGrade,
     addPercentToPointsOrPercentType,
     addPointsToPercentOrPointsType,
     parseCanvasPercentsAndPoints
@@ -287,6 +291,308 @@ describe('Testing Canvas Score Inputs that should fail to parse.', () => {
 
     parseFailures.forEach(testNaN);
 });
+
+type addingScoreTypesWithMultiDenomTestingParameters = {
+    add: string;
+    target: CanvasGradeScorePossible;
+    basedOn?: number;
+    result: UpdatePostedGrade | [UpdatePostedGrade, UpdatePostedGrade];
+    matchingBasedOnScore?: number;
+};
+
+function addingMultiDenomScores(
+    params: addingScoreTypesWithMultiDenomTestingParameters,
+    func: typeof addPercentOrPointsToCanvasGrade
+) {
+    const {
+        add,
+        target: { gradeType, grade, score, pointsPossible },
+        basedOn,
+        result,
+        matchingBasedOnScore
+    } = params;
+    const test = (
+        p1: CanvasGradeScorePossible['pointsPossible'] | undefined,
+        p2: CanvasGradeScorePossible['pointsPossible'] | undefined,
+        r: string,
+        s2?: number
+    ) => {
+        const usedScore = s2 ?? score;
+        const gradeTypeScoreFirst = `${gradeType === 'points' ? score : grade}|${
+            gradeType === 'points' ? grade : score
+        }`;
+        it(`Adding ${add} of ${p2} to ${gradeTypeScoreFirst} of ${p1}.`, () => {
+            expect(
+                func(add, { gradeType, grade, score: usedScore, pointsPossible: p1 ?? null }, p2 ?? undefined)
+                    .postedGrade
+            ).toBe(r);
+        });
+    };
+    test(pointsPossible, basedOn, Array.isArray(result) ? result[0].postedGrade : result.postedGrade);
+    test(
+        basedOn,
+        pointsPossible,
+        Array.isArray(result) ? result[1].postedGrade : result.postedGrade,
+        matchingBasedOnScore
+    );
+}
+
+function noMes(postedGrade: string): UpdatePostedGrade {
+    return { postedGrade, updateMessage: '' };
+}
+function setType(
+    input: [
+        CanvasGradeScorePossible['grade'],
+        CanvasGradeScorePossible['score'],
+        CanvasGradeScorePossible['pointsPossible']
+    ],
+    gradeType: keyof typeof CanvasGradingType
+): CanvasGradeScorePossible {
+    const [grade, score, pointsPossible] = input;
+    return { gradeType, grade, score, pointsPossible };
+}
+function percent(input: Parameters<typeof setType>[0]) {
+    return setType(input, 'percent');
+}
+function points(input: Parameters<typeof setType>[0]) {
+    return setType(input, 'points');
+}
+
+describe('Test that converting from different denominators preserves the actual intended value.', () => {
+    const pointsToPointsTests: addingScoreTypesWithMultiDenomTestingParameters[] = [
+        { add: '1', target: points(['50%', 10, 20]), result: noMes('11'), basedOn: 60 },
+        { add: '3', target: points(['55%', 11, 20]), result: noMes('14'), basedOn: 60 },
+        { add: '3', target: points(['70%', 14, 20]), result: noMes('17'), basedOn: 60 },
+        { add: '1', target: points(['10', 10, 0]), result: noMes('11'), basedOn: 60 },
+        { add: '3', target: points(['11', 11, 0]), result: noMes('14'), basedOn: 60 },
+        { add: '3', target: points(['14', 14, 0]), result: noMes('17'), basedOn: 60 },
+        { add: '1', target: points(['50%', 10, 20]), result: noMes('11'), basedOn: 20 },
+        { add: '3', target: points(['55%', 11, 20]), result: noMes('14'), basedOn: 20 },
+        { add: '3', target: points(['70%', 14, 20]), result: noMes('17'), basedOn: 20 },
+        { add: '1', target: points(['10', 10, 0]), result: noMes('11'), basedOn: 20 },
+        { add: '3', target: points(['11', 11, 0]), result: noMes('14'), basedOn: 20 },
+        { add: '3', target: points(['14', 14, 0]), result: noMes('17'), basedOn: 20 },
+        { add: '5', target: points(['14', 14, 0]), result: noMes('19'), basedOn: 20 }
+    ];
+
+    pointsToPointsTests.forEach((params) => {
+        addingMultiDenomScores(params, addPercentOrPointsToCanvasGrade);
+    });
+
+    const percentToPercentSimpleTests: addingScoreTypesWithMultiDenomTestingParameters[] = [
+        { add: '10%', target: percent(['50%', 10, 20]), result: noMes('60%'), basedOn: 20 },
+        { add: '30%', target: percent(['50%', 10, 20]), result: noMes('80%'), basedOn: 20 },
+        { add: '30%', target: percent(['54%', 10.8, 20]), result: noMes('84%'), basedOn: 20 }
+    ];
+
+    percentToPercentSimpleTests.forEach((params) => {
+        addingMultiDenomScores(params, addPercentOrPointsToCanvasGrade);
+    });
+
+    const percentToPercentTests: addingScoreTypesWithMultiDenomTestingParameters[] = [
+        {
+            add: '10%',
+            target: percent(['50%', 15, 30]),
+            result: [noMes('70%'), noMes('55%')],
+            basedOn: 60,
+            matchingBasedOnScore: 30
+        },
+        {
+            add: '30%',
+            target: percent(['50%', 10, 20]),
+            result: [noMes('140%'), noMes('60%')],
+            basedOn: 60,
+            matchingBasedOnScore: 30
+        },
+        {
+            add: '30%',
+            target: percent(['54%', 10.8, 20]),
+            result: [noMes('144%'), noMes('64%')],
+            basedOn: 60,
+            matchingBasedOnScore: 32.4
+        }
+    ];
+
+    percentToPercentTests.forEach((params) => {
+        addingMultiDenomScores(params, addPercentOrPointsToCanvasGrade);
+    });
+
+    const pointsToPercentTests: addingScoreTypesWithMultiDenomTestingParameters[] = [
+        {
+            add: '6',
+            target: percent(['50%', 10, 20]),
+            result: [noMes('80%'), noMes('60%')],
+            basedOn: 60,
+            matchingBasedOnScore: 30
+        },
+        {
+            add: '3',
+            target: percent(['50%', 10, 20]),
+            result: [noMes('65%'), noMes('55%')],
+            basedOn: 60,
+            matchingBasedOnScore: 30
+        }
+    ];
+    pointsToPercentTests.forEach((params) => {
+        addingMultiDenomScores(params, addPercentOrPointsToCanvasGrade);
+    });
+
+    // Add tests for all possibly nullish values (null values treated as 0)
+    const nullishValuesTests: addingScoreTypesWithMultiDenomTestingParameters[] = [
+        { add: '30%', target: percent([null, 10.8, 20]), result: noMes('16.8'), basedOn: 20 },
+        { add: '30%', target: percent(['54%', null, 20]), result: noMes('84%'), basedOn: 20 },
+        { add: '30%', target: percent(['54%', 10.8, null]), result: [noMes('16.8'), noMes('84%')], basedOn: 20 },
+        { add: '30%', target: percent(['54%', 10.8, 20]), result: [noMes('84%'), noMes('16.8')], basedOn: undefined },
+        { add: '30%', target: points([null, 10.8, 20]), result: noMes('16.8'), basedOn: 20 },
+        { add: '30%', target: points(['54%', null, 20]), result: noMes('84%'), basedOn: 20 },
+        { add: '30%', target: points(['54%', 10.8, null]), result: [noMes('16.8'), noMes('84%')], basedOn: 20 },
+        { add: '30%', target: points(['54%', 10.8, 20]), result: [noMes('84%'), noMes('16.8')], basedOn: undefined },
+        { add: '30%', target: percent(['54%', 10.8, null]), result: noMes('54%'), basedOn: undefined },
+        { add: '30%', target: points(['54%', 10.8, null]), result: noMes('10.8'), basedOn: undefined },
+        { add: '6', target: percent([null, 10.8, 20]), result: noMes('16.8'), basedOn: 20 },
+        { add: '6', target: percent(['54%', null, 20]), result: noMes('84%'), basedOn: 20 },
+        { add: '6', target: percent(['54%', 10.8, null]), result: [noMes('16.8'), noMes('84%')], basedOn: 20 },
+        { add: '6', target: percent(['54%', 10.8, 20]), result: [noMes('84%'), noMes('16.8')], basedOn: undefined },
+        { add: '6', target: points([null, 10.8, 20]), result: noMes('16.8'), basedOn: 20 },
+        { add: '6', target: points(['54%', null, 20]), result: noMes('84%'), basedOn: 20 },
+        { add: '6', target: points(['54%', 10.8, null]), result: [noMes('16.8'), noMes('84%')], basedOn: 20 },
+        { add: '6', target: points(['54%', 10.8, 20]), result: [noMes('84%'), noMes('16.8')], basedOn: undefined },
+        { add: '6', target: percent(['54%', 10.8, null]), result: noMes('16.8'), basedOn: undefined },
+        { add: '6', target: points(['54%', 10.8, null]), result: noMes('16.8'), basedOn: undefined },
+        { add: '30%', target: percent([null, 10.8, null]), result: noMes('10.8'), basedOn: undefined },
+        { add: '30%', target: percent(['54%', null, null]), result: noMes('54%'), basedOn: undefined },
+        { add: '30%', target: percent([null, null, null]), result: noMes('0'), basedOn: undefined },
+        { add: '30%', target: points(['null', 10.8, null]), result: noMes('10.8'), basedOn: undefined },
+        { add: '30%', target: points(['54%', null, null]), result: noMes('54%'), basedOn: undefined },
+        { add: '30%', target: points([null, null, null]), result: noMes('0'), basedOn: undefined },
+        { add: '', target: percent([null, null, null]), result: noMes('0'), basedOn: undefined },
+        { add: '', target: points([null, null, null]), result: noMes('0'), basedOn: undefined }
+    ];
+
+    nullishValuesTests.forEach((params) => {
+        addingMultiDenomScores(params, addPercentOrPointsToCanvasGrade);
+    });
+
+    // TODO: Add tests for checking most simple/precise posted grades
+    const chooseMostPreciseTests: addingScoreTypesWithMultiDenomTestingParameters[] = [
+        {
+            add: '1',
+            target: percent(['50%', 10, 20]),
+            result: [noMes('55%'), noMes('31')],
+            basedOn: 60,
+            matchingBasedOnScore: 30
+        },
+        {
+            add: '3',
+            target: percent([null, 10, 11]),
+            result: [noMes('13'), noMes('33')],
+            basedOn: 33,
+            matchingBasedOnScore: 30
+        },
+        {
+            add: '33%',
+            target: percent(['0%', 0, 3]),
+            result: [noMes('660%'), noMes('1.65%')],
+            basedOn: 60,
+            matchingBasedOnScore: 0
+        },
+        {
+            add: '33%',
+            target: points(['0%', 0, 3]),
+            result: [noMes('660%'), noMes('0.99')],
+            basedOn: 60,
+            matchingBasedOnScore: 0
+        },
+        {
+            add: '1',
+            target: percent([null, null, 20]),
+            result: [noMes('5%'), noMes('31')],
+            basedOn: 60,
+            matchingBasedOnScore: 30
+        },
+        {
+            add: '2.55',
+            target: percent([null, null, 20]),
+            result: [noMes('12.75%'), noMes('32.55')],
+            basedOn: 60,
+            matchingBasedOnScore: 30
+        },
+        {
+            add: '2.555',
+            target: percent([null, null, 20]),
+            result: [noMes('12.78%'), noMes('32.56')],
+            basedOn: 60,
+            matchingBasedOnScore: 30
+        },
+        {
+            add: '2.55',
+            target: points(['10%', null, 20]),
+            result: [noMes('22.75%'), noMes('8.55')],
+            basedOn: 60,
+            matchingBasedOnScore: 6
+        },
+        {
+            add: '2.55',
+            target: percent(['10%', null, 20]),
+            result: [noMes('22.75%'), noMes('14.25%')],
+            basedOn: 60,
+            matchingBasedOnScore: 6
+        },
+        {
+            add: '2.55',
+            target: points([null, 2, 20]),
+            result: [noMes('4.55'), noMes('8.55')],
+            basedOn: 60,
+            matchingBasedOnScore: 6
+        },
+        {
+            add: '2.55',
+            target: percent([null, 2, 20]),
+            result: [noMes('4.55'), noMes('8.55')],
+            basedOn: 60,
+            matchingBasedOnScore: 6
+        }
+    ];
+
+    chooseMostPreciseTests.forEach((params) => {
+        addingMultiDenomScores(params, addPercentOrPointsToCanvasGrade);
+    });
+
+    const becomesZero: addingScoreTypesWithMultiDenomTestingParameters[] = [
+        // What does canvas do with a percentage grade for a 0 possible point assignment?
+        // Answer: updates to score: 0, grade: '0%'
+        // For 5 points grade to a 0 of 0 possible point assignment?
+        // Answer: updates to score: 5, grade: '5'
+        { add: '10%', target: percent(['50%', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '30%', target: percent(['50%', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '30%', target: percent(['54%', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '10%', target: percent(['0', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '30%', target: percent(['0', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '10%', target: percent(['0%', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '30%', target: percent(['0%', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '10%', target: percent(['1', 1, 0]), result: noMes('1'), basedOn: 0 },
+        { add: '30%', target: percent(['1', 1, 0]), result: noMes('1'), basedOn: 0 },
+        { add: '0', target: percent(['0%', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '0', target: percent(['0', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '10%', target: points(['50%', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '30%', target: points(['50%', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '30%', target: points(['54%', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '10%', target: points(['0', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '30%', target: points(['0', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '10%', target: points(['0%', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '30%', target: points(['0%', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '10%', target: points(['1', 1, 0]), result: noMes('1'), basedOn: 0 },
+        { add: '30%', target: points(['1', 1, 0]), result: noMes('1'), basedOn: 0 },
+        { add: '0', target: points(['0%', 0, 0]), result: noMes('0'), basedOn: 0 },
+        { add: '0', target: points(['0', 0, 0]), result: noMes('0'), basedOn: 0 }
+    ];
+
+    becomesZero.forEach((params) => {
+        addingMultiDenomScores(params, addPercentOrPointsToCanvasGrade);
+    });
+});
+
+// TODO: Add tests for checking the update message when adding to an assignment score.
 
 // TODO: Add tests for collectPointsPossible
 //       - null/NaN 'points_possible', null skip value, unique skip property, etc.
