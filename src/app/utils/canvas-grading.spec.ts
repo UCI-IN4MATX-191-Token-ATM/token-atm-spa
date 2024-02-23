@@ -593,7 +593,64 @@ describe('Test that converting from different denominators preserves the actual 
     });
 });
 
-// TODO: Add tests for checking the update message when adding to an assignment score.
+type testingUpdateMessageParams = {
+    add: string;
+    target: CanvasGradeScorePossible;
+    basedOn?: number;
+    r: string;
+    rMes: string;
+};
+
+function testingUpdateMessage(params: testingUpdateMessageParams) {
+    const {
+        add,
+        target: { gradeType, grade, score, pointsPossible },
+        basedOn,
+        r,
+        rMes
+    } = params;
+    const gradeTypeScoreFirst = `${gradeType === 'points' ? score : grade}|${gradeType === 'points' ? grade : score}`;
+    it(`Correct message for adding ${add} of ${basedOn} to ${gradeTypeScoreFirst} of ${pointsPossible}`, () => {
+        const { postedGrade: result, updateMessage: message } = addPercentOrPointsToCanvasGrade(
+            add,
+            { gradeType, grade, score, pointsPossible },
+            basedOn
+        );
+        expect(result).toBe(r);
+        expect(message).toBe(rMes);
+    });
+}
+function testTemplate(a: string, b: string, orig: string, final: string) {
+    return `Added ${a} to ${b}\nChange: ${orig} => ${final}`;
+}
+
+// Tests for checking the update message when adding to an assignment score.
+describe('Check Update Messages are as expected.', () => {
+    const messages = [
+        testTemplate('10', '0 out of 0 points', '0', '10'),
+        testTemplate('10 out of 1 total point', '0% of 0 points', '0', '10'),
+        testTemplate('10%', '50% of 10 points', '50%', '60%'),
+        testTemplate('1', '1 out of 10 points', '1', '2'),
+        testTemplate('100% of 1 total point', '1 out of 10 points', '1', '2'),
+        testTemplate('0%', '0% of 0 points', '0', '0')
+    ];
+    const posted = ['10', '10', '60%', '2', '2', '0'];
+    const inputs = [
+        { add: '10', target: points(['0%', 0, 0]), basedOn: undefined },
+        { add: '10', target: percent(['0%', 0, 0]), basedOn: 1 },
+        { add: '10%', target: percent(['50%', 5, 10]), basedOn: undefined },
+        { add: '1', target: points(['1%', 1, 10]), basedOn: 0 },
+        { add: '100%', target: points(['10%', 1, 10]), basedOn: 1 },
+        { add: '0%', target: percent(['0%', 0, 0]), basedOn: 0 }
+    ];
+
+    messages.forEach((v, i) => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const { add, target, basedOn } = inputs[i]!;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        testingUpdateMessage({ add, target, basedOn, r: posted[i]!, rMes: v });
+    });
+});
 
 // TODO: Add tests for collectPointsPossible
 //       - null/NaN 'points_possible', null skip value, unique skip property, etc.

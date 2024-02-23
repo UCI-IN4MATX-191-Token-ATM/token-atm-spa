@@ -357,7 +357,7 @@ function generatePostedGradeMessage(
     // decides connection phrase: 'out of' for points, 'of' for percents
     const of = (n: string | number, d: number) => `${n} ${`${n}`.includes('%') ? '' : 'out '}of ${d}`;
     // append 'total ' to 'point(s)', if using custom pointsPossible
-    const points = (count: number, total = false) => `${total ? 'total ' : ''}${pluralize('points', count)}`;
+    const points = (count: number, total = false) => `${total ? 'total ' : ''}${pluralize('point', count)}`;
     const ofPoints = (n: string | number, d: number, total = false) => `${of(n, d)} ${points(d, total)}`;
     // Displays the change provided by instructor, and grade display of assignment
     const firstLine = `Added ${basedOn ? ofPoints(add, basedOn, true) : add} to ${ofPoints(
@@ -365,7 +365,7 @@ function generatePostedGradeMessage(
         target.pointsPossible
     )}\n`;
     // Displays the actual change provided to Canvas via posted_grade
-    const secondLine = `Change: ${postedGrade.includes('%') ? target.score : target.grade} => ${postedGrade}`;
+    const secondLine = `Change: ${postedGrade.includes('%') ? target.grade : target.score} => ${postedGrade}`;
     return firstLine + secondLine;
 }
 
