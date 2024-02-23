@@ -7,11 +7,7 @@ import { ProcessedRequest } from 'app/data/processed-request';
 import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { RequestHandlerGuardExecutor } from './guards/request-handler-guard-executor';
-import {
-    addPercentToPointsOrPercentType,
-    addPointsToPercentOrPointsType,
-    parseCanvasPercentsAndPoints
-} from 'app/utils/canvas-grading';
+import { addPercentOrPointsToCanvasGrade } from 'app/utils/canvas-grading';
 import { MultipleRequestsGuard } from './guards/multiple-requests-guard';
 import { ExcludeTokenOptionsGuard } from './guards/exclude-token-options-guard';
 import { SufficientTokenBalanceGuard } from './guards/sufficient-token-balance-guard';
@@ -33,76 +29,60 @@ export class SpendForAdditionalPointsRequestHandler extends RequestHandler<
             configuration.course.id,
             request.tokenOption.assignmentId
         );
-        let totalPointsPossible: number | null = null;
-        if (request.tokenOption.changeMaxPossiblePoints != null) {
-            totalPointsPossible = await this.canvasService.getTotalPointsPossibleInAnAssignmentGroup(
-                configuration.course.id,
-                request.tokenOption.changeMaxPossiblePoints[1].groupId
-            );
-        }
-        if (gradingType === 'points' || gradingType === 'percent') {
-            const guardExecutor = new RequestHandlerGuardExecutor([
-                new MultipleRequestsGuard(request.tokenOption, studentRecord.processedRequests),
-                new ExcludeTokenOptionsGuard(
-                    request.tokenOption.excludeTokenOptionIds,
-                    studentRecord.processedRequests
-                ),
-                new SufficientTokenBalanceGuard(studentRecord.tokenBalance, request.tokenOption.tokenBalanceChange)
-            ]);
-            await guardExecutor.check();
-            if (!guardExecutor.isRejected) {
-                const addScoreInputText = request.tokenOption.additionalScore;
-                const isAddingPercent = addScoreInputText.endsWith('%');
-                const toAdd = parseCanvasPercentsAndPoints(addScoreInputText);
-                const addScoreFunc = isAddingPercent ? addPercentToPointsOrPercentType : addPointsToPercentOrPointsType;
-                const { grade, score, gradeMatchesCurrentSubmission } =
-                    await this.canvasService.getSubmissionGradeAndScore(
-                        configuration.course.id,
-                        request.tokenOption.assignmentId,
-                        studentRecord.student.id
-                    );
-                // TODO: Handle / find the actual current Submission, or add to all submissions
-                if (!gradeMatchesCurrentSubmission) {
-                    throw new Error('Was about to add to an out-of-date Canvas submission score.');
-                }
-                // TODO: Preserve the intended number of points/percentage when updating assignments
-                //       with percentage grades when points possible differ from total points possible.
-                const current = gradingType === 'points' ? (score ?? 0).toString() : grade ?? '0%';
-                const actualPointsPossible = totalPointsPossible ?? pointsPossible;
-                const newPostedGrade = addScoreFunc(toAdd, current, actualPointsPossible);
-                // Note: `toAddStr` uses score function, because canvas-grading.ts defaults to using only 2 decimal points
-                const toAddStr = addScoreFunc(toAdd, isAddingPercent ? '0%' : '0', actualPointsPossible); // TODO: use input text
-                const assignmentComment =
-                    `Request for ${request.tokenOption.name} was approved.\n` +
-                    `Added ${toAddStr} to ${current} of ${actualPointsPossible} ${
-                        totalPointsPossible ? 'total ' : ''
-                    }points.\n` +
-                    `Change: ${current} => ${newPostedGrade}`;
-                this.canvasService.postSubmissionGradeWithComment(
-                    configuration.course.id,
-                    studentRecord.student.id,
-                    request.tokenOption.assignmentId,
-                    newPostedGrade,
-                    assignmentComment
-                );
-            }
-            return new ProcessedRequest(
-                configuration,
-                request.tokenOption.id,
-                request.tokenOption.name,
-                request.student,
-                !guardExecutor.isRejected,
-                request.submittedTime,
-                new Date(),
-                guardExecutor.isRejected ? 0 : request.tokenOption.tokenBalanceChange,
-                guardExecutor.message ?? '',
-                request.tokenOption.group.id
-            );
-        } else {
+        if (gradingType !== 'points' && gradingType !== 'percent') {
             throw new Error(
-                `${request.tokenOption.assignmentName} doesn’t display its Grade as Points or a Percent, and so its score cannot be added to.`
+                `${request.tokenOption.assignmentName} doesn’t display its Grade as Points or as a Percent, and so its score cannot be added to.`
             );
         }
+        const guardExecutor = new RequestHandlerGuardExecutor([
+            new MultipleRequestsGuard(request.tokenOption, studentRecord.processedRequests),
+            new ExcludeTokenOptionsGuard(request.tokenOption.excludeTokenOptionIds, studentRecord.processedRequests),
+            new SufficientTokenBalanceGuard(studentRecord.tokenBalance, request.tokenOption.tokenBalanceChange)
+        ]);
+        await guardExecutor.check();
+        if (!guardExecutor.isRejected) {
+            const addText = request.tokenOption.additionalScore;
+            const { grade, score, gradeMatchesCurrentSubmission } = await this.canvasService.getSubmissionGradeAndScore(
+                configuration.course.id,
+                request.tokenOption.assignmentId,
+                studentRecord.student.id
+            );
+            const totalPointsPossible = request.tokenOption.changeMaxPossiblePoints
+                ? await this.canvasService.getTotalPointsPossibleInAnAssignmentGroup(
+                      configuration.course.id,
+                      request.tokenOption.changeMaxPossiblePoints[1].groupId
+                  )
+                : undefined;
+            // TODO: Handle / find the actual current Submission, or add to all submissions
+            if (!gradeMatchesCurrentSubmission) {
+                throw new Error('Was about to add to an out-of-date Canvas submission score.');
+            }
+            const { postedGrade: newPostedGrade, updateMessage } = addPercentOrPointsToCanvasGrade(
+                addText,
+                { gradeType: gradingType, grade, score, pointsPossible },
+                totalPointsPossible
+            );
+            const assignmentComment = `Request for ${request.tokenOption.name} was approved.\n` + updateMessage;
+            this.canvasService.postSubmissionGradeWithComment(
+                configuration.course.id,
+                studentRecord.student.id,
+                request.tokenOption.assignmentId,
+                newPostedGrade,
+                assignmentComment
+            );
+        }
+        return new ProcessedRequest(
+            configuration,
+            request.tokenOption.id,
+            request.tokenOption.name,
+            request.student,
+            !guardExecutor.isRejected,
+            request.submittedTime,
+            new Date(),
+            guardExecutor.isRejected ? 0 : request.tokenOption.tokenBalanceChange,
+            guardExecutor.message ?? 'See Assignment comment for more info',
+            request.tokenOption.group.id
+        );
     }
     public get type(): string {
         return 'spend-for-additional-points';
