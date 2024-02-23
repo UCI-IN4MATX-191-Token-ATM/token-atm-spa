@@ -1,6 +1,3 @@
-// type CanvasGradingTypes = 'pass_fail' | 'percent' | 'points';
-// type UnsupportedGradingTypes = 'letter_grade' | 'gpa_scale';
-
 import { pluralize } from './pluralize';
 
 /**
@@ -389,7 +386,9 @@ export function parseCanvasPercentsAndPoints(postedGrade: string): number {
 }
 
 function convertNumberToMaxDecimalString(num: number, maxDecimals = MAX_DECIMALS): string {
+    if (num === 0) return '0';
     const sign = num < 0 ? -1 : 1;
+    maxDecimals = +maxDecimals;
     // fixes Javascript rounding, now rounds away from 0 and attempts to maintain an arbirary number of decimal places
     return `${sign * (Math.round((num * sign + Number.EPSILON) * 10 ** maxDecimals) / 10 ** maxDecimals)}`;
 }

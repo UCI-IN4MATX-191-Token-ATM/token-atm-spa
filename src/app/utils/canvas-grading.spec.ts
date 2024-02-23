@@ -119,7 +119,8 @@ describe('Basic Conversions', () => {
         { input: [-1.1, '0', 10], result: '-1.1' },
         { input: [-1.2, '0', 10], result: '-1.2' },
         { input: [-1.3, '0', 10], result: '-1.3' },
-        { input: [-0.2, '0', 10], result: '-0.2' }
+        { input: [-0.2, '0', 10], result: '-0.2' },
+        { input: [0.222, '0', 0], result: '0.22' }
     ];
 
     pointsToPointsTests.forEach((params) => {
