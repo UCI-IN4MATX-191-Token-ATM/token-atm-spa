@@ -27,29 +27,31 @@ export enum CanvasGradingType {
 //             a number + '%', only 0% or 100%
 
 // N.B. for adding to a current score, only percent and points grading_type are supported
-const MAX_DECIMALS = 2;
+const MAX_DECIMALS = 10; // 16 seems to be the Canvas or Javascript limit;
 
 /**
- * Adds a percentage of the pointsPossible to the current grade, and returns new grade in same format as current.
+ * Adds a percentage of the pointsPossible to the current grade, and returns the new grade in same format as current.
  *
  * Only guaranteed to work for 'points' and 'percent' grading_type assignments.
  * @param additionalPercentage percentage to add in decimal number format
  * @param current string of the current grade/score on Canvas (e.g. '10' or '10%')
  * @param pointsPossible the denominator used for ratio conversions
+ * @param maxDecimals optionally provide the max precision of the returned string (<= 10 places)
  * @returns A string for the Canvas submission posted_grade
  */
 export function addPercentToPointsOrPercentType(
     additionalPercentage: number,
     current: string,
-    pointsPossible: number
+    pointsPossible: number,
+    maxDecimals?: number
 ): string {
     const cur = parseCanvasPercentsAndPoints(current);
     if (current.endsWith('%')) {
         const sum = additionalPercentage + cur;
-        return convertNumberToMaxDecimalString(sum * 100) + '%';
+        return convertNumberToMaxDecimalString(sum * 100, maxDecimals) + '%';
     } else {
         const sum = additionalPercentage * pointsPossible + cur;
-        return convertNumberToMaxDecimalString(sum);
+        return convertNumberToMaxDecimalString(sum, maxDecimals);
     }
 }
 
@@ -61,20 +63,22 @@ export function addPercentToPointsOrPercentType(
  * @param additionalPoints points to add
  * @param current string of the current grade/score on Canvas (e.g. '10' or '10%')
  * @param pointsPossible the denominator used for ratio conversions
+ * @param maxDecimals optionally provide the max precision of the returned string (<= 10 places)
  * @returns A string for the Canvas submission posted_grade
  */
 export function addPointsToPercentOrPointsType(
     additionalPoints: number,
     current: string,
-    pointsPossible: number
+    pointsPossible: number,
+    maxDecimals?: number
 ): string {
     const cur = parseCanvasPercentsAndPoints(current);
     if (current.endsWith('%')) {
         const sum = additionalPoints / pointsPossible + cur;
-        return convertNumberToMaxDecimalString(sum * 100) + '%';
+        return convertNumberToMaxDecimalString(sum * 100, maxDecimals) + '%';
     } else {
         const sum = additionalPoints + cur;
-        return convertNumberToMaxDecimalString(sum);
+        return convertNumberToMaxDecimalString(sum, maxDecimals);
     }
 }
 
@@ -386,9 +390,9 @@ export function parseCanvasPercentsAndPoints(postedGrade: string): number {
 }
 
 function convertNumberToMaxDecimalString(num: number, maxDecimals = MAX_DECIMALS): string {
-    if (num === 0) return '0';
+    if (Number.isInteger(num)) return `${num}`;
     const sign = num < 0 ? -1 : 1;
-    maxDecimals = +maxDecimals;
+    maxDecimals = Math.min(Math.ceil(+maxDecimals), MAX_DECIMALS);
     // fixes Javascript rounding, now rounds away from 0 and attempts to maintain an arbirary number of decimal places
     return `${sign * (Math.round((num * sign + Number.EPSILON) * 10 ** maxDecimals) / 10 ** maxDecimals)}`;
 }

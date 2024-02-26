@@ -12,12 +12,12 @@ type addingScoreTypesTestingParameters = { input: [number, string, number]; resu
 
 function addingScores(
     params: addingScoreTypesTestingParameters,
-    func: (add: number, current: string, possible: number) => string,
+    func: (add: number, current: string, possible: number, maxDecimals?: number) => string,
     asPercent = false
 ) {
     const [add, current, possible] = params.input;
     it(`Adding ${add}${asPercent ? ' (as percent)' : ''} to ${current} of ${possible}`, () => {
-        expect(func(add, current, possible)).toBe(params.result);
+        expect(func(add, current, possible, 2)).toBe(params.result);
     });
 }
 
@@ -521,7 +521,7 @@ describe('Test that converting from different denominators preserves the actual 
         {
             add: '2.555',
             target: percent([null, null, 20]),
-            result: [noMes('12.78%'), noMes('32.56')],
+            result: [noMes('12.775%'), noMes('32.555')],
             basedOn: 60,
             matchingBasedOnScore: 30
         },
