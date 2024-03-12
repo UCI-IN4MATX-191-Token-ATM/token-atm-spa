@@ -379,7 +379,13 @@ function generatePostedGradeMessage(
  */
 export function parseCanvasPercentsAndPoints(postedGrade: string): number {
     const checkNonNumber = /[^\d.%-]/m;
-    if (postedGrade.match(checkNonNumber) || postedGrade.split('.').length > 2 || postedGrade.split('%').length > 2) {
+    if (
+        postedGrade.match(checkNonNumber) ||
+        postedGrade.split('.').length > 2 ||
+        postedGrade.split('%').length > 2 ||
+        postedGrade.split('-').length > 2 ||
+        (postedGrade.split('-').length === 2 && postedGrade.split('-')[0] !== '')
+    ) {
         return Number.NaN;
     }
     const isPercent = postedGrade.endsWith('%');

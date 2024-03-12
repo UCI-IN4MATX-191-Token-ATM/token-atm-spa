@@ -288,7 +288,13 @@ describe('Testing Canvas Score Inputs that should fail to parse.', () => {
         '%0%',
         '0%0%',
         '0.0%0.0',
-        '0%0.0%0'
+        '0%0.0%0',
+        '0-10.0',
+        ' -.20',
+        '--20',
+        '-100.00%%',
+        '-abc.qwe',
+        '205-02'
     ];
 
     function testNaN(testString: string) {
