@@ -250,4 +250,16 @@ export class DevTestComponent {
         await this.canvasService.modifyAssignmentPublishedState(this.course.id, assignmentId, !bool);
         console.log(`Canvas Assignment '${this.testAssignmentName}' is now ${!bool ? '' : 'NOT '}published.`);
     }
+
+    async checkAllAssignmentGroupsTotalPointsPossible(): Promise<void> {
+        if (!this.course) return;
+        console.log('Total Points Possible');
+        const skipIf = undefined; // { points_possible: [3, 7, 10] };
+        for await (const { id, name } of await this.canvasService.getAssignmentGroups(this.course.id)) {
+            console.log(
+                `  ${name}:`,
+                await this.canvasService.getTotalPointsPossibleInAnAssignmentGroup(this.course.id, id, skipIf)
+            );
+        }
+    }
 }

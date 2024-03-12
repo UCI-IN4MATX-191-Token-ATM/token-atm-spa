@@ -21,6 +21,8 @@ import { Section } from 'app/data/section';
 import { unwrapValidation } from 'app/utils/validation-unwrapper';
 import type { CanvasCredential } from 'app/data/token-atm-credentials';
 import { ExponentialBackoffExecutorService } from './exponential-backoff-executor.service';
+import { collectPointsPossible, type CanvasGradingType } from 'app/utils/canvas-grading';
+import { AssignmentGroupDef, type AssignmentGroup } from 'app/data/assignment-group';
 
 type QuizQuestionResponse = {
     id: string;
@@ -431,6 +433,9 @@ export class CanvasService {
         });
     }
 
+    /**
+     * Warning! Has no internal guards to protect assignments/submissions.
+     */
     public async gradeSubmissionWithPercentage(
         courseId: string,
         studentId: string,
@@ -442,6 +447,29 @@ export class CanvasService {
             data: {
                 submission: {
                     posted_grade: (scorePercentage * 100).toFixed(2) + '%'
+                }
+            }
+        });
+    }
+
+    /**
+     * Warning! Has no internal guards to protect assignments/submissions.
+     */
+    public async postSubmissionGradeWithComment(
+        courseId: string,
+        studentId: string,
+        assignmentId: string,
+        postedGrade: string,
+        newComment: string
+    ): Promise<void> {
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`, {
+            method: 'put',
+            data: {
+                comment: {
+                    text_comment: newComment
+                },
+                submission: {
+                    posted_grade: postedGrade
                 }
             }
         });
@@ -840,22 +868,22 @@ export class CanvasService {
         return data.id;
     }
 
-    public async getAssignmentGroupIdByName(courseId: string, assignmentGroupName: string) {
-        const assignmentGroups = new PaginatedResult<[string, string]>(
+    public async getAssignmentGroups(courseId: string): Promise<PaginatedResult<AssignmentGroup>> {
+        return new PaginatedResult<AssignmentGroup>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignment_groups`, {
                 params: {
                     per_page: 100
                 }
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (data: any) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                return data.map((entry: any) => [entry.id, entry.name]);
-            }
+            (data: unknown[]) => data.map((entry) => unwrapValidation(AssignmentGroupDef.decode(entry)))
         );
+    }
+
+    public async getAssignmentGroupIdByName(courseId: string, assignmentGroupName: string): Promise<string> {
+        const assignmentGroups = await this.getAssignmentGroups(courseId);
         let result: string | undefined = undefined;
-        for await (const [id, name] of assignmentGroups) {
+        for await (const { id, name } of assignmentGroups) {
             if (name != assignmentGroupName) continue;
             if (result == undefined) {
                 result = id;
@@ -1318,7 +1346,7 @@ export class CanvasService {
         return result;
     }
 
-    public async getAssignmentIdByName(courseId: string, assignmentName: string) {
+    public async getAssignmentIdByName(courseId: string, assignmentName: string): Promise<string> {
         const assignments = new PaginatedResult<Assignment>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments`, {
                 params: {
@@ -1548,5 +1576,79 @@ export class CanvasService {
             method: 'put',
             data: { assignment: { published: published } }
         });
+    }
+
+    public async getAssignmentGradingType(
+        courseId: string,
+        assignmentId: string
+    ): Promise<keyof typeof CanvasGradingType> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`);
+        if (typeof data['grading_type'] != 'string') {
+            throw new Error('Invalid data');
+        }
+        return data['grading_type'] as keyof typeof CanvasGradingType;
+    }
+
+    public async getAssignmentGradingTypeAndPointsPossible(
+        courseId: string,
+        assignmentId: string
+    ): Promise<{ gradingType: keyof typeof CanvasGradingType; pointsPossible: number }> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`);
+        if (typeof data['grading_type'] != 'string' || typeof data['points_possible'] != 'number') {
+            throw new Error('Invalid data');
+        }
+        return {
+            gradingType: data['grading_type'] as keyof typeof CanvasGradingType,
+            pointsPossible: data['points_possible']
+        };
+    }
+
+    public async getSubmissionGradeAndScore(
+        courseId: string,
+        assignmentId: string,
+        studentId: string
+    ): Promise<{ grade: string | null; score: number | null; gradeMatchesCurrentSubmission: boolean }> {
+        const data = await this.apiRequest(
+            `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`
+        );
+        if (
+            !(typeof data['grade'] === 'string' || data['grade'] === null) ||
+            !(typeof data['score'] === 'number' || data['score'] === null) ||
+            typeof data['grade_matches_current_submission'] != 'boolean'
+        ) {
+            throw new Error('Invalid data');
+        }
+        if (typeof data['entered_grade'] === 'string' || typeof data['entered_score'] === 'number') {
+            if (data['grade'] !== data['entered_grade'] || data['score'] !== data['entered_score']) {
+                throw new Error(
+                    `Warning: Entered & Actual submission scores don’t match. Grade: ${data['entered_grade']} & ${data['grade']}. Score: ${data['entered_score']} & ${data['score']}`
+                );
+            }
+        }
+        return {
+            grade: data['grade'],
+            score: data['score'],
+            gradeMatchesCurrentSubmission: data['grade_matches_current_submission']
+        };
+    }
+
+    public async getTotalPointsPossibleInAnAssignmentGroup(
+        courseId: string,
+        assignmentGroupId: string,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        skipCountingIf?: { [x: string]: any }
+    ): Promise<number> {
+        const data = await this.apiRequest(
+            `/api/v1/courses/${courseId}/assignment_groups/${assignmentGroupId}?include[]=assignments`
+        );
+        if (data['assignments'] == null) {
+            throw new Error('Invalid data');
+        }
+        return data['assignments'].reduce(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (accumulator: number, currentAssignment: any) =>
+                accumulator + collectPointsPossible(currentAssignment, skipCountingIf),
+            0
+        ) as number;
     }
 }

@@ -18,6 +18,7 @@ import { SpendForQuizRevisionRequestResolver } from './spend-for-quiz-revision-r
 import { SpendForAssignmentExtensionRequestResolver } from './spend-for-assignment-extension-request-resolver';
 import { SpendForPassingAssignmentRequestResolver } from './spend-for-passing-assignment-request-resolver';
 import { PlaceholderRequestResolver } from './placeholder-request-resolver';
+import { SpendForAdditionalPointsRequestResolver } from './spend-for-additional-points-request-resolver';
 
 type GenericRequestResolver = RequestResolver<TokenOption, TokenATMRequest<TokenOption>>;
 
@@ -35,7 +36,8 @@ export const REGISTERED_REQUEST_RESOLVERS: Type<GenericRequestResolver>[] = [
     SpendForQuizRevisionRequestResolver,
     SpendForAssignmentExtensionRequestResolver,
     SpendForPassingAssignmentRequestResolver,
-    PlaceholderRequestResolver
+    PlaceholderRequestResolver,
+    SpendForAdditionalPointsRequestResolver
 ];
 
 export const REQUEST_RESOLVER_INJECT_TOKEN = new InjectionToken<GenericRequestResolver[]>('REQUEST_RESOLVERS');
