@@ -378,7 +378,7 @@ function generatePostedGradeMessage(
  * @returns The parsed number in decimals, or NaN if not correctly parsable.
  */
 export function parseCanvasPercentsAndPoints(postedGrade: string): number {
-    const checkNonNumber = /[^\d.%]/m;
+    const checkNonNumber = /[^\d.%-]/m;
     if (postedGrade.match(checkNonNumber) || postedGrade.split('.').length > 2 || postedGrade.split('%').length > 2) {
         return Number.NaN;
     }

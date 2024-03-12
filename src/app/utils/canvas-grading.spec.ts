@@ -52,7 +52,14 @@ describe('Basic Conversions', () => {
         { input: [-1.3, '0%', 10], result: '-130%' },
         { input: [-0.2, '0%', 10], result: '-20%' },
         { input: [-0.2, '0%', 10], result: '-20%' },
-        { input: [-0.001, '0%', 10], result: '-0.1%' }
+        { input: [-0.001, '0%', 10], result: '-0.1%' },
+        { input: [1.2, '-10%', 10], result: '110%' },
+        { input: [-1.1, '-10%', 10], result: '-120%' },
+        { input: [-1.2, '-10%', 10], result: '-130%' },
+        { input: [-1.3, '-10%', 10], result: '-140%' },
+        { input: [-0.2, '-10%', 10], result: '-30%' },
+        { input: [-0.2, '-10%', 10], result: '-30%' },
+        { input: [-0.001, '-10%', 10], result: '-10.1%' }
     ];
 
     percentToPercentTests.forEach((params) => {
