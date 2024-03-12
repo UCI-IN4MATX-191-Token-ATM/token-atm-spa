@@ -63,7 +63,7 @@ export class SpendForAdditionalPointsRequestHandler extends RequestHandler<
                 totalPointsPossible
             );
             const assignmentComment = `Request for ${request.tokenOption.name} was approved.\n` + updateMessage;
-            this.canvasService.postSubmissionGradeWithComment(
+            await this.canvasService.postSubmissionGradeWithComment(
                 configuration.course.id,
                 studentRecord.student.id,
                 request.tokenOption.assignmentId,
