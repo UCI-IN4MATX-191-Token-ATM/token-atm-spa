@@ -3,7 +3,7 @@ export function countAndNoun(count: number, noun: string) {
 }
 
 export function pluralize(word: string, count: number): string {
-    return word + (count == 1 ? '' : 's');
+    return word + (count === 1 ? '' : 's');
 }
 
 import { Pipe, PipeTransform } from '@angular/core';
