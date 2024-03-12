@@ -641,20 +641,34 @@ function testTemplate(a: string, b: string, orig: string, final: string) {
 describe('Check Update Messages are as expected.', () => {
     const messages = [
         testTemplate('10', '0 out of 0 points', '0', '10'),
-        testTemplate('10 out of 1 total point', '0% of 0 points', '0', '10'),
+        testTemplate('10 points', '0% of 0 points', '0', '10'),
         testTemplate('10%', '50% of 10 points', '50%', '60%'),
         testTemplate('1', '1 out of 10 points', '1', '2'),
         testTemplate('100% of 1 total point', '1 out of 10 points', '1', '2'),
-        testTemplate('0%', '0% of 0 points', '0', '0')
+        testTemplate('0% of 0 total points', '0% of 0 points', '0', '0'),
+        testTemplate('1 point', '20% of 10 points', '20%', '30%'),
+        testTemplate('1', '2 out of 10 points', '2', '3'),
+        testTemplate('50% of 0 total points', '102 out of 10 points', '102', '102'),
+        testTemplate('0.0 points', '1020% of 10 points', '1020%', '1020%'),
+        testTemplate('0.1 points', '0% of 0 points', '0', '0.1'),
+        testTemplate('1 point', '0% of 0 points', '0', '1'),
+        testTemplate('1.0 points', '0% of 0 points', '0', '1')
     ];
-    const posted = ['10', '10', '60%', '2', '2', '0'];
+    const posted = ['10', '10', '60%', '2', '2', '0', '30%', '3', '102', '1020%', '0.1', '1', '1'];
     const inputs = [
         { add: '10', target: points(['0%', 0, 0]), basedOn: undefined },
         { add: '10', target: percent(['0%', 0, 0]), basedOn: 1 },
         { add: '10%', target: percent(['50%', 5, 10]), basedOn: undefined },
         { add: '1', target: points(['1%', 1, 10]), basedOn: 0 },
         { add: '100%', target: points(['10%', 1, 10]), basedOn: 1 },
-        { add: '0%', target: percent(['0%', 0, 0]), basedOn: 0 }
+        { add: '0%', target: percent(['0%', 0, 0]), basedOn: 0 },
+        { add: '1', target: percent(['20%', 2, 10]), basedOn: 200 },
+        { add: '1', target: points(['20%', 2, 10]), basedOn: 200 },
+        { add: '50%', target: points(['1020%', 102, 10]), basedOn: 0 },
+        { add: '0.0', target: percent(['1020%', 102, 10]), basedOn: undefined },
+        { add: '0.1', target: percent(['0%', 0, 0]), basedOn: 1 },
+        { add: '1', target: percent(['0%', 0, 0]), basedOn: 1 },
+        { add: '1.0', target: percent(['0%', 0, 0]), basedOn: 1 }
     ];
 
     messages.forEach((v, i) => {

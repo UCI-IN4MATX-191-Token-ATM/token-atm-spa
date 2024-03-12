@@ -364,10 +364,21 @@ function generatePostedGradeMessage(
     const points = (count: number, total = false) => `${total ? 'total ' : ''}${pluralize('point', count)}`;
     const ofPoints = (n: string | number, d: number, total = false) => `${of(n, d)} ${points(d, total)}`;
     // Displays the change provided by instructor, and grade display of assignment
-    const firstLine = `Added ${basedOn ? ofPoints(add, basedOn, true) : add} to ${ofPoints(
-        target.gradeType === 'percent' ? target.grade : target.score,
-        target.pointsPossible
-    )}\n`;
+    const addType = add.includes('%') ? 'percent' : 'points';
+    const gradeType = target.gradeType;
+    const curGrade = gradeType === 'percent' ? target.grade : target.score;
+    const hasTotal = basedOn !== undefined;
+    const addText =
+        addType === 'points'
+            ? gradeType === 'points'
+                ? add
+                : `${add} ${add.match(/^1\.0+$/g) != null ? 'points' : pluralize('point', Number.parseFloat(add))}`
+            : hasTotal
+            ? ofPoints(add, basedOn, true)
+            : gradeType === 'points'
+            ? ofPoints(add, target.pointsPossible)
+            : add;
+    const firstLine = `Added ${addText} to ${ofPoints(curGrade, target.pointsPossible)}\n`;
     // Displays the actual change provided to Canvas via posted_grade
     const secondLine = `Change: ${postedGrade.includes('%') ? target.grade : target.score} => ${postedGrade}`;
     return firstLine + secondLine;
