@@ -25,7 +25,7 @@ export class OptionalFieldComponent<T extends FormField<any, any, any>>
         const [renderer, field] = this.fieldBuilder.build();
         this._field = field;
         this._field.isReadOnly = this.isReadOnly;
-        if (this.cachedSrcValue) {
+        if (this.cachedSrcValue !== undefined) {
             this._field.srcValue = this.cachedSrcValue;
             this.cachedSrcValue = undefined;
         }
