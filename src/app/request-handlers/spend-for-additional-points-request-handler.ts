@@ -25,15 +25,6 @@ export class SpendForAdditionalPointsRequestHandler extends RequestHandler<
         studentRecord: StudentRecord,
         request: SpendForAdditionalPointsRequest
     ): Promise<ProcessedRequest> {
-        const { gradingType, pointsPossible } = await this.canvasService.getAssignmentGradingTypeAndPointsPossible(
-            configuration.course.id,
-            request.tokenOption.assignmentId
-        );
-        if (gradingType !== 'points' && gradingType !== 'percent') {
-            throw new Error(
-                `${request.tokenOption.assignmentName} doesn’t display its Grade as Points or as a Percent, and so its score cannot be added to.`
-            );
-        }
         const guardExecutor = new RequestHandlerGuardExecutor([
             new MultipleRequestsGuard(request.tokenOption, studentRecord.processedRequests),
             new ExcludeTokenOptionsGuard(request.tokenOption.excludeTokenOptionIds, studentRecord.processedRequests),
@@ -41,6 +32,15 @@ export class SpendForAdditionalPointsRequestHandler extends RequestHandler<
         ]);
         await guardExecutor.check();
         if (!guardExecutor.isRejected) {
+            const { gradingType, pointsPossible } = await this.canvasService.getAssignmentGradingTypeAndPointsPossible(
+                configuration.course.id,
+                request.tokenOption.assignmentId
+            );
+            if (gradingType !== 'points' && gradingType !== 'percent') {
+                throw new Error(
+                    `${request.tokenOption.assignmentName} doesn’t display its Grade as Points or as a Percent, and so its score cannot be added to.`
+                );
+            }
             const addText = request.tokenOption.additionalScore;
             const { grade, score, gradeMatchesCurrentSubmission } = await this.canvasService.getSubmissionGradeAndScore(
                 configuration.course.id,
