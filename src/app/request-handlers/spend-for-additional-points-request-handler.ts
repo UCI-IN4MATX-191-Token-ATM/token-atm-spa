@@ -41,6 +41,16 @@ export class SpendForAdditionalPointsRequestHandler extends RequestHandler<
                     `${request.tokenOption.assignmentName} doesn’t display its Grade as Points or as a Percent, and so its score cannot be added to.`
                 );
             }
+            if (
+                !(await this.canvasService.isAssignmentPublished(
+                    configuration.course.id,
+                    request.tokenOption.assignmentId
+                ))
+            ) {
+                throw new Error(
+                    `${request.tokenOption.assignmentName} must be published for its score to be added to.`
+                );
+            }
             const addText = request.tokenOption.additionalScore;
             const { grade, score, gradeMatchesCurrentSubmission } = await this.canvasService.getSubmissionGradeAndScore(
                 configuration.course.id,
