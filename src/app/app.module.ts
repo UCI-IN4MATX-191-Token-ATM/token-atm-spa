@@ -84,6 +84,11 @@ import { CountAndNounPipe, PluralizePipe } from './utils/pluralize';
 import { OptionalCredentialManagementComponent } from './components/optional-credential-management/optional-credential-management.component';
 import { CREDENTIAL_HANDLER_INJECT_TOKEN, REGISTERED_CREDENTIAL_HANDLERS } from './services/credential-manager.service';
 import { MultipleChoiceModalComponent } from './components/multiple-choice-modal/multiple-choice-modal.component';
+import { QuestionProValidationFieldComponent } from './components/form-fields/question-pro-validation-field/question-pro-validation-field.component';
+import { LazySingleSelectionFieldComponent } from './components/form-fields/selection-fields/single-selection-field/lazy-single-selection-field.component';
+import { SwitchFieldComponent } from './components/form-fields/switch-field/switch-field.component';
+import { SwitchFieldItemWrapperComponent } from './components/form-fields/switch-field/switch-field-item-wrapper.component';
+import { EarnByQuestionProSurveyFormFieldComponent } from './token-option-field-component-factories/earn-by-question-pro-survey-token-option-field-component-factory';
 
 @NgModule({
     declarations: [
@@ -133,7 +138,12 @@ import { MultipleChoiceModalComponent } from './components/multiple-choice-modal
         CountAndNounPipe,
         PluralizePipe,
         OptionalCredentialManagementComponent,
-        MultipleChoiceModalComponent
+        MultipleChoiceModalComponent,
+        QuestionProValidationFieldComponent,
+        LazySingleSelectionFieldComponent,
+        SwitchFieldComponent,
+        SwitchFieldItemWrapperComponent,
+        EarnByQuestionProSurveyFormFieldComponent
     ],
     imports: [
         BrowserModule,

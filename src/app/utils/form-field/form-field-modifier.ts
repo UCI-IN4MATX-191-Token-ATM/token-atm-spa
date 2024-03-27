@@ -3,6 +3,7 @@ import type { ExtractDest, ExtractSrc, ExtractVP, FormField } from './form-field
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FormFieldModifierConfig<F extends FormField<any, any, any>> = {
     setIsReadOnly?: (field: F, isReadOnly: boolean, superFunc: (isReadOnly: boolean) => void) => void;
+    validate?: (field: F, superFunc: () => Promise<boolean>) => Promise<boolean>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,6 +55,11 @@ export class FormFieldModifier<F extends FormField<any, any, any>>
     }
 
     public validate(): Promise<boolean> {
-        return this.field.validate();
+        if (!this.config.validate) {
+            return this.field.validate();
+        }
+        return this.config.validate(this.field, () => {
+            return this.field.validate();
+        });
     }
 }

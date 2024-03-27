@@ -16,6 +16,7 @@ import { QualtricsService } from './qualtrics.service';
 import { RawRequestFetcherService } from './raw-request-fetcher.service';
 import { StudentRecordManagerService } from './student-record-manager.service';
 import { countAndNoun } from 'app/utils/pluralize';
+import { QuestionProService } from './question-pro.service';
 
 @Injectable({
     providedIn: 'root'
@@ -31,7 +32,8 @@ export class RequestProcessManagerService {
         @Inject(RequestResolverRegistry) private requestResolverRegistry: RequestResolverRegistry,
         @Inject(StudentRecordManagerService) private studentRecordManagerService: StudentRecordManagerService,
         @Inject(RequestHandlerRegistry) private requestHandlerRegistry: RequestHandlerRegistry,
-        @Inject(QualtricsService) private qualtricsService: QualtricsService
+        @Inject(QualtricsService) private qualtricsService: QualtricsService,
+        @Inject(QuestionProService) private questionProService: QuestionProService
     ) {}
 
     public startRequestProcessing(configuration: TokenATMConfiguration): Observable<[number, string]> {
@@ -53,6 +55,7 @@ export class RequestProcessManagerService {
         this._isRunning = false;
         this._isStopTriggered = false;
         this.qualtricsService.clearCache();
+        this.questionProService.clearCache();
         if (completeObservable) progressUpdate.complete();
     }
 
@@ -63,6 +66,7 @@ export class RequestProcessManagerService {
         this._isRunning = true;
         this._isStopTriggered = false;
         this.qualtricsService.clearCache();
+        this.questionProService.clearCache();
         let quizSubmissionMap, assignmentIdMap;
         try {
             [quizSubmissionMap, assignmentIdMap] = await this.gatherQuizSubmissions(configuration, progressUpdate);

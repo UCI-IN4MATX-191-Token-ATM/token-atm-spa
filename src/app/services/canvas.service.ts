@@ -4,7 +4,8 @@ import { ModuleItemInfo } from 'app/data/module-item-info';
 import { QuizSubmission } from 'app/data/quiz-submission';
 import { Student } from 'app/data/student';
 import { SubmissionComment } from 'app/data/submission-comment';
-import { PaginatedResult } from 'app/utils/paginated-result';
+import type { PaginatedResult } from 'app/utils/pagination/paginated-result';
+import { CanvasRESTPaginatedResult } from 'app/utils/pagination/canvas-rest-paginated-result';
 import { PaginatedView } from 'app/utils/paginated-view';
 import type { AxiosRequestConfig } from 'axios';
 import { compareAsc, compareDesc, formatISO, isEqual, parseISO } from 'date-fns';
@@ -164,7 +165,7 @@ export class CanvasService {
                 include: ['term']
             }
         });
-        return new PaginatedResult(
+        return new CanvasRESTPaginatedResult(
             response,
             async (url: string) => await this.paginatedRequestHandler(url),
             (data) => {
@@ -257,7 +258,7 @@ export class CanvasService {
 
     public async getPageIdByName(courseId: string, pageName: string): Promise<string> {
         let pageIds = await DataConversionHelper.convertAsyncIterableToList<[string, string]>(
-            new PaginatedResult<[string, string]>(
+            new CanvasRESTPaginatedResult<[string, string]>(
                 await this.rawAPIRequest(`/api/v1/courses/${courseId}/pages`, {
                     params: {
                         search_term: pageName,
@@ -297,7 +298,7 @@ export class CanvasService {
                 per_page: 100
             }
         });
-        return new PaginatedResult(
+        return new CanvasRESTPaginatedResult(
             response,
             async (url: string) => await this.paginatedRequestHandler(url),
             (data) => data.quiz_submissions.map((entry: unknown) => QuizSubmission.deserialize(entry))
@@ -514,7 +515,7 @@ export class CanvasService {
     }
 
     public async getAssignments(courseId: string): Promise<PaginatedResult<Assignment>> {
-        return new PaginatedResult<Assignment>(
+        return new CanvasRESTPaginatedResult<Assignment>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments`, {
                 params: {
                     per_page: 100
@@ -566,7 +567,7 @@ export class CanvasService {
             }
         }
         if (!curSubmission) return undefined;
-        const questions = new PaginatedResult<QuizQuestionResponse>(
+        const questions = new CanvasRESTPaginatedResult<QuizQuestionResponse>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions`, {
                 params: {
                     per_page: 100,
@@ -617,7 +618,7 @@ export class CanvasService {
     }
 
     public async getCourseStudentEnrollments(courseId: string): Promise<PaginatedResult<Student>> {
-        return new PaginatedResult<Student>(
+        return new CanvasRESTPaginatedResult<Student>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/users`, {
                 params: {
                     enrollment_type: ['student'],
@@ -634,7 +635,7 @@ export class CanvasService {
     public async getModuleScore(courseId: string, moduleId: string, studentId: string): Promise<[number, number]> {
         let obtainedPoints = 0,
             totalPoints = 0;
-        const moduleItems = new PaginatedResult<ModuleItemInfo>(
+        const moduleItems = new CanvasRESTPaginatedResult<ModuleItemInfo>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules/${moduleId}/items`, {
                 params: {
                     include: ['content_details'],
@@ -693,7 +694,7 @@ export class CanvasService {
         studentIds: string[]
     ): Promise<Map<string, number>> {
         // https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.for_students
-        const result = new PaginatedResult<StudentGradeInfo>(
+        const result = new CanvasRESTPaginatedResult<StudentGradeInfo>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/students/submissions`, {
                 params: {
                     student_ids: studentIds,
@@ -778,7 +779,7 @@ export class CanvasService {
     public async deleteModule(courseId: string, moduleId: string, deleteAllModuleItems = false): Promise<void> {
         await this.safeGuardForModule(courseId, moduleId);
         if (deleteAllModuleItems) {
-            const moduleItems = new PaginatedResult<ModuleItemInfo>(
+            const moduleItems = new CanvasRESTPaginatedResult<ModuleItemInfo>(
                 await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules/${moduleId}/items`, {
                     params: {
                         include: ['content_details'],
@@ -810,7 +811,7 @@ export class CanvasService {
     }
 
     public async getModules(courseId: string): Promise<PaginatedResult<CanvasModule>> {
-        return new PaginatedResult(
+        return new CanvasRESTPaginatedResult(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules`, {
                 params: {
                     per_page: 100
@@ -824,7 +825,7 @@ export class CanvasService {
     }
     public async getModuleIdByName(courseId: string, moduleName: string): Promise<string> {
         // TODO: Retrieve paginated result to avoid too many similar name
-        const modules = new PaginatedResult(
+        const modules = new CanvasRESTPaginatedResult(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules`, {
                 params: {
                     search_term: moduleName,
@@ -869,7 +870,7 @@ export class CanvasService {
     }
 
     public async getAssignmentGroups(courseId: string): Promise<PaginatedResult<AssignmentGroup>> {
-        return new PaginatedResult<AssignmentGroup>(
+        return new CanvasRESTPaginatedResult<AssignmentGroup>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignment_groups`, {
                 params: {
                     per_page: 100
@@ -1008,7 +1009,7 @@ export class CanvasService {
 
     public async clearQuizQuestions(courseId: string, quizId: string): Promise<void> {
         await this.safeGuardForQuiz(courseId, quizId);
-        const quizQuestionIds = new PaginatedResult<string>(
+        const quizQuestionIds = new CanvasRESTPaginatedResult<string>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions`, {
                 params: {
                     per_page: 100
@@ -1042,7 +1043,7 @@ export class CanvasService {
     public async replaceQuizQuestions(courseId: string, quizId: string, quizQuestions: QuizQuestion[]): Promise<void> {
         await this.safeGuardForQuiz(courseId, quizId);
         const quizQuestionIds = await DataConversionHelper.convertAsyncIterableToList(
-            new PaginatedResult<string>(
+            new CanvasRESTPaginatedResult<string>(
                 await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions`, {
                     params: {
                         per_page: 100
@@ -1088,7 +1089,7 @@ export class CanvasService {
         courseId: string,
         assignmentId: string
     ): Promise<PaginatedResult<AssignmentOverride>> {
-        return new PaginatedResult<AssignmentOverride>(
+        return new CanvasRESTPaginatedResult<AssignmentOverride>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
                 params: {
                     per_page: 100
@@ -1307,7 +1308,7 @@ export class CanvasService {
     }
 
     public async getQuizzes(courseId: string): Promise<PaginatedResult<Quiz>> {
-        return new PaginatedResult<Quiz>(
+        return new CanvasRESTPaginatedResult<Quiz>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes`, {
                 params: {
                     per_page: 100
@@ -1321,7 +1322,7 @@ export class CanvasService {
     }
 
     public async getQuizIdByName(courseId: string, quizName: string) {
-        const quizzes = new PaginatedResult<Quiz>(
+        const quizzes = new CanvasRESTPaginatedResult<Quiz>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes`, {
                 params: {
                     search_term: quizName,
@@ -1347,7 +1348,7 @@ export class CanvasService {
     }
 
     public async getAssignmentIdByName(courseId: string, assignmentName: string): Promise<string> {
-        const assignments = new PaginatedResult<Assignment>(
+        const assignments = new CanvasRESTPaginatedResult<Assignment>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments`, {
                 params: {
                     search_term: assignmentName,
@@ -1371,7 +1372,7 @@ export class CanvasService {
     }
 
     public async getStudentByEmail(courseId: string, email: string): Promise<Student | undefined> {
-        const students = new PaginatedResult<Student>(
+        const students = new CanvasRESTPaginatedResult<Student>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/users`, {
                 params: {
                     enrollment_type: ['student'],
@@ -1435,7 +1436,7 @@ export class CanvasService {
     }
 
     public async getSections(courseId: string): Promise<PaginatedResult<Section>> {
-        return new PaginatedResult<Section>(
+        return new CanvasRESTPaginatedResult<Section>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/sections`, {
                 params: {
                     per_page: 100
@@ -1460,7 +1461,7 @@ export class CanvasService {
     }
 
     public async getStudentSectionEnrollments(courseId: string, userId: string): Promise<PaginatedResult<string>> {
-        return new PaginatedResult<string>(
+        return new CanvasRESTPaginatedResult<string>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/enrollments`, {
                 params: {
                     type: ['StudentEnrollment'],
@@ -1495,7 +1496,7 @@ export class CanvasService {
             else studentIds.next();
             students.push(
                 ...(await DataConversionHelper.convertAsyncIterableToList(
-                    new PaginatedResult<Student>(
+                    new CanvasRESTPaginatedResult<Student>(
                         await this.rawAPIRequest(`/api/v1/courses/${courseId}/users`, {
                             params: {
                                 enrollment_type: ['student'],
