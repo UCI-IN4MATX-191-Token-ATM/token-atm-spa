@@ -37,6 +37,18 @@ export class QuestionProService {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    #paginatedRequest<T = any>(endpoint: string, config?: AxiosRequestConfig): Promise<IPCCompatibleAxiosResponse<T>> {
+        return this.axiosService.request<T>({
+            ...config,
+            url: endpoint,
+            headers: {
+                ...config?.headers,
+                'api-key': this.#apiKey
+            }
+        });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async #apiRequest<T = any>(
         endpoint: string,
         config?: AxiosRequestConfig,
@@ -87,7 +99,7 @@ export class QuestionProService {
                     page: 1
                 }
             }),
-            (url: string) => this.#rawAPIRequest(url),
+            (url: string) => this.#paginatedRequest(url),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (v) => v.map((x: any) => [x['surveyID'].toString(), x['name']])
         );
@@ -102,8 +114,42 @@ export class QuestionProService {
         return true;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private resolveQuestions(data: any): [string, string][] {
+        const type: string = data?.['type'];
+        if (!type) return [];
+        const questionTextArr = [];
+        if (data?.['text']) questionTextArr.push(data?.['text']);
+        switch (type) {
+            case 'contact_information': {
+                const emailQuestionId = data?.['email']?.['rowID']?.toString();
+                const emailQuestionText = data?.['email']?.['text'];
+                if (!emailQuestionId) break;
+                if (emailQuestionText) questionTextArr.push(emailQuestionText);
+                else questionTextArr.push('Email Address'); // default value
+                return [[emailQuestionId, questionTextArr.join(' - ')]];
+            }
+            case 'text_single_row':
+            case 'text_email': {
+                const rows = data?.['rows'];
+                if (!Array.isArray(rows)) break;
+                const result: [string, string][] = [];
+                for (const [ind, row] of rows.entries()) {
+                    const rowId = row?.['rowID']?.toString();
+                    const rowText = row?.['text'];
+                    if (!rowId) break;
+                    const tmpTextArr = questionTextArr.slice(0);
+                    if (rowText) tmpTextArr.push(rowText);
+                    const finalText = tmpTextArr.length > 0 ? tmpTextArr.join(' - ') : `Row ${ind} (${type})`;
+                    result.push([rowId, finalText]);
+                }
+                return result;
+            }
+        }
+        return [];
+    }
+
     public async getQuestions(surveyId: string): Promise<PaginatedResult<[string, string]>> {
-        // TODO: support unpacking questions with multiple rows (e.g., contact_information)
         return new QuestionProPaginatedResult(
             await this.#rawAPIRequest(`/surveys/${surveyId}/questions`, {
                 params: {
@@ -111,26 +157,28 @@ export class QuestionProService {
                     page: 1
                 }
             }),
-            (url: string) => this.#rawAPIRequest(url),
+            (url: string) => this.#paginatedRequest(url),
             (v) =>
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                v.map((x: any) => {
-                    if (x['type'] == 'text_email') return [x['questionID'].toString(), x['rows'][0]['text']];
-                    return [x['questionID'].toString(), x['text']];
-                })
+                v
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    .map((x: any) => [x?.['orderNumber'] ?? 0, this.resolveQuestions(x)])
+                    .filter((x: [number, [string, string][]]) => x[1].length > 0)
+                    .sort((a: [number, [string, string][]], b: [number, [string, string][]]) => a[0] - b[0])
+                    .map((x: [number, [string, string][]]) => x[1])
+                    .flat()
         );
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private async getResponses(surveyId: string): Promise<PaginatedResult<any>> {
         return new QuestionProPaginatedResult(
-            await this.#rawAPIRequest(`/surveys/${surveyId}/questions`, {
+            await this.#rawAPIRequest(`/surveys/${surveyId}/responses`, {
                 params: {
                     perPage: 1000,
                     page: 1
                 }
             }),
-            (url: string) => this.#rawAPIRequest(url),
+            (url: string) => this.#paginatedRequest(url),
             (v) => v
         );
     }
@@ -163,7 +211,7 @@ export class QuestionProService {
         const responses = await this.getResponses(surveyId);
         for await (const response of responses) {
             if (responseField.type == 'customVariable') {
-                const data = response?.['customVariables'][responseField.variableName];
+                const data = response?.['customVariables']?.[responseField.variableName];
                 if (!data) continue;
                 tmpSet?.add(data);
             } else {
@@ -171,7 +219,7 @@ export class QuestionProService {
                 for (const v of response['responseSet']) {
                     if (v?.['questionID'].toString() != responseField.questionId) continue;
                     if (!Array.isArray(v?.['answerValues'])) continue;
-                    const data = v?.['answerValues']?.[0]?.['answerText'];
+                    const data = v?.['answerValues']?.[0]?.['value']?.['text'];
                     if (!data) continue;
                     tmpSet?.add(data);
                 }

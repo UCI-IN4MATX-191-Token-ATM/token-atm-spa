@@ -31,7 +31,7 @@ export class QuestionProPaginatedResult<T> implements PaginatedResult<T> {
     private async fetchNextPage() {
         if (!this.nextURL) return;
         const response = await this.requestHandler(this.nextURL);
-        this.data.push(...this.dataProcessor(response.data));
+        this.data.push(...this.dataProcessor(response.data?.['response']));
         this.nextURL = this.extractNextURL(response);
     }
 
