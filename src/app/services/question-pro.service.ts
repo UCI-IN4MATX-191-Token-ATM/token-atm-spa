@@ -210,6 +210,7 @@ export class QuestionProService {
         const tmpSet = this.participationCache.get(surveyId)?.get(typeStr);
         const responses = await this.getResponses(surveyId);
         for await (const response of responses) {
+            if (response?.['responseStatus'] != 'Completed') continue;
             if (responseField.type == 'customVariable') {
                 const data = response?.['customVariables']?.[responseField.variableName];
                 if (!data) continue;
