@@ -80,7 +80,7 @@ export class QuestionProCredentialHandler implements CredentialHandler<QuestionP
                 field.validator = validator;
             })
             .appendBuilder(
-                createFieldComponentWithLabel(StringInputFieldComponent, 'User ID', environmentInjector).editField(
+                createFieldComponentWithLabel(StringInputFieldComponent, 'Customer ID', environmentInjector).editField(
                     (field) => {
                         field.validator = validator;
                     }
@@ -89,6 +89,7 @@ export class QuestionProCredentialHandler implements CredentialHandler<QuestionP
             .appendBuilder(
                 createFieldComponentWithLabel(StringInputFieldComponent, 'API Key', environmentInjector).editField(
                     (field) => {
+                        field.type = 'password';
                         field.validator = validator;
                     }
                 )
