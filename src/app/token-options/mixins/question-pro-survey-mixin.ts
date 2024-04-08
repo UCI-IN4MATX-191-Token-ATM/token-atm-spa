@@ -1,10 +1,10 @@
 import * as t from 'io-ts';
-import type { Constructor } from 'app/utils/mixin-helper';
+import { Base64StringDef, type Constructor } from 'app/utils/mixin-helper';
 import type { IGridViewDataSource } from './grid-view-data-source-mixin';
 
 export const QuestionProSurveyMixinDataDef = t.strict({
     surveyId: t.string,
-    surveyName: t.string,
+    surveyName: Base64StringDef,
     responseField: t.union([
         t.strict({
             type: t.literal('customVariable'),
@@ -13,7 +13,7 @@ export const QuestionProSurveyMixinDataDef = t.strict({
         t.strict({
             type: t.literal('studentResponse'),
             questionId: t.string,
-            questionName: t.string
+            questionName: Base64StringDef
         })
     ])
 });

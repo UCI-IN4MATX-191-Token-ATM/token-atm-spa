@@ -26,6 +26,7 @@ export class QuestionProService {
     ): Promise<IPCCompatibleAxiosResponse<T>> {
         const env = credential?.questionProEnv ?? this.#env;
         const apiKey = credential?.questionProAPIKey ?? this.#apiKey;
+        if (!env || !apiKey) throw new Error('QuestionPro credential is not configured!');
         return this.axiosService.request<T>({
             ...config,
             url: `https://api.questionpro.${env}/a/api/v2` + endpoint,
@@ -38,6 +39,7 @@ export class QuestionProService {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     #paginatedRequest<T = any>(endpoint: string, config?: AxiosRequestConfig): Promise<IPCCompatibleAxiosResponse<T>> {
+        if (!this.#apiKey) throw new Error('QuestionPro credential is not configured!');
         return this.axiosService.request<T>({
             ...config,
             url: endpoint,
@@ -150,37 +152,54 @@ export class QuestionProService {
     }
 
     public async getQuestions(surveyId: string): Promise<PaginatedResult<[string, string]>> {
-        return new QuestionProPaginatedResult(
-            await this.#rawAPIRequest(`/surveys/${surveyId}/questions`, {
-                params: {
-                    perPage: 1000,
-                    page: 1
-                }
-            }),
-            (url: string) => this.#paginatedRequest(url),
-            (v) =>
-                v
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    .map((x: any) => [x?.['orderNumber'] ?? 0, this.resolveQuestions(x)])
-                    .filter((x: [number, [string, string][]]) => x[1].length > 0)
-                    .sort((a: [number, [string, string][]], b: [number, [string, string][]]) => a[0] - b[0])
-                    .map((x: [number, [string, string][]]) => x[1])
-                    .flat()
-        );
+        try {
+            return new QuestionProPaginatedResult(
+                await this.#rawAPIRequest(`/surveys/${surveyId}/questions`, {
+                    params: {
+                        perPage: 1000,
+                        page: 1
+                    }
+                }),
+                (url: string) => this.#paginatedRequest(url),
+                (v) =>
+                    v
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        .map((x: any) => [x?.['orderNumber'] ?? 0, this.resolveQuestions(x)])
+                        .filter((x: [number, [string, string][]]) => x[1].length > 0)
+                        .sort((a: [number, [string, string][]], b: [number, [string, string][]]) => a[0] - b[0])
+                        .map((x: [number, [string, string][]]) => x[1])
+                        .flat()
+            );
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
+            if (err?.isAxiosError && err?.response?.status === 404) {
+                throw new Error('No question has been configured for this survey!');
+            }
+            throw err;
+        }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private async getResponses(surveyId: string): Promise<PaginatedResult<any>> {
-        return new QuestionProPaginatedResult(
-            await this.#rawAPIRequest(`/surveys/${surveyId}/responses`, {
-                params: {
-                    perPage: 1000,
-                    page: 1
-                }
-            }),
-            (url: string) => this.#paginatedRequest(url),
-            (v) => v
-        );
+        try {
+            return new QuestionProPaginatedResult(
+                await this.#rawAPIRequest(`/surveys/${surveyId}/responses`, {
+                    params: {
+                        perPage: 1000,
+                        page: 1
+                    }
+                }),
+                (url: string) => this.#paginatedRequest(url),
+                (v) => v
+            );
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
+            if (err?.isAxiosError && err?.response?.status === 404) {
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                return (async function* () {})();
+            }
+            throw err;
+        }
     }
 
     public async hasQuestion(surveyId: string, questionId: string): Promise<boolean> {

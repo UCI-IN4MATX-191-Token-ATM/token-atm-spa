@@ -75,7 +75,7 @@ export class QuestionProCredentialHandler implements CredentialHandler<QuestionP
             }
             return true;
         };
-        return createFieldComponentWithLabel(StringInputFieldComponent, 'Environment (ENV)', environmentInjector)
+        return createFieldComponentWithLabel(StringInputFieldComponent, 'Environment Value (ENV)', environmentInjector)
             .editField((field) => {
                 field.validator = validator;
             })
