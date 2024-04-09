@@ -121,6 +121,7 @@ export class QualtricsService {
         while (true) {
             try {
                 const executor = async () => {
+                    if (!this.hasCredentialConfigured()) throw new Error('Qualtrics credential is not configured!');
                     const result = await this.axiosService.request<T>({
                         ...config,
                         url: this.#qualtricsURL + endpoint,
