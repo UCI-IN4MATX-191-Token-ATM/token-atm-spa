@@ -4,28 +4,34 @@ import { ErrorSerializer } from 'app/utils/error-serailizer';
 import { BaseFormField, ObservableFormField } from 'app/utils/form-field/form-field';
 import type { FormFieldCopyPasteHandler } from 'app/utils/form-field/form-field-copy-paste-handler';
 import { isEqual } from 'lodash';
-import { filter, firstValueFrom, Subject, takeUntil } from 'rxjs';
+import { filter, firstValueFrom, Observable, Subject, takeUntil } from 'rxjs';
 import { v4 } from 'uuid';
 
+export type LazyLoadData<T> = {
+    data: T | undefined;
+    hasLoaded: boolean;
+};
+
 @Component({
-    selector: 'app-single-selection-field',
-    templateUrl: './single-selection-field.component.html',
+    selector: 'app-lazy-single-selection-field',
+    templateUrl: './lazy-single-selection-field.component.html',
     styleUrls: ['./single-selection-field.component.sass']
 })
-export class SingleSelectionFieldComponent<T>
+export class LazySingleSelectionFieldComponent<T>
     extends BaseFormField<
         [T | undefined, () => Promise<T[]>],
-        T | undefined,
-        [T | undefined, SingleSelectionFieldComponent<T>]
+        LazyLoadData<T>,
+        [T | undefined, LazySingleSelectionFieldComponent<T>]
     >
-    implements OnDestroy, ObservableFormField<T | undefined>
+    implements OnDestroy, ObservableFormField<LazyLoadData<T>>
 {
     @Input() optionRenderer: (value: T) => string = (v) => (v as object).toString();
     @Input() isEqual: (a: T, b: T) => boolean = isEqual;
     @Input() allowUnselect = false;
     @Input() copyPasteHandler?: FormFieldCopyPasteHandler<T | undefined>;
+    hasLoaded = false;
     value?: T | undefined;
-    _destValue$ = new Subject<T | undefined>();
+    _destValue$ = new Subject<LazyLoadData<T>>();
     srcValueTaskCnt = 0;
     srcValueTasks: string[] = [];
     srcValueTaskStatus$ = new EventEmitter<string>();
@@ -69,6 +75,12 @@ export class SingleSelectionFieldComponent<T>
     }
 
     public override set srcValue([selectedOption, optionFactory]: [T | undefined, () => Promise<T[]>]) {
+        this.hasLoaded = false;
+        this.optionFactory = optionFactory;
+        this.assignOptions(selectedOption, selectedOption !== undefined ? [selectedOption] : []);
+    }
+
+    public fetchOptions([selectedOption, optionFactory]: [T | undefined, () => Promise<T[]>]) {
         (async () => {
             const taskId = v4();
             this.srcValueTasks.push(taskId);
@@ -76,7 +88,6 @@ export class SingleSelectionFieldComponent<T>
             let isTaskTurn = false,
                 isAssigningOptions = false;
             try {
-                this.optionFactory = optionFactory;
                 if (this.srcValueTasks[0] != taskId)
                     await firstValueFrom(
                         this.srcValueTaskStatus$.pipe(
@@ -85,9 +96,12 @@ export class SingleSelectionFieldComponent<T>
                         )
                     );
                 isTaskTurn = true;
-                const options = await this.optionFactory();
+                if (this.optionFactory != optionFactory) return;
+                const options = await optionFactory();
+                if (this.optionFactory != optionFactory) return;
                 isAssigningOptions = true;
                 this.isOptionSettingFailed = false;
+                this.hasLoaded = true;
                 this.assignOptions(selectedOption, options);
             } catch (err: unknown) {
                 this.isOptionSettingFailed = true;
@@ -102,8 +116,15 @@ export class SingleSelectionFieldComponent<T>
         })();
     }
 
-    public override get destValue(): Promise<T | undefined> {
-        return Promise.resolve(this.value);
+    public override get destValue(): Promise<LazyLoadData<T>> {
+        return Promise.resolve({
+            data: this.value,
+            hasLoaded: this.hasLoaded
+        });
+    }
+
+    public get destValue$(): Observable<LazyLoadData<T>> {
+        return this._destValue$;
     }
 
     private assignOptions(selectedOption: T | undefined, options: T[]) {
@@ -112,14 +133,17 @@ export class SingleSelectionFieldComponent<T>
             this.invalidOption = selectedOption;
         this.validOptions = options;
         this.value = selectedOption;
-        this._destValue$.next(this.value);
+        this._destValue$.next({
+            data: this.value,
+            hasLoaded: this.hasLoaded
+        });
         this.filterText = '';
         this.invalidOptionsValidate();
     }
 
     refreshOptions() {
         if (!this.optionFactory) return;
-        this.srcValue = [this.value, this.optionFactory];
+        this.fetchOptions([this.value, this.optionFactory]);
     }
 
     private invalidOptionsValidate(value?: T): boolean {
@@ -147,16 +171,15 @@ export class SingleSelectionFieldComponent<T>
         return !!this.value && !!this.invalidOption && this.isEqual(this.value, this.invalidOption);
     }
 
-    get destValue$(): Subject<T | undefined> {
-        return this._destValue$;
-    }
-
     onSelectValueChange(value: T | undefined) {
         if (
             !(value === undefined && this.value === undefined) &&
             (value === undefined || this.value === undefined || !this.isEqual(value, this.value))
         )
-            this._destValue$.next(value);
+            this._destValue$.next({
+                data: value,
+                hasLoaded: this.hasLoaded
+            });
         if (this.isInvalidOptionSelected) this.invalidOptionsValidate(value);
     }
 
