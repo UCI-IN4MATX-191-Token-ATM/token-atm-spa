@@ -60,7 +60,7 @@ export class CourseSelectionComponent implements OnInit {
         return this.coursesEnrolledAsTeacher.filter(
             (course) =>
                 course.name.toLowerCase().indexOf(this.courseName.toLowerCase()) != -1 &&
-                course.term.toLowerCase().indexOf(this.termName.toLowerCase()) != -1
+                course.term.name.toLowerCase().indexOf(this.termName.toLowerCase()) != -1
         );
     }
 
@@ -68,7 +68,7 @@ export class CourseSelectionComponent implements OnInit {
         return this.coursesEnrolledAsTA.filter(
             (course) =>
                 course.name.toLowerCase().indexOf(this.courseName.toLowerCase()) != -1 &&
-                course.term.toLowerCase().indexOf(this.termName.toLowerCase()) != -1
+                course.term.name.toLowerCase().indexOf(this.termName.toLowerCase()) != -1
         );
     }
 

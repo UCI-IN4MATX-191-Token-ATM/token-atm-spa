@@ -12,7 +12,7 @@
         </div>
         <div *ngIf="course" class="d-flex flex-column align-items-center my-5">
             <p>{{ course.name }}</p>
-            <p>{{ course.term }}</p>
+            <p>{{ course.term.name }}</p>
             <span class="nav-link fs-5 text-primary is-link" [routerLink]="['/', 'select-course']">Switch Course</span>
         </div>
         <ul class="nav nav-pills flex-column align-items-center">

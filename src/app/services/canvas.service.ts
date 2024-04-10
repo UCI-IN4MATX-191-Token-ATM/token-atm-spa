@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { Course } from 'app/data/course';
+import { Course, CourseDef } from 'app/data/course';
 import { ModuleItemInfo } from 'app/data/module-item-info';
 import { QuizSubmission } from 'app/data/quiz-submission';
 import { Student } from 'app/data/student';
@@ -187,7 +187,7 @@ export class CanvasService {
                         course.term = termInfoMap.get(course['enrollment_term_id']);
                     }
                 }
-                return processedData.map((entry: unknown) => Course.deserialize(entry));
+                return processedData.map((entry: unknown) => unwrapValidation(CourseDef.decode(entry)));
             }
         );
     }

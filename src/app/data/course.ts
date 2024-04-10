@@ -1,34 +1,34 @@
-export class Course {
-    private _id: string;
-    private _name: string;
-    private _term: string;
+import camelcaseKeys from 'camelcase-keys';
+import decamelizeKeys from 'decamelize-keys';
+import { chain } from 'fp-ts/lib/Either';
+import * as t from 'io-ts';
+import { CanvasIdentifier, CanvasIdentifierDataDef } from './canvas-identifier';
 
-    constructor(id: string, name: string, term: string) {
-        this._id = id;
-        this._name = name;
-        this._term = term;
-    }
+export const CourseDataDef = t.intersection([
+    CanvasIdentifierDataDef,
+    t.strict({
+        term: CanvasIdentifierDataDef,
+        timeZone: t.string
+    })
+]);
 
-    public get id() {
-        return this._id;
-    }
+export type CourseData = t.TypeOf<typeof CourseDataDef>;
+export type RawCourseData = t.OutputOf<typeof CourseDataDef>;
 
-    public get name() {
-        return this._name;
-    }
-
-    public get term() {
-        return this._term;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public static deserialize(data: any) {
-        if (
-            typeof data['id'] != 'string' ||
-            typeof data['name'] != 'string' ||
-            typeof data['term']?.['name'] != 'string'
-        )
-            throw new Error('Invalid data');
-        return new Course(data['id'], data['name'], data['term']['name']);
-    }
+export class Course implements CourseData {
+    public id = '';
+    public name = '';
+    public term = new CanvasIdentifier();
+    public timeZone = '';
 }
+
+export const CourseDef = new t.Type<Course, unknown, unknown>(
+    'Assignment',
+    (v): v is Course => v instanceof Course,
+    (v, ctx) =>
+        chain((v: CourseData) => t.success(Object.assign(new Course(), v)))(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            CourseDataDef.validate(camelcaseKeys(v as any, { deep: true }), ctx)
+        ),
+    (v) => decamelizeKeys(CourseDataDef.encode(v))
+);
