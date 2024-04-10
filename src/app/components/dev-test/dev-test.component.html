@@ -17,7 +17,11 @@
     </button>
     <button class="btn btn-danger my-3" (click)="onResetStudentRecord()">Reset all student records</button>
     <button class="btn btn-danger my-3" (click)="onMyOperation()">On My Operation</button>
-    <button class="btn btn-primary my-3" (click)="timeZoneCheck()">Check Course Time Zone</button>
+    <details class="border rounded my-2">
+        <summary>Time Zone Test</summary>
+        <button class="btn btn-primary my-2 mx-1" (click)="timeZoneCheck()">Check Course Time Zone</button>
+        <button class="btn btn-primary my-2 mx-1" (click)="timeZoneDisplay()">Display Course Time</button>
+    </details>
     <details class="border rounded my-2">
         <summary>Qualtrics Survey Checks</summary>
         <div class="px-3 pt-3 mb-2">

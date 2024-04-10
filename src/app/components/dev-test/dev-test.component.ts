@@ -11,6 +11,7 @@ import {
     type WithdrawAssignmentResubmissionTokenOptionData
 } from 'app/token-options/withdraw-assignment-resubmission-token-option';
 import { QualtricsService } from 'app/services/qualtrics.service';
+import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
 
 @Component({
     selector: 'app-dev-test',
@@ -169,13 +170,26 @@ export class DevTestComponent {
 
     async timeZoneCheck(): Promise<void> {
         if (!this.course) return;
-        const courseTimeZone = await this.canvasService.getCourseTimeZone(this.course.id);
         const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const match = courseTimeZone === localTimeZone;
+        const match = this.course.timeZone === localTimeZone;
         console.log(
-            `Time zones ${match ? '' : 'do not '}match. ${courseTimeZone} ${match ? '' : '!'}= ${localTimeZone}`
+            `Time zones ${match ? '' : 'do not '}match. ${this.course.timeZone} ${match ? '' : '!'}= ${localTimeZone}`
         );
-        await this.canvasService.checkSameTimeZone(this.course.id);
+    }
+
+    async timeZoneDisplay(): Promise<void> {
+        if (!this.course) return;
+        const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const time = Date.now();
+        const local = formatInTimeZone(time, localTimeZone, 'MMM dd, yyyy HH:mm:ss');
+        if (localTimeZone === this.course.timeZone) {
+            console.log('Time:', local);
+        } else {
+            console.log(
+                ` Local: ${local}\n` +
+                    `Course: ${formatInTimeZone(time, this.course.timeZone, 'MMM dd, yyyy HH:mm:ss')}`
+            );
+        }
     }
 
     async checkQualtricsSurveyExists(): Promise<void> {
