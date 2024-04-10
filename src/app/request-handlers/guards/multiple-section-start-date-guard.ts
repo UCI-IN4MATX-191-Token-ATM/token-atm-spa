@@ -21,6 +21,7 @@ export class MultipleSectionStartDateGuard extends RequestHandlerGuard {
                 await this.canvasService.getStudentSectionEnrollments(this.courseId, this.studentId)
             )
         );
+        // Reject message should match message in start-date-guard.ts
         if (compareAsc(this.submittedDate, matchedStartDate) == -1) onReject('Request was submitted too early');
     }
 }
