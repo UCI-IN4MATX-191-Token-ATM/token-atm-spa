@@ -18,7 +18,8 @@
     <button class="btn btn-danger my-3" (click)="onResetStudentRecord()">Reset all student records</button>
     <button class="btn btn-danger my-3" (click)="onMyOperation()">On My Operation</button>
     <button class="btn btn-primary my-3" (click)="timeZoneCheck()">Check Course Time Zone</button>
-    <span class="border rounded">
+    <details class="border rounded my-2">
+        <summary>Qualtrics Survey Checks</summary>
         <div class="px-3 pt-3 mb-2">
             <label>
                 Qualtrics Survey Id:
@@ -38,25 +39,28 @@
             </button>
             <button class="btn btn-primary" (click)="getSurveyFields()">Get Survey Fields</button>
         </div>
-    </span>
-    <div class="my-3">
-        <label>
-            Canvas Page Name:
-            <input [(ngModel)]="testPageName" type="text" name="testPageName" (ngModelChange)="clearPageId()" />
-        </label>
-        <button class="btn btn-primary m-1" (click)="isConfigurationPagePublished()">is Published?</button>
-        <button class="btn btn-warning" (click)="switchConfigurationPagePublishedState()">
-            Switch Published State
-        </button>
-    </div>
-    <div class="my-3">
-        <label>
-            Canvas Assignment:
-            <input [(ngModel)]="testAssignmentName" type="text" name="testAssignmentName" />
-        </label>
-        <button class="btn btn-primary m-1" (click)="isAssignmentPublished()">is Published?</button>
-        <button class="btn btn-warning" (click)="switchAssignmentPublishedState()">Switch Published State</button>
-    </div>
+    </details>
+    <details class="border rounded my-2">
+        <summary>Canvas Page & Assignment Published? Checks</summary>
+        <div class="my-2">
+            <label>
+                Canvas Page Name:
+                <input [(ngModel)]="testPageName" type="text" name="testPageName" (ngModelChange)="clearPageId()" />
+            </label>
+            <button class="btn btn-primary m-1" (click)="isConfigurationPagePublished()">is Published?</button>
+            <button class="btn btn-warning" (click)="switchConfigurationPagePublishedState()">
+                Switch Published State
+            </button>
+        </div>
+        <div class="my-2">
+            <label>
+                Canvas Assignment:
+                <input [(ngModel)]="testAssignmentName" type="text" name="testAssignmentName" />
+            </label>
+            <button class="btn btn-primary m-1" (click)="isAssignmentPublished()">is Published?</button>
+            <button class="btn btn-warning" (click)="switchAssignmentPublishedState()">Switch Published State</button>
+        </div>
+    </details>
     <button class="btn btn-primary my-3" (click)="checkAllAssignmentGroupsTotalPointsPossible()">
         Check Total Points Possible for all Assignment Groups
     </button>
