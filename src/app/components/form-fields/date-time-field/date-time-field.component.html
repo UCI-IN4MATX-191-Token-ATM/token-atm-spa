@@ -9,6 +9,7 @@
                 [(bsValue)]="value"
                 [isDisabled]="isReadOnly"
                 [disabled]="isReadOnly"
+                (bsValueChange)="onValueChange($event)"
             />
             <timepicker
                 [(ngModel)]="value"
@@ -19,9 +20,10 @@
                 [showSpinners]="false"
                 [arrowkeys]="false"
                 [mousewheel]="false"
-                (isValid)="isTimeValid = $event"
+                (isValid)="validTimeChange($event)"
             ></timepicker>
         </div>
     </div>
+    <p *ngIf="courseTime">{{ courseTime }}</p>
     <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
 </div>
