@@ -81,14 +81,18 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                         return [
                             value,
                             [value.configuration.course.id, undefined],
-                            set(new Date(), {
-                                hours: 0,
-                                minutes: 0,
-                                seconds: 0,
-                                milliseconds: 0
-                            }),
+                            [
+                                set(new Date(), {
+                                    hours: 0,
+                                    minutes: 0,
+                                    seconds: 0,
+                                    milliseconds: 0
+                                }),
+                                value.configuration.course.timeZone
+                            ],
                             [
                                 value.configuration.course.id,
+                                value.configuration.course.timeZone,
                                 set(new Date(), {
                                     hours: 23,
                                     minutes: 59,
@@ -98,6 +102,7 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                             ],
                             [
                                 value.configuration.course.id,
+                                value.configuration.course.timeZone,
                                 set(new Date(), {
                                     hours: 23,
                                     minutes: 59,
@@ -116,9 +121,17 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                                     name: value.assignmentName
                                 }
                             ],
-                            value.startTime,
-                            [value.group.configuration.course.id, value.endTime],
-                            [value.group.configuration.course.id, value.newDueTime]
+                            [value.startTime, value.group.configuration.course.timeZone],
+                            [
+                                value.group.configuration.course.id,
+                                value.group.configuration.course.timeZone,
+                                value.endTime
+                            ],
+                            [
+                                value.group.configuration.course.id,
+                                value.group.configuration.course.timeZone,
+                                value.newDueTime
+                            ]
                         ];
                     }
                 })

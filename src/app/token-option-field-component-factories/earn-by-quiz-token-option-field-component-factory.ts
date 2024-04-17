@@ -39,12 +39,15 @@ export class EarnByQuizTokenOptionFieldComponentFactory extends TokenOptionField
                         return [
                             value,
                             [value.configuration.course.id, undefined],
-                            set(new Date(), {
-                                hours: 0,
-                                minutes: 0,
-                                seconds: 0,
-                                milliseconds: 0
-                            }),
+                            [
+                                set(new Date(), {
+                                    hours: 0,
+                                    minutes: 0,
+                                    seconds: 0,
+                                    milliseconds: 0
+                                }),
+                                value.configuration.course.timeZone
+                            ],
                             1
                         ];
                     } else {
@@ -57,7 +60,7 @@ export class EarnByQuizTokenOptionFieldComponentFactory extends TokenOptionField
                                     name: value.quizName
                                 }
                             ],
-                            value.startTime,
+                            [value.startTime, value.group.configuration.course.timeZone],
                             value.gradeThreshold
                         ];
                     }

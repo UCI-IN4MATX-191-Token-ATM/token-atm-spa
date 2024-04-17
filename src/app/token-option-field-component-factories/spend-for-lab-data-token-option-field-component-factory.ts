@@ -52,24 +52,33 @@ export class SpendForLabDataTokenOptionFieldComponentFactory extends TokenOption
                         return [
                             value,
                             [value.configuration.course.id, undefined],
-                            set(new Date(), {
-                                hours: 0,
-                                minutes: 0,
-                                seconds: 0,
-                                milliseconds: 0
-                            }),
-                            set(new Date(), {
-                                hours: 23,
-                                minutes: 59,
-                                seconds: 59,
-                                milliseconds: 999
-                            }),
-                            set(new Date(), {
-                                hours: 23,
-                                minutes: 59,
-                                seconds: 59,
-                                milliseconds: 999
-                            }),
+                            [
+                                set(new Date(), {
+                                    hours: 0,
+                                    minutes: 0,
+                                    seconds: 0,
+                                    milliseconds: 0
+                                }),
+                                value.configuration.course.timeZone
+                            ],
+                            [
+                                set(new Date(), {
+                                    hours: 23,
+                                    minutes: 59,
+                                    seconds: 59,
+                                    milliseconds: 999
+                                }),
+                                value.configuration.course.timeZone
+                            ],
+                            [
+                                set(new Date(), {
+                                    hours: 23,
+                                    minutes: 59,
+                                    seconds: 59,
+                                    milliseconds: 999
+                                }),
+                                value.configuration.course.timeZone
+                            ],
                             ['', value.configuration]
                         ];
                     } else {
@@ -82,9 +91,9 @@ export class SpendForLabDataTokenOptionFieldComponentFactory extends TokenOption
                                     name: value.quizName
                                 }
                             ],
-                            value.startTime,
-                            value.endTime,
-                            value.newDueTime,
+                            [value.startTime, value.group.configuration.course.timeZone],
+                            [value.endTime, value.group.configuration.course.timeZone],
+                            [value.newDueTime, value.group.configuration.course.timeZone],
                             [value.excludeTokenOptionIds.join(','), value.group.configuration]
                         ];
                     }

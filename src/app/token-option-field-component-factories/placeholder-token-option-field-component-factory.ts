@@ -121,6 +121,7 @@ export class PlaceholderTokenOptionFieldComponentFactory extends TokenOptionFiel
                                 false,
                                 [
                                     value.configuration.course.id,
+                                    value.configuration.course.timeZone,
                                     set(new Date(), {
                                         hours: 0,
                                         minutes: 0,
@@ -133,6 +134,7 @@ export class PlaceholderTokenOptionFieldComponentFactory extends TokenOptionFiel
                                 false,
                                 [
                                     value.configuration.course.id,
+                                    value.configuration.course.timeZone,
                                     set(new Date(), {
                                         hours: 23,
                                         minutes: 59,
@@ -151,6 +153,7 @@ export class PlaceholderTokenOptionFieldComponentFactory extends TokenOptionFiel
                                 value.startTime !== null,
                                 [
                                     value.group.configuration.course.id,
+                                    value.group.configuration.course.timeZone,
                                     value.startTime ??
                                         set(new Date(), {
                                             hours: 0,
@@ -164,6 +167,7 @@ export class PlaceholderTokenOptionFieldComponentFactory extends TokenOptionFiel
                                 value.endTime !== null,
                                 [
                                     value.group.configuration.course.id,
+                                    value.group.configuration.course.timeZone,
                                     value.endTime ??
                                         set(new Date(), {
                                             hours: 23,

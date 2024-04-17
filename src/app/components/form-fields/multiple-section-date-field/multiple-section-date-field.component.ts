@@ -23,7 +23,7 @@ const stringArrayDataDef = t.array(t.string);
 export class MultipleSectionDateFieldComponent
     implements
         FormField<
-            [string, Date | MultipleSectionDateMatcher],
+            [string, string, Date | MultipleSectionDateMatcher],
             Date | MultipleSectionDateMatcher,
             MultipleSectionDateFieldComponent
         >,
@@ -32,7 +32,7 @@ export class MultipleSectionDateFieldComponent
     fieldId = v4();
     @Input() dateFieldBuilderFactory?: () => FormFieldComponentBuilder<
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        FormField<Date, Date, any>
+        FormField<[Date, string], Date, any>
     >;
 
     @Input() defaultDateValueProvider?: () => Date;
@@ -50,9 +50,9 @@ export class MultipleSectionDateFieldComponent
     private _label = '';
     private _isReadOnly = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private _defaultDateField?: FormField<Date, Date, [FormField<Date, Date, any>, Date, boolean]>;
+    private _defaultDateField?: FormField<[Date, string], Date, [FormField<[Date, string], Date, any>, Date, boolean]>;
     private isInitialized = false;
-    private _delayedInitValue?: [string, Date | MultipleSectionDateMatcher];
+    private _delayedInitValue?: [string, string, Date | MultipleSectionDateMatcher];
 
     constructor(
         @Inject(CanvasService) private canvasService: CanvasService,
@@ -71,13 +71,13 @@ export class MultipleSectionDateFieldComponent
         this.isReadOnly = this.isReadOnly as boolean;
     }
 
-    set srcValue(srcValue: [string, Date | MultipleSectionDateMatcher]) {
+    set srcValue(srcValue: [string, string, Date | MultipleSectionDateMatcher]) {
         if (!this.isInitialized) {
             this._delayedInitValue = srcValue;
             return;
         }
         if (!this._defaultDateField || !this.listFieldComponent) return;
-        const [courseId, value] = srcValue;
+        const [courseId, courseTimeZone, value] = srcValue;
         this.listFieldComponent.defaultFieldSrcValueProvider = () => [
             {
                 sections: [],
@@ -168,7 +168,7 @@ export class MultipleSectionDateFieldComponent
                                 ).map((v) => v.name)
                         ],
                         override.name,
-                        override.date
+                        [override.date, courseTimeZone]
                     ];
                 })
                 .transformDest(async ([{ data: sections }, displayName, date]) => {
@@ -181,11 +181,11 @@ export class MultipleSectionDateFieldComponent
                 .build();
         };
         if (value instanceof MultipleSectionDateMatcher) {
-            this._defaultDateField.srcValue = value.defaultDate;
+            this._defaultDateField.srcValue = [value.defaultDate, courseTimeZone];
             this.listFieldComponent.srcValue = value.overrides.map((override) => [override, courseId]);
             this.hasException = value.overrides.length != 0;
         } else {
-            this._defaultDateField.srcValue = value;
+            this._defaultDateField.srcValue = [value, courseTimeZone];
             this.hasException = false;
         }
     }

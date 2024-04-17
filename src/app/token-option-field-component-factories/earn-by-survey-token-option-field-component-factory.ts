@@ -84,21 +84,32 @@ export class EarnBySurveyTokenOptionFieldComponentFactory extends TokenOptionFie
                         return [
                             value,
                             ['', ''],
-                            set(new Date(), {
-                                hours: 0,
-                                minutes: 0,
-                                seconds: 0,
-                                milliseconds: 0
-                            }),
-                            set(new Date(), {
-                                hours: 23,
-                                minutes: 59,
-                                seconds: 59,
-                                milliseconds: 999
-                            })
+                            [
+                                set(new Date(), {
+                                    hours: 0,
+                                    minutes: 0,
+                                    seconds: 0,
+                                    milliseconds: 0
+                                }),
+                                value.configuration.course.timeZone
+                            ],
+                            [
+                                set(new Date(), {
+                                    hours: 23,
+                                    minutes: 59,
+                                    seconds: 59,
+                                    milliseconds: 999
+                                }),
+                                value.configuration.course.timeZone
+                            ]
                         ];
                     } else {
-                        return [value, [value.surveyId, value.fieldName], value.startTime, value.endTime];
+                        return [
+                            value,
+                            [value.surveyId, value.fieldName],
+                            [value.startTime, value.group.configuration.course.timeZone],
+                            [value.endTime, value.group.configuration.course.timeZone]
+                        ];
                     }
                 })
                 .transformDest(async ([tokenOptionData, [surveyId, fieldName], startTime, endTime]) => {
