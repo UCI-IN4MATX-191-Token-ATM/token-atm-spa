@@ -9,7 +9,7 @@ import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
     styleUrls: ['./date-time-field.component.sass']
 })
 export class DateTimeFieldComponent extends BaseFormField<
-    [Date, string],
+    Date | [Date, string],
     Date,
     [DateTimeFieldComponent, Date, boolean]
 > {
@@ -56,7 +56,7 @@ export class DateTimeFieldComponent extends BaseFormField<
         this.courseTime = `Course Time: ${formatInTimeZone(this.value, this.courseTimeZone, 'MMM dd, yyyy HH:mm:ss')}`;
     }
 
-    public override set srcValue(srcValue: [Date, string]) {
+    public override set srcValue(srcValue: Date | [Date, string]) {
         if (Array.isArray(srcValue)) {
             this.value = srcValue[0];
             this.courseTimeZone = srcValue[1];
