@@ -23,7 +23,7 @@ export class Course implements CourseData {
 }
 
 export const CourseDef = new t.Type<Course, unknown, unknown>(
-    'Assignment',
+    'Course',
     (v): v is Course => v instanceof Course,
     (v, ctx) =>
         chain((v: CourseData) => t.success(Object.assign(new Course(), v)))(

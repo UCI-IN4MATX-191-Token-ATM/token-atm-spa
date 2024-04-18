@@ -16,7 +16,7 @@ export class CanvasIdentifier implements CanvasIdentifierData {
 }
 
 export const CanvasIdentifierDef = new t.Type<CanvasIdentifier, unknown, unknown>(
-    'Assignment',
+    'CanvasIdentifier',
     (v): v is CanvasIdentifier => v instanceof CanvasIdentifier,
     (v, ctx) =>
         chain((v: CanvasIdentifierData) => t.success(Object.assign(new CanvasIdentifier(), v)))(

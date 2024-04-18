@@ -254,7 +254,7 @@ export function createNewDueTimeComponentBuilder(
 
 export function createMultipleSectionDateComponentBuilder(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    dateFieldBuilderFactory: () => FormFieldComponentBuilder<FormField<[Date, string], Date, any>>,
+    dateFieldBuilderFactory: () => FormFieldComponentBuilder<FormField<Date | [Date, string], Date, any>>,
     label: string,
     environmentInjector: EnvironmentInjector,
     defaultDateProvider?: () => Date

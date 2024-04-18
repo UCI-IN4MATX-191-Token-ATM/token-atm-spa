@@ -32,7 +32,7 @@ export class MultipleSectionDateFieldComponent
     fieldId = v4();
     @Input() dateFieldBuilderFactory?: () => FormFieldComponentBuilder<
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        FormField<[Date, string], Date, any>
+        FormField<Date | [Date, string], Date, any>
     >;
 
     @Input() defaultDateValueProvider?: () => Date;
@@ -50,7 +50,11 @@ export class MultipleSectionDateFieldComponent
     private _label = '';
     private _isReadOnly = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private _defaultDateField?: FormField<[Date, string], Date, [FormField<[Date, string], Date, any>, Date, boolean]>;
+    private _defaultDateField?: FormField<
+        Date | [Date, string],
+        Date,
+        [FormField<Date | [Date, string], Date, any>, Date, boolean]
+    >;
     private isInitialized = false;
     private _delayedInitValue?: [string, string, Date | MultipleSectionDateMatcher];
 
