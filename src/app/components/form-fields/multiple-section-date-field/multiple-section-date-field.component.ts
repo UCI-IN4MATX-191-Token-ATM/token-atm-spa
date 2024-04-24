@@ -49,10 +49,10 @@ export class MultipleSectionDateFieldComponent
     hasException = false;
     private _label = '';
     private _isReadOnly = false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _defaultDateField?: FormField<
         Date | [Date, string],
         Date,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [FormField<Date | [Date, string], Date, any>, Date, boolean]
     >;
     private isInitialized = false;
