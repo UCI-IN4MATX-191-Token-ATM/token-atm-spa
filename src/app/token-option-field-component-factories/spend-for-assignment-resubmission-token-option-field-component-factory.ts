@@ -92,23 +92,23 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                             ],
                             [
                                 value.configuration.course.id,
-                                value.configuration.course.timeZone,
                                 set(new Date(), {
                                     hours: 23,
                                     minutes: 59,
                                     seconds: 59,
                                     milliseconds: 999
-                                })
+                                }),
+                                value.configuration.course.timeZone
                             ],
                             [
                                 value.configuration.course.id,
-                                value.configuration.course.timeZone,
                                 set(new Date(), {
                                     hours: 23,
                                     minutes: 59,
                                     seconds: 59,
                                     milliseconds: 999
-                                })
+                                }),
+                                value.configuration.course.timeZone
                             ]
                         ];
                     } else {
@@ -124,13 +124,13 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                             [value.startTime, value.group.configuration.course.timeZone],
                             [
                                 value.group.configuration.course.id,
-                                value.group.configuration.course.timeZone,
-                                value.endTime
+                                value.endTime,
+                                value.group.configuration.course.timeZone
                             ],
                             [
                                 value.group.configuration.course.id,
-                                value.group.configuration.course.timeZone,
-                                value.newDueTime
+                                value.newDueTime,
+                                value.group.configuration.course.timeZone
                             ]
                         ];
                     }

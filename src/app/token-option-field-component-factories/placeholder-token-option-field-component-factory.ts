@@ -121,26 +121,26 @@ export class PlaceholderTokenOptionFieldComponentFactory extends TokenOptionFiel
                                 false,
                                 [
                                     value.configuration.course.id,
-                                    value.configuration.course.timeZone,
                                     set(new Date(), {
                                         hours: 0,
                                         minutes: 0,
                                         seconds: 0,
                                         milliseconds: 0
-                                    })
+                                    }),
+                                    value.configuration.course.timeZone
                                 ]
                             ],
                             [
                                 false,
                                 [
                                     value.configuration.course.id,
-                                    value.configuration.course.timeZone,
                                     set(new Date(), {
                                         hours: 23,
                                         minutes: 59,
                                         seconds: 59,
                                         milliseconds: 999
-                                    })
+                                    }),
+                                    value.configuration.course.timeZone
                                 ]
                             ],
                             [false, 1],
@@ -153,28 +153,28 @@ export class PlaceholderTokenOptionFieldComponentFactory extends TokenOptionFiel
                                 value.startTime !== null,
                                 [
                                     value.group.configuration.course.id,
-                                    value.group.configuration.course.timeZone,
                                     value.startTime ??
                                         set(new Date(), {
                                             hours: 0,
                                             minutes: 0,
                                             seconds: 0,
                                             milliseconds: 0
-                                        })
+                                        }),
+                                    value.group.configuration.course.timeZone
                                 ]
                             ],
                             [
                                 value.endTime !== null,
                                 [
                                     value.group.configuration.course.id,
-                                    value.group.configuration.course.timeZone,
                                     value.endTime ??
                                         set(new Date(), {
                                             hours: 23,
                                             minutes: 59,
                                             seconds: 59,
                                             milliseconds: 999
-                                        })
+                                        }),
+                                    value.group.configuration.course.timeZone
                                 ]
                             ],
                             [value.allowedRequestCnt != 1, value.allowedRequestCnt],
