@@ -83,6 +83,7 @@ export class CanvasService {
         config?: AxiosRequestConfig
     ): Promise<IPCCompatibleAxiosResponse<T>> {
         const executor = async () => {
+            if (!this.hasCredentialConfigured()) throw new Error('Canvas credential is not configured!');
             return await this.axiosService.request<T>({
                 ...config,
                 url: this.#url + endpoint,
@@ -108,6 +109,7 @@ export class CanvasService {
 
     private async paginatedRequestHandler<T>(url: string): Promise<IPCCompatibleAxiosResponse<T>> {
         const executor = async () => {
+            if (!this.hasCredentialConfigured()) throw new Error('Canvas credential is not configured!');
             return await this.axiosService.request<T>({
                 url: url,
                 headers: {
