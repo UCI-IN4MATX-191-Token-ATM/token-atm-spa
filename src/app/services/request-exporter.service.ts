@@ -6,6 +6,7 @@ import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { format } from 'date-fns';
 import { countAndNoun } from 'app/utils/pluralize';
 import { CSVsService } from './csvs.service';
+import type { StudentRecord } from 'app/data/student-record';
 
 export function parseProcessedRequest(processedRequest: ProcessedRequest): Record<string, string> {
     return {
@@ -23,6 +24,7 @@ export function parseProcessedRequest(processedRequest: ProcessedRequest): Recor
 export class RequestExportInstance {
     private curProgress = 0;
     private isStopRequested = false;
+    private studentRecordCache: Map<string, StudentRecord> = new Map<string, StudentRecord>();
 
     constructor(
         private studentRecordManagerService: StudentRecordManagerService,
@@ -46,9 +48,17 @@ export class RequestExportInstance {
         )} remaining`;
     }
 
+    private async getStudentRecord(student: Student): Promise<StudentRecord> {
+        if (this.studentRecordCache.has(student.id)) return this.studentRecordCache.get(student.id) as StudentRecord;
+        const result = await this.studentRecordManagerService.getStudentRecord(this.configuration, student);
+        this.studentRecordCache.set(student.id, result);
+        return result;
+    }
+
     public async process(): Promise<File | null | undefined> {
         this.curProgress = 0;
         this.isStopRequested = false;
+        this.studentRecordCache.clear();
         const requestDataArray: Record<string, string>[] = [];
         const requestDataMap = new Map<string, Record<string, string>[]>();
         for (const student of this.students) {
@@ -57,7 +67,7 @@ export class RequestExportInstance {
                 this.isStopRequested = false;
                 return undefined;
             }
-            const studentRecord = await this.studentRecordManagerService.getStudentRecord(this.configuration, student);
+            const studentRecord = await this.getStudentRecord(student);
             for (const request of studentRecord.processedRequests) {
                 if (this.isStopRequested) {
                     this.curProgress = 0;
