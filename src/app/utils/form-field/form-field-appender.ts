@@ -1,6 +1,13 @@
 import { BaseFormField, ExtractDest, ExtractSrc, type FormField } from './form-field';
 import type { TupleAppend } from './form-field-component-builder';
 
+/**
+ * Warning! The FormFieldAppender's runtime execution is ambiguous. It will attempt
+ * to flatten the first src value before appending the second src value. But TypeScript's
+ * types are lost at runtime which may result in lost types when the first src value type
+ * is decomposed at runtime. See `export-request-modal.component.ts` for a workaround to
+ * handle complex types that will be decomposed (enclose src value in an object).
+ */
 export class FormFieldAppender<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     F1 extends FormField<any, any, any>,

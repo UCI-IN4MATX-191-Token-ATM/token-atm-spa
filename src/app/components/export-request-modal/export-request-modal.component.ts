@@ -100,7 +100,7 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         OptionalFieldComponent<
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            FormField<[Date | [Date, string], Date | [Date, string]], [Date, Date], any>
+                            FormField<[{ data: Date | [Date, string] }, Date | [Date, string]], [Date, Date], any>
                         >,
                         'Specify a time range for requests',
                         this.environmentInjector
@@ -110,7 +110,7 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
                             'Include Requests Since',
                             this.environmentInjector
                         )
-                            .transformSrc((v: [Date | [Date, string]]) => v[0])
+                            .transformSrc((v: { data: Date | [Date, string] }) => v.data)
                             .appendBuilder(
                                 createFieldComponentWithLabel(
                                     DateTimeFieldComponent,
@@ -161,7 +161,7 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
                 [
                     ExportRequestModalComponent.IS_TIME_RANGE_FILTER_ENABLED,
                     [
-                        [ExportRequestModalComponent.SAVED_START_TIME, this.configuration.course.timeZone],
+                        { data: [ExportRequestModalComponent.SAVED_START_TIME, this.configuration.course.timeZone] },
                         [ExportRequestModalComponent.SAVED_END_TIME, this.configuration.course.timeZone]
                     ]
                 ],
