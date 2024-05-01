@@ -3,13 +3,26 @@
         <label class="form-label">{{ label }}</label>
         <div class="d-flex align-items-center flex-wrap">
             <input
+                matInput
+                type="text"
+                class="form-control d-inline w-auto me-1 flex-grow-1 flex-shrink-1"
+                [value]="value"
+                [matDatepicker]="picker"
+                [disabled]="isReadOnly"
+                (dateChange)="onValueChange('date', $event.value)"
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+        </div>
+        <div class="d-flex align-items-center flex-wrap">
+            <input
                 type="text"
                 class="form-control d-inline w-auto me-1 flex-grow-1 flex-shrink-1"
                 bsDatepicker
                 [(bsValue)]="value"
                 [isDisabled]="isReadOnly"
                 [disabled]="isReadOnly"
-                (bsValueChange)="onValueChange($event)"
+                (bsValueChange)="onValueChange('date', $event)"
             />
             <timepicker
                 [(ngModel)]="value"

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { BaseFormField } from 'app/utils/form-field/form-field';
-import { isValid } from 'date-fns';
+import { getDate, getMonth, getYear, isValid, set } from 'date-fns';
 import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
 
 @Component({
@@ -43,11 +43,14 @@ export class DateTimeFieldComponent extends BaseFormField<
 
     public validTimeChange(event: boolean): void {
         this.isTimeValid = event;
-        this.onValueChange(event);
+        this.onValueChange('time', event);
     }
 
-    public onValueChange(event: unknown): void {
-        event;
+    public onValueChange(flag: 'date' | 'time', event: unknown): void {
+        if (flag === 'date') {
+            const d = event as Date;
+            this.value = set(this.value, { year: getYear(d), month: getMonth(d), date: getDate(d) });
+        }
         if (this.courseTimeZone === '' || this.courseTimeZone === DateTimeFieldComponent.localTimeZone) {
             this.courseTime = undefined;
             return;
