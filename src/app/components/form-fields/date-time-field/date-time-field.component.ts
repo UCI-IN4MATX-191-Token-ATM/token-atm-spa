@@ -75,8 +75,15 @@ export class DateTimeFieldComponent extends BaseFormField<
             this.courseTime = undefined;
             return;
         }
-        if (!this.isTimeValid || !isValid(this.value)) this.courseTime = 'Course Time: ';
-        this.courseTime = `Course Time: ${formatInTimeZone(this.value, this.courseTimeZone, 'MMM dd, yyyy HH:mm:ss')}`;
+        if (!this.isTimeValid || !isValid(this.value)) {
+            this.courseTime = 'Course Time: ';
+        } else {
+            this.courseTime = `Course Time: ${formatInTimeZone(
+                this.value,
+                this.courseTimeZone,
+                'MMM dd, yyyy HH:mm:ss'
+            )}`;
+        }
     }
 
     private setDateTime(time: Date): void {
