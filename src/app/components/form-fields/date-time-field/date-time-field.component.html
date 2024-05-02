@@ -13,6 +13,15 @@
             />
             <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
+            <input
+                type="time"
+                matInput
+                [(ngModel)]="timeString"
+                (change)="onValueChange('time', $event)"
+                [readOnly]="isReadOnly"
+                [disabled]="isReadOnly"
+                step="1"
+            />
         </div>
         <div class="d-flex align-items-center flex-wrap">
             <input

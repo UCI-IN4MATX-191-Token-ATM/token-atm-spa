@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { BaseFormField } from 'app/utils/form-field/form-field';
-import { getDate, getMonth, getYear, isValid, set } from 'date-fns';
+import { getDate, getHours, getMinutes, getMonth, getSeconds, getYear, isValid, parseISO, set } from 'date-fns';
 import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
 
 @Component({
@@ -18,10 +18,12 @@ export class DateTimeFieldComponent extends BaseFormField<
     private courseTimeZone: string;
     courseTime?: string;
     protected value: Date;
+    protected timeString: string;
 
     constructor() {
         super();
         this.value = new Date();
+        this.timeString = this.value.toTimeString().substring(0, 8);
         this.courseTimeZone = '';
         this.validator = DateTimeFieldComponent.DEFAULT_VALIDATOR;
         this.courseTime = undefined;
@@ -43,13 +45,31 @@ export class DateTimeFieldComponent extends BaseFormField<
 
     public validTimeChange(event: boolean): void {
         this.isTimeValid = event;
-        this.onValueChange('time', event);
+        this.onValueChange('', event);
     }
 
-    public onValueChange(flag: 'date' | 'time', event: unknown): void {
+    public onValueChange(flag: 'date' | 'time' | '', event: unknown): void {
         if (flag === 'date') {
             const d = event as Date;
-            this.value = set(this.value, { year: getYear(d), month: getMonth(d), date: getDate(d) });
+            this.setDateTime(set(this.value, { year: getYear(d), month: getMonth(d), date: getDate(d) }));
+        }
+        if (flag === 'time') {
+            const [dateStr, timeStr] = formatInTimeZone(
+                this.value,
+                DateTimeFieldComponent.localTimeZone,
+                'yyyy-MM-dd_HH:mm:ss'
+            ).split('_') as [string, string];
+            if (timeStr === this.timeString) {
+                return;
+            }
+            const dateWithTime = parseISO(`${dateStr}T${this.timeString}`);
+            if (this.timeString.length !== 8 || dateWithTime.toString() === 'Invalid Date') {
+                this.isTimeValid = false;
+            } else {
+                const [h, m, s] = [getHours(dateWithTime), getMinutes(dateWithTime), getSeconds(dateWithTime)];
+                this.isTimeValid = true;
+                this.value = set(this.value, { hours: h, minutes: m, seconds: s });
+            }
         }
         if (this.courseTimeZone === '' || this.courseTimeZone === DateTimeFieldComponent.localTimeZone) {
             this.courseTime = undefined;
@@ -59,12 +79,17 @@ export class DateTimeFieldComponent extends BaseFormField<
         this.courseTime = `Course Time: ${formatInTimeZone(this.value, this.courseTimeZone, 'MMM dd, yyyy HH:mm:ss')}`;
     }
 
+    private setDateTime(time: Date): void {
+        this.value = time;
+        this.timeString = this.value.toTimeString().substring(0, 8);
+    }
+
     public override set srcValue(srcValue: Date | [Date, string]) {
         if (Array.isArray(srcValue)) {
-            this.value = srcValue[0];
+            this.setDateTime(srcValue[0]);
             this.courseTimeZone = srcValue[1];
         } else {
-            this.value = srcValue;
+            this.setDateTime(srcValue);
             this.courseTimeZone = '';
         }
     }
