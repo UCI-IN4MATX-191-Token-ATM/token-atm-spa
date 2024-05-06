@@ -41,7 +41,7 @@ export class MultipleSectionDateFieldComponent
     defaultDateContainerRef?: ViewContainerRef;
     @ViewChild(ListFieldComponent, { static: true }) listFieldComponent?: ListFieldComponent<
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        FormField<[DateOverride, string], DateOverride, any>
+        FormField<[DateOverride, string, string], DateOverride, any>
     >;
 
     errorMessage = undefined;
@@ -92,7 +92,8 @@ export class MultipleSectionDateFieldComponent
                 name: '',
                 date: this.defaultDateValueProvider ? this.defaultDateValueProvider() : new Date()
             },
-            courseId
+            courseId,
+            courseTimeZone ?? ''
         ];
         this.listFieldComponent.fieldFactory = () => {
             if (!this.dateFieldBuilderFactory)
@@ -163,7 +164,7 @@ export class MultipleSectionDateFieldComponent
                     })
                 )
                 .appendBuilder(this.dateFieldBuilderFactory())
-                .transformSrc(([override, courseId]: [DateOverride, string]) => {
+                .transformSrc(([override, courseId, courseTimeZone]: [DateOverride, string, string]) => {
                     return [
                         courseId,
                         [
@@ -176,7 +177,7 @@ export class MultipleSectionDateFieldComponent
                                 ).map((v) => v.name)
                         ],
                         override.name,
-                        [override.date, courseTimeZone ?? '']
+                        [override.date, courseTimeZone]
                     ];
                 })
                 .transformDest(async ([{ data: sections }, displayName, date]) => {
@@ -190,7 +191,11 @@ export class MultipleSectionDateFieldComponent
         };
         if (value instanceof MultipleSectionDateMatcher) {
             this._defaultDateField.srcValue = [value.defaultDate, courseTimeZone ?? ''];
-            this.listFieldComponent.srcValue = value.overrides.map((override) => [override, courseId]);
+            this.listFieldComponent.srcValue = value.overrides.map((override) => [
+                override,
+                courseId,
+                courseTimeZone ?? ''
+            ]);
             this.hasException = value.overrides.length != 0;
         } else {
             this._defaultDateField.srcValue = [value, courseTimeZone ?? ''];
