@@ -39,6 +39,7 @@
         "camelcase-keys": "^8.0.2",
         "compress-json": "^2.1.2",
         "date-fns": "^2.30.0",
+        "date-fns-tz": "^2.0.1",
         "decamelize-keys": "^2.0.1",
         "flatted": "^3.2.7",
         "fp-ts": "^2.16.1",
