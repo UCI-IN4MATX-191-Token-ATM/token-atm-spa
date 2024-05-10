@@ -54,10 +54,10 @@ export class DateTimeFieldComponent extends BaseFormField<
         return true;
     };
 
-    public validTimeChange(event: boolean): void {
-        this.isTimeValid = event;
-        this.onValueChange('', event);
-    }
+    // public validTimeChange(event: boolean): void {
+    //     this.isTimeValid = event;
+    //     this.onValueChange('', event);
+    // }
 
     public onValueChange(flag: 'date' | 'time' | '', event: unknown): void {
         if (flag === 'date') {
