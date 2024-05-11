@@ -12,7 +12,7 @@ import {
     parseISO,
     set
 } from 'date-fns';
-import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
+import { utcToZonedTime, formatInTimeZone } from 'date-fns-tz';
 
 @Component({
     selector: 'app-date-time-field',
@@ -90,11 +90,13 @@ export class DateTimeFieldComponent extends BaseFormField<
         if (!this.isTimeValid || !isValid(this.value)) {
             this.courseTime = 'Course Time: ';
         } else {
-            this.courseTime = `Course Time: ${formatInTimeZone(
+            const equalTimeAcrossTimeZones = isEqual(
                 this.value,
-                this.courseTimeZone,
-                'MMM dd, yyyy HH:mm:ss'
-            )}`;
+                utcToZonedTime(this.value.toISOString(), this.courseTimeZone)
+            );
+            this.courseTime = equalTimeAcrossTimeZones
+                ? `Course Time is the same as the provided time.`
+                : `Course Time: ${formatInTimeZone(this.value, this.courseTimeZone, 'MMM dd, yyyy HH:mm:ss')}`;
         }
     }
 
