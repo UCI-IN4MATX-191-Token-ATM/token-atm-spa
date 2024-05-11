@@ -4,6 +4,7 @@ import type { Course } from 'app/data/course';
 import type { Subscription } from 'rxjs';
 import { CourseConfigurable, TokenATMDashboardRoute, TOKEN_ATM_DASHBOARD_ROUTES } from './dashboard-routing';
 import { CanvasService } from 'app/services/canvas.service';
+import { ModalManagerService } from 'app/services/modal-manager.service';
 
 @Component({
     selector: 'app-dashboard',
@@ -16,8 +17,13 @@ export class DashboardComponent implements OnDestroy {
     avatarUrl?: string;
     name: string | undefined;
     email: string | undefined;
+    localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-    constructor(@Inject(Router) private router: Router, @Inject(CanvasService) private canvasService: CanvasService) {
+    constructor(
+        @Inject(Router) private router: Router,
+        @Inject(CanvasService) private canvasService: CanvasService,
+        @Inject(ModalManagerService) private modalManagerService: ModalManagerService
+    ) {
         this.courseSubscription = this.router.events.subscribe((event) => {
             if (!(event instanceof NavigationEnd)) return;
             if (!(event.url == '/dashboard')) return;
@@ -54,5 +60,13 @@ export class DashboardComponent implements OnDestroy {
         if (!this.course) return;
         if ('configureCourse' in component && typeof component['configureCourse'] == 'function')
             await (component as CourseConfigurable).configureCourse(this.course);
+    }
+
+    async onWarningClick() {
+        if (!this.course || this.localTimeZone === this.course.timeZone) return;
+        await this.modalManagerService.createNotificationModal(
+            `This course is configured with the time zone, ${this.course.timeZone}, while Token ATM is running on a computer using the ${this.localTimeZone} time zone. \n\n When working with dates and times make sure the what you provide is also appropriate for your Course.`,
+            'Time Zone Warning'
+        );
     }
 }
