@@ -6,7 +6,8 @@ import {
     createExcludeTokenOptionsComponentBuilder,
     createFieldComponentWithLabel,
     tokenOptionFieldComponentBuilder,
-    tokenOptionValidationWrapper
+    tokenOptionValidationWrapper,
+    createOptionalAllowMultipleApprovedRequestsComponentBuilder
 } from './token-option-field-component-factory';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import { Injectable, type EnvironmentInjector, type ViewContainerRef, Inject, createComponent } from '@angular/core';
@@ -18,7 +19,6 @@ import {
 } from 'app/token-options/spend-for-additional-points-token-option';
 import { CanvasService } from 'app/services/canvas.service';
 import { OptionalFieldComponent } from 'app/components/form-fields/optional-field/optional-field.component';
-import { NumberInputFieldComponent } from 'app/components/form-fields/number-input-field/number-input-field.component';
 import { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
 import { StringInputFieldComponent } from 'app/components/form-fields/string-input-field/string-input-field.component';
 import { parseCanvasPercentsAndPoints } from 'app/utils/canvas-grading';
@@ -64,32 +64,7 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                         );
                     })
                 )
-                .appendBuilder(
-                    createFieldComponentWithLabel(
-                        OptionalFieldComponent<NumberInputFieldComponent>,
-                        'Allow multiple approved requests',
-                        environmentInjector
-                    ).editField((field) => {
-                        field.fieldBuilder = createFieldComponentWithLabel(
-                            NumberInputFieldComponent,
-                            'Allowed maximum number of approved requests (-1 for unlimited)',
-                            environmentInjector
-                        ).editField((field) => {
-                            field.validator = async ([x, v]: [NumberInputFieldComponent, number]) => {
-                                x.errorMessage = undefined;
-                                if (!Number.isInteger(v)) {
-                                    x.errorMessage = 'Should be an integer (floating number is not allowed)';
-                                    return false;
-                                }
-                                if (v != -1 && v < 0) {
-                                    x.errorMessage = 'Negative number is not allowed (except for -1)';
-                                    return false;
-                                }
-                                return true;
-                            };
-                        });
-                    })
-                )
+                .appendBuilder(createOptionalAllowMultipleApprovedRequestsComponentBuilder(environmentInjector))
                 .appendBuilder(createExcludeTokenOptionsComponentBuilder(environmentInjector))
                 .transformSrc((value: SpendForAdditionalPointsTokenOption | TokenOptionGroup) => {
                     if (value instanceof TokenOptionGroup) {
@@ -170,7 +145,7 @@ export class SpendForAdditionalPointsTokenOptionFieldComponentFactory extends To
                             assignmentId,
                             additionalScore,
                             changeMaxPossiblePoints: selectionTuple,
-                            allowedRequestCnt: allowedRequestCnt ?? 1,
+                            allowedRequestCnt,
                             excludeTokenOptionIds
                         };
                     }

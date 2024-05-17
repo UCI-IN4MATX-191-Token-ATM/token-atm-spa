@@ -3,6 +3,7 @@ import { DateTimeFieldComponent } from 'app/components/form-fields/date-time-fie
 import { ErrorMessageFieldComponent } from 'app/components/form-fields/error-message-field/error-message-field.component';
 import { MultipleSectionDateFieldComponent } from 'app/components/form-fields/multiple-section-date-field/multiple-section-date-field.component';
 import { NumberInputFieldComponent } from 'app/components/form-fields/number-input-field/number-input-field.component';
+import { OptionalFieldComponent } from 'app/components/form-fields/optional-field/optional-field.component';
 import { SingleSelectionFieldComponent } from 'app/components/form-fields/selection-fields/single-selection-field/single-selection-field.component';
 import { StringInputFieldComponent } from 'app/components/form-fields/string-input-field/string-input-field.component';
 import { StringTextareaFieldComponent } from 'app/components/form-fields/string-textarea-field/string-textarea-field.component';
@@ -56,6 +57,39 @@ export function createIdFieldComponentBuilder(
             field.isReadOnly = true;
         }
     });
+}
+
+export function createOptionalAllowMultipleApprovedRequestsComponentBuilder(
+    environmentInjector: EnvironmentInjector
+): FormFieldComponentBuilder<FormField<[boolean, number], number, [boolean, NumberInputFieldComponent | undefined]>> {
+    return createFieldComponentWithLabel(
+        OptionalFieldComponent<NumberInputFieldComponent>,
+        'Allow multiple approved requests',
+        environmentInjector
+    )
+        .editField((field) => {
+            field.fieldBuilder = createFieldComponentWithLabel(
+                NumberInputFieldComponent,
+                'Allowed maximum number of approved requests (-1 for unlimited)',
+                environmentInjector
+            ).editField((field) => {
+                field.validator = async ([x, v]: [NumberInputFieldComponent, number]) => {
+                    x.errorMessage = undefined;
+                    if (!Number.isInteger(v)) {
+                        x.errorMessage = 'Should be an integer (floating number is not allowed)';
+                        return false;
+                    }
+                    if (v != -1 && v < 0) {
+                        x.errorMessage = 'Negative number is not allowed (except for -1)';
+                        return false;
+                    }
+                    return true;
+                };
+            });
+        })
+        .transformDest(async (allowedRequestCnt) => {
+            return allowedRequestCnt ?? 1;
+        });
 }
 
 export function createExcludeTokenOptionsComponentBuilder(
