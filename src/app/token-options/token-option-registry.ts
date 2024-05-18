@@ -17,6 +17,7 @@ import type { Constructor } from 'app/utils/mixin-helper';
 import { PlaceholderTokenOption } from './placeholder-token-option';
 import { SpendForAdditionalPointsTokenOption } from './spend-for-additional-points-token-option';
 import { EarnByQuestionProSurveyTokenOption } from './earn-by-question-pro-survey-token-option';
+import { SpendForAdditionalAssignmentTimeTokenOption } from './spend-for-additional-assignment-time-token-option';
 
 @Injectable({
     providedIn: 'root'
@@ -40,7 +41,8 @@ export class TokenOptionRegistry {
         'spend-for-passing-assignment': 'Spend Tokens for Assignment / Quiz Grade',
         'placeholder-token-option': 'Placeholder Token Option',
         'spend-for-additional-points': 'Spend Tokens for Additional Canvas Assignment Points',
-        'earn-by-question-pro-survey': 'Earn Tokens by Taking QuestionPro Survey'
+        'earn-by-question-pro-survey': 'Earn Tokens by Taking QuestionPro Survey',
+        'spend-for-additional-assignment-time': 'Spend Tokens for Additional Canvas Assignment Time'
     };
 
     private static TOKEN_OPTION_CLASS_REGISTRY: {
@@ -62,7 +64,8 @@ export class TokenOptionRegistry {
         'spend-for-passing-assignment': SpendForPassingAssignmentTokenOption,
         'placeholder-token-option': PlaceholderTokenOption,
         'spend-for-additional-points': SpendForAdditionalPointsTokenOption,
-        'earn-by-question-pro-survey': EarnByQuestionProSurveyTokenOption
+        'earn-by-question-pro-survey': EarnByQuestionProSurveyTokenOption,
+        'spend-for-additional-assignment-time': SpendForAdditionalAssignmentTimeTokenOption
     };
 
     public getDescriptiveName(tokenOptionType: string): string | undefined {

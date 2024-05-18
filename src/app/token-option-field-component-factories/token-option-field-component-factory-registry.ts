@@ -27,6 +27,7 @@ import { SpendForPassingAssignmentTokenOptionFieldComponentFactory } from './spe
 import { PlaceholderTokenOptionFieldComponentFactory } from './placeholder-token-option-field-component-factory';
 import { SpendForAdditionalPointsTokenOptionFieldComponentFactory } from './spend-for-additional-points-token-option-field-component-factory';
 import { EarnByQuestionProSurveyTokenOptionFieldComponentFactory } from './earn-by-question-pro-survey-token-option-field-component-factory';
+import { SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory } from './spend-for-additional-assignment-time-token-option-field-component-factory';
 
 export const REGISTERED_TOKEN_OPTION_FIELD_COMPONENT_FACTORIES: Type<TokenOptionFieldComponentFactory<TokenOption>>[] =
     [
@@ -45,7 +46,8 @@ export const REGISTERED_TOKEN_OPTION_FIELD_COMPONENT_FACTORIES: Type<TokenOption
         SpendForPassingAssignmentTokenOptionFieldComponentFactory,
         PlaceholderTokenOptionFieldComponentFactory,
         SpendForAdditionalPointsTokenOptionFieldComponentFactory,
-        EarnByQuestionProSurveyTokenOptionFieldComponentFactory
+        EarnByQuestionProSurveyTokenOptionFieldComponentFactory,
+        SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory
     ];
 
 export const TOKEN_OPTION_FIELD_COMPONENT_FACTORY_INJECTION_TOKEN = new InjectionToken<
