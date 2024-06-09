@@ -1654,4 +1654,12 @@ export class CanvasService {
             0
         ) as number;
     }
+
+    /** Warning! Only intended to be used by a testing utility  */
+    public async setDueTime(courseId: string, assignmentId: string, dueAt: string) {
+        this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`, {
+            method: 'put',
+            params: { assignment: { due_at: dueAt } }
+        });
+    }
 }
