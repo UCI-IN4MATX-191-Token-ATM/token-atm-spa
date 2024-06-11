@@ -1298,6 +1298,20 @@ export class CanvasService {
         const individualOverridesWithThisStudent = overrides.filter(
             (override) => override.isIndividualLevel && override.studentIdsAsIndividualLevel.includes(studentId)
         );
+
+        const getIndividualOverrideDatesForThisStudent = (): DueLocksDates => {
+            // Individual level override dates are only valid if the student is in a single ad-hoc group
+            const preserveDates = individualOverridesWithThisStudent.length === 1;
+            return (individualOverridesWithThisStudent as DueLocksDates[]).reduce(
+                (acc, cur) => mergeAllOverrideDates(acc, cur, preserveDates),
+                {
+                    unlockAt: null,
+                    dueAt: null,
+                    lockAt: null
+                }
+            );
+        };
+
         // Return early without extending, if the student has an existing individual level override
         if (individualOverridesWithThisStudent.length > 0) return false;
 
@@ -1311,20 +1325,12 @@ export class CanvasService {
                 mergeAllOverrideDates(acc, cur)
             );
         };
-        if (studentDates == null) {
-            if (sectionOverridesForThisStudent.length > 0) {
-                studentDates = getSectionOverrideDatesForThisStudent();
-            }
-        }
 
         const getAssignmentDates = async () => {
             // Be aware, this.getAssignment must use `override_assignment_dates: false` param to get the correct dates
             const { lockAt, unlockAt, dueAt } = await this.getAssignment(courseId, assignmentId);
             return { lockAt, unlockAt, dueAt } as DueLocksDates;
         };
-        if (studentDates == null) {
-            studentDates = await getAssignmentDates();
-        }
 
         for (const override of overrides) {
             const data = override.title.split(' - ');
@@ -1360,7 +1366,60 @@ export class CanvasService {
             unlockDate = assignment.unlockAt;
         }
 
-        // ==== Check that both are equivalent ====
+        type CheckAndCollect = { name: string; predicate: () => boolean; result: () => Promise<DueLocksDates> } | null;
+        // Priority Order (highest to lowest), reduce to single appropriate level
+        const resolveLevel = (
+            [
+                {
+                    name: 'Individual Level',
+                    predicate: () => {
+                        const numIndividOverrides = individualOverridesWithThisStudent.length;
+                        if (numIndividOverrides > 1) {
+                            throw new Error(
+                                'This student was found in multiple individual level overrides for this assignment. They should only ever be in one per assignment.'
+                            );
+                        }
+                        return numIndividOverrides === 1;
+                    },
+                    result: async () => {
+                        return getIndividualOverrideDatesForThisStudent();
+                    }
+                },
+                {
+                    name: 'Section Level',
+                    predicate: () => {
+                        return sectionOverridesForThisStudent.length > 0;
+                    },
+                    result: async () => {
+                        return getSectionOverrideDatesForThisStudent();
+                    }
+                },
+                {
+                    name: 'Assignment Level',
+                    predicate: () => {
+                        return true;
+                    },
+                    result: async () => {
+                        return await getAssignmentDates();
+                    }
+                }
+            ] as CheckAndCollect[]
+        ).reduce((choice, cur) => {
+            if (choice == null && cur?.predicate()) {
+                return cur;
+            } else {
+                return choice;
+            }
+        }, null);
+
+        // Collect appropriate due/(un)lock dates
+        studentDates = (await resolveLevel?.result()) ?? null;
+        if (studentDates == null)
+            throw new Error(
+                'Logic error in implementation. No unlock, due, and lock dates found for this student and assignment. This should be impossible.'
+            );
+
+        // ==== Check that both implmentations are equivalent ====
         if (
             isOverrideDateEqual(lockDate, studentDates.lockAt) &&
             isOverrideDateEqual(unlockDate, studentDates.unlockAt)
