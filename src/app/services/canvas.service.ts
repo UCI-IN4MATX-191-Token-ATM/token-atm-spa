@@ -533,6 +533,7 @@ export class CanvasService {
             AssignmentDef.decode(
                 await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`, {
                     params: {
+                        // Necessary to collect the default/base due and (un)locks
                         override_assignment_dates: false
                     }
                 })
@@ -1195,6 +1196,11 @@ export class CanvasService {
         return true;
     }
 
+    /**
+     * Merges two dates into a single choice.
+     * @param min (default: true) if true, return earliest date. if false, return latest date.
+     * @returns the merged date or null if either date is null
+     */
     private mergeOverrideDate(a: Date | null, b: Date | null, min = true): Date | null {
         if (a == null || b == null) return null;
         if (min) {
@@ -1204,21 +1210,35 @@ export class CanvasService {
         }
     }
 
+    /**
+     * @returns true if both dates are equal or both are null
+     */
     private isOverrideDateEqual(a: Date | null, b: Date | null): boolean {
         if (a == null && b == null) return true;
         if (a == null || b == null) return false;
         return isEqual(a, b);
     }
 
+    /**
+     * Extends the time a Student has on a Canvas Assignment
+     *
+     * Overrides the student's assignment due at to match the assignment's lock at.
+     */
     public async extendAssignmentForStudent(
         courseId: string,
         assignmentId: string,
         studentId: string,
         overrideTitlePrefix: string
     ): Promise<boolean> {
+        /**
+         * All overrides for the assignment (multiple students can be in an override)
+         */
         const overrides = await DataConversionHelper.convertAsyncIterableToList(
             await this.getAssignmentOverrides(courseId, assignmentId)
         );
+        /**
+         * Sections the Student is enrolled in
+         */
         const sections = new Set(
             await DataConversionHelper.convertAsyncIterableToList(
                 await this.getStudentSectionEnrollments(courseId, studentId)
@@ -1231,29 +1251,41 @@ export class CanvasService {
         for (const override of overrides) {
             const data = override.title.split(' - ');
             if (data.length >= 3) {
+                // Monotonically increase the title count for Token ATM overrides by one
                 titleCnt = parseInt(data[2] as string) + 1;
             }
             if (override.isIndividualLevel) {
+                // Returns early without extending, since the student has an existing individual level override
                 if (override.studentIdsAsIndividualLevel.includes(studentId)) return false;
                 continue;
             }
             if (sections.has(override.sectionIdAsSectionLevel)) {
+                // Collect first lockDate and unlockDate, mark Matching Override as found
                 if (!hasMatchedOverride) {
                     lockDate = override.lockAt;
                     unlockDate = override.unlockAt;
                     hasMatchedOverride = true;
                     continue;
                 }
+                // Another Section override has been found for this Student,
+                // Update existing lock and unlock dates to use:
+                //  - the latest lock date
+                //  - the earliest unlock date
                 lockDate = this.mergeOverrideDate(lockDate, override.lockAt, false);
                 unlockDate = this.mergeOverrideDate(unlockDate, override.unlockAt, true);
             }
         }
+        // Use assignment's lock and unlock date if there isn't an existing match
         if (!hasMatchedOverride) {
             const assignment = await this.getAssignment(courseId, assignmentId);
             lockDate = assignment.lockAt;
             unlockDate = assignment.unlockAt;
         }
+        /**
+         * An existing override this Student should be included in
+         */
         let targetOverride: AssignmentOverride | undefined = undefined;
+        // Find first override that holds individual students, isn't full, and has exactly matching dates
         for (const override of overrides) {
             if (!override.isIndividualLevel) continue;
             if (override.studentIdsAsIndividualLevel.length >= CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE) continue;
@@ -1267,6 +1299,7 @@ export class CanvasService {
             }
         }
         if (targetOverride) {
+            // Update ad-hoc group of students that have existing matching override to include this student
             await this.apiRequest(
                 `/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${targetOverride.id}`,
                 {
@@ -1283,6 +1316,7 @@ export class CanvasService {
                 }
             );
         } else {
+            // Upload a new override for an ad-hoc group of students sharing the same dates (currently only contains this student)
             await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
                 method: 'post',
                 data: {
@@ -1296,6 +1330,8 @@ export class CanvasService {
                 }
             });
         }
+        // TODO: Should this return true here?
+        // If we get here the PUT/POST requests should have executed without an error.
         return false;
     }
 
