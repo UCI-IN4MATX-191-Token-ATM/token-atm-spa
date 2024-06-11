@@ -1197,29 +1197,6 @@ export class CanvasService {
     }
 
     /**
-     * Merges two dates into a single choice.
-     * @param min (default: true) if true, return earliest date. if false, return latest date.
-     * @returns the merged date or null if either date is null
-     */
-    private mergeOverrideDate(a: Date | null, b: Date | null, min = true): Date | null {
-        if (a == null || b == null) return null;
-        if (min) {
-            return compareDesc(a, b) == 1 ? a : b;
-        } else {
-            return compareAsc(a, b) == 1 ? a : b;
-        }
-    }
-
-    /**
-     * @returns true if both dates are equal or both are null
-     */
-    private isOverrideDateEqual(a: Date | null, b: Date | null): boolean {
-        if (a == null && b == null) return true;
-        if (a == null || b == null) return false;
-        return isEqual(a, b);
-    }
-
-    /**
      * Extends the time a Student has on a Canvas Assignment
      *
      * Overrides the student's assignment due at to match the assignment's lock at.
@@ -1230,6 +1207,59 @@ export class CanvasService {
         studentId: string,
         overrideTitlePrefix: string
     ): Promise<boolean> {
+        /**
+         * Merges two override dates into a single choice.
+         * @param min (default: true) if true, return earliest date. if false, return latest date.
+         * @param preserveDate (default: false) if true, returns the other date if one is null
+         * @returns the merged date or null
+         */
+        function mergeOverrideDate(a: Date | null, b: Date | null, min = true, preserveDate = false): Date | null {
+            if (a == null && preserveDate) return b;
+            if (b == null && preserveDate) return a;
+            if (a == null || b == null) return null;
+            if (min) {
+                return compareDesc(a, b) == 1 ? a : b;
+            } else {
+                return compareAsc(a, b) == 1 ? a : b;
+            }
+        }
+
+        /**
+         * @returns true if both dates are equal or both are null
+         */
+        function isOverrideDateEqual(a: Date | null, b: Date | null): boolean {
+            if (a == null && b == null) return true;
+            if (a == null || b == null) return false;
+            return isEqual(a, b);
+        }
+
+        type DueLocksDates = { unlockAt: Date | null; lockAt: Date | null; dueAt: Date | null };
+
+        /**
+         * Merges unlock, due, and lock at dates as defined by Canvas
+         *
+         * TODO: Double Check Canvas implementation for merging dates.
+         * @param preserveDate If passed a boolean, will prioritize preserving dates (if true) or returning nulls (if false) for all due/(un)lock times
+         * @param skipMerging configure if merging should be skipped for a specific due/(un)lock date (returns the value for the `a` argument instead)
+         * @returns object with merged date results
+         */
+        function mergeAllOverrideDates(
+            a: DueLocksDates,
+            b: DueLocksDates,
+            preserveDate?: boolean,
+            skipMerging?: { [key in keyof DueLocksDates]?: boolean }
+        ): DueLocksDates {
+            return {
+                unlockAt: skipMerging?.unlockAt
+                    ? a.unlockAt
+                    : mergeOverrideDate(a.unlockAt, b.unlockAt, true, preserveDate ?? false), // Merges to earliest unlock date (default: drops if any null)
+                dueAt: skipMerging?.dueAt ? a.dueAt : mergeOverrideDate(a.dueAt, b.dueAt, false, preserveDate ?? true), // Merges to latest due date (default: preserves any dates)
+                lockAt: skipMerging?.lockAt
+                    ? a.lockAt
+                    : mergeOverrideDate(a.lockAt, b.lockAt, false, preserveDate ?? false) // Merges to latest lock date (default: drops if any null)
+            } as DueLocksDates;
+        }
+
         /**
          * All overrides for the assignment (multiple students can be in an override)
          */
@@ -1248,6 +1278,54 @@ export class CanvasService {
             unlockDate: Date | null = null,
             titleCnt = 0,
             hasMatchedOverride = false;
+
+        let studentDates: DueLocksDates | null = null;
+
+        function getTitleCnt(override: AssignmentOverride): number {
+            const baseCount = 0;
+            const splitTitle = override.title.split(' - ');
+            if (splitTitle.length >= 3) {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                const titleNum = parseInt(splitTitle[2]!);
+                return Number.isFinite(titleNum) ? titleNum : baseCount;
+            } else {
+                return baseCount;
+            }
+        }
+        const highestTitleCnt = Math.max(0, ...overrides.map(getTitleCnt));
+
+        // Collect individual level overrides for this student
+        const individualOverridesWithThisStudent = overrides.filter(
+            (override) => override.isIndividualLevel && override.studentIdsAsIndividualLevel.includes(studentId)
+        );
+        // Return early without extending, if the student has an existing individual level override
+        if (individualOverridesWithThisStudent.length > 0) return false;
+
+        // Collect section overrides for this student
+        const sectionOverridesForThisStudent = overrides.filter(
+            (override) => override.isSectionLevel && sections.has(override.sectionIdAsSectionLevel)
+        );
+
+        const getSectionOverrideDatesForThisStudent = (): DueLocksDates => {
+            return (sectionOverridesForThisStudent as DueLocksDates[]).reduce((acc, cur) =>
+                mergeAllOverrideDates(acc, cur)
+            );
+        };
+        if (studentDates == null) {
+            if (sectionOverridesForThisStudent.length > 0) {
+                studentDates = getSectionOverrideDatesForThisStudent();
+            }
+        }
+
+        const getAssignmentDates = async () => {
+            // Be aware, this.getAssignment must use `override_assignment_dates: false` param to get the correct dates
+            const { lockAt, unlockAt, dueAt } = await this.getAssignment(courseId, assignmentId);
+            return { lockAt, unlockAt, dueAt } as DueLocksDates;
+        };
+        if (studentDates == null) {
+            studentDates = await getAssignmentDates();
+        }
+
         for (const override of overrides) {
             const data = override.title.split(' - ');
             if (data.length >= 3) {
@@ -1271,8 +1349,8 @@ export class CanvasService {
                 // Update existing lock and unlock dates to use:
                 //  - the latest lock date
                 //  - the earliest unlock date
-                lockDate = this.mergeOverrideDate(lockDate, override.lockAt, false);
-                unlockDate = this.mergeOverrideDate(unlockDate, override.unlockAt, true);
+                lockDate = mergeOverrideDate(lockDate, override.lockAt, false);
+                unlockDate = mergeOverrideDate(unlockDate, override.unlockAt, true);
             }
         }
         // Use assignment's lock and unlock date if there isn't an existing match
@@ -1281,6 +1359,31 @@ export class CanvasService {
             lockDate = assignment.lockAt;
             unlockDate = assignment.unlockAt;
         }
+
+        // ==== Check that both are equivalent ====
+        if (
+            isOverrideDateEqual(lockDate, studentDates.lockAt) &&
+            isOverrideDateEqual(unlockDate, studentDates.unlockAt)
+        ) {
+            console.log('Lock and Unlock Dates are equal for Original and Functional implementations');
+        } else {
+            const t = (overrideDate: Date | null) => {
+                return overrideDate ? overrideDate?.toISOString : overrideDate;
+            };
+            const ft = (str: string, overrideDate: Date | null) => {
+                return `  ${str}: ${t(overrideDate)}`;
+            };
+            console.log(
+                `Lock and Unlock Dates differ across implementations` +
+                    `\n${ft('Orig Lock', lockDate)}${ft('Orig Unlock', unlockDate)}` +
+                    `\n${ft('New  Lock', studentDates.lockAt)}${ft('New  Unlock', studentDates.unlockAt)}`
+            );
+        }
+        if (titleCnt === 0 && highestTitleCnt !== 0)
+            console.log("Counts don't match when no Token ATM titles found:", highestTitleCnt, 'vs', titleCnt);
+        if (titleCnt !== 0 && highestTitleCnt + 1 !== titleCnt)
+            console.log('Next title count doesnt match:', highestTitleCnt + 1, 'vs', titleCnt);
+
         /**
          * An existing override this Student should be included in
          */
@@ -1290,9 +1393,9 @@ export class CanvasService {
             if (!override.isIndividualLevel) continue;
             if (override.studentIdsAsIndividualLevel.length >= CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE) continue;
             if (
-                this.isOverrideDateEqual(unlockDate, override.unlockAt) &&
-                this.isOverrideDateEqual(lockDate, override.lockAt) &&
-                this.isOverrideDateEqual(lockDate, override.dueAt)
+                isOverrideDateEqual(unlockDate, override.unlockAt) &&
+                isOverrideDateEqual(lockDate, override.lockAt) &&
+                isOverrideDateEqual(lockDate, override.dueAt)
             ) {
                 targetOverride = override;
                 break;
