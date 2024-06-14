@@ -1423,7 +1423,7 @@ export class CanvasService {
         }, null);
 
         // Collect appropriate Override dates for this student
-        const studentDates = (await resolveLevel?.result()) ?? null;
+        const studentDates = await resolveLevel?.result();
         if (studentDates == null)
             throw new Error(
                 'Logic error in implementation. No unlock, due, and lock dates found for this student and assignment. This should be impossible.'
