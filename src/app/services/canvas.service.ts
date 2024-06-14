@@ -1248,14 +1248,15 @@ export class CanvasService {
         }
 
         /**
-         * Merges unlock, due, and lock at dates as defined by Canvas
+         * Merges unlock, due, and lock dates.
+         * Due at and Lock at use the latest date. Unlock at uses the earliest.
+         * Null is basically both +∞ and -∞.
          *
-         * TODO: Double Check Canvas implementation for merging dates.
-         * @param preserveDate If passed a boolean, will prioritize preserving dates (if true) or returning nulls (if false) for all Override dates
+         * @param preserveDate If passed a boolean, will prioritize preserving dates (if true) or returning nulls (if false) for all override dates
          * @param skipMerging configure if merging should be skipped for the specified override dates (returns the value of the `a` argument instead)
          * @returns object with merged date results
          */
-        function mergeAllOverrideDates(
+        function mergeOverrideDates(
             a: OverrideDates,
             b: OverrideDates,
             preserveDate?: boolean,
@@ -1265,11 +1266,11 @@ export class CanvasService {
                 unlockAt: skipMerging?.unlockAt
                     ? a.unlockAt
                     : mergeOverrideDate(a.unlockAt, b.unlockAt, true, preserveDate ?? false), // Merges to earliest unlock date (default: drops if any null)
-                dueAt: skipMerging?.dueAt ? a.dueAt : mergeOverrideDate(a.dueAt, b.dueAt, false, preserveDate ?? true), // Merges to latest due date (default: preserves any dates)
+                dueAt: skipMerging?.dueAt ? a.dueAt : mergeOverrideDate(a.dueAt, b.dueAt, false, preserveDate ?? false), // Merges to latest due date (default: drops if any null)
                 lockAt: skipMerging?.lockAt
                     ? a.lockAt
                     : mergeOverrideDate(a.lockAt, b.lockAt, false, preserveDate ?? false) // Merges to latest lock date (default: drops if any null)
-            } as OverrideDates;
+            };
         }
 
         /**
@@ -1313,7 +1314,7 @@ export class CanvasService {
             // Individual level override dates are only valid if the student is in a single ad-hoc group
             const preserveDates = individualOverridesWithThisStudent.length === 1;
             return (individualOverridesWithThisStudent as OverrideDates[]).reduce(
-                (acc, cur) => mergeAllOverrideDates(acc, cur, preserveDates),
+                (acc, cur) => mergeOverrideDates(acc, cur, preserveDates),
                 {
                     unlockAt: null,
                     dueAt: null,
@@ -1332,7 +1333,7 @@ export class CanvasService {
 
         const getSectionOverrideDatesForThisStudent = (): OverrideDates => {
             return (sectionOverridesForThisStudent as OverrideDates[]).reduce((acc, cur) =>
-                mergeAllOverrideDates(acc, cur)
+                mergeOverrideDates(acc, cur)
             );
         };
 
