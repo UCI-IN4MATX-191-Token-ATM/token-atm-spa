@@ -1459,6 +1459,28 @@ export class CanvasService {
                 break;
             }
         }
+
+        function makeDueMatchLock(overrideDates: OverrideDates): OverrideDates {
+            const { unlockAt, lockAt } = overrideDates;
+            return {
+                unlockAt,
+                dueAt: lockAt,
+                lockAt
+            };
+        }
+
+        function encodeForCanvas(overrideDates: OverrideDates) {
+            const encode = (prop: 'unlockAt' | 'dueAt' | 'lockAt') => {
+                const val = overrideDates[prop];
+                return val ? formatISO(val) : null;
+            };
+            return {
+                unlock_at: encode('unlockAt'),
+                due_at: encode('dueAt'),
+                lock_at: encode('lockAt')
+            };
+        }
+
         if (targetOverride) {
             // Update ad-hoc group of students that have existing matching override to include this student
             await this.apiRequest(
@@ -1469,9 +1491,7 @@ export class CanvasService {
                         assignment_override: {
                             student_ids: targetOverride.studentIdsAsIndividualLevel.concat([studentId]),
                             title: targetOverride.title,
-                            lock_at: lockDate ? formatISO(lockDate) : null,
-                            unlock_at: unlockDate ? formatISO(unlockDate) : null,
-                            due_at: lockDate ? formatISO(lockDate) : null
+                            ...encodeForCanvas(makeDueMatchLock(studentDates))
                         }
                     }
                 }
@@ -1484,9 +1504,7 @@ export class CanvasService {
                     assignment_override: {
                         student_ids: [studentId],
                         title: `${overrideTitlePrefix} - ${titleCnt}`,
-                        lock_at: lockDate ? formatISO(lockDate) : null,
-                        unlock_at: unlockDate ? formatISO(unlockDate) : null,
-                        due_at: lockDate ? formatISO(lockDate) : null
+                        ...encodeForCanvas(makeDueMatchLock(studentDates))
                     }
                 }
             });
