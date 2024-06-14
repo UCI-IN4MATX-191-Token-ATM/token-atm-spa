@@ -1251,8 +1251,8 @@ export class CanvasService {
          * Merges unlock, due, and lock at dates as defined by Canvas
          *
          * TODO: Double Check Canvas implementation for merging dates.
-         * @param preserveDate If passed a boolean, will prioritize preserving dates (if true) or returning nulls (if false) for all due/(un)lock times
-         * @param skipMerging configure if merging should be skipped for a specific due/(un)lock date (returns the value for the `a` argument instead)
+         * @param preserveDate If passed a boolean, will prioritize preserving dates (if true) or returning nulls (if false) for all Override dates
+         * @param skipMerging configure if merging should be skipped for the specified override dates (returns the value of the `a` argument instead)
          * @returns object with merged date results
          */
         function mergeAllOverrideDates(
@@ -1422,7 +1422,7 @@ export class CanvasService {
             }
         }, null);
 
-        // Collect appropriate due/(un)lock dates
+        // Collect appropriate Override dates for this student
         const studentDates = (await resolveLevel?.result()) ?? null;
         if (studentDates == null)
             throw new Error(
