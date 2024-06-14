@@ -1326,20 +1326,20 @@ export class CanvasService {
         if (individualOverridesWithThisStudent.length > 0) return false;
 
         // Collect section overrides for this student
-        const sectionOverridesForThisStudent = overrides.filter(
+        const sectionOverridesWithThisStudent = overrides.filter(
             (override) => override.isSectionLevel && sections.has(override.sectionIdAsSectionLevel)
         );
 
         const getSectionOverrideDatesForThisStudent = (): OverrideDates => {
-            return (sectionOverridesForThisStudent as OverrideDates[]).reduce((acc, cur) =>
+            return (sectionOverridesWithThisStudent as OverrideDates[]).reduce((acc, cur) =>
                 mergeOverrideDates(acc, cur)
             );
         };
 
-        const getAssignmentDates = async () => {
+        const getAssignmentDates = async (): Promise<OverrideDates> => {
             // Be aware, this.getAssignment must use `override_assignment_dates: false` param to get the correct dates
             const { lockAt, unlockAt, dueAt } = await this.getAssignment(courseId, assignmentId);
-            return { lockAt, unlockAt, dueAt } as OverrideDates;
+            return { lockAt, unlockAt, dueAt };
         };
 
         for (const override of overrides) {
@@ -1398,7 +1398,7 @@ export class CanvasService {
                 {
                     name: 'Section Level',
                     predicate: () => {
-                        return sectionOverridesForThisStudent.length > 0;
+                        return sectionOverridesWithThisStudent.length > 0;
                     },
                     result: async () => {
                         return getSectionOverrideDatesForThisStudent();
