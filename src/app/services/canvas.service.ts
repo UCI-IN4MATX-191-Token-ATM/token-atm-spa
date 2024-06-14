@@ -1280,8 +1280,6 @@ export class CanvasService {
             titleCnt = 0,
             hasMatchedOverride = false;
 
-        let studentDates: OverrideDates | null = null;
-
         function getTitleCnt(override: AssignmentOverride): number {
             const baseCount = 0;
             const splitTitle = override.title.split(' - ');
@@ -1414,7 +1412,7 @@ export class CanvasService {
         }, null);
 
         // Collect appropriate due/(un)lock dates
-        studentDates = (await resolveLevel?.result()) ?? null;
+        const studentDates = (await resolveLevel?.result()) ?? null;
         if (studentDates == null)
             throw new Error(
                 'Logic error in implementation. No unlock, due, and lock dates found for this student and assignment. This should be impossible.'
