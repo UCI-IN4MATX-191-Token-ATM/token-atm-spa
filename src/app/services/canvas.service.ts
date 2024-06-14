@@ -1510,7 +1510,7 @@ export class CanvasService {
                 data: {
                     assignment_override: {
                         student_ids: [studentId],
-                        title: `${overrideTitlePrefix} - ${titleCnt}`,
+                        title: `${overrideTitlePrefix} - ${highestTitleCnt + 1}`,
                         ...encodeForCanvas(makeDueMatchLock(studentDates))
                     }
                 }
