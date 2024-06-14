@@ -1207,13 +1207,16 @@ export class CanvasService {
         studentId: string,
         overrideTitlePrefix: string
     ): Promise<boolean> {
+        type OverrideDate = Date | null;
+        type OverrideDates = { unlockAt: OverrideDate; lockAt: OverrideDate; dueAt: OverrideDate };
+
         /**
          * Merges two override dates into a single choice.
          * @param min (default: true) if true, return earliest date. if false, return latest date.
          * @param preserveDate (default: false) if true, returns the other date if one is null
          * @returns the merged date or null
          */
-        function mergeOverrideDate(a: Date | null, b: Date | null, min = true, preserveDate = false): Date | null {
+        function mergeOverrideDate(a: OverrideDate, b: OverrideDate, min = true, preserveDate = false): OverrideDate {
             if (a == null && preserveDate) return b;
             if (b == null && preserveDate) return a;
             if (a == null || b == null) return null;
@@ -1227,13 +1230,11 @@ export class CanvasService {
         /**
          * @returns true if both dates are equal or both are null
          */
-        function isOverrideDateEqual(a: Date | null, b: Date | null): boolean {
+        function isOverrideDateEqual(a: OverrideDate, b: OverrideDate): boolean {
             if (a == null && b == null) return true;
             if (a == null || b == null) return false;
             return isEqual(a, b);
         }
-
-        type DueLocksDates = { unlockAt: Date | null; lockAt: Date | null; dueAt: Date | null };
 
         /**
          * Merges unlock, due, and lock at dates as defined by Canvas
@@ -1244,11 +1245,11 @@ export class CanvasService {
          * @returns object with merged date results
          */
         function mergeAllOverrideDates(
-            a: DueLocksDates,
-            b: DueLocksDates,
+            a: OverrideDates,
+            b: OverrideDates,
             preserveDate?: boolean,
-            skipMerging?: { [key in keyof DueLocksDates]?: boolean }
-        ): DueLocksDates {
+            skipMerging?: { [key in keyof OverrideDates]?: boolean }
+        ): OverrideDates {
             return {
                 unlockAt: skipMerging?.unlockAt
                     ? a.unlockAt
@@ -1257,7 +1258,7 @@ export class CanvasService {
                 lockAt: skipMerging?.lockAt
                     ? a.lockAt
                     : mergeOverrideDate(a.lockAt, b.lockAt, false, preserveDate ?? false) // Merges to latest lock date (default: drops if any null)
-            } as DueLocksDates;
+            } as OverrideDates;
         }
 
         /**
@@ -1274,12 +1275,12 @@ export class CanvasService {
                 await this.getStudentSectionEnrollments(courseId, studentId)
             )
         );
-        let lockDate: Date | null = null,
-            unlockDate: Date | null = null,
+        let lockDate: OverrideDate = null,
+            unlockDate: OverrideDate = null,
             titleCnt = 0,
             hasMatchedOverride = false;
 
-        let studentDates: DueLocksDates | null = null;
+        let studentDates: OverrideDates | null = null;
 
         function getTitleCnt(override: AssignmentOverride): number {
             const baseCount = 0;
@@ -1299,10 +1300,10 @@ export class CanvasService {
             (override) => override.isIndividualLevel && override.studentIdsAsIndividualLevel.includes(studentId)
         );
 
-        const getIndividualOverrideDatesForThisStudent = (): DueLocksDates => {
+        const getIndividualOverrideDatesForThisStudent = (): OverrideDates => {
             // Individual level override dates are only valid if the student is in a single ad-hoc group
             const preserveDates = individualOverridesWithThisStudent.length === 1;
-            return (individualOverridesWithThisStudent as DueLocksDates[]).reduce(
+            return (individualOverridesWithThisStudent as OverrideDates[]).reduce(
                 (acc, cur) => mergeAllOverrideDates(acc, cur, preserveDates),
                 {
                     unlockAt: null,
@@ -1320,8 +1321,8 @@ export class CanvasService {
             (override) => override.isSectionLevel && sections.has(override.sectionIdAsSectionLevel)
         );
 
-        const getSectionOverrideDatesForThisStudent = (): DueLocksDates => {
-            return (sectionOverridesForThisStudent as DueLocksDates[]).reduce((acc, cur) =>
+        const getSectionOverrideDatesForThisStudent = (): OverrideDates => {
+            return (sectionOverridesForThisStudent as OverrideDates[]).reduce((acc, cur) =>
                 mergeAllOverrideDates(acc, cur)
             );
         };
@@ -1329,7 +1330,7 @@ export class CanvasService {
         const getAssignmentDates = async () => {
             // Be aware, this.getAssignment must use `override_assignment_dates: false` param to get the correct dates
             const { lockAt, unlockAt, dueAt } = await this.getAssignment(courseId, assignmentId);
-            return { lockAt, unlockAt, dueAt } as DueLocksDates;
+            return { lockAt, unlockAt, dueAt } as OverrideDates;
         };
 
         for (const override of overrides) {
@@ -1366,7 +1367,7 @@ export class CanvasService {
             unlockDate = assignment.unlockAt;
         }
 
-        type CheckAndCollect = { name: string; predicate: () => boolean; result: () => Promise<DueLocksDates> } | null;
+        type CheckAndCollect = { name: string; predicate: () => boolean; result: () => Promise<OverrideDates> } | null;
         // Priority Order (highest to lowest), reduce to single appropriate level
         const resolveLevel = (
             [
