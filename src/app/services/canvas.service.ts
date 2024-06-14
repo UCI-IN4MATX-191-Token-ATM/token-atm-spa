@@ -1237,6 +1237,17 @@ export class CanvasService {
         }
 
         /**
+         * @returns true if each pair of dates are equal (either same date or both null)
+         */
+        function areOverrideDatesEqual(a: OverrideDates, b: OverrideDates): boolean {
+            return (
+                isOverrideDateEqual(a.unlockAt, b.unlockAt) &&
+                isOverrideDateEqual(a.dueAt, b.dueAt) &&
+                isOverrideDateEqual(a.lockAt, b.lockAt)
+            );
+        }
+
+        /**
          * Merges unlock, due, and lock at dates as defined by Canvas
          *
          * TODO: Double Check Canvas implementation for merging dates.
@@ -1450,11 +1461,7 @@ export class CanvasService {
         for (const override of overrides) {
             if (!override.isIndividualLevel) continue;
             if (override.studentIdsAsIndividualLevel.length >= CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE) continue;
-            if (
-                isOverrideDateEqual(unlockDate, override.unlockAt) &&
-                isOverrideDateEqual(lockDate, override.lockAt) &&
-                isOverrideDateEqual(lockDate, override.dueAt)
-            ) {
+            if (areOverrideDatesEqual(studentDates, override)) {
                 targetOverride = override;
                 break;
             }
