@@ -1292,8 +1292,7 @@ export class CanvasService {
             titleCnt = 0,
             hasMatchedOverride = false;
 
-        function getTitleCnt(override: AssignmentOverride): number {
-            const baseCount = 0;
+        function getTitleCnt(override: AssignmentOverride, baseCount = 0): number {
             const splitTitle = override.title.split(' - ');
             if (splitTitle.length >= 3) {
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
