@@ -1302,7 +1302,7 @@ export class CanvasService {
                 return baseCount;
             }
         }
-        const highestTitleCnt = Math.max(0, ...overrides.map(getTitleCnt));
+        const highestTitleCnt = Math.max(0, ...overrides.map((override) => getTitleCnt(override)));
 
         // Collect individual level overrides for this student
         const individualOverridesWithThisStudent = overrides.filter(
