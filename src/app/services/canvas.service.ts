@@ -1407,7 +1407,9 @@ export class CanvasService {
             }
         }, null);
 
-        // Collect appropriate Override dates for this student
+        /**
+         * The dates (most likely to be) currently assigned to this student for this assignment.
+         */
         const studentDates = await resolveLevel?.result();
         if (studentDates == null)
             throw new Error(
@@ -1438,6 +1440,20 @@ export class CanvasService {
         if (titleCnt !== 0 && highestTitleCnt + 1 !== titleCnt)
             console.log('Next title count doesnt match:', highestTitleCnt + 1, 'vs', titleCnt);
 
+        function makeDueMatchLock(overrideDates: OverrideDates): OverrideDates {
+            const { unlockAt, lockAt } = overrideDates;
+            return {
+                unlockAt,
+                dueAt: lockAt,
+                lockAt
+            };
+        }
+
+        /**
+         * New override dates that should be used for this student
+         */
+        const resultDates = makeDueMatchLock(studentDates);
+
         /**
          * An existing override this Student should be included in
          */
@@ -1446,19 +1462,10 @@ export class CanvasService {
         for (const override of overrides) {
             if (!override.isIndividualLevel) continue;
             if (override.studentIdsAsIndividualLevel.length >= CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE) continue;
-            if (areOverrideDatesEqual(studentDates, override)) {
+            if (areOverrideDatesEqual(resultDates, override)) {
                 targetOverride = override;
                 break;
             }
-        }
-
-        function makeDueMatchLock(overrideDates: OverrideDates): OverrideDates {
-            const { unlockAt, lockAt } = overrideDates;
-            return {
-                unlockAt,
-                dueAt: lockAt,
-                lockAt
-            };
         }
 
         function encodeForCanvas(overrideDates: OverrideDates) {
@@ -1483,7 +1490,7 @@ export class CanvasService {
                         assignment_override: {
                             student_ids: targetOverride.studentIdsAsIndividualLevel.concat([studentId]),
                             title: targetOverride.title,
-                            ...encodeForCanvas(makeDueMatchLock(studentDates))
+                            ...encodeForCanvas(resultDates)
                         }
                     }
                 }
@@ -1496,7 +1503,7 @@ export class CanvasService {
                     assignment_override: {
                         student_ids: [studentId],
                         title: `${overrideTitlePrefix} - ${highestTitleCnt + 1}`,
-                        ...encodeForCanvas(makeDueMatchLock(studentDates))
+                        ...encodeForCanvas(resultDates)
                     }
                 }
             });
