@@ -1309,19 +1309,6 @@ export class CanvasService {
             (override) => override.isIndividualLevel && override.studentIdsAsIndividualLevel.includes(studentId)
         );
 
-        const getIndividualOverrideDatesForThisStudent = (): OverrideDates => {
-            // Individual level override dates are only valid if the student is in a single ad-hoc group
-            const preserveDates = individualOverridesWithThisStudent.length === 1;
-            return (individualOverridesWithThisStudent as OverrideDates[]).reduce(
-                (acc, cur) => mergeOverrideDates(acc, cur, preserveDates),
-                {
-                    unlockAt: null,
-                    dueAt: null,
-                    lockAt: null
-                }
-            );
-        };
-
         // Return early without extending, if the student has an existing individual level override
         if (individualOverridesWithThisStudent.length > 0) return false;
 
@@ -1329,12 +1316,6 @@ export class CanvasService {
         const sectionOverridesWithThisStudent = overrides.filter(
             (override) => override.isSectionLevel && sections.has(override.sectionIdAsSectionLevel)
         );
-
-        const getSectionOverrideDatesForThisStudent = (): OverrideDates => {
-            return (sectionOverridesWithThisStudent as OverrideDates[]).reduce((acc, cur) =>
-                mergeOverrideDates(acc, cur)
-            );
-        };
 
         const getAssignmentDates = async (): Promise<OverrideDates> => {
             // Be aware, this.getAssignment must use `override_assignment_dates: false` param to get the correct dates
@@ -1392,7 +1373,9 @@ export class CanvasService {
                         return numIndividOverrides === 1;
                     },
                     result: async () => {
-                        return getIndividualOverrideDatesForThisStudent();
+                        return (individualOverridesWithThisStudent as OverrideDates[]).reduce((acc, cur) =>
+                            mergeOverrideDates(acc, cur)
+                        );
                     }
                 },
                 {
@@ -1401,7 +1384,9 @@ export class CanvasService {
                         return sectionOverridesWithThisStudent.length > 0;
                     },
                     result: async () => {
-                        return getSectionOverrideDatesForThisStudent();
+                        return (sectionOverridesWithThisStudent as OverrideDates[]).reduce((acc, cur) =>
+                            mergeOverrideDates(acc, cur)
+                        );
                     }
                 },
                 {
