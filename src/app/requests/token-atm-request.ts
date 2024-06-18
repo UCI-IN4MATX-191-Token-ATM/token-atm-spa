@@ -35,3 +35,5 @@ export abstract class TokenATMRequest<T extends TokenOption> {
         return this._quizSubmissionDetail;
     }
 }
+
+export class DefaultRequest<T extends TokenOption = TokenOption> extends TokenATMRequest<T> {}

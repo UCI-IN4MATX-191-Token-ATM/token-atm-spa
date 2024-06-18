@@ -1,25 +1,25 @@
 import { Inject, Injectable, InjectionToken, Optional, Type } from '@angular/core';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import type { TokenOption } from 'app/token-options/token-option';
-import type { Constructor } from 'app/utils/mixin-helper';
-import { BasicTokenOption } from 'app/token-options/basic-token-option';
-import { EarnByQuizTokenOption } from 'app/token-options/earn-by-quiz-token-option';
-import { EarnByModuleTokenOption } from 'app/token-options/earn-by-module-token-option';
-import { EarnBySurveyTokenOption } from 'app/token-options/earn-by-survey-token-option';
-import { SpendForLabDataTokenOption } from 'app/token-options/spend-for-lab-data-token-option';
-import { SpendForAssignmentResubmissionTokenOption } from 'app/token-options/spend-for-assignment-resubmission-token-option';
-import { SpendForLabSwitchTokenOption } from 'app/token-options/spend-for-lab-switch-token-option';
-import { WithdrawAssignmentResubmissionTokenOption } from 'app/token-options/withdraw-assignment-resubmission-token-option';
-import { WithdrawLabDataTokenOption } from 'app/token-options/withdraw-lab-data-token-option';
-import { WithdrawLabSwitchTokenOption } from 'app/token-options/withdraw-lab-switch-token-option';
 import type { TokenOptionResolver } from './token-option-resolver';
 import camelcaseKeys from 'camelcase-keys';
-import { SpendForQuizRevisionTokenOption } from 'app/token-options/spend-for-quiz-revision-token-option';
-import { SpendForAssignmentExtensionTokenOption } from 'app/token-options/spend-for-assignment-extension-token-option';
-import { SpendForPassingAssignmentTokenOption } from 'app/token-options/spend-for-passing-assignment-token-option';
-import { PlaceholderTokenOption } from 'app/token-options/placeholder-token-option';
-import { SpendForAdditionalPointsTokenOption } from 'app/token-options/spend-for-additional-points-token-option';
-import { EarnByQuestionProSurveyTokenOption } from 'app/token-options/earn-by-question-pro-survey-token-option';
+// import type { Constructor } from 'app/utils/mixin-helper';
+// import { BasicTokenOption } from 'app/token-options/basic-token-option';
+// import { EarnByQuizTokenOption } from 'app/token-options/earn-by-quiz-token-option';
+// import { EarnByModuleTokenOption } from 'app/token-options/earn-by-module-token-option';
+// import { EarnBySurveyTokenOption } from 'app/token-options/earn-by-survey-token-option';
+// import { SpendForLabDataTokenOption } from 'app/token-options/spend-for-lab-data-token-option';
+// import { SpendForAssignmentResubmissionTokenOption } from 'app/token-options/spend-for-assignment-resubmission-token-option';
+// import { SpendForLabSwitchTokenOption } from 'app/token-options/spend-for-lab-switch-token-option';
+// import { WithdrawAssignmentResubmissionTokenOption } from 'app/token-options/withdraw-assignment-resubmission-token-option';
+// import { WithdrawLabDataTokenOption } from 'app/token-options/withdraw-lab-data-token-option';
+// import { WithdrawLabSwitchTokenOption } from 'app/token-options/withdraw-lab-switch-token-option';
+// import { SpendForQuizRevisionTokenOption } from 'app/token-options/spend-for-quiz-revision-token-option';
+// import { SpendForAssignmentExtensionTokenOption } from 'app/token-options/spend-for-assignment-extension-token-option';
+// import { SpendForPassingAssignmentTokenOption } from 'app/token-options/spend-for-passing-assignment-token-option';
+// import { PlaceholderTokenOption } from 'app/token-options/placeholder-token-option';
+// import { SpendForAdditionalPointsTokenOption } from 'app/token-options/spend-for-additional-points-token-option';
+// import { EarnByQuestionProSurveyTokenOption } from 'app/token-options/earn-by-question-pro-survey-token-option';
 
 export const REGISTERED_TOKEN_OPTION_RESOLVERS: Type<TokenOptionResolver<TokenOption>>[] = [];
 
@@ -28,26 +28,29 @@ export const TOKEN_OPTION_RESOLVER_INJECTION_TOKEN = new InjectionToken<TokenOpt
 );
 
 export const DEFAULT_TOKEN_OPTION_RESOLVERS: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: Constructor<TokenOption>;
-} = {
-    basic: BasicTokenOption,
-    'earn-by-quiz': EarnByQuizTokenOption,
-    'earn-by-module': EarnByModuleTokenOption,
-    'earn-by-survey': EarnBySurveyTokenOption,
-    'spend-for-assignment-resubmission': SpendForAssignmentResubmissionTokenOption,
-    'spend-for-lab-data': SpendForLabDataTokenOption,
-    'spend-for-lab-switch': SpendForLabSwitchTokenOption,
-    'withdraw-assignment-resubmission': WithdrawAssignmentResubmissionTokenOption,
-    'withdraw-lab-data': WithdrawLabDataTokenOption,
-    'withdraw-lab-switch': WithdrawLabSwitchTokenOption,
-    'spend-for-quiz-revision': SpendForQuizRevisionTokenOption,
-    'spend-for-assignment-extension': SpendForAssignmentExtensionTokenOption,
-    'spend-for-passing-assignment': SpendForPassingAssignmentTokenOption,
-    'placeholder-token-option': PlaceholderTokenOption,
-    'spend-for-additional-points': SpendForAdditionalPointsTokenOption,
-    'earn-by-question-pro-survey': EarnByQuestionProSurveyTokenOption
-};
+    [key: string]: Type<TokenOption>;
+} = {};
+
+// export const DEFAULT_TOKEN_OPTION_RESOLVERS: {
+//     [key: string]: Type<TokenOption>;
+// } = {
+//     basic: BasicTokenOption,
+//     'earn-by-quiz': EarnByQuizTokenOption,
+//     'earn-by-module': EarnByModuleTokenOption,
+//     'earn-by-survey': EarnBySurveyTokenOption,
+//     'spend-for-assignment-resubmission': SpendForAssignmentResubmissionTokenOption,
+//     'spend-for-lab-data': SpendForLabDataTokenOption,
+//     'spend-for-lab-switch': SpendForLabSwitchTokenOption,
+//     'withdraw-assignment-resubmission': WithdrawAssignmentResubmissionTokenOption,
+//     'withdraw-lab-data': WithdrawLabDataTokenOption,
+//     'withdraw-lab-switch': WithdrawLabSwitchTokenOption,
+//     'spend-for-quiz-revision': SpendForQuizRevisionTokenOption,
+//     'spend-for-assignment-extension': SpendForAssignmentExtensionTokenOption,
+//     'spend-for-passing-assignment': SpendForPassingAssignmentTokenOption,
+//     'placeholder-token-option': PlaceholderTokenOption,
+//     'spend-for-additional-points': SpendForAdditionalPointsTokenOption,
+//     'earn-by-question-pro-survey': EarnByQuestionProSurveyTokenOption
+// };
 
 interface ITokenOptionType {
     type: string;
@@ -58,8 +61,7 @@ interface ITokenOptionType {
 })
 export class TokenOptionResolverRegistry {
     private _tokenOptionResolversMap = new Map<string, TokenOptionResolver<TokenOption>>();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private _defaultTokenOptionResolversMap: Map<string, Constructor<TokenOption>>;
+    private _defaultTokenOptionResolversMap: Map<string, Type<TokenOption>>; // TODO: use object-key map directly to allow dynamic registration?
 
     constructor(
         @Optional()
@@ -105,5 +107,13 @@ export class TokenOptionResolverRegistry {
             return result;
         }
         return this.getTokenOptionResolver((data as ITokenOptionType).type).construct(group, data);
+    }
+
+    public static registerDefaultTokenOptionResolver(tokenOptionClass: Type<TokenOption>, type: string) {
+        DEFAULT_TOKEN_OPTION_RESOLVERS[type] = tokenOptionClass;
+    }
+
+    public static registerTokenOptionResolver<T extends TokenOption>(resolver: Type<TokenOptionResolver<T>>) {
+        REGISTERED_TOKEN_OPTION_RESOLVERS.push(resolver);
     }
 }

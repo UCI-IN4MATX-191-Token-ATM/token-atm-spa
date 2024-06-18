@@ -1,7 +1,7 @@
 import type * as t from 'io-ts';
-import { ATokenOption, TokenOptionDataDef } from './token-option';
-import { ToJSONMixin } from './mixins/to-json-mixin';
-import { FromDataMixin } from './mixins/from-data-mixin';
+import { ATokenOption, TokenOptionDataDef } from '../token-option';
+import { ToJSONMixin } from '../mixins/to-json-mixin';
+import { FromDataMixin } from '../mixins/from-data-mixin';
 import { unwrapValidationFunc } from 'app/utils/validation-unwrapper';
 
 // export class BasicTokenOption extends TokenOption {

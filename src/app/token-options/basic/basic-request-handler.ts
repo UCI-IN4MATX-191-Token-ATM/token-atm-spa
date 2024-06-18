@@ -2,10 +2,12 @@ import { Inject, Injectable } from '@angular/core';
 import { ProcessedRequest } from 'app/data/processed-request';
 import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
-import type { BasicRequest } from 'app/requests/basic-request';
+import type { DefaultRequest } from 'app/requests/token-atm-request';
 import { CanvasService } from 'app/services/canvas.service';
-import type { BasicTokenOption } from 'app/token-options/basic-token-option';
-import { RequestHandler } from './request-handlers';
+import type { BasicTokenOption } from 'app/token-options/basic/basic-token-option';
+import { RequestHandler } from '../../request-handlers/request-handlers';
+
+type BasicRequest = DefaultRequest<BasicTokenOption>;
 
 @Injectable()
 export class BasicRequestHandler extends RequestHandler<BasicTokenOption, BasicRequest> {

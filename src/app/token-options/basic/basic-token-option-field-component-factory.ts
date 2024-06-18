@@ -2,12 +2,12 @@ import {
     BasicTokenOptionDataDef,
     type BasicTokenOption,
     type BasicTokenOptionData
-} from 'app/token-options/basic-token-option';
+} from 'app/token-options/basic/basic-token-option';
 import {
     TokenOptionFieldComponentFactory,
     tokenOptionFieldComponentBuilder,
     tokenOptionValidationWrapper
-} from './token-option-field-component-factory';
+} from '../../token-option-field-component-factories/token-option-field-component-factory';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import { Injectable, type EnvironmentInjector, type ViewContainerRef } from '@angular/core';
 import type { FormField } from 'app/utils/form-field/form-field';

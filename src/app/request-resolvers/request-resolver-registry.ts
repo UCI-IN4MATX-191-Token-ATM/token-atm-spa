@@ -3,44 +3,46 @@ import type { QuizSubmissionDetail } from 'app/data/quiz-submission-detail';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import type { TokenATMRequest } from 'app/requests/token-atm-request';
 import type { TokenOption } from 'app/token-options/token-option';
-import { BasicRequestResolver } from './basic-request-resolver';
-import { EarnByModuleRequestResolver } from './earn-by-module-request-resolver';
-import { EarnByQuizRequestResolver } from './earn-by-quiz-request-resolver';
-import { EarnBySurveyRequestResolver } from './earn-by-survey-request-resolver';
-import type { RequestResolver } from './request-resolver';
-import { SpendForAssignmentResubmissionRequestResolver } from './spend-for-assignment-resubmission-request-resolver';
-import { SpendForLabDataRequestResolver } from './spend-for-lab-data-request-resolver';
-import { SpendForLabSwitchRequestResolver } from './spend-for-lab-switch-request-resolver';
-import { WithdrawAssignmentResubmissionRequestResolver } from './withdraw-assignment-resubmission-request-resolver';
-import { WithdrawLabDataRequestResolver } from './withdraw-lab-data-request-resolver';
-import { WithdrawLabSwitchRequestResolver } from './withdraw-lab-switch-request-resolver';
-import { SpendForQuizRevisionRequestResolver } from './spend-for-quiz-revision-request-resolver';
-import { SpendForAssignmentExtensionRequestResolver } from './spend-for-assignment-extension-request-resolver';
-import { SpendForPassingAssignmentRequestResolver } from './spend-for-passing-assignment-request-resolver';
-import { PlaceholderRequestResolver } from './placeholder-request-resolver';
-import { SpendForAdditionalPointsRequestResolver } from './spend-for-additional-points-request-resolver';
-import { EarnByQuestionProSurveyRequestResolver } from './earn-by-question-pro-survey-request-resolver';
+import { constructDefaultResolver, RequestResolver } from './request-resolver';
+// import { BasicRequestResolver } from './basic-request-resolver';
+// import { EarnByModuleRequestResolver } from './earn-by-module-request-resolver';
+// import { EarnByQuizRequestResolver } from './earn-by-quiz-request-resolver';
+// import { EarnBySurveyRequestResolver } from './earn-by-survey-request-resolver';
+// import { SpendForAssignmentResubmissionRequestResolver } from './spend-for-assignment-resubmission-request-resolver';
+// import { SpendForLabDataRequestResolver } from './spend-for-lab-data-request-resolver';
+// import { SpendForLabSwitchRequestResolver } from './spend-for-lab-switch-request-resolver';
+// import { WithdrawAssignmentResubmissionRequestResolver } from './withdraw-assignment-resubmission-request-resolver';
+// import { WithdrawLabDataRequestResolver } from './withdraw-lab-data-request-resolver';
+// import { WithdrawLabSwitchRequestResolver } from './withdraw-lab-switch-request-resolver';
+// import { SpendForQuizRevisionRequestResolver } from './spend-for-quiz-revision-request-resolver';
+// import { SpendForAssignmentExtensionRequestResolver } from './spend-for-assignment-extension-request-resolver';
+// import { SpendForPassingAssignmentRequestResolver } from './spend-for-passing-assignment-request-resolver';
+// import { PlaceholderRequestResolver } from './placeholder-request-resolver';
+// import { SpendForAdditionalPointsRequestResolver } from './spend-for-additional-points-request-resolver';
+// import { EarnByQuestionProSurveyRequestResolver } from './earn-by-question-pro-survey-request-resolver';
 
 type GenericRequestResolver = RequestResolver<TokenOption, TokenATMRequest<TokenOption>>;
 
-export const REGISTERED_REQUEST_RESOLVERS: Type<GenericRequestResolver>[] = [
-    BasicRequestResolver,
-    EarnByModuleRequestResolver,
-    EarnByQuizRequestResolver,
-    SpendForAssignmentResubmissionRequestResolver,
-    SpendForLabDataRequestResolver,
-    EarnBySurveyRequestResolver,
-    WithdrawAssignmentResubmissionRequestResolver,
-    WithdrawLabDataRequestResolver,
-    SpendForLabSwitchRequestResolver,
-    WithdrawLabSwitchRequestResolver,
-    SpendForQuizRevisionRequestResolver,
-    SpendForAssignmentExtensionRequestResolver,
-    SpendForPassingAssignmentRequestResolver,
-    PlaceholderRequestResolver,
-    SpendForAdditionalPointsRequestResolver,
-    EarnByQuestionProSurveyRequestResolver
-];
+export const REGISTERED_REQUEST_RESOLVERS: Type<GenericRequestResolver>[] = [];
+
+// export const REGISTERED_REQUEST_RESOLVERS: Type<GenericRequestResolver>[] = [
+//     BasicRequestResolver,
+//     EarnByModuleRequestResolver,
+//     EarnByQuizRequestResolver,
+//     SpendForAssignmentResubmissionRequestResolver,
+//     SpendForLabDataRequestResolver,
+//     EarnBySurveyRequestResolver,
+//     WithdrawAssignmentResubmissionRequestResolver,
+//     WithdrawLabDataRequestResolver,
+//     SpendForLabSwitchRequestResolver,
+//     WithdrawLabSwitchRequestResolver,
+//     SpendForQuizRevisionRequestResolver,
+//     SpendForAssignmentExtensionRequestResolver,
+//     SpendForPassingAssignmentRequestResolver,
+//     PlaceholderRequestResolver,
+//     SpendForAdditionalPointsRequestResolver,
+//     EarnByQuestionProSurveyRequestResolver
+// ];
 
 export const REQUEST_RESOLVER_INJECT_TOKEN = new InjectionToken<GenericRequestResolver[]>('REQUEST_RESOLVERS');
 
@@ -73,5 +75,15 @@ export class RequestResolverRegistry {
             return await this.getRequestResolver(tokenOption.type).resolve(tokenOption, quizSubmissionDetail);
         }
         return undefined;
+    }
+
+    public static registerDefaultRequestResolver(type: string) {
+        REGISTERED_REQUEST_RESOLVERS.push(constructDefaultResolver(type));
+    }
+
+    public static registerRequestResolver<T extends TokenOption, R extends TokenATMRequest<T>>(
+        resolver: Type<RequestResolver<T, R>>
+    ) {
+        REGISTERED_REQUEST_RESOLVERS.push(resolver);
     }
 }
