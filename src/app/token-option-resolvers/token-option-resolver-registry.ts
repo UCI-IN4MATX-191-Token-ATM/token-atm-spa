@@ -6,20 +6,20 @@ import camelcaseKeys from 'camelcase-keys';
 // import type { Constructor } from 'app/utils/mixin-helper';
 // import { BasicTokenOption } from 'app/token-options/basic-token-option';
 // import { EarnByQuizTokenOption } from 'app/token-options/earn-by-quiz-token-option';
-// import { EarnByModuleTokenOption } from 'app/token-options/earn-by-module-token-option';
-// import { EarnBySurveyTokenOption } from 'app/token-options/earn-by-survey-token-option';
-// import { SpendForLabDataTokenOption } from 'app/token-options/spend-for-lab-data-token-option';
-// import { SpendForAssignmentResubmissionTokenOption } from 'app/token-options/spend-for-assignment-resubmission-token-option';
-// import { SpendForLabSwitchTokenOption } from 'app/token-options/spend-for-lab-switch-token-option';
-// import { WithdrawAssignmentResubmissionTokenOption } from 'app/token-options/withdraw-assignment-resubmission-token-option';
-// import { WithdrawLabDataTokenOption } from 'app/token-options/withdraw-lab-data-token-option';
-// import { WithdrawLabSwitchTokenOption } from 'app/token-options/withdraw-lab-switch-token-option';
-// import { SpendForQuizRevisionTokenOption } from 'app/token-options/spend-for-quiz-revision-token-option';
-// import { SpendForAssignmentExtensionTokenOption } from 'app/token-options/spend-for-assignment-extension-token-option';
-// import { SpendForPassingAssignmentTokenOption } from 'app/token-options/spend-for-passing-assignment-token-option';
-// import { PlaceholderTokenOption } from 'app/token-options/placeholder-token-option';
-// import { SpendForAdditionalPointsTokenOption } from 'app/token-options/spend-for-additional-points-token-option';
-// import { EarnByQuestionProSurveyTokenOption } from 'app/token-options/earn-by-question-pro-survey-token-option';
+// import { EarnByModuleTokenOption } from 'app/token-options/earn-by-module/earn-by-module-token-option';
+// import { EarnBySurveyTokenOption } from 'app/token-options/earn-by-survey/earn-by-survey-token-option';
+// import { SpendForLabDataTokenOption } from 'app/token-options/spend-for-lab-data/spend-for-lab-data-token-option';
+// import { SpendForAssignmentResubmissionTokenOption } from 'app/token-options/spend-for-assignment-resubmission/spend-for-assignment-resubmission-token-option';
+// import { SpendForLabSwitchTokenOption } from 'app/token-options/spend-for-lab-switch/spend-for-lab-switch-token-option';
+// import { WithdrawAssignmentResubmissionTokenOption } from 'app/token-options/withdraw-assignment-resubmission/withdraw-assignment-resubmission-token-option';
+// import { WithdrawLabDataTokenOption } from 'app/token-options/withdraw-lab-data/withdraw-lab-data-token-option';
+// import { WithdrawLabSwitchTokenOption } from 'app/token-options/withdraw-lab-switch/withdraw-lab-switch-token-option';
+// import { SpendForQuizRevisionTokenOption } from 'app/token-options/spend-for-quiz-revision/spend-for-quiz-revision-token-option';
+// import { SpendForAssignmentExtensionTokenOption } from 'app/token-options/spend-for-assignment-extension/spend-for-assignment-extension-token-option';
+// import { SpendForPassingAssignmentTokenOption } from 'app/token-options/spend-for-passing-assignment/spend-for-passing-assignment-token-option';
+// import { PlaceholderTokenOption } from 'app/token-options/placeholder/placeholder-token-option';
+// import { SpendForAdditionalPointsTokenOption } from 'app/token-options/spend-for-additional-points/spend-for-additional-points-token-option';
+// import { EarnByQuestionProSurveyTokenOption } from 'app/token-options/earn-by-question-pro-survey/earn-by-question-pro-survey-token-option';
 
 export const REGISTERED_TOKEN_OPTION_RESOLVERS: Type<TokenOptionResolver<TokenOption>>[] = [];
 
@@ -77,7 +77,7 @@ export class TokenOptionResolverRegistry {
 
     private getTokenOptionResolver(type: string): TokenOptionResolver<TokenOption> {
         const result = this._tokenOptionResolversMap.get(type);
-        if (!result) throw new Error('Unsupported token option type');
+        if (!result) throw new Error('Unsupported token option type: ' + type);
         return result;
     }
 

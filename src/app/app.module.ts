@@ -88,7 +88,7 @@ import { QuestionProValidationFieldComponent } from './components/form-fields/qu
 import { LazySingleSelectionFieldComponent } from './components/form-fields/selection-fields/single-selection-field/lazy-single-selection-field.component';
 import { SwitchFieldComponent } from './components/form-fields/switch-field/switch-field.component';
 import { SwitchFieldItemWrapperComponent } from './components/form-fields/switch-field/switch-field-item-wrapper.component';
-import { EarnByQuestionProSurveyFormFieldComponent } from './token-option-field-component-factories/earn-by-question-pro-survey-token-option-field-component-factory';
+import { EarnByQuestionProSurveyFormFieldComponent } from './token-options/earn-by-question-pro-survey/earn-by-question-pro-survey-token-option-field-component-factory';
 
 @NgModule({
     declarations: [

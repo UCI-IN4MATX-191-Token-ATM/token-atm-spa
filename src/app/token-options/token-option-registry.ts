@@ -1,6 +1,6 @@
 import { Injectable, Type } from '@angular/core';
 import type { TokenOption } from './token-option';
-import { WithdrawLabSwitchTokenOption } from './withdraw-lab-switch-token-option';
+import { WithdrawLabSwitchTokenOption } from './withdraw-lab-switch/withdraw-lab-switch-token-option';
 // import { BasicTokenOption } from './basic-token-option';
 // import { EarnByQuizTokenOption } from './earn-by-quiz-token-option';
 // import { EarnByModuleTokenOption } from './earn-by-module-token-option';
@@ -73,7 +73,7 @@ export class TokenOptionRegistry {
     //     'earn-by-question-pro-survey': EarnByQuestionProSurveyTokenOption
     // };
 
-    private static REGISTERED_TOKEN_OPTIONS: [number, Type<TokenOption>][] = [];
+    private static REGISTERED_TOKEN_OPTIONS: [number, string, Type<TokenOption>][] = [];
 
     public getDescriptiveName(tokenOptionType: string): string | undefined {
         return TokenOptionRegistry.DESCRIPTIVE_NAME_MAP[tokenOptionType];
@@ -84,7 +84,11 @@ export class TokenOptionRegistry {
     }
 
     public getRegisteredTokenOptionsDescriptiveNames(): [string, string][] {
-        return Object.entries(TokenOptionRegistry.DESCRIPTIVE_NAME_MAP);
+        // return Object.entries(TokenOptionRegistry.DESCRIPTIVE_NAME_MAP);
+        return TokenOptionRegistry.REGISTERED_TOKEN_OPTIONS.map((x) => [
+            x[1],
+            TokenOptionRegistry.DESCRIPTIVE_NAME_MAP[x[1]] ?? x[1]
+        ]);
     }
 
     public canCreateRequestByTeacher(tokenOption: TokenOption): boolean {
@@ -106,7 +110,7 @@ export class TokenOptionRegistry {
                         this.REGISTERED_TOKEN_OPTIONS[this.REGISTERED_TOKEN_OPTIONS.length - 1]![0]) + 1;
         let ind = this.REGISTERED_TOKEN_OPTIONS.findIndex((x) => x[0] >= calcOrder);
         if (ind == -1) ind = this.REGISTERED_TOKEN_OPTIONS.length;
-        this.REGISTERED_TOKEN_OPTIONS.splice(ind, 0, [calcOrder, tokenOptionClass]);
+        this.REGISTERED_TOKEN_OPTIONS.splice(ind, 0, [calcOrder, type, tokenOptionClass]);
         this.DESCRIPTIVE_NAME_MAP[type] = descriptiveName;
         this.TOKEN_OPTION_CLASS_MAP[type] = tokenOptionClass;
     }

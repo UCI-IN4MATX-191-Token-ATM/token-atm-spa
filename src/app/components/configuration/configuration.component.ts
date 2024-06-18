@@ -5,7 +5,7 @@ import { CanvasService } from 'app/services/canvas.service';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import type { BasicTokenOptionData } from 'app/token-options/basic/basic-token-option';
-import type { EarnByModuleTokenOptionData } from 'app/token-options/earn-by-module-token-option';
+import type { EarnByModuleTokenOptionData } from 'app/token-options/earn-by-module/earn-by-module-token-option';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
 import { ErrorSerializer } from 'app/utils/error-serailizer';

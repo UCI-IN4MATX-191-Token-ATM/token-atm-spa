@@ -1,5 +1,5 @@
 import type { QuestionProService } from 'app/services/question-pro.service';
-import type { EarnByQuestionProSurveyTokenOptionData } from 'app/token-options/earn-by-question-pro-survey-token-option';
+import type { EarnByQuestionProSurveyTokenOptionData } from 'app/token-options/earn-by-question-pro-survey/earn-by-question-pro-survey-token-option';
 import { RequestHandlerGuard } from './request-handler-guard';
 
 export class QuestionProSurveyParticipationGuard extends RequestHandlerGuard {

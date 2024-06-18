@@ -9,7 +9,7 @@ import {
     WithdrawAssignmentResubmissionTokenOption,
     WithdrawAssignmentResubmissionTokenOptionDataDef,
     type WithdrawAssignmentResubmissionTokenOptionData
-} from 'app/token-options/withdraw-assignment-resubmission-token-option';
+} from 'app/token-options/withdraw-assignment-resubmission/withdraw-assignment-resubmission-token-option';
 import { QualtricsService } from 'app/services/qualtrics.service';
 
 @Component({
