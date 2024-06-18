@@ -4,7 +4,7 @@ import { TokenATMConfigurationManagerService } from 'app/services/token-atm-conf
 import { StringInputFieldComponent } from '../form-fields/string-input-field/string-input-field.component';
 import { StringTextareaFieldComponent } from '../form-fields/string-textarea-field/string-textarea-field.component';
 import type { FormField } from 'app/utils/form-field/form-field';
-import { createFieldComponentWithLabel } from 'app/token-option-field-component-factories/token-option-field-component-factory';
+import { createFieldComponentWithLabel } from 'app/token-options/token-option-field-component-factory';
 
 @Component({
     selector: 'app-create-configuration-modal',

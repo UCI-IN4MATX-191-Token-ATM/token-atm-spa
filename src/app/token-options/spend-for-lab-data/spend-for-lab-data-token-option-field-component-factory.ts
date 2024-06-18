@@ -7,7 +7,7 @@ import {
     createStartTimeComponentBuilder,
     tokenOptionFieldComponentBuilder,
     tokenOptionValidationWrapper
-} from '../../token-option-field-component-factories/token-option-field-component-factory';
+} from '../token-option-field-component-factory';
 import { Inject, type EnvironmentInjector, type ViewContainerRef, Injectable } from '@angular/core';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import type { FormField } from 'app/utils/form-field/form-field';

@@ -2,7 +2,7 @@ import { Inject, Injectable, InjectionToken, Optional, Type } from '@angular/cor
 import type { ProcessedRequest } from 'app/data/processed-request';
 import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
-import type { TokenATMRequest } from 'app/requests/token-atm-request';
+import type { TokenATMRequest } from 'app/token-options/token-atm-request';
 import type { TokenOption } from 'app/token-options/token-option';
 import type { RequestHandler } from './request-handlers';
 // import { BasicRequestHandler } from './basic-request-handler';

@@ -2,11 +2,11 @@ import { Injectable } from '@angular/core';
 import { ProcessedRequest } from 'app/data/processed-request';
 import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
-import type { TokenATMRequest } from 'app/requests/token-atm-request';
+import type { TokenATMRequest } from 'app/token-options/token-atm-request';
 import type { WithdrawLabSwitchTokenOption } from 'app/token-options/withdraw-lab-switch/withdraw-lab-switch-token-option';
-import { HasApprovedRequestGuard } from '../../request-handlers/guards/has-approved-request-guard';
-import { RequestHandlerGuardExecutor } from '../../request-handlers/guards/request-handler-guard-executor';
-import { RequestHandler } from '../../request-handlers/request-handlers';
+import { HasApprovedRequestGuard } from '../request-handler-guards/has-approved-request-guard';
+import { RequestHandlerGuardExecutor } from '../request-handler-guards/request-handler-guard-executor';
+import { RequestHandler } from '../request-handlers';
 
 type WithdrawLabSwitchRequest = TokenATMRequest<WithdrawLabSwitchTokenOption>;
 

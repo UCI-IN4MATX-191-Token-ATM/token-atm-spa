@@ -1,7 +1,7 @@
 import { Inject, Injectable, InjectionToken, Optional, Type } from '@angular/core';
 import type { QuizSubmissionDetail } from 'app/data/quiz-submission-detail';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
-import type { TokenATMRequest } from 'app/requests/token-atm-request';
+import type { TokenATMRequest } from 'app/token-options/token-atm-request';
 import type { TokenOption } from 'app/token-options/token-option';
 import { constructDefaultResolver, RequestResolver } from './request-resolver';
 // import { BasicRequestResolver } from './basic-request-resolver';

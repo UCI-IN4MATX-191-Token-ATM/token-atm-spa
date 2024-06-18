@@ -4,7 +4,7 @@ import { StringTextareaFieldComponent } from '../form-fields/string-textarea-fie
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import type { BsModalRef } from 'ngx-bootstrap/modal';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
-import { createFieldComponentWithLabel } from 'app/token-option-field-component-factories/token-option-field-component-factory';
+import { createFieldComponentWithLabel } from 'app/token-options/token-option-field-component-factory';
 import type { FormField } from 'app/utils/form-field/form-field';
 
 @Component({

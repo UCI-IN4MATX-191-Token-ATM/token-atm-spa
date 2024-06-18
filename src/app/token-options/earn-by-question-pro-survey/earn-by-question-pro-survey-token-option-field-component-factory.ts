@@ -4,7 +4,7 @@ import {
     createFieldComponentWithLabel,
     createStartTimeComponentBuilder,
     tokenOptionFieldComponentBuilder
-} from '../../token-option-field-component-factories/token-option-field-component-factory';
+} from '../token-option-field-component-factory';
 import {
     Injectable,
     EnvironmentInjector,

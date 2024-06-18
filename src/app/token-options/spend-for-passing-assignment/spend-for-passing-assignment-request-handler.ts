@@ -1,15 +1,15 @@
 import type { SpendForPassingAssignmentTokenOption } from 'app/token-options/spend-for-passing-assignment/spend-for-passing-assignment-token-option';
-import { RequestHandler } from '../../request-handlers/request-handlers';
+import { RequestHandler } from '../request-handlers';
 import { Inject, Injectable } from '@angular/core';
 import { CanvasService } from 'app/services/canvas.service';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { ProcessedRequest } from 'app/data/processed-request';
-import { RequestHandlerGuardExecutor } from '../../request-handlers/guards/request-handler-guard-executor';
-import { RepeatRequestGuard } from '../../request-handlers/guards/repeat-request-guard';
-import { SufficientTokenBalanceGuard } from '../../request-handlers/guards/sufficient-token-balance-guard';
+import { RequestHandlerGuardExecutor } from '../request-handler-guards/request-handler-guard-executor';
+import { RepeatRequestGuard } from '../request-handler-guards/repeat-request-guard';
+import { SufficientTokenBalanceGuard } from '../request-handler-guards/sufficient-token-balance-guard';
 import type { StudentRecord } from 'app/data/student-record';
-import { ExcludeTokenOptionsGuard } from '../../request-handlers/guards/exclude-token-options-guard';
-import type { TokenATMRequest } from 'app/requests/token-atm-request';
+import { ExcludeTokenOptionsGuard } from '../request-handler-guards/exclude-token-options-guard';
+import type { TokenATMRequest } from 'app/token-options/token-atm-request';
 
 type SpendForPassingAssignmentRequest = TokenATMRequest<SpendForPassingAssignmentTokenOption>;
 

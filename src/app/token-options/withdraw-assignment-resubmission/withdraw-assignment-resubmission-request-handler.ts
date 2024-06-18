@@ -4,15 +4,15 @@ import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { CanvasService } from 'app/services/canvas.service';
 import type { WithdrawAssignmentResubmissionTokenOption } from 'app/token-options/withdraw-assignment-resubmission/withdraw-assignment-resubmission-token-option';
-import { EndDateGuard } from '../../request-handlers/guards/end-date-guard';
-import { HasApprovedRequestGuard } from '../../request-handlers/guards/has-approved-request-guard';
-import { NoAssignmentSubmissionGuard } from '../../request-handlers/guards/no-assignment-submission-guard';
-import { RequestHandlerGuardExecutor } from '../../request-handlers/guards/request-handler-guard-executor';
-import { StartDateGuard } from '../../request-handlers/guards/start-date-guard';
-import { RequestHandler } from '../../request-handlers/request-handlers';
-import { MultipleSectionEndDateGuard } from '../../request-handlers/guards/multiple-section-end-date-guard';
+import { EndDateGuard } from '../request-handler-guards/end-date-guard';
+import { HasApprovedRequestGuard } from '../request-handler-guards/has-approved-request-guard';
+import { NoAssignmentSubmissionGuard } from '../request-handler-guards/no-assignment-submission-guard';
+import { RequestHandlerGuardExecutor } from '../request-handler-guards/request-handler-guard-executor';
+import { StartDateGuard } from '../request-handler-guards/start-date-guard';
+import { RequestHandler } from '../request-handlers';
+import { MultipleSectionEndDateGuard } from '../request-handler-guards/multiple-section-end-date-guard';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
-import type { TokenATMRequest } from 'app/requests/token-atm-request';
+import type { TokenATMRequest } from 'app/token-options/token-atm-request';
 
 type WithdrawAssignmentResubmissionRequest = TokenATMRequest<WithdrawAssignmentResubmissionTokenOption>;
 

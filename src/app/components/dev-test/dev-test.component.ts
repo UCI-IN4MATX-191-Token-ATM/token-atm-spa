@@ -4,7 +4,7 @@ import { TokenOptionGroup } from 'app/data/token-option-group';
 import { CanvasService } from 'app/services/canvas.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import type { BasicTokenOptionData } from 'app/token-options/basic/basic-token-option';
-import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-option-resolver-registry';
+import { TokenOptionResolverRegistry } from 'app/token-options/token-option-resolver-registry';
 import {
     WithdrawAssignmentResubmissionTokenOption,
     WithdrawAssignmentResubmissionTokenOptionDataDef,

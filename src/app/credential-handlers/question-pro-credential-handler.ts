@@ -4,7 +4,7 @@ import { StringInputFieldComponent } from 'app/components/form-fields/string-inp
 import type { TokenATMCredentials } from 'app/data/token-atm-credentials';
 import { CredentialHandler, RegisterCredentialHandler } from 'app/services/credential-manager.service';
 import { QuestionProService } from 'app/services/question-pro.service';
-import { createFieldComponentWithLabel } from 'app/token-option-field-component-factories/token-option-field-component-factory';
+import { createFieldComponentWithLabel } from 'app/token-options/token-option-field-component-factory';
 import type { FormField } from 'app/utils/form-field/form-field';
 import type { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
 

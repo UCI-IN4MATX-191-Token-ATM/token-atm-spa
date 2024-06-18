@@ -20,12 +20,9 @@ import { StudentListComponent } from './components/student-list/student-list.com
 import {
     REGISTERED_TOKEN_OPTION_RESOLVERS,
     TOKEN_OPTION_RESOLVER_INJECTION_TOKEN
-} from './token-option-resolvers/token-option-resolver-registry';
-import {
-    REGISTERED_REQUEST_RESOLVERS,
-    REQUEST_RESOLVER_INJECT_TOKEN
-} from './request-resolvers/request-resolver-registry';
-import { REGISTERED_REQUEST_HANDLERS, REQUEST_HANDLER_INJECT_TOKEN } from './request-handlers/request-handler-registry';
+} from './token-options/token-option-resolver-registry';
+import { REGISTERED_REQUEST_RESOLVERS, REQUEST_RESOLVER_INJECT_TOKEN } from './token-options/request-resolver-registry';
+import { REGISTERED_REQUEST_HANDLERS, REQUEST_HANDLER_INJECT_TOKEN } from './token-options/request-handler-registry';
 import { DevTestComponent } from './components/dev-test/dev-test.component';
 import { TokenOptionGroupDisplayComponent } from './components/token-option-group-display/token-option-group-display.component';
 import { TokenOptionDisplayComponent } from './components/token-option-display/token-option-display.component';
@@ -58,7 +55,7 @@ import { ListFieldComponent } from './components/form-fields/list-field/list-fie
 import {
     REGISTERED_TOKEN_OPTION_FIELD_COMPONENT_FACTORIES,
     TOKEN_OPTION_FIELD_COMPONENT_FACTORY_INJECTION_TOKEN
-} from './token-option-field-component-factories/token-option-field-component-factory-registry';
+} from './token-options/token-option-field-component-factory-registry';
 import { CreateTokenOptionModalComponent } from './components/create-token-option-modal/create-token-option-modal.component';
 import { MultipleSectionDateFieldComponent } from './components/form-fields/multiple-section-date-field/multiple-section-date-field.component';
 import { ErrorMessageFieldComponent } from './components/form-fields/error-message-field/error-message-field.component';

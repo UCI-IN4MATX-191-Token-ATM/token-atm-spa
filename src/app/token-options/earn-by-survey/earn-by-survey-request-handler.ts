@@ -2,15 +2,15 @@ import { Inject, Injectable } from '@angular/core';
 import { ProcessedRequest } from 'app/data/processed-request';
 import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
-import type { TokenATMRequest } from 'app/requests/token-atm-request';
+import type { TokenATMRequest } from 'app/token-options/token-atm-request';
 import { QualtricsService } from 'app/services/qualtrics.service';
 import type { EarnBySurveyTokenOption } from 'app/token-options/earn-by-survey/earn-by-survey-token-option';
-import { EndDateGuard } from '../../request-handlers/guards/end-date-guard';
-import { RepeatRequestGuard } from '../../request-handlers/guards/repeat-request-guard';
-import { RequestHandlerGuardExecutor } from '../../request-handlers/guards/request-handler-guard-executor';
-import { StartDateGuard } from '../../request-handlers/guards/start-date-guard';
-import { SurveyParticipationGuard } from '../../request-handlers/guards/survey-participation-guard';
-import { RequestHandler } from '../../request-handlers/request-handlers';
+import { EndDateGuard } from '../request-handler-guards/end-date-guard';
+import { RepeatRequestGuard } from '../request-handler-guards/repeat-request-guard';
+import { RequestHandlerGuardExecutor } from '../request-handler-guards/request-handler-guard-executor';
+import { StartDateGuard } from '../request-handler-guards/start-date-guard';
+import { SurveyParticipationGuard } from '../request-handler-guards/survey-participation-guard';
+import { RequestHandler } from '../request-handlers';
 
 type EarnBySurveyRequest = TokenATMRequest<EarnBySurveyTokenOption>;
 

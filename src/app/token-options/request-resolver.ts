@@ -1,5 +1,5 @@
 import type { QuizSubmissionDetail } from 'app/data/quiz-submission-detail';
-import { DefaultRequest, TokenATMRequest } from 'app/requests/token-atm-request';
+import { DefaultRequest, TokenATMRequest } from 'app/token-options/token-atm-request';
 import type { TokenOption } from 'app/token-options/token-option';
 
 export abstract class RequestResolver<T extends TokenOption, R extends TokenATMRequest<T>> {

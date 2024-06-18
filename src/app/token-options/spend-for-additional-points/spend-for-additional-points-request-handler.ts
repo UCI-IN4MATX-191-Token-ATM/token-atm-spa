@@ -1,16 +1,16 @@
 import { Inject, Injectable } from '@angular/core';
-import { RequestHandler } from '../../request-handlers/request-handlers';
+import { RequestHandler } from '../request-handlers';
 import type { SpendForAdditionalPointsTokenOption } from 'app/token-options/spend-for-additional-points/spend-for-additional-points-token-option';
 import { CanvasService } from 'app/services/canvas.service';
 import { ProcessedRequest } from 'app/data/processed-request';
 import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
-import { RequestHandlerGuardExecutor } from '../../request-handlers/guards/request-handler-guard-executor';
+import { RequestHandlerGuardExecutor } from '../request-handler-guards/request-handler-guard-executor';
 import { addPercentOrPointsToCanvasGrade } from 'app/utils/canvas-grading';
-import { MultipleRequestsGuard } from '../../request-handlers/guards/multiple-requests-guard';
-import { ExcludeTokenOptionsGuard } from '../../request-handlers/guards/exclude-token-options-guard';
-import { SufficientTokenBalanceGuard } from '../../request-handlers/guards/sufficient-token-balance-guard';
-import type { TokenATMRequest } from 'app/requests/token-atm-request';
+import { MultipleRequestsGuard } from '../request-handler-guards/multiple-requests-guard';
+import { ExcludeTokenOptionsGuard } from '../request-handler-guards/exclude-token-options-guard';
+import { SufficientTokenBalanceGuard } from '../request-handler-guards/sufficient-token-balance-guard';
+import type { TokenATMRequest } from 'app/token-options/token-atm-request';
 
 type SpendForAdditionalPointsRequest = TokenATMRequest<SpendForAdditionalPointsTokenOption>;
 

@@ -2,15 +2,15 @@ import { Inject, Injectable } from '@angular/core';
 import { ProcessedRequest } from 'app/data/processed-request';
 import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
-import type { TokenATMRequest } from 'app/requests/token-atm-request';
+import type { TokenATMRequest } from 'app/token-options/token-atm-request';
 import { CanvasService } from 'app/services/canvas.service';
 import type { WithdrawLabDataTokenOption } from 'app/token-options/withdraw-lab-data/withdraw-lab-data-token-option';
-import { EndDateGuard } from '../../request-handlers/guards/end-date-guard';
-import { HasApprovedRequestGuard } from '../../request-handlers/guards/has-approved-request-guard';
-import { NoQuizSubmissionGuard } from '../../request-handlers/guards/no-quiz-submission-guard';
-import { RequestHandlerGuardExecutor } from '../../request-handlers/guards/request-handler-guard-executor';
-import { StartDateGuard } from '../../request-handlers/guards/start-date-guard';
-import { RequestHandler } from '../../request-handlers/request-handlers';
+import { EndDateGuard } from '../request-handler-guards/end-date-guard';
+import { HasApprovedRequestGuard } from '../request-handler-guards/has-approved-request-guard';
+import { NoQuizSubmissionGuard } from '../request-handler-guards/no-quiz-submission-guard';
+import { RequestHandlerGuardExecutor } from '../request-handler-guards/request-handler-guard-executor';
+import { StartDateGuard } from '../request-handler-guards/start-date-guard';
+import { RequestHandler } from '../request-handlers';
 
 type WithdrawLabDataRequest = TokenATMRequest<WithdrawLabDataTokenOption>;
 

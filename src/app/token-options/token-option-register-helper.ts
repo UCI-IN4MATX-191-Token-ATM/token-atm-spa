@@ -1,13 +1,13 @@
 import type { Type } from '@angular/core';
-import { RequestHandlerRegistry } from 'app/request-handlers/request-handler-registry';
-import type { RequestHandler } from 'app/request-handlers/request-handlers';
-import type { RequestResolver } from 'app/request-resolvers/request-resolver';
-import { RequestResolverRegistry } from 'app/request-resolvers/request-resolver-registry';
-import type { TokenATMRequest } from 'app/requests/token-atm-request';
-import type { TokenOptionFieldComponentFactory } from 'app/token-option-field-component-factories/token-option-field-component-factory';
-import { TokenOptionFieldComponentFactoryRegistry } from 'app/token-option-field-component-factories/token-option-field-component-factory-registry';
-import type { TokenOptionResolver } from 'app/token-option-resolvers/token-option-resolver';
-import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-option-resolver-registry';
+import { RequestHandlerRegistry } from 'app/token-options/request-handler-registry';
+import type { RequestHandler } from 'app/token-options/request-handlers';
+import type { RequestResolver } from 'app/token-options/request-resolver';
+import { RequestResolverRegistry } from 'app/token-options/request-resolver-registry';
+import type { TokenATMRequest } from 'app/token-options/token-atm-request';
+import type { TokenOptionFieldComponentFactory } from 'app/token-options/token-option-field-component-factory';
+import { TokenOptionFieldComponentFactoryRegistry } from 'app/token-options/token-option-field-component-factory-registry';
+import type { TokenOptionResolver } from 'app/token-options/token-option-resolver';
+import { TokenOptionResolverRegistry } from 'app/token-options/token-option-resolver-registry';
 import type { TokenOption } from './token-option';
 import { TokenOptionRegistry } from './token-option-registry';
 

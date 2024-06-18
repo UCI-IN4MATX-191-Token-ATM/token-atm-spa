@@ -3,7 +3,7 @@ import {
     createAssignmentFieldComponentBuilder,
     tokenOptionFieldComponentBuilder,
     tokenOptionValidationWrapper
-} from '../../token-option-field-component-factories/token-option-field-component-factory';
+} from '../token-option-field-component-factory';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import { Injectable, type EnvironmentInjector, type ViewContainerRef, Inject } from '@angular/core';
 import type { FormField } from 'app/utils/form-field/form-field';
