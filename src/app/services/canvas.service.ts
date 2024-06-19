@@ -1453,18 +1453,19 @@ export class CanvasService {
         const resultDates = makeDueMatchLock(studentDates);
 
         /**
+         * Predicate for an override that holds individual students, isn't full, and has exactly matching dates as the student's
+         */
+        const targetOverridePredicate = (override: AssignmentOverride) => {
+            return (
+                override.isIndividualLevel &&
+                override.sectionIdAsSectionLevel.length < CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE &&
+                areOverrideDatesEqual(studentDates, override)
+            );
+        };
+        /**
          * An existing override this Student should be included in
          */
-        let targetOverride: AssignmentOverride | undefined = undefined;
-        // Find first override that holds individual students, isn't full, and has exactly matching dates
-        for (const override of overrides) {
-            if (!override.isIndividualLevel) continue;
-            if (override.studentIdsAsIndividualLevel.length >= CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE) continue;
-            if (areOverrideDatesEqual(resultDates, override)) {
-                targetOverride = override;
-                break;
-            }
-        }
+        const targetOverride = overrides.find(targetOverridePredicate);
 
         function encodeForCanvas(overrideDates: OverrideDates) {
             const encode = (prop: 'unlockAt' | 'dueAt' | 'lockAt') => {
