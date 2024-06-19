@@ -1,0 +1,10 @@
+{
+    "$schema": "../node_modules/@angular-devkit/schematics/collection-schema.json",
+    "schematics": {
+        "token-option": {
+            "description": "The schematic for a token option in Token ATM.",
+            "factory": "./token-option/index#generateTokenOption",
+            "schema": "./token-option/schema.json"
+        }
+    }
+}

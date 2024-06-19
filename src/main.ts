@@ -11,7 +11,7 @@ requireCredentialHandlerModule.keys().forEach(requireCredentialHandlerModule);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const requireTokenOptionModule = (import.meta as any).webpackContext('./app/token-options/', {
     recursive: true,
-    regExp: /preload-[^/]*\.ts$/
+    regExp: /\/preload-[^/]*\.ts$/
 });
 requireTokenOptionModule.keys().forEach(requireTokenOptionModule);
 
