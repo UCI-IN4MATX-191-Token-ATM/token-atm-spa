@@ -1252,24 +1252,22 @@ export class CanvasService {
          * Due at and Lock at use the latest date. Unlock at uses the earliest.
          * Null is basically both +∞ and -∞.
          *
-         * @param preserveDate If passed a boolean, will prioritize preserving dates (if true) or returning nulls (if false) for all override dates
+         * @param preserveDate (default: false) will prioritize preserving dates (if true) or returning nulls (if false) for all override dates
          * @param skipMerging configure if merging should be skipped for the specified override dates (returns the value of the `a` argument instead)
          * @returns object with merged date results
          */
         function mergeOverrideDates(
             a: OverrideDates,
             b: OverrideDates,
-            preserveDate?: boolean,
-            skipMerging?: { [key in keyof OverrideDates]?: boolean }
+            preserveDate = false,
+            skipMerging: { [key in keyof OverrideDates]?: boolean } = {}
         ): OverrideDates {
             return {
                 unlockAt: skipMerging?.unlockAt
                     ? a.unlockAt
-                    : mergeOverrideDate(a.unlockAt, b.unlockAt, true, preserveDate ?? false), // Merges to earliest unlock date (default: drops if any null)
-                dueAt: skipMerging?.dueAt ? a.dueAt : mergeOverrideDate(a.dueAt, b.dueAt, false, preserveDate ?? false), // Merges to latest due date (default: drops if any null)
-                lockAt: skipMerging?.lockAt
-                    ? a.lockAt
-                    : mergeOverrideDate(a.lockAt, b.lockAt, false, preserveDate ?? false) // Merges to latest lock date (default: drops if any null)
+                    : mergeOverrideDate(a.unlockAt, b.unlockAt, true, preserveDate), // Merges to earliest unlock date
+                dueAt: skipMerging?.dueAt ? a.dueAt : mergeOverrideDate(a.dueAt, b.dueAt, false, preserveDate), // Merges to latest due date
+                lockAt: skipMerging?.lockAt ? a.lockAt : mergeOverrideDate(a.lockAt, b.lockAt, false, preserveDate) // Merges to latest lock date
             };
         }
 
