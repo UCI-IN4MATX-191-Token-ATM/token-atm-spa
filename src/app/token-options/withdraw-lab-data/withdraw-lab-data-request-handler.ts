@@ -10,7 +10,7 @@ import { HasApprovedRequestGuard } from '../request-handler-guards/has-approved-
 import { NoQuizSubmissionGuard } from '../request-handler-guards/no-quiz-submission-guard';
 import { RequestHandlerGuardExecutor } from '../request-handler-guards/request-handler-guard-executor';
 import { StartDateGuard } from '../request-handler-guards/start-date-guard';
-import { RequestHandler } from '../request-handlers';
+import { RequestHandler } from '../request-handler';
 
 type WithdrawLabDataRequest = TokenATMRequest<WithdrawLabDataTokenOption>;
 

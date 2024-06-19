@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { RequestHandler } from '../request-handlers';
+import { RequestHandler } from '../request-handler';
 import type { SpendForAdditionalPointsTokenOption } from 'app/token-options/spend-for-additional-points/spend-for-additional-points-token-option';
 import { CanvasService } from 'app/services/canvas.service';
 import { ProcessedRequest } from 'app/data/processed-request';

@@ -9,7 +9,7 @@ import { RepeatRequestGuard } from '../request-handler-guards/repeat-request-gua
 import { RequestHandlerGuardExecutor } from '../request-handler-guards/request-handler-guard-executor';
 import { StartDateGuard } from '../request-handler-guards/start-date-guard';
 import { SufficientTokenBalanceGuard } from '../request-handler-guards/sufficient-token-balance-guard';
-import { RequestHandler } from '../request-handlers';
+import { RequestHandler } from '../request-handler';
 import { MultipleSectionEndDateGuard } from '../request-handler-guards/multiple-section-end-date-guard';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import type { TokenATMRequest } from 'app/token-options/token-atm-request';

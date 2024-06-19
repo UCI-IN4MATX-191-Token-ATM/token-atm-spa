@@ -10,7 +10,7 @@ import { RepeatRequestGuard } from '../request-handler-guards/repeat-request-gua
 import { RequestHandlerGuardExecutor } from '../request-handler-guards/request-handler-guard-executor';
 import { StartDateGuard } from '../request-handler-guards/start-date-guard';
 import { SurveyParticipationGuard } from '../request-handler-guards/survey-participation-guard';
-import { RequestHandler } from '../request-handlers';
+import { RequestHandler } from '../request-handler';
 
 type EarnBySurveyRequest = TokenATMRequest<EarnBySurveyTokenOption>;
 

@@ -4,7 +4,7 @@ import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import type { TokenATMRequest } from 'app/token-options/token-atm-request';
 import type { TokenOption } from 'app/token-options/token-option';
-import type { RequestHandler } from './request-handlers';
+import type { RequestHandler } from './request-handler';
 // import { BasicRequestHandler } from './basic-request-handler';
 // import { EarnByModuleRequestHandler } from './earn-by-module-request-handler';
 // import { EarnByQuizRequestHandler } from './earn-by-quiz-request-handler';

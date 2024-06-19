@@ -8,7 +8,7 @@ import { ExcludeTokenOptionsGuard } from '../request-handler-guards/exclude-toke
 import { RepeatRequestGuard } from '../request-handler-guards/repeat-request-guard';
 import { RequestHandlerGuardExecutor } from '../request-handler-guards/request-handler-guard-executor';
 import { SufficientTokenBalanceGuard } from '../request-handler-guards/sufficient-token-balance-guard';
-import { RequestHandler } from '../request-handlers';
+import { RequestHandler } from '../request-handler';
 
 type SpendForLabSwitchRequest = TokenATMRequest<SpendForLabSwitchTokenOption>;
 

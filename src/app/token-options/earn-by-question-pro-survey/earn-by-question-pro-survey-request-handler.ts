@@ -11,7 +11,7 @@ import { QuestionProSurveyParticipationGuard } from '../request-handler-guards/q
 import { RepeatRequestGuard } from '../request-handler-guards/repeat-request-guard';
 import { RequestHandlerGuardExecutor } from '../request-handler-guards/request-handler-guard-executor';
 import { StartDateGuard } from '../request-handler-guards/start-date-guard';
-import { RequestHandler } from '../request-handlers';
+import { RequestHandler } from '../request-handler';
 
 type EarnByQuestionProSurveyRequest = TokenATMRequest<EarnByQuestionProSurveyTokenOption>;
 

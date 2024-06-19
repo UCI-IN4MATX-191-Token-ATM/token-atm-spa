@@ -5,7 +5,7 @@ import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import type { DefaultRequest } from 'app/token-options/token-atm-request';
 import { CanvasService } from 'app/services/canvas.service';
 import type { BasicTokenOption } from 'app/token-options/basic/basic-token-option';
-import { RequestHandler } from '../request-handlers';
+import { RequestHandler } from '../request-handler';
 
 type BasicRequest = DefaultRequest<BasicTokenOption>;
 

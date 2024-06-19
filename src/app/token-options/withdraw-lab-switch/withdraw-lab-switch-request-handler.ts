@@ -6,7 +6,7 @@ import type { TokenATMRequest } from 'app/token-options/token-atm-request';
 import type { WithdrawLabSwitchTokenOption } from 'app/token-options/withdraw-lab-switch/withdraw-lab-switch-token-option';
 import { HasApprovedRequestGuard } from '../request-handler-guards/has-approved-request-guard';
 import { RequestHandlerGuardExecutor } from '../request-handler-guards/request-handler-guard-executor';
-import { RequestHandler } from '../request-handlers';
+import { RequestHandler } from '../request-handler';
 
 type WithdrawLabSwitchRequest = TokenATMRequest<WithdrawLabSwitchTokenOption>;
 

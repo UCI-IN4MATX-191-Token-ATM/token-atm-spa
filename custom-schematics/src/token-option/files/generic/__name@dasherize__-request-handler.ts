@@ -5,7 +5,7 @@ import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';<%
 import type { DefaultRequest } from 'app/token-options/token-atm-request';<% } %>
 import type { <%= classify(name) %>TokenOption } from './<%= dasherize(name) %>-token-option';<% if (useCustomRequest) { %>
 import type { <%= classify(name) %>Request } from './<%= dasherize(name) %>-request';<% } %>
-import { RequestHandler } from 'app/token-options/request-handlers';<% if (!useCustomRequest) { %>
+import { RequestHandler } from 'app/token-options/request-handler';<% if (!useCustomRequest) { %>
 
 type <%= classify(name) %>Request = DefaultRequest<<%= classify(name) %>TokenOption>;<% } %>
 

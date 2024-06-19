@@ -7,7 +7,7 @@ import { EndDateGuard } from '../request-handler-guards/end-date-guard';
 import { RequestHandlerGuardExecutor } from '../request-handler-guards/request-handler-guard-executor';
 import { StartDateGuard } from '../request-handler-guards/start-date-guard';
 import { SufficientTokenBalanceGuard } from '../request-handler-guards/sufficient-token-balance-guard';
-import { RequestHandler } from '../request-handlers';
+import { RequestHandler } from '../request-handler';
 import { MultipleSectionEndDateGuard } from '../request-handler-guards/multiple-section-end-date-guard';
 import type { PlaceholderTokenOption } from 'app/token-options/placeholder-token-option/placeholder-token-option';
 import { MultipleSectionStartDateGuard } from '../request-handler-guards/multiple-section-start-date-guard';

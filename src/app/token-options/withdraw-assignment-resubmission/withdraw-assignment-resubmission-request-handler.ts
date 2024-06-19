@@ -9,7 +9,7 @@ import { HasApprovedRequestGuard } from '../request-handler-guards/has-approved-
 import { NoAssignmentSubmissionGuard } from '../request-handler-guards/no-assignment-submission-guard';
 import { RequestHandlerGuardExecutor } from '../request-handler-guards/request-handler-guard-executor';
 import { StartDateGuard } from '../request-handler-guards/start-date-guard';
-import { RequestHandler } from '../request-handlers';
+import { RequestHandler } from '../request-handler';
 import { MultipleSectionEndDateGuard } from '../request-handler-guards/multiple-section-end-date-guard';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import type { TokenATMRequest } from 'app/token-options/token-atm-request';

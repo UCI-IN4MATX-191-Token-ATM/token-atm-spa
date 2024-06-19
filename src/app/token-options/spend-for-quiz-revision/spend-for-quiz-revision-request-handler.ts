@@ -6,7 +6,7 @@ import { CanvasService } from 'app/services/canvas.service';
 import { RepeatRequestGuard } from '../request-handler-guards/repeat-request-guard';
 import { RequestHandlerGuardExecutor } from '../request-handler-guards/request-handler-guard-executor';
 import { SufficientTokenBalanceGuard } from '../request-handler-guards/sufficient-token-balance-guard';
-import { RequestHandler } from '../request-handlers';
+import { RequestHandler } from '../request-handler';
 import { QuizMaxGradeThresholdGuard } from '../request-handler-guards/quiz-max-grade-threshold-guard';
 import type { SpendForQuizRevisionTokenOption } from 'app/token-options/spend-for-quiz-revision/spend-for-quiz-revision-token-option';
 import { EndDateGuard } from '../request-handler-guards/end-date-guard';

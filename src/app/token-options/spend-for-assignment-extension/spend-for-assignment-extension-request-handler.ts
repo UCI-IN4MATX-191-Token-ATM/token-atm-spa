@@ -1,5 +1,5 @@
 import type { SpendForAssignmentExtensionTokenOption } from 'app/token-options/spend-for-assignment-extension/spend-for-assignment-extension-token-option';
-import { RequestHandler } from '../request-handlers';
+import { RequestHandler } from '../request-handler';
 import { Inject, Injectable } from '@angular/core';
 import { CanvasService } from 'app/services/canvas.service';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';

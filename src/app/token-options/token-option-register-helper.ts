@@ -1,6 +1,6 @@
 import type { Type } from '@angular/core';
 import { RequestHandlerRegistry } from 'app/token-options/request-handler-registry';
-import type { RequestHandler } from 'app/token-options/request-handlers';
+import type { RequestHandler } from 'app/token-options/request-handler';
 import type { RequestResolver } from 'app/token-options/request-resolver';
 import { RequestResolverRegistry } from 'app/token-options/request-resolver-registry';
 import type { TokenATMRequest } from 'app/token-options/token-atm-request';
