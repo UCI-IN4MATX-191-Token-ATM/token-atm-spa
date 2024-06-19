@@ -1508,9 +1508,7 @@ export class CanvasService {
                 }
             });
         }
-        // TODO: Should this return true here?
-        // If we get here the PUT/POST requests should have executed without an error.
-        return false;
+        return true;
     }
 
     public async getAssignmentSubmission(
