@@ -33,6 +33,7 @@ export class GridViewExternalAccessComponent implements OnDestroy {
             if (this.isListenerActive) return;
             window.addEventListener('message', this.messageListener);
             this.isListenerActive = true;
+            if (window.opener) window.opener.postMessage('GRID_VIEW_INIT');
         });
     }
 
