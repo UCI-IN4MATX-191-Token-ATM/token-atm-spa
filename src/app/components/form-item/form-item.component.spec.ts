@@ -34,7 +34,7 @@ describe('FormItemComponent', () => {
         component.onDataChange('AAAAAAAAAAAA');
     });
 
-    it('label should be properly renderred using the provided form item info', () => {
+    it('label should be properly rendered using the provided form item info', () => {
         component.info = new FormItemInfo('labelTest', 'Label Test', 'text');
         fixture.detectChanges();
         const labelElement = fixture.nativeElement.querySelector('label');
