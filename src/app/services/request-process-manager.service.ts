@@ -10,7 +10,7 @@ import { RequestResolverRegistry } from 'app/token-options/request-resolver-regi
 import type { TokenATMRequest } from 'app/token-options/token-atm-request';
 import type { TokenOption } from 'app/token-options/token-option';
 import { compareAsc, format } from 'date-fns';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, type Observable } from 'rxjs';
 import { CanvasService } from './canvas.service';
 import { QualtricsService } from './qualtrics.service';
 import { RawRequestFetcherService } from './raw-request-fetcher.service';

@@ -1,7 +1,7 @@
 import {
-    CanvasGradeScorePossible,
-    CanvasGradingType,
-    UpdatePostedGrade,
+    type CanvasGradeScorePossible,
+    type CanvasGradingType,
+    type UpdatePostedGrade,
     addPercentOrPointsToCanvasGrade,
     addPercentToPointsOrPercentType,
     addPointsToPercentOrPointsType,

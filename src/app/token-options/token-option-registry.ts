@@ -1,4 +1,4 @@
-import { Injectable, Type } from '@angular/core';
+import { Injectable, type Type } from '@angular/core';
 import type { TokenOption } from './token-option';
 import { WithdrawLabSwitchTokenOption } from './withdraw-lab-switch/withdraw-lab-switch-token-option';
 // import { BasicTokenOption } from './basic-token-option';

@@ -3,15 +3,15 @@ import {
     EnvironmentInjector,
     Inject,
     Input,
-    OnDestroy,
-    OnInit,
+    type OnDestroy,
+    type OnInit,
     ViewChild,
     ViewContainerRef
 } from '@angular/core';
 import type { ProcessedRequest } from 'app/data/processed-request';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { CanvasService } from 'app/services/canvas.service';
-import { RequestExportInstance, RequestExporterService } from 'app/services/request-exporter.service';
+import { type RequestExportInstance, RequestExporterService } from 'app/services/request-exporter.service';
 import { createFieldComponentWithLabel } from 'app/token-options/token-option-field-component-factory';
 import type { BsModalRef } from 'ngx-bootstrap/modal';
 import { SelectFieldComponent } from '../form-fields/select-field/select-field.component';

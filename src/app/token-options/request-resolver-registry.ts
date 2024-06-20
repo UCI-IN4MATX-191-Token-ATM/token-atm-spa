@@ -1,9 +1,9 @@
-import { Inject, Injectable, InjectionToken, Optional, Type } from '@angular/core';
+import { Inject, Injectable, InjectionToken, Optional, type Type } from '@angular/core';
 import type { QuizSubmissionDetail } from 'app/data/quiz-submission-detail';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import type { TokenATMRequest } from 'app/token-options/token-atm-request';
 import type { TokenOption } from 'app/token-options/token-option';
-import { constructDefaultResolver, RequestResolver } from './request-resolver';
+import { constructDefaultResolver, type RequestResolver } from './request-resolver';
 // import { BasicRequestResolver } from './basic-request-resolver';
 // import { EarnByModuleRequestResolver } from './earn-by-module-request-resolver';
 // import { EarnByQuizRequestResolver } from './earn-by-quiz-request-resolver';

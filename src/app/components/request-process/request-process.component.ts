@@ -1,4 +1,4 @@
-import { Component, Inject, TemplateRef, ViewChild } from '@angular/core';
+import { Component, Inject, type TemplateRef, ViewChild } from '@angular/core';
 import type { Course } from 'app/data/course';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { ModalManagerService } from 'app/services/modal-manager.service';

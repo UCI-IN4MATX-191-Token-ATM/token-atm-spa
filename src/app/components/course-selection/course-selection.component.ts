@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, type OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import type { Course } from 'app/data/course';
 import { FormItemInfo } from 'app/data/form-item-info';

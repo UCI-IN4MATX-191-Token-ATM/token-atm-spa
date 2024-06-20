@@ -1,7 +1,7 @@
-import { Component, EventEmitter, Inject, Input, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, type OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorSerializer } from 'app/utils/error-serailizer';
-import { BaseFormField, ObservableFormField } from 'app/utils/form-field/form-field';
+import { BaseFormField, type ObservableFormField } from 'app/utils/form-field/form-field';
 import type { FormFieldCopyPasteHandler } from 'app/utils/form-field/form-field-copy-paste-handler';
 import { isEqual } from 'lodash';
 import { filter, firstValueFrom, Subject, takeUntil } from 'rxjs';

@@ -1,4 +1,4 @@
-import { Component, EnvironmentInjector, Inject, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, EnvironmentInjector, Inject, Input, type OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import { CredentialManagerService } from 'app/services/credential-manager.service';

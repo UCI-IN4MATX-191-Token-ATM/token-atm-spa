@@ -1,6 +1,6 @@
 import {
-    SpendForAssignmentResubmissionTokenOption,
-    SpendForAssignmentResubmissionTokenOptionData,
+    type SpendForAssignmentResubmissionTokenOption,
+    type SpendForAssignmentResubmissionTokenOptionData,
     SpendForAssignmentResubmissionTokenOptionDataDef
 } from 'app/token-options/spend-for-assignment-resubmission/spend-for-assignment-resubmission-token-option';
 import {

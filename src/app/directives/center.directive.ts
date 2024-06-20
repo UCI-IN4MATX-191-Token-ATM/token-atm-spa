@@ -1,4 +1,4 @@
-import { Directive, ElementRef, OnInit, Renderer2 } from '@angular/core';
+import { Directive, ElementRef, type OnInit, Renderer2, Inject } from '@angular/core';
 
 @Directive({
     selector: '[appCenter]'
@@ -6,7 +6,7 @@ import { Directive, ElementRef, OnInit, Renderer2 } from '@angular/core';
 export class CenterDirective implements OnInit {
     // https://angular.io/api/core/ElementRef
     // https://angular.io/api/core/Renderer2
-    constructor(private renderer: Renderer2, private element: ElementRef) {}
+    constructor(@Inject(Renderer2) private renderer: Renderer2, @Inject(ElementRef) private element: ElementRef) {}
 
     ngOnInit(): void {
         ['d-flex', 'align-items-center', 'justify-content-center', 'vh-100'].forEach((cls: string) => {

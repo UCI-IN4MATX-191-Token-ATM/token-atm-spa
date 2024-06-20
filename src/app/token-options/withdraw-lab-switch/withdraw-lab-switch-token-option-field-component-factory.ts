@@ -10,8 +10,8 @@ import type { FormField } from 'app/utils/form-field/form-field';
 import { StaticFormField } from 'app/utils/form-field/static-form-field';
 import type { TokenOption } from 'app/token-options/token-option';
 import {
-    WithdrawLabSwitchTokenOption,
-    WithdrawLabSwitchTokenOptionData,
+    type WithdrawLabSwitchTokenOption,
+    type WithdrawLabSwitchTokenOptionData,
     WithdrawLabSwitchTokenOptionDataDef
 } from 'app/token-options/withdraw-lab-switch/withdraw-lab-switch-token-option';
 import { SpendForLabSwitchTokenOption } from 'app/token-options/spend-for-lab-switch/spend-for-lab-switch-token-option';

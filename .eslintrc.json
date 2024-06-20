@@ -27,6 +27,13 @@
                         "prefix": "app",
                         "style": "kebab-case"
                     }
+                ],
+                "@typescript-eslint/consistent-type-imports": [
+                    "error",
+                    {
+                        "fixStyle": "inline-type-imports",
+                        "prefer": "type-imports"
+                    }
                 ]
             }
         },
