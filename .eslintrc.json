@@ -76,7 +76,14 @@
         {
             "files": ["*.json"],
             "extends": ["plugin:json/recommended", "plugin:prettier/recommended"],
-            "rules": { "json/*": ["error", { "allowComments": true }] }
+            "rules": {
+                "json/*": [
+                    "error",
+                    {
+                        "allowComments": true
+                    }
+                ]
+            }
         }
     ]
 }
