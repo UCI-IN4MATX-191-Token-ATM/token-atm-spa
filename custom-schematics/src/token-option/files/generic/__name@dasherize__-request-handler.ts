@@ -27,7 +27,7 @@ export class <%= classify(name) %>RequestHandler extends RequestHandler<<%= clas
             request.submittedTime,
             new Date(), // when did the request get processed
             0, // TODO-Now: token balance change for student
-            'Request handling logic for this type of token option has not been implemented yet!', // TODO-Now: description for the processed result
+            'Request handling logic for this type of token option has not been implemented yet!', // TODO-Now: description for the request processing result
             request.tokenOption.group.id
         );
     }
