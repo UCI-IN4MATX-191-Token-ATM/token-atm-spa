@@ -4,6 +4,7 @@ import { ToJSONMixin } from 'app/token-options/mixins/to-json-mixin';
 import { FromDataMixin } from 'app/token-options/mixins/from-data-mixin';
 import { unwrapValidationFunc } from 'app/utils/validation-unwrapper';
 
+throw new Error('Data type definition for <%= classify(name) %>TokenOption is not implemented!');
 export const <%= classify(name) %>TokenOptionDataDef = t.intersection([
     TokenOptionDataDef,
     t.strict({}) // TODO-Now: replace with other DataDefs

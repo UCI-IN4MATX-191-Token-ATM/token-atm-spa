@@ -20,6 +20,7 @@ export class <%= classify(name) %>TokenOptionFieldComponentFactory extends Token
         FormField<<%= classify(name) %>TokenOption | TokenOptionGroup, <%= classify(name) %>TokenOptionData, any>
     ] {
         // TODO-Now: add more FormFields
+        throw new Error('Custom token option field component factory for <%= classify(name) %>TokenOption is not implemented!');
         return tokenOptionValidationWrapper(
             environmentInjector,
             tokenOptionFieldComponentBuilder(environmentInjector)

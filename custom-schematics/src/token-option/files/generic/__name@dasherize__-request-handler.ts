@@ -17,16 +17,17 @@ export class <%= classify(name) %>RequestHandler extends RequestHandler<<%= clas
         request: <%= classify(name) %>Request
     ): Promise<ProcessedRequest> {
         // TODO-Now: implement request handling logic
+        throw new Error('Custom handling logic for <%= classify(name) %>Request is not implemented!');
         return new ProcessedRequest(
             configuration,
             request.tokenOption.id,
             request.tokenOption.name,
             studentRecord.student,
-            false, // TODO-Now
+            false, // TODO-Now: whether the request is approved
             request.submittedTime,
-            new Date(),
-            0, // TODO-Now
-            'Request handling logic for this type of token option has not been implemented yet!', // TODO-Now
+            new Date(), // when did the request get processed
+            0, // TODO-Now: token balance change for student
+            'Request handling logic for this type of token option has not been implemented yet!', // TODO-Now: description for the processed result
             request.tokenOption.group.id
         );
     }
