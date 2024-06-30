@@ -1458,7 +1458,7 @@ export class CanvasService {
         const targetOverridePredicate = (override: AssignmentOverride) => {
             return (
                 override.isIndividualLevel &&
-                override.sectionIdAsSectionLevel.length < CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE &&
+                override.studentIdsAsIndividualLevel.length < CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE &&
                 areOverrideDatesEqual(studentDates, override)
             );
         };
