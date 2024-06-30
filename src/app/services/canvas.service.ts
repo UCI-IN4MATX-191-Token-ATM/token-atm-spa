@@ -1285,10 +1285,6 @@ export class CanvasService {
                 await this.getStudentSectionEnrollments(courseId, studentId)
             )
         );
-        let lockDate: OverrideDate = null,
-            unlockDate: OverrideDate = null,
-            titleCnt = 0,
-            hasMatchedOverride = false;
 
         function getTitleCnt(override: AssignmentOverride, baseCount = 0): number {
             const splitTitle = override.title.split(' - ');
@@ -1320,40 +1316,6 @@ export class CanvasService {
             const { lockAt, unlockAt, dueAt } = await this.getAssignment(courseId, assignmentId);
             return { lockAt, unlockAt, dueAt };
         };
-
-        for (const override of overrides) {
-            const data = override.title.split(' - ');
-            if (data.length >= 3) {
-                // Monotonically increase the title count for Token ATM overrides by one
-                titleCnt = parseInt(data[2] as string) + 1;
-            }
-            if (override.isIndividualLevel) {
-                // Returns early without extending, since the student has an existing individual level override
-                if (override.studentIdsAsIndividualLevel.includes(studentId)) return false;
-                continue;
-            }
-            if (sections.has(override.sectionIdAsSectionLevel)) {
-                // Collect first lockDate and unlockDate, mark Matching Override as found
-                if (!hasMatchedOverride) {
-                    lockDate = override.lockAt;
-                    unlockDate = override.unlockAt;
-                    hasMatchedOverride = true;
-                    continue;
-                }
-                // Another Section override has been found for this Student,
-                // Update existing lock and unlock dates to use:
-                //  - the latest lock date
-                //  - the earliest unlock date
-                lockDate = mergeOverrideDate(lockDate, override.lockAt, false);
-                unlockDate = mergeOverrideDate(unlockDate, override.unlockAt, true);
-            }
-        }
-        // Use assignment's lock and unlock date if there isn't an existing match
-        if (!hasMatchedOverride) {
-            const assignment = await this.getAssignment(courseId, assignmentId);
-            lockDate = assignment.lockAt;
-            unlockDate = assignment.unlockAt;
-        }
 
         type CheckAndCollect = { name: string; predicate: () => boolean; result: () => Promise<OverrideDates> } | null;
         // Priority Order (highest to lowest), reduce to single appropriate level
@@ -1413,30 +1375,6 @@ export class CanvasService {
             throw new Error(
                 'Logic error in implementation. No unlock, due, and lock dates found for this student and assignment. This should be impossible.'
             );
-
-        // ==== Check that both implmentations are equivalent ====
-        if (
-            isOverrideDateEqual(lockDate, studentDates.lockAt) &&
-            isOverrideDateEqual(unlockDate, studentDates.unlockAt)
-        ) {
-            console.log('Lock and Unlock Dates are equal for Original and Functional implementations');
-        } else {
-            const t = (overrideDate: Date | null) => {
-                return overrideDate ? overrideDate?.toISOString : overrideDate;
-            };
-            const ft = (str: string, overrideDate: Date | null) => {
-                return `  ${str}: ${t(overrideDate)}`;
-            };
-            console.log(
-                `Lock and Unlock Dates differ across implementations` +
-                    `\n${ft('Orig Lock', lockDate)}${ft('Orig Unlock', unlockDate)}` +
-                    `\n${ft('New  Lock', studentDates.lockAt)}${ft('New  Unlock', studentDates.unlockAt)}`
-            );
-        }
-        if (titleCnt === 0 && highestTitleCnt !== 0)
-            console.log("Counts don't match when no Token ATM titles found:", highestTitleCnt, 'vs', titleCnt);
-        if (titleCnt !== 0 && highestTitleCnt + 1 !== titleCnt)
-            console.log('Next title count doesnt match:', highestTitleCnt + 1, 'vs', titleCnt);
 
         function makeDueMatchLock(overrideDates: OverrideDates): OverrideDates {
             const { unlockAt, lockAt } = overrideDates;
