@@ -1197,29 +1197,6 @@ export class CanvasService {
     }
 
     /**
-     * Merges two dates into a single choice.
-     * @param min (default: true) if true, return earliest date. if false, return latest date.
-     * @returns the merged date or null if either date is null
-     */
-    private mergeOverrideDate(a: Date | null, b: Date | null, min = true): Date | null {
-        if (a == null || b == null) return null;
-        if (min) {
-            return compareDesc(a, b) == 1 ? a : b;
-        } else {
-            return compareAsc(a, b) == 1 ? a : b;
-        }
-    }
-
-    /**
-     * @returns true if both dates are equal or both are null
-     */
-    private isOverrideDateEqual(a: Date | null, b: Date | null): boolean {
-        if (a == null && b == null) return true;
-        if (a == null || b == null) return false;
-        return isEqual(a, b);
-    }
-
-    /**
      * Extends the time a Student has on a Canvas Assignment
      *
      * Overrides the student's assignment due at to match the assignment's lock at.
@@ -1230,6 +1207,70 @@ export class CanvasService {
         studentId: string,
         overrideTitlePrefix: string
     ): Promise<boolean> {
+        type OverrideDate = Date | null;
+        type OverrideDates = { unlockAt: OverrideDate; lockAt: OverrideDate; dueAt: OverrideDate };
+
+        /**
+         * Merges two override dates into a single choice.
+         * @param min (default: true) if true, return earliest date. if false, return latest date.
+         * @param preserveDate (default: false) if true, returns the other date if one is null
+         * @returns the merged date or null
+         */
+        function mergeOverrideDate(a: OverrideDate, b: OverrideDate, min = true, preserveDate = false): OverrideDate {
+            if (a == null && preserveDate) return b;
+            if (b == null && preserveDate) return a;
+            if (a == null || b == null) return null;
+            if (min) {
+                return compareDesc(a, b) == 1 ? a : b;
+            } else {
+                return compareAsc(a, b) == 1 ? a : b;
+            }
+        }
+
+        /**
+         * @returns true if both dates are equal or both are null
+         */
+        function isOverrideDateEqual(a: OverrideDate, b: OverrideDate): boolean {
+            if (a == null && b == null) return true;
+            if (a == null || b == null) return false;
+            return isEqual(a, b);
+        }
+
+        /**
+         * @returns true if each pair of dates are equal (either same date or both null)
+         */
+        function areOverrideDatesEqual(a: OverrideDates, b: OverrideDates): boolean {
+            return (
+                isOverrideDateEqual(a.unlockAt, b.unlockAt) &&
+                isOverrideDateEqual(a.dueAt, b.dueAt) &&
+                isOverrideDateEqual(a.lockAt, b.lockAt)
+            );
+        }
+
+        /**
+         * Merges unlock, due, and lock dates.
+         * Due at and Lock at use the latest date. Unlock at uses the earliest.
+         * Null is basically both +∞ and -∞.
+         *
+         * @param preserveDate (default: false) will prioritize preserving dates (if true) or returning nulls (if false) for all override dates
+         * @param skipMerging configure if merging should be skipped for the specified override dates (returns the value of the `a` argument instead)
+         * @returns object with merged date results
+         */
+        function mergeOverrideDates(
+            a: OverrideDates,
+            b: OverrideDates,
+            preserveDate = false,
+            skipMerging: { [key in keyof OverrideDates]?: boolean } = {}
+        ): OverrideDates {
+            return {
+                unlockAt: skipMerging?.unlockAt
+                    ? a.unlockAt
+                    : mergeOverrideDate(a.unlockAt, b.unlockAt, true, preserveDate), // Merges to earliest unlock date
+                dueAt: skipMerging?.dueAt ? a.dueAt : mergeOverrideDate(a.dueAt, b.dueAt, false, preserveDate), // Merges to latest due date
+                lockAt: skipMerging?.lockAt ? a.lockAt : mergeOverrideDate(a.lockAt, b.lockAt, false, preserveDate) // Merges to latest lock date
+            };
+        }
+
         /**
          * All overrides for the assignment (multiple students can be in an override)
          */
@@ -1244,60 +1285,138 @@ export class CanvasService {
                 await this.getStudentSectionEnrollments(courseId, studentId)
             )
         );
-        let lockDate: Date | null = null,
-            unlockDate: Date | null = null,
-            titleCnt = 0,
-            hasMatchedOverride = false;
-        for (const override of overrides) {
-            const data = override.title.split(' - ');
-            if (data.length >= 3) {
-                // Monotonically increase the title count for Token ATM overrides by one
-                titleCnt = parseInt(data[2] as string) + 1;
+
+        function getTitleCnt(override: AssignmentOverride, baseCount = 0): number {
+            const splitTitle = override.title.split(' - ');
+            if (splitTitle.length >= 3) {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                const titleNum = parseInt(splitTitle[2]!);
+                return Number.isFinite(titleNum) ? titleNum : baseCount;
+            } else {
+                return baseCount;
             }
-            if (override.isIndividualLevel) {
-                // Returns early without extending, since the student has an existing individual level override
-                if (override.studentIdsAsIndividualLevel.includes(studentId)) return false;
-                continue;
-            }
-            if (sections.has(override.sectionIdAsSectionLevel)) {
-                // Collect first lockDate and unlockDate, mark Matching Override as found
-                if (!hasMatchedOverride) {
-                    lockDate = override.lockAt;
-                    unlockDate = override.unlockAt;
-                    hasMatchedOverride = true;
-                    continue;
+        }
+        const highestTitleCnt = Math.max(0, ...overrides.map((override) => getTitleCnt(override)));
+
+        // Collect individual level overrides for this student
+        const individualOverridesWithThisStudent = overrides.filter(
+            (override) => override.isIndividualLevel && override.studentIdsAsIndividualLevel.includes(studentId)
+        );
+
+        // Return early without extending, if the student has an existing individual level override
+        if (individualOverridesWithThisStudent.length > 0) return false;
+
+        // Collect section overrides for this student
+        const sectionOverridesWithThisStudent = overrides.filter(
+            (override) => override.isSectionLevel && sections.has(override.sectionIdAsSectionLevel)
+        );
+
+        const getAssignmentDates = async (): Promise<OverrideDates> => {
+            // Be aware, this.getAssignment must use `override_assignment_dates: false` param to get the correct dates
+            const { lockAt, unlockAt, dueAt } = await this.getAssignment(courseId, assignmentId);
+            return { lockAt, unlockAt, dueAt };
+        };
+
+        type CheckAndCollect = { name: string; predicate: () => boolean; result: () => Promise<OverrideDates> } | null;
+        // Priority Order (highest to lowest), reduce to single appropriate level
+        const resolveLevel = (
+            [
+                {
+                    name: 'Individual Level',
+                    predicate: () => {
+                        const numIndividOverrides = individualOverridesWithThisStudent.length;
+                        if (numIndividOverrides > 1) {
+                            throw new Error(
+                                'This student was found in multiple individual level overrides for this assignment. They should only ever be in one per assignment.'
+                            );
+                        }
+                        return numIndividOverrides === 1;
+                    },
+                    result: async () => {
+                        return (individualOverridesWithThisStudent as OverrideDates[]).reduce((acc, cur) =>
+                            mergeOverrideDates(acc, cur)
+                        );
+                    }
+                },
+                {
+                    name: 'Section Level',
+                    predicate: () => {
+                        return sectionOverridesWithThisStudent.length > 0;
+                    },
+                    result: async () => {
+                        return (sectionOverridesWithThisStudent as OverrideDates[]).reduce((acc, cur) =>
+                            mergeOverrideDates(acc, cur)
+                        );
+                    }
+                },
+                {
+                    name: 'Assignment Level',
+                    predicate: () => {
+                        return true;
+                    },
+                    result: async () => {
+                        return await getAssignmentDates();
+                    }
                 }
-                // Another Section override has been found for this Student,
-                // Update existing lock and unlock dates to use:
-                //  - the latest lock date
-                //  - the earliest unlock date
-                lockDate = this.mergeOverrideDate(lockDate, override.lockAt, false);
-                unlockDate = this.mergeOverrideDate(unlockDate, override.unlockAt, true);
+            ] as CheckAndCollect[]
+        ).reduce((choice, cur) => {
+            if (choice == null && cur?.predicate()) {
+                return cur;
+            } else {
+                return choice;
             }
+        }, null);
+
+        /**
+         * The dates (most likely to be) currently assigned to this student for this assignment.
+         */
+        const studentDates = await resolveLevel?.result();
+        if (studentDates == null)
+            throw new Error(
+                'Logic error in implementation. No unlock, due, and lock dates found for this student and assignment. This should be impossible.'
+            );
+
+        function makeDueMatchLock(overrideDates: OverrideDates): OverrideDates {
+            const { unlockAt, lockAt } = overrideDates;
+            return {
+                unlockAt,
+                dueAt: lockAt,
+                lockAt
+            };
         }
-        // Use assignment's lock and unlock date if there isn't an existing match
-        if (!hasMatchedOverride) {
-            const assignment = await this.getAssignment(courseId, assignmentId);
-            lockDate = assignment.lockAt;
-            unlockDate = assignment.unlockAt;
-        }
+
+        /**
+         * New override dates that should be used for this student
+         */
+        const resultDates = makeDueMatchLock(studentDates);
+
+        /**
+         * Predicate for an override that holds individual students, isn't full, and has exactly matching dates as the new resulting dates
+         */
+        const targetOverridePredicate = (override: AssignmentOverride) => {
+            return (
+                override.isIndividualLevel &&
+                override.studentIdsAsIndividualLevel.length < CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE &&
+                areOverrideDatesEqual(resultDates, override)
+            );
+        };
         /**
          * An existing override this Student should be included in
          */
-        let targetOverride: AssignmentOverride | undefined = undefined;
-        // Find first override that holds individual students, isn't full, and has exactly matching dates
-        for (const override of overrides) {
-            if (!override.isIndividualLevel) continue;
-            if (override.studentIdsAsIndividualLevel.length >= CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE) continue;
-            if (
-                this.isOverrideDateEqual(unlockDate, override.unlockAt) &&
-                this.isOverrideDateEqual(lockDate, override.lockAt) &&
-                this.isOverrideDateEqual(lockDate, override.dueAt)
-            ) {
-                targetOverride = override;
-                break;
-            }
+        const targetOverride = overrides.find(targetOverridePredicate);
+
+        function encodeForCanvas(overrideDates: OverrideDates) {
+            const encode = (prop: 'unlockAt' | 'dueAt' | 'lockAt') => {
+                const val = overrideDates[prop];
+                return val ? formatISO(val) : null;
+            };
+            return {
+                unlock_at: encode('unlockAt'),
+                due_at: encode('dueAt'),
+                lock_at: encode('lockAt')
+            };
         }
+
         if (targetOverride) {
             // Update ad-hoc group of students that have existing matching override to include this student
             await this.apiRequest(
@@ -1308,9 +1427,7 @@ export class CanvasService {
                         assignment_override: {
                             student_ids: targetOverride.studentIdsAsIndividualLevel.concat([studentId]),
                             title: targetOverride.title,
-                            lock_at: lockDate ? formatISO(lockDate) : null,
-                            unlock_at: unlockDate ? formatISO(unlockDate) : null,
-                            due_at: lockDate ? formatISO(lockDate) : null
+                            ...encodeForCanvas(resultDates)
                         }
                     }
                 }
@@ -1322,17 +1439,13 @@ export class CanvasService {
                 data: {
                     assignment_override: {
                         student_ids: [studentId],
-                        title: `${overrideTitlePrefix} - ${titleCnt}`,
-                        lock_at: lockDate ? formatISO(lockDate) : null,
-                        unlock_at: unlockDate ? formatISO(unlockDate) : null,
-                        due_at: lockDate ? formatISO(lockDate) : null
+                        title: `${overrideTitlePrefix} - ${highestTitleCnt + 1}`,
+                        ...encodeForCanvas(resultDates)
                     }
                 }
             });
         }
-        // TODO: Should this return true here?
-        // If we get here the PUT/POST requests should have executed without an error.
-        return false;
+        return true;
     }
 
     public async getAssignmentSubmission(
