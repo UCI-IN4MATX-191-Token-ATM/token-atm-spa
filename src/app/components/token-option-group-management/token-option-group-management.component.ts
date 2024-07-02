@@ -5,7 +5,7 @@ import { TokenATMConfigurationManagerService } from 'app/services/token-atm-conf
 import type { BsModalRef } from 'ngx-bootstrap/modal';
 import { StringInputFieldComponent } from '../form-fields/string-input-field/string-input-field.component';
 import { StringTextareaFieldComponent } from '../form-fields/string-textarea-field/string-textarea-field.component';
-import { createFieldComponentWithLabel } from 'app/token-option-field-component-factories/token-option-field-component-factory';
+import { createFieldComponentWithLabel } from 'app/token-options/token-option-field-component-factory';
 import { NumberInputFieldComponent } from '../form-fields/number-input-field/number-input-field.component';
 import type { FormField } from 'app/utils/form-field/form-field';
 

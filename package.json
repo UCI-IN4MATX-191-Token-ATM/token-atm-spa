@@ -15,6 +15,9 @@
         "add-change": "git update-index --again",
         "before-commit": "run-s format:fix lint:fix add-change test:cli",
         "check": "run-s format lint test:cli",
+        "schematics-build": "cd custom-schematics && npm run build",
+        "schematics-setup": "cd custom-schematics && npm i && npm run build && cd .. && npm link ./custom-schematics",
+        "postinstall": "npm run schematics-setup",
         "prepare": "husky install"
     },
     "private": true,

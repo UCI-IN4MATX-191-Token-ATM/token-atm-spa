@@ -5,7 +5,7 @@ import { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-compo
 import { DateOverride, MultipleSectionDateMatcher } from 'app/utils/multiple-section-date-matcher';
 import { ListFieldComponent } from '../list-field/list-field.component';
 import { v4 } from 'uuid';
-import { createFieldComponentWithLabel } from 'app/token-option-field-component-factories/token-option-field-component-factory';
+import { createFieldComponentWithLabel } from 'app/token-options/token-option-field-component-factory';
 import { StringInputFieldComponent } from '../string-input-field/string-input-field.component';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import { MultipleSelectionFieldComponent } from '../selection-fields/multiple-selection-field/multiple-selection-field.component';
