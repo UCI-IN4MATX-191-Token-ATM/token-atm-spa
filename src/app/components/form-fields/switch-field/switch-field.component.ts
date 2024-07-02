@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, OnDestroy, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, type OnDestroy, type OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import type { DirectFormField } from 'app/utils/form-field/direct-form-field';
-import { BaseFormField, FormField, ObservableFormField } from 'app/utils/form-field/form-field';
+import { BaseFormField, type FormField, type ObservableFormField } from 'app/utils/form-field/form-field';
 import type { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
 import type { FormFieldWrapper } from 'app/utils/form-field/form-field-wrapper';
 import type { Subscription } from 'rxjs';

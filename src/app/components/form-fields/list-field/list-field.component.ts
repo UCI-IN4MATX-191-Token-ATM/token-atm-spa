@@ -1,4 +1,4 @@
-import { Component, ComponentRef, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, type ComponentRef, Input, type OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import type { ExtractDest, ExtractSrc, FormField } from 'app/utils/form-field/form-field';
 import { ListFieldItemWrapperComponent } from '../list-field-item-wrapper/list-field-item-wrapper.component';
 import { firstValueFrom } from 'rxjs';

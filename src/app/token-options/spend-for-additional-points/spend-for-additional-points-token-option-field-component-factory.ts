@@ -1,5 +1,5 @@
 import {
-    AssignmentGroupSelectionFormField,
+    type AssignmentGroupSelectionFormField,
     TokenOptionFieldComponentFactory,
     createAssignmentFieldComponentBuilder,
     createAssignmentGroupComponentBuilder,

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Inject, Input, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, type OnDestroy } from '@angular/core';
 import type { MatOption, MatOptionSelectionChange } from '@angular/material/core';
 import { ErrorSerializer } from 'app/utils/error-serailizer';
 import { BaseFormField } from 'app/utils/form-field/form-field';

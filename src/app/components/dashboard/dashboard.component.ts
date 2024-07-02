@@ -1,8 +1,8 @@
-import { Component, Inject, isDevMode, OnDestroy } from '@angular/core';
+import { Component, Inject, isDevMode, type OnDestroy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import type { Course } from 'app/data/course';
 import type { Subscription } from 'rxjs';
-import { CourseConfigurable, TokenATMDashboardRoute, TOKEN_ATM_DASHBOARD_ROUTES } from './dashboard-routing';
+import { type CourseConfigurable, type TokenATMDashboardRoute, TOKEN_ATM_DASHBOARD_ROUTES } from './dashboard-routing';
 import { CanvasService } from 'app/services/canvas.service';
 
 @Component({

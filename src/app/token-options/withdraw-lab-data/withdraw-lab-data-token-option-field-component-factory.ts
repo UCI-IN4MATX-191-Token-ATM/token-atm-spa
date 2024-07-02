@@ -9,8 +9,8 @@ import { TokenOptionGroup } from 'app/data/token-option-group';
 import type { FormField } from 'app/utils/form-field/form-field';
 import type { TokenOption } from 'app/token-options/token-option';
 import {
-    WithdrawLabDataTokenOption,
-    WithdrawLabDataTokenOptionData,
+    type WithdrawLabDataTokenOption,
+    type WithdrawLabDataTokenOptionData,
     WithdrawLabDataTokenOptionDataDef
 } from 'app/token-options/withdraw-lab-data/withdraw-lab-data-token-option';
 import { SpendForLabDataTokenOption } from 'app/token-options/spend-for-lab-data/spend-for-lab-data-token-option';

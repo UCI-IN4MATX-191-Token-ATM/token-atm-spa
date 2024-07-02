@@ -8,8 +8,8 @@ import { Injectable, type EnvironmentInjector, type ViewContainerRef } from '@an
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import type { FormField } from 'app/utils/form-field/form-field';
 import {
-    SpendForLabSwitchTokenOption,
-    SpendForLabSwitchTokenOptionData,
+    type SpendForLabSwitchTokenOption,
+    type SpendForLabSwitchTokenOptionData,
     SpendForLabSwitchTokenOptionDataDef
 } from 'app/token-options/spend-for-lab-switch/spend-for-lab-switch-token-option';
 

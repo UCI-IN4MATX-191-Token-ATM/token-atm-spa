@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, type OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 
 @Component({
     selector: 'app-switch-field-item-wrapper',

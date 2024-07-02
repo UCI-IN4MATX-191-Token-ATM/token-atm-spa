@@ -1,6 +1,6 @@
 import {
-    PlaceholderTokenOption,
-    PlaceholderTokenOptionData,
+    type PlaceholderTokenOption,
+    type PlaceholderTokenOptionData,
     PlaceholderTokenOptionDataDef
 } from 'app/token-options/placeholder-token-option/placeholder-token-option';
 import {

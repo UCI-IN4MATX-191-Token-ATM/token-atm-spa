@@ -1,10 +1,10 @@
 import { isLeft } from 'fp-ts/lib/Either';
 import {
     DescriptionDef,
-    ITokenOption,
-    RawTokenOptionMixinData,
+    type ITokenOption,
+    type RawTokenOptionMixinData,
     TokenOptionMixin,
-    TokenOptionMixinData,
+    type TokenOptionMixinData,
     TokenOptionMixinDataDef
 } from './token-option-mixin';
 import { Base64 } from 'js-base64';

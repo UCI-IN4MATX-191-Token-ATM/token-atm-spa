@@ -1,4 +1,4 @@
-import { Inject, Injectable, InjectionToken, Optional, Type } from '@angular/core';
+import { Inject, Injectable, InjectionToken, Optional, type Type } from '@angular/core';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import type { TokenOption } from 'app/token-options/token-option';
 import type { TokenOptionResolver } from './token-option-resolver';

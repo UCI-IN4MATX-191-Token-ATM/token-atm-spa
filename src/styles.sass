@@ -31,3 +31,6 @@ $default-theme: mat.define-light-theme((color: (primary: $default-primary, accen
 
 .mdc-list-item--disabled:not(#fake-id1):not(#fake-id2)
     opacity: 0.5 !important
+
+.mat-mdc-option.mdc-list-item--disabled .mat-mdc-option-pseudo-checkbox:not(#fake-id1):not(#fake-id2), .mat-mdc-option.mdc-list-item--disabled .mdc-list-item__primary-text:not(#fake-id1):not(#fake-id2), .mat-mdc-option.mdc-list-item--disabled>mat-icon:not(#fake-id1):not(#fake-id2)
+    opacity: unset

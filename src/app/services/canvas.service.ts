@@ -9,14 +9,14 @@ import { CanvasRESTPaginatedResult } from 'app/utils/pagination/canvas-rest-pagi
 import { PaginatedView } from 'app/utils/paginated-view';
 import type { AxiosRequestConfig } from 'axios';
 import { compareAsc, compareDesc, formatISO, isEqual, parseISO } from 'date-fns';
-import { AxiosService, IPCCompatibleAxiosResponse, isNetworkOrServerError } from './axios.service';
+import { AxiosService, type IPCCompatibleAxiosResponse, isNetworkOrServerError } from './axios.service';
 import { User } from 'app/data/user';
 import type { QuizQuestion } from 'app/quiz-questions/quiz-question';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import { Quiz } from 'app/data/quiz';
-import { AssignmentOverride, AssignmentOverrideDef } from 'app/data/assignment-override';
+import { type AssignmentOverride, AssignmentOverrideDef } from 'app/data/assignment-override';
 import { CanvasModule } from 'app/data/canvas-module';
-import { Assignment, AssignmentDef } from 'app/data/assignment';
+import { type Assignment, AssignmentDef } from 'app/data/assignment';
 import { AssignmentSubmission } from 'app/data/assignment-submission';
 import { Section } from 'app/data/section';
 import { unwrapValidation } from 'app/utils/validation-unwrapper';

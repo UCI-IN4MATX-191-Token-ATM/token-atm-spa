@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, Type, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, Input, type OnInit, type Type, ViewChild, ViewContainerRef } from '@angular/core';
 import type { FormField } from 'app/utils/form-field/form-field';
 
 type ComponentList<T extends [unknown, unknown, unknown][]> = {

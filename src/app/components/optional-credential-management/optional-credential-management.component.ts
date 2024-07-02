@@ -1,4 +1,4 @@
-import { Component, EnvironmentInjector, Inject, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, EnvironmentInjector, Inject, Input, type OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import type { TokenATMCredentials } from 'app/data/token-atm-credentials';
 import type { CredentialHandler } from 'app/services/credential-manager.service';
 import { ModalManagerService } from 'app/services/modal-manager.service';

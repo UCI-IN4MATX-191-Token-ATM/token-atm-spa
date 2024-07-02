@@ -6,7 +6,7 @@ export function pluralize(word: string, count: number): string {
     return word + (count === 1 ? '' : 's');
 }
 
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, type PipeTransform } from '@angular/core';
 /*
  * Displays the count of an associated noun with proper pluralization
  * Takes a noun argument to pluralize.

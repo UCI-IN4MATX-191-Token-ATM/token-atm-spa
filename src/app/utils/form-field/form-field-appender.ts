@@ -1,4 +1,4 @@
-import { BaseFormField, ExtractDest, ExtractSrc, type FormField } from './form-field';
+import { BaseFormField, type ExtractDest, type ExtractSrc, type FormField } from './form-field';
 import type { TupleAppend } from './form-field-component-builder';
 
 export class FormFieldAppender<

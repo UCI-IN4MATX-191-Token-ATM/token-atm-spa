@@ -8,8 +8,8 @@ import { Injectable, type EnvironmentInjector, type ViewContainerRef } from '@an
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import type { FormField } from 'app/utils/form-field/form-field';
 import {
-    WithdrawAssignmentResubmissionTokenOption,
-    WithdrawAssignmentResubmissionTokenOptionData,
+    type WithdrawAssignmentResubmissionTokenOption,
+    type WithdrawAssignmentResubmissionTokenOptionData,
     WithdrawAssignmentResubmissionTokenOptionDataDef
 } from 'app/token-options/withdraw-assignment-resubmission/withdraw-assignment-resubmission-token-option';
 import { SpendForAssignmentResubmissionTokenOption } from 'app/token-options/spend-for-assignment-resubmission/spend-for-assignment-resubmission-token-option';

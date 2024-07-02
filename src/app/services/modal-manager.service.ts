@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@angular/core';
 import { ConfirmationModalComponent } from 'app/components/confirmation-modal/confirmation-modal.component';
 import { MultipleChoiceModalComponent } from 'app/components/multiple-choice-modal/multiple-choice-modal.component';
 import { NotificationModalComponent } from 'app/components/notification-modal/notification-modal.component';
-import { BsModalRef, BsModalService, ModalOptions } from 'ngx-bootstrap/modal';
+import { type BsModalRef, BsModalService, type ModalOptions } from 'ngx-bootstrap/modal';
 import { firstValueFrom } from 'rxjs';
 
 export type ModalChoice = {

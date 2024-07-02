@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { AxiosService, IPCCompatibleAxiosResponse } from './axios.service';
+import { AxiosService, type IPCCompatibleAxiosResponse } from './axios.service';
 import type { AxiosRequestConfig } from 'axios';
 import type { QuestionProCredential } from 'app/credential-handlers/question-pro-credential-handler';
 import type { PaginatedResult } from 'app/utils/pagination/paginated-result';

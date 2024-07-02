@@ -1,11 +1,11 @@
 import {
-    EnvironmentInjector,
+    type EnvironmentInjector,
     Inject,
     Injectable,
     InjectionToken,
     Optional,
-    Type,
-    ViewContainerRef
+    type Type,
+    type ViewContainerRef
 } from '@angular/core';
 import type { FormField } from 'app/utils/form-field/form-field';
 import type { TokenATMCredentials } from 'app/data/token-atm-credentials';
