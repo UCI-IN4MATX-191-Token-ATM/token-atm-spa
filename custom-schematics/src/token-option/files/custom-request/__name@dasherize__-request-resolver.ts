@@ -10,7 +10,8 @@ export class <%= classify(name) %>RequestResolver extends RequestResolver<<%= cl
         tokenOption: <%= classify(name) %>TokenOption,
         quizSubmissionDetail: QuizSubmissionDetail
     ): Promise<<%= classify(name) %>Request> {
-        // TODO-Now: implement custom request construction
+        // TODO-Now: implement custom request resolution
+        throw new Error('Custom resolution logic for <%= classify(name) %>Request is not implemented!');
         return new <%= classify(name) %>Request(
             tokenOption,
             quizSubmissionDetail.student,
