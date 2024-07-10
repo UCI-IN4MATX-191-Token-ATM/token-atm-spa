@@ -1,0 +1,39 @@
+{
+    "$schema": "http://json-schema.org/schema",
+    "$id": "TokenOptionSchematics",
+    "title": "ng generate schematics",
+    "type": "object",
+    "description": "Creates Token Option for Token ATM",
+    "properties": {
+        "name": {
+            "description": "The short name (i.e., type) of the token option",
+            "type": "string",
+            "$default": {
+                "$source": "argv",
+                "index": 0
+            },
+            "x-prompt": "What is the short-name (i.e., type) of the token option?"
+        },
+        "path": {
+            "description": "The path where the token option folder is placed (relative to project root)",
+            "type": "string",
+            "default": "src/app/token-options"
+        },
+        "useCustomRequest": {
+            "description": "If true, create a custom request type (along with a custom request resolver); otherwise use the default request type",
+            "type": "boolean",
+            "default": false
+        },
+        "useCustomResolver": {
+            "description": "If true, create a custom token option resolver; otherwise use the default resolver",
+            "type": "boolean",
+            "default": false
+        },
+        "overwrite": {
+            "description": "If true, overwrite existing files; otherwise exit with error when any file to be generated already exists",
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "required": ["name"]
+}

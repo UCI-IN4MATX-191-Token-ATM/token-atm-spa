@@ -1,10 +1,10 @@
-import { Component, EnvironmentInjector, Inject, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, EnvironmentInjector, Inject, Input, type OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import type { Course } from 'app/data/course';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import { StringInputFieldComponent } from '../form-fields/string-input-field/string-input-field.component';
 import { StringTextareaFieldComponent } from '../form-fields/string-textarea-field/string-textarea-field.component';
 import type { FormField } from 'app/utils/form-field/form-field';
-import { createFieldComponentWithLabel } from 'app/token-option-field-component-factories/token-option-field-component-factory';
+import { createFieldComponentWithLabel } from 'app/token-options/token-option-field-component-factory';
 
 @Component({
     selector: 'app-create-configuration-modal',

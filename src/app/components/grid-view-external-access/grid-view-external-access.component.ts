@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy } from '@angular/core';
+import { Component, Inject, type OnDestroy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import type { GridViewData } from 'app/token-options/mixins/grid-view-data-source-mixin';
 import type { Subscription } from 'rxjs';
@@ -33,6 +33,7 @@ export class GridViewExternalAccessComponent implements OnDestroy {
             if (this.isListenerActive) return;
             window.addEventListener('message', this.messageListener);
             this.isListenerActive = true;
+            if (window.opener) window.opener.postMessage('GRID_VIEW_INIT');
         });
     }
 

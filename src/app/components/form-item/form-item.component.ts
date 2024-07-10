@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, type OnInit, Output } from '@angular/core';
 import { FormItemInfo } from 'app/data/form-item-info';
 import { v4 as uuidv4 } from 'uuid';
 

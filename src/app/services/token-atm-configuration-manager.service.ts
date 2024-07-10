@@ -9,7 +9,7 @@ import { NameTransformer } from 'app/instruction-generators/name-transformer';
 import { StartTimeTransformer } from 'app/instruction-generators/start-time-transformer';
 import { TokenBalanceChangeTransformer } from 'app/instruction-generators/token-balance-change-transformer';
 import { MultipleChoiceQuestion } from 'app/quiz-questions/multiple-choice-question';
-import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-option-resolver-registry';
+import { TokenOptionResolverRegistry } from 'app/token-options/token-option-resolver-registry';
 import { CanvasService } from './canvas.service';
 import HTMLParse from 'html-dom-parser';
 import { NewDueTimeTransformer } from 'app/instruction-generators/new-due-time-transformer';

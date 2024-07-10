@@ -1,16 +1,17 @@
-import { Component, Inject, TemplateRef, ViewChild } from '@angular/core';
+import { Component, Inject, type TemplateRef, ViewChild } from '@angular/core';
 import type { Course } from 'app/data/course';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
-import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+import { type BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
 import { TokenOptionGroupManagementComponent } from '../token-option-group-management/token-option-group-management.component';
 import type { GridViewData } from 'app/token-options/mixins/grid-view-data-source-mixin';
-import { CdkDragDrop, moveItemInArray, transferArrayItem, CDK_DRAG_CONFIG } from '@angular/cdk/drag-drop';
+import { type CdkDragDrop, moveItemInArray, transferArrayItem, CDK_DRAG_CONFIG } from '@angular/cdk/drag-drop';
 import { StorageManagerService } from 'app/services/storage-manager.service';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import type { DisplayedColumnsChangedEvent } from 'ag-grid-community';
 import { ExportRequestModalComponent } from '../export-request-modal/export-request-modal.component';
+import { filter, first, fromEvent } from 'rxjs';
 
 @Component({
     selector: 'app-token-option-configuration',
@@ -120,10 +121,15 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
             );
             return;
         }
-        const windowRef = window.open(document.baseURI + 'grid-view', '_blank');
-        windowRef?.addEventListener(
-            'DOMContentLoaded',
-            () => {
+        let windowRef: Window | null = null;
+        fromEvent<MessageEvent>(window, 'message')
+            .pipe(
+                filter(
+                    (x: MessageEvent) => windowRef !== null && x.source === windowRef && x.data === 'GRID_VIEW_INIT'
+                ),
+                first()
+            )
+            .subscribe(() => {
                 if (!this.configuration) return;
                 windowRef?.postMessage({
                     type: 'GRID_VIEW_DATA',
@@ -134,11 +140,8 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
                         this.savedShownColumns
                     ]
                 });
-            },
-            {
-                once: true
-            }
-        );
+            });
+        windowRef = window.open(document.baseURI + 'grid-view', '_blank');
     }
 
     // https://material.angular.io/cdk/drag-drop/overview#transferring-items-between-lists
