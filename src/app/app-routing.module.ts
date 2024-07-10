@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { RouterModule, type Routes } from '@angular/router';
 import { CourseSelectionComponent } from './components/course-selection/course-selection.component';
 import { getDashboardRoutes } from './components/dashboard/dashboard-routing';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
