@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { Course, CourseDef } from 'app/data/course';
+import { type Course, CourseDef } from 'app/data/course';
 import { ModuleItemInfo } from 'app/data/module-item-info';
 import { QuizSubmission } from 'app/data/quiz-submission';
 import { Student } from 'app/data/student';
