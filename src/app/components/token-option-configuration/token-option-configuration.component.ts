@@ -11,6 +11,7 @@ import { StorageManagerService } from 'app/services/storage-manager.service';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import type { DisplayedColumnsChangedEvent } from 'ag-grid-community';
 import { ExportRequestModalComponent } from '../export-request-modal/export-request-modal.component';
+import { filter, first, fromEvent } from 'rxjs';
 
 @Component({
     selector: 'app-token-option-configuration',
@@ -120,10 +121,15 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
             );
             return;
         }
-        const windowRef = window.open(document.baseURI + 'grid-view', '_blank');
-        windowRef?.addEventListener(
-            'DOMContentLoaded',
-            () => {
+        let windowRef: Window | null = null;
+        fromEvent<MessageEvent>(window, 'message')
+            .pipe(
+                filter(
+                    (x: MessageEvent) => windowRef !== null && x.source === windowRef && x.data === 'GRID_VIEW_INIT'
+                ),
+                first()
+            )
+            .subscribe(() => {
                 if (!this.configuration) return;
                 windowRef?.postMessage({
                     type: 'GRID_VIEW_DATA',
@@ -134,11 +140,8 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
                         this.savedShownColumns
                     ]
                 });
-            },
-            {
-                once: true
-            }
-        );
+            });
+        windowRef = window.open(document.baseURI + 'grid-view', '_blank');
     }
 
     // https://material.angular.io/cdk/drag-drop/overview#transferring-items-between-lists
