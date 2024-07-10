@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, EventEmitter, Input, type OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 
 @Component({
     selector: 'app-list-field-item-wrapper',

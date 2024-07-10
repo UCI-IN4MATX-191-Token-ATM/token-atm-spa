@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
 import type { AxiosRequestConfig } from 'axios';
 import { unzipRaw } from 'unzipit';
-import { AxiosService, IPCCompatibleAxiosResponse, isNetworkOrServerError } from './axios.service';
+import { AxiosService, type IPCCompatibleAxiosResponse, isNetworkOrServerError } from './axios.service';
 import type { QualtricsCredential } from 'app/credential-handlers/qualtrics-credential-handler';
 import { ExponentialBackoffExecutorService } from './exponential-backoff-executor.service';
 

@@ -1,7 +1,7 @@
 import { Component, Inject, Input } from '@angular/core';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import { TokenOptionRegistry } from 'app/token-options/token-option-registry';
-import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+import { type BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { TokenOptionManagementComponent } from '../token-option-management/token-option-management.component';
 import { CredentialManagerService } from 'app/services/credential-manager.service';
 import { ModalManagerService } from 'app/services/modal-manager.service';

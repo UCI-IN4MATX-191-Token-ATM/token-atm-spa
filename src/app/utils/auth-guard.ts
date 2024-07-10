@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { ActivatedRouteSnapshot, createUrlTreeFromSnapshot } from '@angular/router';
+import { type ActivatedRouteSnapshot, createUrlTreeFromSnapshot } from '@angular/router';
 import { CanvasService } from 'app/services/canvas.service';
 
 export const AUTH_GUARD = (next: ActivatedRouteSnapshot) => {

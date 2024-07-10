@@ -3,13 +3,13 @@ import type { Course } from 'app/data/course';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import { CanvasService } from 'app/services/canvas.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
-import type { BasicTokenOptionData } from 'app/token-options/basic-token-option';
-import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-option-resolver-registry';
+import type { BasicTokenOptionData } from 'app/token-options/basic/basic-token-option';
+import { TokenOptionResolverRegistry } from 'app/token-options/token-option-resolver-registry';
 import {
     WithdrawAssignmentResubmissionTokenOption,
     WithdrawAssignmentResubmissionTokenOptionDataDef,
     type WithdrawAssignmentResubmissionTokenOptionData
-} from 'app/token-options/withdraw-assignment-resubmission-token-option';
+} from 'app/token-options/withdraw-assignment-resubmission/withdraw-assignment-resubmission-token-option';
 import { QualtricsService } from 'app/services/qualtrics.service';
 
 @Component({
