@@ -1,11 +1,11 @@
-import { Component, EnvironmentInjector, Inject, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, EnvironmentInjector, Inject, Input, type OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import { CredentialManagerService } from 'app/services/credential-manager.service';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
-import { TokenOptionFieldComponentFactoryRegistry } from 'app/token-option-field-component-factories/token-option-field-component-factory-registry';
-import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-option-resolver-registry';
+import { TokenOptionFieldComponentFactoryRegistry } from 'app/token-options/token-option-field-component-factory-registry';
+import { TokenOptionResolverRegistry } from 'app/token-options/token-option-resolver-registry';
 import type { TokenOption } from 'app/token-options/token-option';
 import { TokenOptionRegistry } from 'app/token-options/token-option-registry';
 import type { FormField } from 'app/utils/form-field/form-field';

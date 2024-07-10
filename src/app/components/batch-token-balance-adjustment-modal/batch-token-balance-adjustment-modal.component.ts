@@ -1,4 +1,4 @@
-import { Component, Inject, Input, OnDestroy } from '@angular/core';
+import { Component, Inject, Input, type OnDestroy } from '@angular/core';
 import { ProcessedRequest } from 'app/data/processed-request';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { CanvasService } from 'app/services/canvas.service';
@@ -6,7 +6,7 @@ import { StudentRecordManagerService } from 'app/services/student-record-manager
 import { countAndNoun } from 'app/utils/pluralize';
 import type { BsModalRef } from 'ngx-bootstrap/modal';
 import type { ParseResult } from 'papaparse';
-import { AbstractControl, Validators } from '@angular/forms';
+import { type AbstractControl, Validators } from '@angular/forms';
 import { CSVsService } from 'app/services/csvs.service';
 
 type PreviewColumnsIndex = {

@@ -27,6 +27,13 @@
                         "prefix": "app",
                         "style": "kebab-case"
                     }
+                ],
+                "@typescript-eslint/consistent-type-imports": [
+                    "error",
+                    {
+                        "fixStyle": "inline-type-imports",
+                        "prefer": "type-imports"
+                    }
                 ]
             }
         },
@@ -76,7 +83,14 @@
         {
             "files": ["*.json"],
             "extends": ["plugin:json/recommended", "plugin:prettier/recommended"],
-            "rules": { "json/*": ["error", { "allowComments": true }] }
+            "rules": {
+                "json/*": [
+                    "error",
+                    {
+                        "allowComments": true
+                    }
+                ]
+            }
         }
     ]
 }
