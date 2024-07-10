@@ -1,5 +1,15 @@
 import { normalize } from '@angular-devkit/core';
-import { apply, chain, MergeStrategy, mergeWith, move, Rule, url, strings, template } from '@angular-devkit/schematics';
+import {
+    apply,
+    chain,
+    MergeStrategy,
+    mergeWith,
+    move,
+    type Rule,
+    url,
+    strings,
+    template
+} from '@angular-devkit/schematics';
 
 interface GenerateTokenOptionOptions {
     name: string;

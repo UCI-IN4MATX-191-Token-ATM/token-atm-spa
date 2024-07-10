@@ -6,7 +6,7 @@ import { FormFieldModifier, type FormFieldModifierConfig } from './form-field-mo
 import { FormFieldDestTransformer } from './form-field-dest-transformer';
 import { FormFieldVPTransformer } from './form-field-vp-transformer';
 import { FormFieldVPAppender } from './form-field-vp-appender';
-import { FormFieldWrapper, FormFieldWrapperApplier } from './form-field-wrapper';
+import { type FormFieldWrapper, FormFieldWrapperApplier } from './form-field-wrapper';
 import { FormFieldObservableSrcTransformer } from './form-field-observable-src-transformer';
 
 export type TupleAppend<A, B> = A extends unknown[] ? [...A, B] : [A, B];

@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { Constructor, DateDef } from 'app/utils/mixin-helper';
+import { type Constructor, DateDef } from 'app/utils/mixin-helper';
 import type { IGridViewDataSource } from './grid-view-data-source-mixin';
 
 export const NewDueTimeMixinDataDef = t.strict({

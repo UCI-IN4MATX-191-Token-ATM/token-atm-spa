@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import axios, { Axios, AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { type Axios, type AxiosError, type AxiosRequestConfig, type AxiosResponse } from 'axios';
 
 type AxiosServiceHeader = Pick<Axios, 'head' | 'options' | 'put' | 'post' | 'patch' | 'delete' | 'get' | 'request'>;
 const AXIOS_METHODS = ['head', 'options', 'put', 'post', 'patch', 'delete', 'get', 'request'];

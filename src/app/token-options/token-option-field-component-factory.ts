@@ -1,4 +1,4 @@
-import { createComponent, Type, EnvironmentInjector, type ViewContainerRef } from '@angular/core';
+import { createComponent, type Type, type EnvironmentInjector, type ViewContainerRef } from '@angular/core';
 import { DateTimeFieldComponent } from 'app/components/form-fields/date-time-field/date-time-field.component';
 import { ErrorMessageFieldComponent } from 'app/components/form-fields/error-message-field/error-message-field.component';
 import { MultipleSectionDateFieldComponent } from 'app/components/form-fields/multiple-section-date-field/multiple-section-date-field.component';
@@ -15,7 +15,7 @@ import { CanvasGradingType } from 'app/utils/canvas-grading';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import type { ExtractDest, ExtractSrc, FormField } from 'app/utils/form-field/form-field';
 import type { FormFieldAppender } from 'app/utils/form-field/form-field-appender';
-import { FormFieldComponentBuilder, TupleAppend } from 'app/utils/form-field/form-field-component-builder';
+import { FormFieldComponentBuilder, type TupleAppend } from 'app/utils/form-field/form-field-component-builder';
 import { StaticFormField } from 'app/utils/form-field/static-form-field';
 import { unwrapValidation } from 'app/utils/validation-unwrapper';
 import { compareDesc, set } from 'date-fns';

@@ -1,4 +1,4 @@
-import { Component, EnvironmentInjector, Inject, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, EnvironmentInjector, Inject, Input, type OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { StringInputFieldComponent } from '../form-fields/string-input-field/string-input-field.component';
 import { StringTextareaFieldComponent } from '../form-fields/string-textarea-field/string-textarea-field.component';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';

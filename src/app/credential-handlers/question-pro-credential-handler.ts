@@ -1,8 +1,8 @@
-import { EnvironmentInjector, Inject, Injectable, ViewContainerRef } from '@angular/core';
+import { type EnvironmentInjector, Inject, Injectable, type ViewContainerRef } from '@angular/core';
 import { QuestionProValidationFieldComponent } from 'app/components/form-fields/question-pro-validation-field/question-pro-validation-field.component';
 import { StringInputFieldComponent } from 'app/components/form-fields/string-input-field/string-input-field.component';
 import type { TokenATMCredentials } from 'app/data/token-atm-credentials';
-import { CredentialHandler, RegisterCredentialHandler } from 'app/services/credential-manager.service';
+import { type CredentialHandler, RegisterCredentialHandler } from 'app/services/credential-manager.service';
 import { QuestionProService } from 'app/services/question-pro.service';
 import { createFieldComponentWithLabel } from 'app/token-options/token-option-field-component-factory';
 import type { FormField } from 'app/utils/form-field/form-field';

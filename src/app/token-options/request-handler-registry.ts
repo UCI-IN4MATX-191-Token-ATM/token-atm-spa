@@ -1,4 +1,4 @@
-import { Inject, Injectable, InjectionToken, Optional, Type } from '@angular/core';
+import { Inject, Injectable, InjectionToken, Optional, type Type } from '@angular/core';
 import type { ProcessedRequest } from 'app/data/processed-request';
 import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';

@@ -1,4 +1,4 @@
-import { Component, EnvironmentInjector, Inject, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, EnvironmentInjector, Inject, Input, type OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';

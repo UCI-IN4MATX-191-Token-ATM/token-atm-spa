@@ -11,18 +11,18 @@ import {
     ViewContainerRef,
     Inject,
     Component,
-    OnInit,
-    OnDestroy,
+    type OnInit,
+    type OnDestroy,
     ViewChild,
     createComponent
 } from '@angular/core';
 import { TokenOptionGroup } from 'app/data/token-option-group';
-import { BaseFormField, FormField, ObservableFormField } from 'app/utils/form-field/form-field';
+import { BaseFormField, type FormField, type ObservableFormField } from 'app/utils/form-field/form-field';
 import { StringInputFieldComponent } from 'app/components/form-fields/string-input-field/string-input-field.component';
 import { set } from 'date-fns';
 import {
-    EarnByQuestionProSurveyTokenOption,
-    EarnByQuestionProSurveyTokenOptionData,
+    type EarnByQuestionProSurveyTokenOption,
+    type EarnByQuestionProSurveyTokenOptionData,
     EarnByQuestionProSurveyTokenOptionDataDef
 } from 'app/token-options/earn-by-question-pro-survey/earn-by-question-pro-survey-token-option';
 import type { DirectFormField } from 'app/utils/form-field/direct-form-field';
@@ -33,7 +33,7 @@ import { SingleSelectionFieldComponent } from 'app/components/form-fields/select
 import type { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
 import { SwitchFieldComponent } from 'app/components/form-fields/switch-field/switch-field.component';
 import {
-    LazyLoadData,
+    type LazyLoadData,
     LazySingleSelectionFieldComponent
 } from 'app/components/form-fields/selection-fields/single-selection-field/lazy-single-selection-field.component';
 import type { QuestionProSurveyMixinData } from 'app/token-options/mixins/question-pro-survey-mixin';
