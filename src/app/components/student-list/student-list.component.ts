@@ -12,6 +12,7 @@ import { BatchTokenBalanceAdjustmentModalComponent } from '../batch-token-balanc
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
 import type { StudentRecordDisplayComponent } from '../student-record-display/student-record-display.component';
 import { ModalManagerService } from 'app/services/modal-manager.service';
+import { checkAndConfirmTokenATMLogPublished } from 'app/utils/reusable-modals';
 
 @Component({
     selector: 'app-student-list',
@@ -30,7 +31,7 @@ export class StudentListComponent implements CourseConfigurable {
     // Student data in the format of paginatedView which stores student data in previous, current, and next page format
     students?: PaginatedView<Student>;
     // This Map links student id to their grades since name is not a unique identifier.
-    studentGrades?: Map<string, number>;
+    studentGrades?: Map<string, number> | Map<string, string>;
     // default fetching state is false
     isFetchingInfo = false;
     // PageCnt store the number of displayed students selected
@@ -40,6 +41,8 @@ export class StudentListComponent implements CourseConfigurable {
     @ViewChild('individaulStudentRecordDisplay')
     // Reference to the individual student record display component
     individualStudentRecordDisplay?: StudentRecordDisplayComponent;
+    /** Flag indicating whether the Token ATM Log is published */
+    private isLogPublished = false;
 
     studentItemInfo = new FormItemInfo('studentSearchTerm', 'Search for Students', 'text');
     studentSearchTerm = '';
@@ -72,6 +75,12 @@ export class StudentListComponent implements CourseConfigurable {
     async configureCourse(course: Course): Promise<void> {
         this.course = course;
         this.configuration = await this.tokenATMConfigurationManagerService.getTokenATMConfiguration(this.course);
+        this.isLogPublished = await checkAndConfirmTokenATMLogPublished(
+            'view token balances in the list of students',
+            this.configuration,
+            this.tokenATMConfigurationManagerService,
+            this.modalManagerService
+        );
         await this.refreshStudentList(this.studentSearchTerm);
     }
 
@@ -110,11 +119,13 @@ export class StudentListComponent implements CourseConfigurable {
             this.studentGrades = new Map<string, number>();
             return;
         }
-        this.studentGrades = await this.canvasService.getStudentsGrades(
-            this.course.id,
-            this.configuration.logAssignmentId,
-            curPageStudents
-        );
+        this.studentGrades = this.isLogPublished
+            ? await this.canvasService.getStudentsGrades(
+                  this.course.id,
+                  this.configuration.logAssignmentId,
+                  curPageStudents
+              )
+            : new Map<string, string>(curPageStudents.map((student) => [student, 'Click to View']));
     }
     // Go back to the previous students information page
     async prev(): Promise<void> {
