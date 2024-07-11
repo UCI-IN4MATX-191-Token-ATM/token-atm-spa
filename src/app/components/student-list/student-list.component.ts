@@ -21,25 +21,25 @@ import { ModalManagerService } from 'app/services/modal-manager.service';
 export class StudentListComponent implements CourseConfigurable {
     // Possible values for the number of students displayed per page in the student list
     public POSSIBLE_PAGE_CNTS = [5, 10, 25, 50];
-    //defult number of students displayed is 50
+    // default number of students displayed is 50
     public DEFAULT_PAGE_CNT = 50;
-    //current select course and can be none
+    // current select course and can be none
     course?: Course;
     // Configuration related to token ATM
     configuration?: TokenATMConfiguration;
-    //Student data in the formate of paginatedView which store student data is previous current and next page format
+    // Student data in the format of paginatedView which stores student data in previous, current, and next page format
     students?: PaginatedView<Student>;
     // This Map links student id to their grades since name is not a unique identifier.
     studentGrades?: Map<string, number>;
-    //defualt fetching state is fase
+    // default fetching state is false
     isFetchingInfo = false;
-    //PageCnt store the number of displayed students selected
+    // PageCnt store the number of displayed students selected
     pageCnt: number = this.DEFAULT_PAGE_CNT;
-    //Flag indicating whether an individual student's record is being shown
+    // Flag indicating whether an individual student's record is being shown
     isShowingIndividualStudent = false;
     @ViewChild('individaulStudentRecordDisplay')
     // Reference to the individual student record display component
-    individaulStudentRecordDisplay?: StudentRecordDisplayComponent;
+    individualStudentRecordDisplay?: StudentRecordDisplayComponent;
 
     studentItemInfo = new FormItemInfo('studentSearchTerm', 'Search for Students', 'text');
     studentSearchTerm = '';
@@ -67,7 +67,8 @@ export class StudentListComponent implements CourseConfigurable {
             await this.refreshStudentList(this.studentSearchTerm);
         }
     }
-    //Configure the course information
+
+    // Configure the course information
     async configureCourse(course: Course): Promise<void> {
         this.course = course;
         this.configuration = await this.tokenATMConfigurationManagerService.getTokenATMConfiguration(this.course);
@@ -87,6 +88,7 @@ export class StudentListComponent implements CourseConfigurable {
         this.studentSearchTerm = '';
         await this.refreshStudentList(this.studentSearchTerm);
     }
+
     //change the number of student displayed when function is called
     async changePageSize(size: number): Promise<void> {
         this.pageCnt = size;
@@ -98,7 +100,8 @@ export class StudentListComponent implements CourseConfigurable {
         this.students = await this.canvasService.getCourseStudents(this.course.id, this.pageCnt, searchTerm);
         await this.getStudentGrades();
     }
-    //get students token balance
+
+    // get students token balance
     private async getStudentGrades(): Promise<void> {
         if (!this.course || !this.configuration || !this.students) return;
         this.studentGrades = undefined;
@@ -113,7 +116,7 @@ export class StudentListComponent implements CourseConfigurable {
             curPageStudents
         );
     }
-    //Go back to the previous students information page
+    // Go back to the previous students information page
     async prev(): Promise<void> {
         if (!this.students) return;
         this.isFetchingInfo = true;
@@ -121,7 +124,7 @@ export class StudentListComponent implements CourseConfigurable {
         await this.getStudentGrades();
         this.isFetchingInfo = false;
     }
-    //Go to the next student's infomration page
+    // Go to the next student's infomration page
     async next(): Promise<void> {
         if (!this.students) return;
         this.isFetchingInfo = true;
@@ -129,11 +132,11 @@ export class StudentListComponent implements CourseConfigurable {
         await this.getStudentGrades();
         this.isFetchingInfo = false;
     }
-    //get the student's information
+    // get the student's information
     async navigateToStudent(student: Student): Promise<void> {
-        if (!this.configuration || !this.individaulStudentRecordDisplay) return;
+        if (!this.configuration || !this.individualStudentRecordDisplay) return;
         this.isShowingIndividualStudent = true;
-        await this.individaulStudentRecordDisplay.configureStudent(this.configuration, student);
+        await this.individualStudentRecordDisplay.configureStudent(this.configuration, student);
     }
 
     async onGoBack() {
