@@ -9,7 +9,7 @@ import type { TokenATMConfigurationManagerService } from 'app/services/token-atm
  * @param configuration The current Token ATM Configuration
  * @param configurationManager The configuration manager service
  * @param modalManager The modal manager service
- * @returns True if the Log is published, False if unpublished and User didn't want it published
+ * @returns True if the Log is published, False if unpublished and User doesn't want it published
  */
 export async function checkAndConfirmTokenATMLogPublished(
     action: string,
