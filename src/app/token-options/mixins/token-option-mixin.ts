@@ -61,8 +61,8 @@ export interface ITokenOption extends TokenOptionMixinData, IGridViewDataSource 
 
 /**
  * The mixin function for `TokenOption`.
- * @param Base The base class that need to be mixined.
- * @returns The class constructed by mixining the Base class with `TokenOption`. The class will implement `ITokenOption`.
+ * @param Base The base class that needs to be mixed in.
+ * @returns The class constructed by mixing in the Base class with `TokenOption`. The class will implement `ITokenOption`.
  */
 export function TokenOptionMixin<TBase extends Constructor<IGridViewDataSource>>(Base: TBase) {
     return class extends Base implements ITokenOption {

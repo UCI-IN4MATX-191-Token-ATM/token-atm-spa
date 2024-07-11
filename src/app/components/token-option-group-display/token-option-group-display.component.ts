@@ -68,8 +68,8 @@ export class TokenOptionGroupDisplayComponent {
             return;
         }
         if (modalRef.content) modalRef.content.disableButton = true;
-        const unpublishRresult = await this.configurationManagerService.unpublishTokenOptionGroup(this.group);
-        if (!unpublishRresult) {
+        const unpublishResult = await this.configurationManagerService.unpublishTokenOptionGroup(this.group);
+        if (!unpublishResult) {
             await this.modalManagerService.createNotificationModal(
                 `Unpublishing token option group '${this.group.name}' failed. \nSome students have already taken the Canvas quiz for this token option group.`,
                 'Error'

@@ -32,7 +32,7 @@ export class ConfigurationComponent implements CourseConfigurable {
         @Inject(TokenATMConfigurationManagerService)
         private configurationManagerService: TokenATMConfigurationManagerService,
         @Inject(CanvasService) private canvasService: CanvasService,
-        @Inject(BsModalService) private modalSerivce: BsModalService,
+        @Inject(BsModalService) private modalService: BsModalService,
         @Inject(TokenOptionResolverRegistry) private tokenOptionResolverRegistry: TokenOptionResolverRegistry,
         @Inject(ModalManagerService) private modalManagerService: ModalManagerService,
         @Inject(Router) private router: Router
@@ -118,7 +118,7 @@ export class ConfigurationComponent implements CourseConfigurable {
             );
             await this.configurationManagerService.addNewTokenOptionGroup(moduleGroup);
             this.moduleName = 'Course Preparation (Must pass with 70% or higher to earn 1 TOKEN)';
-            this.moduleNameModalRef = this.modalSerivce.show(this.moduleNameModalTemplate as TemplateRef<unknown>, {
+            this.moduleNameModalRef = this.modalService.show(this.moduleNameModalTemplate as TemplateRef<unknown>, {
                 backdrop: 'static',
                 keyboard: false
             });
@@ -283,7 +283,7 @@ export class ConfigurationComponent implements CourseConfigurable {
     async onEditConfigurationMetadata(): Promise<void> {
         if (!this.course) return;
         this.isProcessing = true;
-        const modalRef = this.modalSerivce.show(EditConfigurationModalComponent, {
+        const modalRef = this.modalService.show(EditConfigurationModalComponent, {
             initialState: {
                 configuration: await this.configurationManagerService.getTokenATMConfiguration(this.course)
             },

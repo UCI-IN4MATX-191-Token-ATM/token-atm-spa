@@ -43,7 +43,7 @@ export class LazySingleSelectionFieldComponent<T>
 
     private _filterText = '';
     isInvalidOptionFiltered = false;
-    filteredValidOptionInds = new Set<number>();
+    filteredValidOptionIndices = new Set<number>();
 
     isOptionSettingFailed = false;
     private optionFactory?: () => Promise<T[]>;
@@ -67,10 +67,10 @@ export class LazySingleSelectionFieldComponent<T>
         this.isInvalidOptionFiltered =
             !!this.invalidOption &&
             this.optionRenderer(this.invalidOption).toLowerCase().indexOf(this.filterText.toLowerCase()) != -1;
-        this.filteredValidOptionInds.clear();
+        this.filteredValidOptionIndices.clear();
         for (const [ind, v] of this.validOptions.entries()) {
             if (this.optionRenderer(v).toLowerCase().indexOf(this.filterText.toLowerCase()) == -1) continue;
-            this.filteredValidOptionInds.add(ind);
+            this.filteredValidOptionIndices.add(ind);
         }
     }
 
@@ -105,7 +105,7 @@ export class LazySingleSelectionFieldComponent<T>
                 this.assignOptions(selectedOption, options);
             } catch (err: unknown) {
                 this.isOptionSettingFailed = true;
-                this.errorMessage = `Error occured when setting options: ${ErrorSerializer.serialize(err)}`;
+                this.errorMessage = `Error occurred when setting options: ${ErrorSerializer.serialize(err)}`;
                 if (!isAssigningOptions) this.assignOptions(selectedOption, []);
             } finally {
                 this.srcValueTaskCnt--;

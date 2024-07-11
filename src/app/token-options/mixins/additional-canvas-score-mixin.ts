@@ -19,7 +19,7 @@ export function AdditionalCanvasScoreMixin<TBase extends Constructor<IGridViewDa
         constructor(...args: any[]) {
             super(...args);
             this.registerDataPointSource(() => ({
-                colName: 'Add to Canvas Assingment / Quiz Score',
+                colName: 'Add to Canvas Assignment / Quiz Score',
                 type: 'string', // TODO: Create a type for valid Canvas posted grade arguments
                 value: this.additionalScore
             }));

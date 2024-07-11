@@ -138,10 +138,10 @@ export class RequestProcessComponent implements CourseConfigurable {
             backdrop: 'static',
             keyboard: false
         });
-        const onHideenPromise = modalRef.onHidden ? firstValueFrom(modalRef.onHidden) : undefined;
+        const onHiddenPromise = modalRef.onHidden ? firstValueFrom(modalRef.onHidden) : undefined;
         const result = await promise;
         modalRef.hide();
-        if (onHideenPromise) await onHideenPromise;
+        if (onHiddenPromise) await onHiddenPromise;
         switch (result) {
             case 'proceed':
                 return true;
