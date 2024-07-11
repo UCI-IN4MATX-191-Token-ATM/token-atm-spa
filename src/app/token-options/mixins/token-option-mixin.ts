@@ -1,7 +1,7 @@
 import * as t from 'io-ts';
 import { chain } from 'fp-ts/Either';
 import { Base64 } from 'js-base64';
-import { ErrorSerializer } from 'app/utils/error-serailizer';
+import { ErrorSerializer } from 'app/utils/error-serializer';
 import type { Constructor } from 'app/utils/mixin-helper';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import type { IGridViewDataSource } from './grid-view-data-source-mixin';
@@ -22,7 +22,7 @@ export const DescriptionDef = new t.Type<string, string | undefined, unknown>(
                 const result = Base64.decode(v);
                 return t.success(result);
             } catch (err: unknown) {
-                return t.failure(v, ctx, ErrorSerializer.serailize(err));
+                return t.failure(v, ctx, ErrorSerializer.serialize(err));
             }
         })(t.string.validate(v, ctx));
     },

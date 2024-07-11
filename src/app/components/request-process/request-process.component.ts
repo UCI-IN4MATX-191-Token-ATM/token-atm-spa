@@ -5,7 +5,7 @@ import { ModalManagerService } from 'app/services/modal-manager.service';
 import { RequestProcessManagerService } from 'app/services/request-process-manager.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
-import { ErrorSerializer } from 'app/utils/error-serailizer';
+import { ErrorSerializer } from 'app/utils/error-serializer';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -78,7 +78,7 @@ export class RequestProcessComponent implements CourseConfigurable {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             error: async ([message, err]: [message: string, err: any]) => {
                 await this.modalManagerService.createNotificationModal(
-                    message + `\n______________\nError message: ${ErrorSerializer.serailize(err)}`
+                    message + `\n______________\nError message: ${ErrorSerializer.serialize(err)}`
                 );
                 await this.onRequestProcessingComplete(false);
             }

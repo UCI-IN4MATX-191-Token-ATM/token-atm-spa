@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Inject, Input, type OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ErrorSerializer } from 'app/utils/error-serailizer';
+import { ErrorSerializer } from 'app/utils/error-serializer';
 import { BaseFormField, type ObservableFormField } from 'app/utils/form-field/form-field';
 import type { FormFieldCopyPasteHandler } from 'app/utils/form-field/form-field-copy-paste-handler';
 import { isEqual } from 'lodash';
@@ -105,7 +105,7 @@ export class LazySingleSelectionFieldComponent<T>
                 this.assignOptions(selectedOption, options);
             } catch (err: unknown) {
                 this.isOptionSettingFailed = true;
-                this.errorMessage = `Error occured when setting options: ${ErrorSerializer.serailize(err)}`;
+                this.errorMessage = `Error occured when setting options: ${ErrorSerializer.serialize(err)}`;
                 if (!isAssigningOptions) this.assignOptions(selectedOption, []);
             } finally {
                 this.srcValueTaskCnt--;

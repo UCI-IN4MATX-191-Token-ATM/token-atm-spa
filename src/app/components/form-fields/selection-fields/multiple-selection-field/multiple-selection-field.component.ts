@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Inject, Input, type OnDestroy } from '@angular/core';
 import type { MatOption, MatOptionSelectionChange } from '@angular/material/core';
-import { ErrorSerializer } from 'app/utils/error-serailizer';
+import { ErrorSerializer } from 'app/utils/error-serializer';
 import { BaseFormField } from 'app/utils/form-field/form-field';
 import type { FormFieldCopyPasteHandler } from 'app/utils/form-field/form-field-copy-paste-handler';
 import { pluralize } from 'app/utils/pluralize';
@@ -96,7 +96,7 @@ export class MultipleSelectionFieldComponent<T>
                 this.assignOptions(selectedOptions, options);
             } catch (err: unknown) {
                 this.isOptionSettingFailed = true;
-                this.errorMessage = `Error occured when setting options: ${ErrorSerializer.serailize(err)}`;
+                this.errorMessage = `Error occured when setting options: ${ErrorSerializer.serialize(err)}`;
                 if (!isAssigningOptions) this.assignOptions(selectedOptions, []);
             } finally {
                 this.srcValueTaskCnt--;
