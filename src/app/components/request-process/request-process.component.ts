@@ -10,6 +10,7 @@ import { BsModalService } from 'ngx-bootstrap/modal';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { CredentialManagerService } from 'app/services/credential-manager.service';
+import { checkAndConfirmTokenATMLogPublished } from 'app/utils/reusable-modals';
 
 @Component({
     selector: 'app-request-process',
@@ -56,11 +57,16 @@ export class RequestProcessComponent implements CourseConfigurable {
             this.isProcessing = false;
             return;
         }
-        if (!(await this.configurationManager.isTokenATMLogPublished(this.configuration))) {
-            if (!(await this.onPublishLog())) {
-                this.isProcessing = false;
-                return;
-            }
+        if (
+            !(await checkAndConfirmTokenATMLogPublished(
+                'process student requests',
+                this.configuration,
+                this.configurationManager,
+                this.modalManagerService
+            ))
+        ) {
+            this.isProcessing = false;
+            return;
         }
         this.requestProcessManagerService.startRequestProcessing(this.configuration).subscribe({
             next: ([progress, message]: [progress: number, message: string]) => {
@@ -98,26 +104,6 @@ export class RequestProcessComponent implements CourseConfigurable {
 
     get isProcessingRequest(): boolean {
         return this.requestProcessManagerService.isRunning;
-    }
-
-    public async onPublishLog(): Promise<boolean> {
-        if (!this.configuration) return false;
-        const [confirmationRef, result] = await this.modalManagerService.createConfirmationModal(
-            'The Token ATM Log assignment on Canvas must be published to process student requests.\n\nWould you like Token ATM to publish this assignment for you?',
-            'Publish Token ATM Log?',
-            false,
-            'I’ll publish it myself.',
-            'Yes, publish it for me.'
-        );
-        if (result) {
-            if (confirmationRef.content) confirmationRef.content.disableButton = true;
-            await this.configurationManager.publishTokenATMLog(this.configuration);
-            confirmationRef.hide();
-            return true;
-        } else {
-            confirmationRef.hide();
-            return false;
-        }
     }
 
     private async checkMissingCredentials(): Promise<boolean> {
