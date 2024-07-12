@@ -71,6 +71,7 @@ export class DateTimeFieldComponent extends BaseFormField<
             this.value = srcValue;
             this.courseTimeZone = '';
         }
+        this.onValueChange({});
     }
 
     public override get destValue(): Promise<Date> {
