@@ -27,61 +27,10 @@ export enum CanvasGradingType {
 //             a number + '%', only 0% or 100%
 
 // N.B. for adding to a current score, only percent and points grading_type are supported
+
 const MAX_DECIMALS = 10; // 16 seems to be the Canvas or Javascript limit;
 
-/**
- * Adds a percentage of the pointsPossible to the current grade, and returns the new grade in same format as current.
- *
- * Only guaranteed to work for 'points' and 'percent' grading_type assignments.
- * @param additionalPercentage percentage to add in decimal number format
- * @param current string of the current grade/score on Canvas (e.g. '10' or '10%')
- * @param pointsPossible the denominator used for ratio conversions
- * @param maxDecimals optionally provide the max precision of the returned string (<= 10 places)
- * @returns A string for the Canvas submission posted_grade
- */
-export function addPercentToPointsOrPercentType(
-    additionalPercentage: number,
-    current: string,
-    pointsPossible: number,
-    maxDecimals?: number
-): string {
-    const cur = parseCanvasPercentsAndPoints(current);
-    if (current.endsWith('%')) {
-        const sum = additionalPercentage + cur;
-        return convertNumberToMaxDecimalString(sum * 100, maxDecimals) + '%';
-    } else {
-        const sum = additionalPercentage * pointsPossible + cur;
-        return convertNumberToMaxDecimalString(sum, maxDecimals);
-    }
-}
-
-/**
- * Adds points to the current grade, and returns new grade in the same format as current.
- * Uses pointsPossible to convert to/from percentages, if needed.
- *
- * Only guaranteed to work for 'points' and 'percent' Canvas grading_type assignments.
- * @param additionalPoints points to add
- * @param current string of the current grade/score on Canvas (e.g. '10' or '10%')
- * @param pointsPossible the denominator used for ratio conversions
- * @param maxDecimals optionally provide the max precision of the returned string (<= 10 places)
- * @returns A string for the Canvas submission posted_grade
- */
-export function addPointsToPercentOrPointsType(
-    additionalPoints: number,
-    current: string,
-    pointsPossible: number,
-    maxDecimals?: number
-): string {
-    const cur = parseCanvasPercentsAndPoints(current);
-    if (current.endsWith('%')) {
-        const sum = additionalPoints / pointsPossible + cur;
-        return convertNumberToMaxDecimalString(sum * 100, maxDecimals) + '%';
-    } else {
-        const sum = additionalPoints + cur;
-        return convertNumberToMaxDecimalString(sum, maxDecimals);
-    }
-}
-
+// TODO: Turn the CanvasGradeScorePossible types into runtime checked data using `io-ts`
 /** Type that contains the Grade Types, Grade, Score, and Points Possible that Canvas API could supply */
 export type CanvasGradeScorePossible = {
     gradeType?: keyof typeof CanvasGradingType;
@@ -152,7 +101,7 @@ type valueState = 'percent' | 'points';
  */
 function decideNewPostedGrade(add: string, target: FixedCanvasGradeScorePossible, basedOn?: number): string {
     const forcePointsResult = target.pointsPossible === 0;
-    // If needed, scales addition to be in terms of target's points possible
+    // If needed, scales addition value to be in terms of the target's points possible
     const scaledAdd = scaleAddAndMarkMorePreciseType(add, target, basedOn);
     const { toAdd, addTo, addTypeState } = decideWhatToAdd(forcePointsResult, scaledAdd, target);
     const addScoreFunc = addTypeState === 'points' ? addPointsToPercentOrPointsType : addPercentToPointsOrPercentType;
@@ -499,6 +448,61 @@ export function parseCanvasPercentsAndPoints(postedGrade: string): number {
     const numString = isPercent ? postedGrade.slice(0, postedGrade.length - 1) : postedGrade;
     const parsed = isFloat ? Number.parseFloat(numString) : Number.parseInt(numString, 10);
     return parsed / (isPercent ? 100 : 1);
+}
+
+/**
+ * Adds a percentage of the pointsPossible to the current grade, and returns the new grade in same format as current.
+ *
+ * Only guaranteed to work for 'points' and 'percent' grading_type assignments.
+ * @deprecated Use `addPercentOrPointsToCanvasGrade()` instead.
+ * @param additionalPercentage percentage to add in decimal number format
+ * @param current string of the current grade/score on Canvas (e.g. '10' or '10%')
+ * @param pointsPossible the denominator used for ratio conversions
+ * @param maxDecimals optionally provide the max precision of the returned string (<= 10 places)
+ * @returns A string for the Canvas submission posted_grade
+ */
+export function addPercentToPointsOrPercentType(
+    additionalPercentage: number,
+    current: string,
+    pointsPossible: number,
+    maxDecimals?: number
+): string {
+    const cur = parseCanvasPercentsAndPoints(current);
+    if (current.endsWith('%')) {
+        const sum = additionalPercentage + cur;
+        return convertNumberToMaxDecimalString(sum * 100, maxDecimals) + '%';
+    } else {
+        const sum = additionalPercentage * pointsPossible + cur;
+        return convertNumberToMaxDecimalString(sum, maxDecimals);
+    }
+}
+
+/**
+ * Adds points to the current grade, and returns new grade in the same format as current.
+ * Uses pointsPossible to convert to/from percentages, if needed.
+ *
+ * Only guaranteed to work for 'points' and 'percent' Canvas grading_type assignments.
+ * @deprecated Use `addPercentOrPointsToCanvasGrade()` instead.
+ * @param additionalPoints points to add
+ * @param current string of the current grade/score on Canvas (e.g. '10' or '10%')
+ * @param pointsPossible the denominator used for ratio conversions
+ * @param maxDecimals optionally provide the max precision of the returned string (<= 10 places)
+ * @returns A string for the Canvas submission posted_grade
+ */
+export function addPointsToPercentOrPointsType(
+    additionalPoints: number,
+    current: string,
+    pointsPossible: number,
+    maxDecimals?: number
+): string {
+    const cur = parseCanvasPercentsAndPoints(current);
+    if (current.endsWith('%')) {
+        const sum = additionalPoints / pointsPossible + cur;
+        return convertNumberToMaxDecimalString(sum * 100, maxDecimals) + '%';
+    } else {
+        const sum = additionalPoints + cur;
+        return convertNumberToMaxDecimalString(sum, maxDecimals);
+    }
 }
 
 function convertNumberToMaxDecimalString(num: number, maxDecimals = MAX_DECIMALS): string {
