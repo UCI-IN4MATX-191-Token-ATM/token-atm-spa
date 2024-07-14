@@ -1,11 +1,14 @@
 import * as t from 'io-ts';
-import { AssignmentMixin, AssignmentMixinDataDef } from './mixins/assignment-mixin';
-import { ATokenOption, TokenOptionDataDef } from './token-option';
-import { FromDataMixin } from './mixins/from-data-mixin';
+import { ATokenOption, TokenOptionDataDef } from 'app/token-options/token-option';
+import { ToJSONMixin } from 'app/token-options/mixins/to-json-mixin';
+import { FromDataMixin } from 'app/token-options/mixins/from-data-mixin';
 import { unwrapValidationFunc } from 'app/utils/validation-unwrapper';
-import { ToJSONMixin } from './mixins/to-json-mixin';
-import { MultipleRequestsMixin, MultipleRequestsMixinDataDef } from './mixins/multiple-requests-mixin';
-import { ExcludeTokenOptionIdsMixin, ExcludeTokenOptionIdsMixinDataDef } from './mixins/exclude-token-option-ids-mixin';
+import { AssignmentMixin, AssignmentMixinDataDef } from '../mixins/assignment-mixin';
+import { MultipleRequestsMixin, MultipleRequestsMixinDataDef } from '../mixins/multiple-requests-mixin';
+import {
+    ExcludeTokenOptionIdsMixin,
+    ExcludeTokenOptionIdsMixinDataDef
+} from '../mixins/exclude-token-option-ids-mixin';
 
 // TODO: Include Mixins and Data Defs for Durations to add
 export const SpendForAdditionalAssignmentTimeTokenOptionDataDef = t.intersection([
@@ -22,9 +25,13 @@ export type RawSpendForAdditionalAssignmentTimeTokenOptionData = t.OutputOf<
     typeof SpendForAdditionalAssignmentTimeTokenOptionDataDef
 >;
 
+class ASpendForAdditionalAssignmentTimeTokenOption extends ATokenOption {}
+
 export class SpendForAdditionalAssignmentTimeTokenOption extends FromDataMixin(
     ToJSONMixin(
-        ExcludeTokenOptionIdsMixin(MultipleRequestsMixin(AssignmentMixin(ATokenOption))),
+        ExcludeTokenOptionIdsMixin(
+            MultipleRequestsMixin(AssignmentMixin(ASpendForAdditionalAssignmentTimeTokenOption))
+        ),
         SpendForAdditionalAssignmentTimeTokenOptionDataDef.encode
     ),
     unwrapValidationFunc(SpendForAdditionalAssignmentTimeTokenOptionDataDef.decode),
