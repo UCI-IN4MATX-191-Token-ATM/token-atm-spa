@@ -1,5 +1,5 @@
-import { Component, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
-import { BaseFormField, ExtractDest, ExtractSrc, FormField } from 'app/utils/form-field/form-field';
+import { Component, Input, type OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { BaseFormField, type ExtractDest, type ExtractSrc, type FormField } from 'app/utils/form-field/form-field';
 import type { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
 
 @Component({

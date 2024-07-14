@@ -1,10 +1,10 @@
 import {
-    EnvironmentInjector,
+    type EnvironmentInjector,
     Inject,
     Injectable,
     InjectionToken,
     Optional,
-    ViewContainerRef,
+    type ViewContainerRef,
     type Type
 } from '@angular/core';
 import type { TokenOptionFieldComponentFactory } from './token-option-field-component-factory';

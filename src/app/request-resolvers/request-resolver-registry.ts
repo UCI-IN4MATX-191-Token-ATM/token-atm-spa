@@ -1,4 +1,4 @@
-import { Inject, Injectable, InjectionToken, Optional, Type } from '@angular/core';
+import { Inject, Injectable, InjectionToken, Optional, type Type } from '@angular/core';
 import type { QuizSubmissionDetail } from 'app/data/quiz-submission-detail';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import type { TokenATMRequest } from 'app/requests/token-atm-request';

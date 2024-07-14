@@ -1,4 +1,12 @@
-import { AfterViewInit, Component, Inject, isDevMode, SecurityContext, TemplateRef, ViewChild } from '@angular/core';
+import {
+    type AfterViewInit,
+    Component,
+    Inject,
+    isDevMode,
+    SecurityContext,
+    type TemplateRef,
+    ViewChild
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { FormItemInfo } from 'app/data/form-item-info';
 import type { CanvasCredential, TokenATMCredentials } from 'app/data/token-atm-credentials';
@@ -6,7 +14,7 @@ import { CanvasService } from 'app/services/canvas.service';
 import { StorageManagerService } from 'app/services/storage-manager.service';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { ErrorSerializer } from 'app/utils/error-serailizer';
-import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+import { type BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { DomSanitizer } from '@angular/platform-browser';
 import { pluralize } from 'app/utils/pluralize';
 import { OptionalCredentialManagementComponent } from '../optional-credential-management/optional-credential-management.component';

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { MatSnackBar, MatSnackBarRef, TextOnlySnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar, type MatSnackBarRef, type TextOnlySnackBar } from '@angular/material/snack-bar';
 import { first } from 'rxjs';
 
 @Injectable({

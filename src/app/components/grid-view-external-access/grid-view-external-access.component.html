@@ -1,3 +1,4 @@
 <div class="vw-100 vh-100">
+    <p *ngIf="!data">Waiting for grid view data from Token ATM...</p>
     <app-grid-view-display [data]="data"></app-grid-view-display>
 </div>

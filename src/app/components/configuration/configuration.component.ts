@@ -1,16 +1,16 @@
-import { Component, Inject, TemplateRef, ViewChild } from '@angular/core';
+import { Component, Inject, type TemplateRef, ViewChild } from '@angular/core';
 import type { Course } from 'app/data/course';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import { CanvasService } from 'app/services/canvas.service';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
-import type { BasicTokenOptionData } from 'app/token-options/basic-token-option';
-import type { EarnByModuleTokenOptionData } from 'app/token-options/earn-by-module-token-option';
-import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+import type { BasicTokenOptionData } from 'app/token-options/basic/basic-token-option';
+import type { EarnByModuleTokenOptionData } from 'app/token-options/earn-by-module/earn-by-module-token-option';
+import { type BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
 import { ErrorSerializer } from 'app/utils/error-serailizer';
 import { EditConfigurationModalComponent } from '../edit-configuration-modal/edit-configuration-modal.component';
-import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-option-resolver-registry';
+import { TokenOptionResolverRegistry } from 'app/token-options/token-option-resolver-registry';
 import { actionNeededTemplate, tokenATMContentListTemplate } from 'app/utils/string-templates';
 import { Router } from '@angular/router';
 
