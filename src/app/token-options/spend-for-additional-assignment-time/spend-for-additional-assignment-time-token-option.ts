@@ -9,11 +9,12 @@ import {
     ExcludeTokenOptionIdsMixin,
     ExcludeTokenOptionIdsMixinDataDef
 } from '../mixins/exclude-token-option-ids-mixin';
+import { ChangeAssignmentDatesMixin, ChangeAssignmentDatesMixinDataDef } from '../mixins/change-assignment-dates-mixin';
 
-// TODO: Include Mixins and Data Defs for Durations to add
 export const SpendForAdditionalAssignmentTimeTokenOptionDataDef = t.intersection([
     TokenOptionDataDef,
     AssignmentMixinDataDef,
+    ChangeAssignmentDatesMixinDataDef,
     MultipleRequestsMixinDataDef,
     ExcludeTokenOptionIdsMixinDataDef
 ]);
@@ -30,7 +31,9 @@ class ASpendForAdditionalAssignmentTimeTokenOption extends ATokenOption {}
 export class SpendForAdditionalAssignmentTimeTokenOption extends FromDataMixin(
     ToJSONMixin(
         ExcludeTokenOptionIdsMixin(
-            MultipleRequestsMixin(AssignmentMixin(ASpendForAdditionalAssignmentTimeTokenOption))
+            MultipleRequestsMixin(
+                AssignmentMixin(ChangeAssignmentDatesMixin(ASpendForAdditionalAssignmentTimeTokenOption))
+            )
         ),
         SpendForAdditionalAssignmentTimeTokenOptionDataDef.encode
     ),
