@@ -10,6 +10,7 @@
                 [isDisabled]="isReadOnly"
                 [disabled]="isReadOnly"
                 (bsValueChange)="updateCourseTimeText()"
+                [bsConfig]="{ adaptivePosition: true }"
             />
             <timepicker
                 [(ngModel)]="value"
