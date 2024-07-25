@@ -9,7 +9,7 @@
                 [(bsValue)]="value"
                 [isDisabled]="isReadOnly"
                 [disabled]="isReadOnly"
-                (bsValueChange)="onValueChange($event)"
+                (bsValueChange)="updateCourseTimeText()"
             />
             <timepicker
                 [(ngModel)]="value"
