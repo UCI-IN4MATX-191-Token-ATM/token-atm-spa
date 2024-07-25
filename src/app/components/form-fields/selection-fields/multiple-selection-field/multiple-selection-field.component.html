@@ -53,7 +53,7 @@
                     label="Invalid Selections"
                     class="warn-color"
                     [hidden]="
-                        filteredInvalidOptionInds.size === 0 ||
+                        filteredInvalidOptionIndices.size === 0 ||
                         (onlyShowSelected && this.selectedInvalidOptionsCnt === 0)
                     "
                     [disabled]="isReadOnly"
@@ -62,19 +62,19 @@
                         *ngFor="let option of invalidOptions; let i = index"
                         #matOption
                         [value]="option"
-                        [hidden]="!filteredInvalidOptionInds.has(i) || (onlyShowSelected && !matOption.selected)"
+                        [hidden]="!filteredInvalidOptionIndices.has(i) || (onlyShowSelected && !matOption.selected)"
                         (onSelectionChange)="onInvalidOptionDeselected($event, matOption, i)"
-                        [disabled]="isReadOnly || disabledInvalidOptionInds.has(i)"
+                        [disabled]="isReadOnly || disabledInvalidOptionIndices.has(i)"
                     >
                         {{ optionRenderer(option) }}
                     </mat-option>
                 </mat-optgroup>
-                <mat-divider *ngIf="filteredInvalidOptionInds.size !== 0" class="m-1"></mat-divider>
+                <mat-divider *ngIf="filteredInvalidOptionIndices.size !== 0" class="m-1"></mat-divider>
                 <mat-option
                     *ngFor="let option of validOptions; let i = index"
                     #matOption
                     [value]="option"
-                    [hidden]="!filteredValidOptionInds.has(i) || (onlyShowSelected && !matOption.selected)"
+                    [hidden]="!filteredValidOptionIndices.has(i) || (onlyShowSelected && !matOption.selected)"
                     [disabled]="isReadOnly"
                 >
                     {{ optionRenderer(option) }}

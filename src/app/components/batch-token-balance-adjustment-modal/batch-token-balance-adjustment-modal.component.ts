@@ -38,7 +38,7 @@ export class BatchTokenBalanceAdjustmentModalComponent implements OnDestroy {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     errorCollection?: (string[] | any)[];
     errorsCSVFile?: File;
-    errorsCSVURL?: string;
+    errorsCSVUrl?: string;
 
     reportWholeLine = false;
     hasHeader = false;
@@ -280,14 +280,14 @@ export class BatchTokenBalanceAdjustmentModalComponent implements OnDestroy {
             prefix: '',
             suffix: 'Import-Errors'
         });
-        this.errorsCSVURL = window.URL.createObjectURL(this.errorsCSVFile);
+        this.errorsCSVUrl = window.URL.createObjectURL(this.errorsCSVFile);
     }
 
     clearErrors() {
         this.errorCollection = undefined;
-        if (this.errorsCSVURL) window.URL.revokeObjectURL(this.errorsCSVURL);
+        if (this.errorsCSVUrl) window.URL.revokeObjectURL(this.errorsCSVUrl);
         this.errorsCSVFile = undefined;
-        this.errorsCSVURL = undefined;
+        this.errorsCSVUrl = undefined;
     }
 
     clearProgress() {
@@ -316,7 +316,7 @@ export class BatchTokenBalanceAdjustmentModalComponent implements OnDestroy {
 
     errorMessage(errorCount: number): string {
         if (errorCount === 0) return '';
-        return `${countAndNoun(errorCount, 'error')} occured while processing`;
+        return `${countAndNoun(errorCount, 'error')} occurred while processing`;
     }
 
     ngOnDestroy(): void {
