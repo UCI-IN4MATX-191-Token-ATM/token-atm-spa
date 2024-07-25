@@ -43,11 +43,10 @@ export class DateTimeFieldComponent extends BaseFormField<
 
     public validTimeChange(event: boolean): void {
         this.isTimeValid = event;
-        this.onValueChange(event);
+        this.updateCourseTimeText();
     }
 
-    public onValueChange(event: unknown): void {
-        event;
+    public updateCourseTimeText(): void {
         if (this.courseTimeZone === '' || this.courseTimeZone === DateTimeFieldComponent.localTimeZone) {
             this.courseTime = undefined;
             return;
@@ -71,7 +70,7 @@ export class DateTimeFieldComponent extends BaseFormField<
             this.value = srcValue;
             this.courseTimeZone = '';
         }
-        this.onValueChange({});
+        this.updateCourseTimeText();
     }
 
     public override get destValue(): Promise<Date> {
