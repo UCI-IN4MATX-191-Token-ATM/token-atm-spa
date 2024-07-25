@@ -42,7 +42,7 @@ export class StudentListComponent implements CourseConfigurable {
     // Reference to the individual student record display component
     individualStudentRecordDisplay?: StudentRecordDisplayComponent;
     /** Flag indicating whether the Token ATM Log is published */
-    private isLogPublished = false;
+    isLogPublished = false;
 
     studentItemInfo = new FormItemInfo('studentSearchTerm', 'Search for Students', 'text');
     studentSearchTerm = '';
@@ -147,7 +147,7 @@ export class StudentListComponent implements CourseConfigurable {
     async navigateToStudent(student: Student): Promise<void> {
         if (!this.configuration || !this.individualStudentRecordDisplay) return;
         this.isShowingIndividualStudent = true;
-        await this.individualStudentRecordDisplay.configureStudent(this.configuration, student);
+        await this.individualStudentRecordDisplay.configureStudent(this.configuration, student, this.isLogPublished);
     }
 
     async onGoBack() {

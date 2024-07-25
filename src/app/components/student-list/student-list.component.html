@@ -5,8 +5,9 @@
     <div
         class="d-flex align-items-center justify-content-center mx-5 mt-5 mb-3"
         [class.is-hidden]="isShowingIndividualStudent"
+        [tooltip]="isLogPublished ? undefined : 'Token ATM Log must be published to adjust token balances'"
     >
-        <button class="btn btn-primary" (click)="batchImport()">
+        <button class="btn btn-primary" (click)="batchImport()" [disabled]="!isLogPublished">
             Import CSV for Batch Manual Token Balance Change
         </button>
     </div>

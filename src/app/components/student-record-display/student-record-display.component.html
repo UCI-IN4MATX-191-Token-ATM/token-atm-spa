@@ -28,7 +28,14 @@
                     <div class="col-5 card">
                         <div class="card-body">
                             <h5 class="card-titile">Token Balance Adjustment</h5>
-                            <div class="card-text">
+                            <div
+                                class="card-text"
+                                [tooltip]="
+                                    logPublished
+                                        ? undefined
+                                        : 'Token ATM Log must be published to make manual adjustments'
+                                "
+                            >
                                 <div class="mb-3">
                                     <label> Token Adjustment Count </label>
                                     <input
@@ -36,13 +43,24 @@
                                         class="form-control"
                                         value="0"
                                         [(ngModel)]="tokenAdjustmentCount"
+                                        [disabled]="!logPublished"
                                     />
                                 </div>
                                 <div class="mb-3">
                                     <label> Message </label>
-                                    <textarea class="form-control" [(ngModel)]="tokenAdjustmentMessage"></textarea>
+                                    <textarea
+                                        class="form-control"
+                                        [(ngModel)]="tokenAdjustmentMessage"
+                                        [disabled]="!logPublished"
+                                    ></textarea>
                                 </div>
-                                <button class="btn btn-primary" (click)="onAddManualChange()">Add</button>
+                                <button
+                                    class="btn btn-primary"
+                                    (click)="onAddManualChange()"
+                                    [disabled]="!logPublished"
+                                >
+                                    Add
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -50,9 +68,21 @@
                         <div class="card-body">
                             <div class="m-2">
                                 <h5 class="card-titile d-inline mx-2">Request History</h5>
-                                <button class="btn btn-primary" (click)="onCreateProcessedRequest()">
-                                    Make Request on Student's Behalf
-                                </button>
+                                <div
+                                    [tooltip]="
+                                        logPublished
+                                            ? undefined
+                                            : 'Token ATM Log must be published to make a request for a student'
+                                    "
+                                >
+                                    <button
+                                        class="btn btn-primary"
+                                        (click)="onCreateProcessedRequest()"
+                                        [disabled]="!logPublished"
+                                    >
+                                        Make Request on Student's Behalf
+                                    </button>
+                                </div>
                             </div>
                             <div class="card-text overflow-auto">
                                 <table class="table table-striped">
