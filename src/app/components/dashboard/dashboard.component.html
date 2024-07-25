@@ -14,7 +14,7 @@
             <p>{{ course.name }}</p>
             <p>{{ course.term.name }}</p>
             <p *ngIf="localTimeZone !== course.timeZone" (click)="onWarningClick()">
-                <span class="bi bi-exclamation-triangle-fill text-warning"></span>
+                <span class="bi bi-exclamation-triangle-fill text-warning is-link"></span>
             </p>
             <span class="nav-link fs-5 text-primary is-link" [routerLink]="['/', 'select-course']">Switch Course</span>
         </div>
