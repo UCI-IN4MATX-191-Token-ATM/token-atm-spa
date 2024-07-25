@@ -13,7 +13,7 @@ import type { CanvasCredential, TokenATMCredentials } from 'app/data/token-atm-c
 import { CanvasService } from 'app/services/canvas.service';
 import { StorageManagerService } from 'app/services/storage-manager.service';
 import { ModalManagerService } from 'app/services/modal-manager.service';
-import { ErrorSerializer } from 'app/utils/error-serailizer';
+import { ErrorSerializer } from 'app/utils/error-serializer';
 import { type BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { DomSanitizer } from '@angular/platform-browser';
 import { pluralize } from 'app/utils/pluralize';
@@ -192,7 +192,7 @@ export class LoginComponent implements AfterViewInit {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             await this.modalManagerService.createNotificationModal(
-                ErrorSerializer.serailize(error),
+                ErrorSerializer.serialize(error),
                 'Canvas URL Error'
             );
             return;
@@ -217,14 +217,14 @@ export class LoginComponent implements AfterViewInit {
                 errMsgs.push(
                     `CANVAS\nToken ATM couldn’t verify your credentials at: \n${this.credentials.canvas.canvasURL}\nDouble check that you are providing the correct Canvas URL and Access Token.\n`
                 );
-                errMsgs.push('Error Message:' + ErrorSerializer.serailize(canvasCredentialValidation));
+                errMsgs.push('Error Message:' + ErrorSerializer.serialize(canvasCredentialValidation));
             }
 
             for (const [key, credential, err] of validationResult) {
                 if (credential === undefined) continue;
                 if (errMsgs.length != 0) errMsgs.push('\n--------------------\n');
                 errMsgs.push(this.credentialManagerService.getHandler(key).generateErrorMessage(credential));
-                errMsgs.push('Error Message:' + ErrorSerializer.serailize(err));
+                errMsgs.push('Error Message:' + ErrorSerializer.serialize(err));
             }
 
             this.credentialManagerService.clear();

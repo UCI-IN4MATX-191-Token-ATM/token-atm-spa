@@ -36,10 +36,10 @@ export class DashboardComponent implements OnDestroy {
 
     private async configureUserInformation(userId: string) {
         // Retrieve user information from the API
-        const getuser = await this.canvasService.getUserInformation(userId);
-        this.name = getuser.name;
-        this.email = getuser.email;
-        this.avatarUrl = getuser.avatarURL;
+        const getUser = await this.canvasService.getUserInformation(userId);
+        this.name = getUser.name;
+        this.email = getUser.email;
+        this.avatarUrl = getUser.avatarURL;
     }
 
     private configureCourse(course: Course) {

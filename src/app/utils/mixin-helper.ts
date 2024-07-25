@@ -2,7 +2,7 @@ import * as t from 'io-ts';
 import { chain } from 'fp-ts/Either';
 import { formatISO, fromUnixTime, getUnixTime, parseISO } from 'date-fns';
 import { Base64 } from 'js-base64';
-import { ErrorSerializer } from './error-serailizer';
+import { ErrorSerializer } from './error-serializer';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Constructor<T = object> = new (...args: any[]) => T;
@@ -40,7 +40,7 @@ export const Base64StringDef = new t.Type<string, string | undefined, unknown>(
                 const result = Base64.decode(v);
                 return t.success(result);
             } catch (err: unknown) {
-                return t.failure(v, ctx, ErrorSerializer.serailize(err));
+                return t.failure(v, ctx, ErrorSerializer.serialize(err));
             }
         })(t.string.validate(v, ctx));
     },

@@ -23,7 +23,7 @@ import type { Student } from 'app/data/student';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { v4 as uuidv4 } from 'uuid';
-import { ErrorSerializer } from 'app/utils/error-serailizer';
+import { ErrorSerializer } from 'app/utils/error-serializer';
 import { OptionalFieldComponent } from '../form-fields/optional-field/optional-field.component';
 
 @Component({
@@ -172,7 +172,7 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
             this.isInitialized = true;
         } catch (err: unknown) {
             await this.modalManagerService.createNotificationModal(
-                `Error occurred when initializing export request modal: ${ErrorSerializer.serailize(err)}`,
+                `Error occurred when initializing export request modal: ${ErrorSerializer.serialize(err)}`,
                 'Error'
             );
             this.modalRef?.hide();
@@ -262,7 +262,7 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
             await this.modalManagerService.createNotificationModal(
                 `Error occurred when exporting processed requests${
                     this.titleSuffix ? ' for ' + this.titleSuffix : ''
-                }: ${ErrorSerializer.serailize(err)}`,
+                }: ${ErrorSerializer.serialize(err)}`,
                 'Error'
             );
             this.modalRef?.hide();

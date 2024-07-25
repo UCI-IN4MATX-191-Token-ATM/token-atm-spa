@@ -28,7 +28,7 @@
             <div class="d-inline-block mx-auto">
                 <span>Number of Students Per Page: </span>
                 <select class="form-select" [ngModel]="pageCnt" (ngModelChange)="changePageSize($event)">
-                    <option *ngFor="let possiblePageCnt of POSSIBLE_PAGE_CNTS" [ngValue]="possiblePageCnt">
+                    <option *ngFor="let possiblePageCnt of POSSIBLE_PAGE_COUNTS" [ngValue]="possiblePageCnt">
                         {{ possiblePageCnt }}
                     </option>
                 </select>
@@ -69,6 +69,6 @@
         </div>
     </div>
     <div [class.is-hidden]="!isShowingIndividualStudent">
-        <app-student-record-display #individaulStudentRecordDisplay (goBack)="onGoBack()"></app-student-record-display>
+        <app-student-record-display #individualStudentRecordDisplay (goBack)="onGoBack()"></app-student-record-display>
     </div>
 </ng-template>

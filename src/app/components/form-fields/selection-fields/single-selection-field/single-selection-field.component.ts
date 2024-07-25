@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Inject, Input, type OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ErrorSerializer } from 'app/utils/error-serailizer';
+import { ErrorSerializer } from 'app/utils/error-serializer';
 import { BaseFormField, type ObservableFormField } from 'app/utils/form-field/form-field';
 import type { FormFieldCopyPasteHandler } from 'app/utils/form-field/form-field-copy-paste-handler';
 import { isEqual } from 'lodash';
@@ -37,7 +37,7 @@ export class SingleSelectionFieldComponent<T>
 
     private _filterText = '';
     isInvalidOptionFiltered = false;
-    filteredValidOptionInds = new Set<number>();
+    filteredValidOptionIndices = new Set<number>();
 
     isOptionSettingFailed = false;
     private optionFactory?: () => Promise<T[]>;
@@ -61,10 +61,10 @@ export class SingleSelectionFieldComponent<T>
         this.isInvalidOptionFiltered =
             !!this.invalidOption &&
             this.optionRenderer(this.invalidOption).toLowerCase().indexOf(this.filterText.toLowerCase()) != -1;
-        this.filteredValidOptionInds.clear();
+        this.filteredValidOptionIndices.clear();
         for (const [ind, v] of this.validOptions.entries()) {
             if (this.optionRenderer(v).toLowerCase().indexOf(this.filterText.toLowerCase()) == -1) continue;
-            this.filteredValidOptionInds.add(ind);
+            this.filteredValidOptionIndices.add(ind);
         }
     }
 
@@ -91,7 +91,7 @@ export class SingleSelectionFieldComponent<T>
                 this.assignOptions(selectedOption, options);
             } catch (err: unknown) {
                 this.isOptionSettingFailed = true;
-                this.errorMessage = `Error occured when setting options: ${ErrorSerializer.serailize(err)}`;
+                this.errorMessage = `Error occurred when setting options: ${ErrorSerializer.serialize(err)}`;
                 if (!isAssigningOptions) this.assignOptions(selectedOption, []);
             } finally {
                 this.srcValueTaskCnt--;

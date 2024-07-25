@@ -178,11 +178,11 @@ export class TokenATMConfiguration {
         );
     }
 
-    public async decryptStudentRecord(encrpytedData: string): Promise<unknown> {
+    public async decryptStudentRecord(encryptedData: string): Promise<unknown> {
         if (this.#encryptionKey == undefined) await this.#generateKey();
         if (this.#encryptionKey == undefined) throw new Error('AES encryption key generation failed');
         const [iv, data] = TypedArrayHelper.splitUint8Array(
-            Base64.toUint8Array(encrpytedData),
+            Base64.toUint8Array(encryptedData),
             CryptoHelper.AES_IV_LENGTH
         );
         return decompress(JSON.parse(await CryptoHelper.decryptAES(this.#encryptionKey, data, iv)));
