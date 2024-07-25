@@ -58,7 +58,7 @@ export class TokenOptionManagementComponent implements OnInit {
             this.environmentInjector
         );
         if (result == undefined)
-            throw new Error('Failed to intialize token option management modal: Unsupported token option type');
+            throw new Error('Failed to initialize token option management modal: Unsupported token option type');
         const [renderer, field] = result;
         this.field = field;
         this.field.srcValue = this.value;
@@ -134,9 +134,9 @@ export class TokenOptionManagementComponent implements OnInit {
         switch (result) {
             case 'login': {
                 this.credentialManagerService.clear();
-                const onHideenPromise = this.modalRef?.onHidden ? firstValueFrom(this.modalRef.onHidden) : undefined;
+                const onHiddenPromise = this.modalRef?.onHidden ? firstValueFrom(this.modalRef.onHidden) : undefined;
                 this.modalRef?.hide();
-                if (onHideenPromise) await onHideenPromise;
+                if (onHiddenPromise) await onHiddenPromise;
                 this.router.navigate(['/login']);
                 break;
             }

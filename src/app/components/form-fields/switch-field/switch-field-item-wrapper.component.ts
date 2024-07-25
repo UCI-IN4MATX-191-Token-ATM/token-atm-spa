@@ -12,7 +12,7 @@ export class SwitchFieldItemWrapperComponent implements OnInit {
     isShown = false;
 
     ngOnInit() {
-        if (!this.renderer || !this.containerRef) throw new Error('Fail to initialize SiwtchFieldItemWrapperComponent');
+        if (!this.renderer || !this.containerRef) throw new Error('Fail to initialize SwitchFieldItemWrapperComponent');
         this.renderer(this.containerRef);
     }
 

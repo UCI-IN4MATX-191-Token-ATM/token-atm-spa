@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Inject, Input, type OnDestroy } from '@angular/core';
 import type { MatOption, MatOptionSelectionChange } from '@angular/material/core';
-import { ErrorSerializer } from 'app/utils/error-serailizer';
+import { ErrorSerializer } from 'app/utils/error-serializer';
 import { BaseFormField } from 'app/utils/form-field/form-field';
 import type { FormFieldCopyPasteHandler } from 'app/utils/form-field/form-field-copy-paste-handler';
 import { pluralize } from 'app/utils/pluralize';
@@ -33,12 +33,12 @@ export class MultipleSelectionFieldComponent<T>
     validOptions: T[] = [];
     invalidOptions: T[] = [];
 
-    disabledInvalidOptionInds = new Set<number>();
+    disabledInvalidOptionIndices = new Set<number>();
     selectedInvalidOptionsCnt = 0;
 
     private _filterText = '';
-    filteredInvalidOptionInds = new Set<number>();
-    filteredValidOptionInds = new Set<number>();
+    filteredInvalidOptionIndices = new Set<number>();
+    filteredValidOptionIndices = new Set<number>();
 
     isOptionSettingFailed = false;
     private optionFactory?: () => Promise<T[]>;
@@ -61,15 +61,15 @@ export class MultipleSelectionFieldComponent<T>
 
     public set filterText(filterText: string) {
         this._filterText = filterText;
-        this.filteredInvalidOptionInds.clear();
-        this.filteredValidOptionInds.clear();
+        this.filteredInvalidOptionIndices.clear();
+        this.filteredValidOptionIndices.clear();
         for (const [ind, v] of this.invalidOptions.entries()) {
             if (this.optionRenderer(v).toLowerCase().indexOf(this.filterText.toLowerCase()) == -1) continue;
-            this.filteredInvalidOptionInds.add(ind);
+            this.filteredInvalidOptionIndices.add(ind);
         }
         for (const [ind, v] of this.validOptions.entries()) {
             if (this.optionRenderer(v).toLowerCase().indexOf(this.filterText.toLowerCase()) == -1) continue;
-            this.filteredValidOptionInds.add(ind);
+            this.filteredValidOptionIndices.add(ind);
         }
     }
 
@@ -96,7 +96,7 @@ export class MultipleSelectionFieldComponent<T>
                 this.assignOptions(selectedOptions, options);
             } catch (err: unknown) {
                 this.isOptionSettingFailed = true;
-                this.errorMessage = `Error occured when setting options: ${ErrorSerializer.serailize(err)}`;
+                this.errorMessage = `Error occurred when setting options: ${ErrorSerializer.serialize(err)}`;
                 if (!isAssigningOptions) this.assignOptions(selectedOptions, []);
             } finally {
                 this.srcValueTaskCnt--;
@@ -118,7 +118,7 @@ export class MultipleSelectionFieldComponent<T>
             invalidOptions.push(option);
         }
         this.invalidOptions = invalidOptions;
-        this.disabledInvalidOptionInds.clear();
+        this.disabledInvalidOptionIndices.clear();
         this.validOptions = options;
         this.value = selectedOptions;
         this.filterText = '';
@@ -161,7 +161,7 @@ export class MultipleSelectionFieldComponent<T>
 
     onInvalidOptionDeselected(event: MatOptionSelectionChange, matOption: MatOption, ind: number) {
         if (event.isUserInput && !matOption.selected) {
-            this.disabledInvalidOptionInds.add(ind);
+            this.disabledInvalidOptionIndices.add(ind);
             this.isInvalidOptionValidationOutdated = true;
         }
     }
@@ -174,7 +174,7 @@ export class MultipleSelectionFieldComponent<T>
 
     onUnselectAll() {
         this.value = [];
-        for (let i = 0; i < this.invalidOptions.length; i++) this.disabledInvalidOptionInds.add(i);
+        for (let i = 0; i < this.invalidOptions.length; i++) this.disabledInvalidOptionIndices.add(i);
     }
 
     async onCopy(): Promise<void> {

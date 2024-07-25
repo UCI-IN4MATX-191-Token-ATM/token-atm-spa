@@ -13,7 +13,7 @@ import { createFieldComponentWithLabel } from 'app/token-options/token-option-fi
 })
 export class CreateConfigurationModalComponent implements OnInit {
     private _isProcessing = false;
-    @Input() onResolve?: (reuslt: boolean) => void;
+    @Input() onResolve?: (result: boolean) => void;
     @Input() course?: Course;
 
     @ViewChild('container', { read: ViewContainerRef, static: true }) container?: ViewContainerRef;

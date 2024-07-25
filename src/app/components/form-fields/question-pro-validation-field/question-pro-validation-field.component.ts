@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import type { QuestionProCredential } from 'app/credential-handlers/question-pro-credential-handler';
 import { QuestionProService } from 'app/services/question-pro.service';
-import { ErrorSerializer } from 'app/utils/error-serailizer';
+import { ErrorSerializer } from 'app/utils/error-serializer';
 import type { ExtractDest, ExtractSrc, ExtractVP, FormField } from 'app/utils/form-field/form-field';
 import type { FormFieldWrapper } from 'app/utils/form-field/form-field-wrapper';
 import { ForwardFormField } from 'app/utils/form-field/forward-form-field';
@@ -44,7 +44,7 @@ export class QuestionProValidationFieldComponent<
             this.message = `QuestionPro credential validation failed at ${format(
                 new Date(),
                 'MMM dd, yyyy HH:mm:ss'
-            )}: ${ErrorSerializer.serailize(result)}`;
+            )}: ${ErrorSerializer.serialize(result)}`;
         }
         this.isProcessing = false;
     }

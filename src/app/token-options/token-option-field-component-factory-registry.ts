@@ -59,23 +59,23 @@ export const TOKEN_OPTION_FIELD_COMPONENT_FACTORY_INJECTION_TOKEN = new Injectio
     providedIn: 'root'
 })
 export class TokenOptionFieldComponentFactoryRegistry {
-    private _tokenOptionFieldComponentFactorysMap = new Map<string, TokenOptionFieldComponentFactory<TokenOption>>();
+    private _tokenOptionFieldComponentFactoriesMap = new Map<string, TokenOptionFieldComponentFactory<TokenOption>>();
 
     constructor(
         @Optional()
         @Inject(TOKEN_OPTION_FIELD_COMPONENT_FACTORY_INJECTION_TOKEN)
-        tokenOptionFieldComponentFactorys?: TokenOptionFieldComponentFactory<TokenOption>[]
+        tokenOptionFieldComponentFactories?: TokenOptionFieldComponentFactory<TokenOption>[]
     ) {
-        if (tokenOptionFieldComponentFactorys)
-            tokenOptionFieldComponentFactorys.forEach((factory) => {
-                this._tokenOptionFieldComponentFactorysMap.set(factory.type, factory);
+        if (tokenOptionFieldComponentFactories)
+            tokenOptionFieldComponentFactories.forEach((factory) => {
+                this._tokenOptionFieldComponentFactoriesMap.set(factory.type, factory);
             });
     }
 
     private getTokenOptionFieldComponentFactory(
         type: string
     ): TokenOptionFieldComponentFactory<TokenOption> | undefined {
-        return this._tokenOptionFieldComponentFactorysMap.get(type);
+        return this._tokenOptionFieldComponentFactoriesMap.get(type);
     }
 
     public createTokenOptionFieldComponent(

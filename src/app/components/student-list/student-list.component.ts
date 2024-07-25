@@ -21,7 +21,7 @@ import { checkAndConfirmTokenATMLogPublished } from 'app/utils/reusable-modals';
 })
 export class StudentListComponent implements CourseConfigurable {
     // Possible values for the number of students displayed per page in the student list
-    public POSSIBLE_PAGE_CNTS = [5, 10, 25, 50];
+    public POSSIBLE_PAGE_COUNTS = [5, 10, 25, 50];
     // default number of students displayed is 50
     public DEFAULT_PAGE_CNT = 50;
     // current select course and can be none
@@ -38,7 +38,7 @@ export class StudentListComponent implements CourseConfigurable {
     pageCnt: number = this.DEFAULT_PAGE_CNT;
     // Flag indicating whether an individual student's record is being shown
     isShowingIndividualStudent = false;
-    @ViewChild('individaulStudentRecordDisplay')
+    @ViewChild('individualStudentRecordDisplay')
     // Reference to the individual student record display component
     individualStudentRecordDisplay?: StudentRecordDisplayComponent;
     /** Flag indicating whether the Token ATM Log is published */
@@ -135,7 +135,7 @@ export class StudentListComponent implements CourseConfigurable {
         await this.getStudentGrades();
         this.isFetchingInfo = false;
     }
-    // Go to the next student's infomration page
+    // Go to the next student's information page
     async next(): Promise<void> {
         if (!this.students) return;
         this.isFetchingInfo = true;
@@ -147,7 +147,7 @@ export class StudentListComponent implements CourseConfigurable {
     async navigateToStudent(student: Student): Promise<void> {
         if (!this.configuration || !this.individualStudentRecordDisplay) return;
         this.isShowingIndividualStudent = true;
-        await this.individualStudentRecordDisplay.configureStudent(this.configuration, student, this.isLogPublished);
+        await this.individualStudentRecordDisplay.configureStudent(this.configuration, student);
     }
 
     async onGoBack() {

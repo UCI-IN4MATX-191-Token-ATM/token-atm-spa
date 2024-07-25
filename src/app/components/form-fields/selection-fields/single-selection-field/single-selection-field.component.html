@@ -47,7 +47,7 @@
                 <mat-option
                     *ngFor="let option of validOptions; let i = index"
                     [value]="option"
-                    [hidden]="!filteredValidOptionInds.has(i)"
+                    [hidden]="!filteredValidOptionIndices.has(i)"
                     [disabled]="isReadOnly"
                 >
                     {{ optionRenderer(option) }}
