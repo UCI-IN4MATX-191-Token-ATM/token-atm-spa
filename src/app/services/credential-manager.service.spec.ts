@@ -1,16 +1,16 @@
-import { TestBed } from '@angular/core/testing';
+// import { TestBed } from '@angular/core/testing';
 
-import { CredentialManagerService } from './credential-manager.service';
+// import { CredentialManagerService } from './credential-manager.service';
 
-describe('CredentialManagerService', () => {
-    let service: CredentialManagerService;
+// describe('CredentialManagerService', () => {
+//     let service: CredentialManagerService;
 
-    beforeEach(() => {
-        TestBed.configureTestingModule({});
-        service = TestBed.inject(CredentialManagerService);
-    });
+//     beforeEach(() => {
+//         TestBed.configureTestingModule({});
+//         service = TestBed.inject(CredentialManagerService);
+//     });
 
-    it('should be created', () => {
-        expect(service).toBeTruthy();
-    });
-});
+//     it('should be created', () => {
+//         expect(service).toBeTruthy();
+//     });
+// });

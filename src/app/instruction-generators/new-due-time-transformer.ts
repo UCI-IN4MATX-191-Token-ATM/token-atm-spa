@@ -9,7 +9,7 @@ type HasNewDueTime = {
 
 export class NewDueTimeTransformer extends TokenOptionInstructionTransformer<HasNewDueTime> {
     public get infoDescription(): string {
-        return 'Extend Assignment/Quiz Lock Date To';
+        return 'Allows Submitting Canvas Assignment/Quiz Until'; // TODO: Phrasing may need more work
     }
 
     public process(tokenOptions: TokenOption[]): string[] {
@@ -18,7 +18,7 @@ export class NewDueTimeTransformer extends TokenOptionInstructionTransformer<Has
             if (convertedObject == undefined) return '';
             const newDueTime = convertedObject.newDueTime;
             if (newDueTime instanceof Date) {
-                return format(newDueTime, 'MMM dd, yyyy kk:mm:ss');
+                return format(newDueTime, 'MMM dd, yyyy HH:mm:ss');
             } else {
                 return newDueTime.toHTML();
             }

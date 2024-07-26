@@ -41,4 +41,4 @@ Cody Svozil, Katie Ren, Mingrui (Ray) Han, Xu (Carson) Wang, Yongkang (camerfoul
 
 After completing the first two steps of the Setup section, you could use `npm run build` to build the SPA. The output will be in the `dist` folder.
 
-Note: Base href is configured as `/token-atm/` for the production configuration. As a result, if you want to access the SPA by hostinng the build output, you need to append `/token-atm/` to the URL. The SOP restriction still applies, so you need to access it from a testing environment described in step 3 of the Setup section.
+Note: Base href is configured as `/token-atm/` for the production configuration. As a result, if you want to access the SPA by hosting the build output, you need to append `/token-atm/` to the URL. The SOP restriction still applies, so you need to access it from a testing environment described in step 3 of the Setup section.

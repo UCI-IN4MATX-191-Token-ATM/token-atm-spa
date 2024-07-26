@@ -1,10 +1,10 @@
-import { Component, EnvironmentInjector, Inject, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, EnvironmentInjector, Inject, Input, type OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { StringInputFieldComponent } from '../form-fields/string-input-field/string-input-field.component';
 import { StringTextareaFieldComponent } from '../form-fields/string-textarea-field/string-textarea-field.component';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import type { BsModalRef } from 'ngx-bootstrap/modal';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
-import { createFieldComponentWithLabel } from 'app/token-option-field-component-factories/token-option-field-component-factory';
+import { createFieldComponentWithLabel } from 'app/token-options/token-option-field-component-factory';
 import type { FormField } from 'app/utils/form-field/form-field';
 
 @Component({
@@ -32,13 +32,13 @@ export class EditConfigurationModalComponent implements OnInit {
         if (!this.container || !this.configuration) throw new Error('Failed to initialize configuration editing modal'); // TODO: Double check phrasing
         const [renderer, field] = createFieldComponentWithLabel(
             StringInputFieldComponent,
-            'The suffix for the Canvas Assignment Group & Module names',
+            'The suffix for the Token ATM Canvas Assignment Group & Module names',
             this.environmentInjector
         )
             .appendBuilder(
                 createFieldComponentWithLabel(
                     StringTextareaFieldComponent,
-                    'Description of Token ATM Log Assignment',
+                    'Description for Token ATM Log Assignment on Canvas',
                     this.environmentInjector
                 )
             )

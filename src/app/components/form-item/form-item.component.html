@@ -11,6 +11,8 @@
             class="form-control"
             [id]="info.propertyID + uuid"
             [placeholder]="info.inputPlaceholder"
+            [readOnly]="disabled"
+            [disabled]="disabled"
             [ngModel]="data"
             (ngModelChange)="onDataChange($event)"
         />

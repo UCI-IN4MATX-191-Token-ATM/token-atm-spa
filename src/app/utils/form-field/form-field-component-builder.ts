@@ -1,11 +1,13 @@
 import type { ComponentRef, ViewContainerRef } from '@angular/core';
-import type { ExtractDest, ExtractSrc, ExtractVP, FormField } from './form-field';
+import type { ExtractDest, ExtractSrc, ExtractVP, FormField, ObservableFormField } from './form-field';
 import { FormFieldAppender } from './form-field-appender';
 import { FormFieldSrcTransformer } from './form-field-src-transformer';
 import { FormFieldModifier, type FormFieldModifierConfig } from './form-field-modifier';
 import { FormFieldDestTransformer } from './form-field-dest-transformer';
 import { FormFieldVPTransformer } from './form-field-vp-transformer';
 import { FormFieldVPAppender } from './form-field-vp-appender';
+import { type FormFieldWrapper, FormFieldWrapperApplier } from './form-field-wrapper';
+import { FormFieldObservableSrcTransformer } from './form-field-observable-src-transformer';
 
 export type TupleAppend<A, B> = A extends unknown[] ? [...A, B] : [A, B];
 
@@ -21,6 +23,12 @@ export class FormFieldComponentBuilder<F extends FormField<any, any, any>> {
     public setComp<F1 extends FormField<any, any, any>>(compRef: ComponentRef<F1>): FormFieldComponentBuilder<F1> {
         for (const component of this._components) component.destroy();
         return new FormFieldComponentBuilder([compRef], compRef.instance);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public setField<F1 extends FormField<any, any, any>>(field: F1): FormFieldComponentBuilder<F1> {
+        for (const component of this._components) component.destroy();
+        return new FormFieldComponentBuilder([], field);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,11 +59,36 @@ export class FormFieldComponentBuilder<F extends FormField<any, any, any>> {
         );
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public wrapSuffix<F1 extends FormFieldWrapper<F, any, any, any>>(
+        builder: FormFieldComponentBuilder<F1>
+    ): FormFieldComponentBuilder<FormFieldWrapperApplier<F, F1>> {
+        if (!this.field || !builder.field) throw new Error('No field to wrap');
+        return new FormFieldComponentBuilder(
+            this._components.concat(builder._components),
+            new FormFieldWrapperApplier(this.field, builder.field)
+        );
+    }
+
     public transformSrc<S1>(
         srcTransformer: (key: S1) => ExtractSrc<F>
     ): FormFieldComponentBuilder<FormFieldSrcTransformer<F, S1>> {
         if (!this.field) throw new Error('No field to transform');
         return new FormFieldComponentBuilder(this._components, new FormFieldSrcTransformer(this.field, srcTransformer));
+    }
+
+    public transformObservableSrc<S1>(
+        srcTransformer: (key: S1) => ExtractSrc<F>
+    ): FormFieldComponentBuilder<
+        FormFieldObservableSrcTransformer<ExtractDest<F>, F & ObservableFormField<ExtractDest<F>>, S1>
+    > {
+        if (!this.field) throw new Error('No field to transform');
+        return new FormFieldComponentBuilder(
+            this._components,
+            // TODO: cannot specialize F. Refactoring is needed for FormField
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            new FormFieldObservableSrcTransformer(this.field as any, srcTransformer)
+        );
     }
 
     public transformDest<D1>(

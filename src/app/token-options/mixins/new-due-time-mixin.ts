@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { Constructor, DateDef } from 'app/utils/mixin-helper';
+import { type Constructor, DateDef } from 'app/utils/mixin-helper';
 import type { IGridViewDataSource } from './grid-view-data-source-mixin';
 
 export const NewDueTimeMixinDataDef = t.strict({
@@ -19,7 +19,7 @@ export function NewDueTimeMixin<TBase extends Constructor<IGridViewDataSource>>(
         constructor(...args: any[]) {
             super(...args);
             this.registerDataPointSource(() => ({
-                colName: 'New Assignment/Quiz Lock At',
+                colName: 'Change Canvas Assignment/Quiz’s “Available Until” to',
                 type: 'date',
                 value: this.newDueTime
             }));

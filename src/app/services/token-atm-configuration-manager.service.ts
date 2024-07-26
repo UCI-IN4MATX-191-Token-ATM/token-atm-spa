@@ -9,7 +9,7 @@ import { NameTransformer } from 'app/instruction-generators/name-transformer';
 import { StartTimeTransformer } from 'app/instruction-generators/start-time-transformer';
 import { TokenBalanceChangeTransformer } from 'app/instruction-generators/token-balance-change-transformer';
 import { MultipleChoiceQuestion } from 'app/quiz-questions/multiple-choice-question';
-import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-option-resolver-registry';
+import { TokenOptionResolverRegistry } from 'app/token-options/token-option-resolver-registry';
 import { CanvasService } from './canvas.service';
 import HTMLParse from 'html-dom-parser';
 import { NewDueTimeTransformer } from 'app/instruction-generators/new-due-time-transformer';
@@ -161,10 +161,10 @@ export class TokenATMConfigurationManagerService {
         );
         const questionPrompt =
             tokenOptionGroup.availableTokenOptions.length == 0
-                ? "There isn't anything you can request for via this quiz. If you think this is an error, please contact your instructor."
+                ? 'There isn’t anything you can request for via this quiz. If you think this is an error, please contact your instructor.'
                 : 'Make a request by choosing an option below (see the table above for the detailed description of each option)';
         const question = new MultipleChoiceQuestion(
-            'Choose a token option',
+            'Make a Request',
             questionPrompt,
             0,
             tokenOptionGroup.availableTokenOptions.map((tokenOption) => tokenOption.prompt)
@@ -404,4 +404,25 @@ export class TokenATMConfigurationManagerService {
     }
 
     // TODO: support reordering of token option groups and token options
+
+    public async isTokenATMLogPublished(configuration: TokenATMConfiguration): Promise<boolean> {
+        const logId = await this.canvasService.getAssignmentIdByName(
+            configuration.course.id,
+            TokenATMConfigurationManagerService.TOKEN_ATM_LOG_ASSIGNMENT_NAME
+        );
+        if (logId !== configuration.logAssignmentId) {
+            throw new Error(
+                'Token ATM Log assignment on Canvas doesn’t match the ID saved by Token ATM.\nThe Token ATM Configuration needs to be updated/checked.'
+            );
+        }
+        return (await this.canvasService.isAssignmentPublished(configuration.course.id, logId)) ?? false;
+    }
+
+    public async publishTokenATMLog(configuration: TokenATMConfiguration): Promise<void> {
+        await this.canvasService.modifyAssignmentPublishedState(
+            configuration.course.id,
+            configuration.logAssignmentId,
+            true
+        );
+    }
 }

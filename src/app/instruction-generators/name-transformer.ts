@@ -7,7 +7,7 @@ type HasName = {
 
 export class NameTransformer extends TokenOptionInstructionTransformer<HasName> {
     public get infoDescription(): string {
-        return 'Token Option';
+        return 'Requests You Can Make';
     }
 
     public process(tokenOptions: TokenOption[]): string[] {

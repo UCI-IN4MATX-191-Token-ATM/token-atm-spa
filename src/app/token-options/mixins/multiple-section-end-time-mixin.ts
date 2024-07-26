@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { Constructor, DateDef } from 'app/utils/mixin-helper';
+import { type Constructor, DateDef } from 'app/utils/mixin-helper';
 import { MultipleSectionDateMatcher, MultipleSectionDateMatcherDef } from 'app/utils/multiple-section-date-matcher';
 import type { IGridViewDataSource } from './grid-view-data-source-mixin';
 
@@ -22,12 +22,12 @@ export function MultipleSectionEndTimeMixin<TBase extends Constructor<IGridViewD
             this.registerDataPointSource(() =>
                 this.endTime instanceof MultipleSectionDateMatcher
                     ? {
-                          colName: 'End At (with exceptions)',
+                          colName: 'Can Request Until (with exceptions)',
                           type: 'html',
                           value: this.endTime.toHTML()
                       }
                     : {
-                          colName: 'End At',
+                          colName: 'Can Request Until',
                           type: 'date',
                           value: this.endTime
                       }

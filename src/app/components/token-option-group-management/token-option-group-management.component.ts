@@ -1,11 +1,11 @@
-import { Component, EnvironmentInjector, Inject, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, EnvironmentInjector, Inject, Input, type OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import type { BsModalRef } from 'ngx-bootstrap/modal';
 import { StringInputFieldComponent } from '../form-fields/string-input-field/string-input-field.component';
 import { StringTextareaFieldComponent } from '../form-fields/string-textarea-field/string-textarea-field.component';
-import { createFieldComponentWithLabel } from 'app/token-option-field-component-factories/token-option-field-component-factory';
+import { createFieldComponentWithLabel } from 'app/token-options/token-option-field-component-factory';
 import { NumberInputFieldComponent } from '../form-fields/number-input-field/number-input-field.component';
 import type { FormField } from 'app/utils/form-field/form-field';
 
@@ -32,7 +32,7 @@ export class TokenOptionGroupManagementComponent implements OnInit {
         if (!this.value || !this.container) throw new Error('Failed to initialize token option group management modal');
         const [renderer, field] = createFieldComponentWithLabel(
             NumberInputFieldComponent,
-            'Group ID',
+            'Token Option Group ID',
             this.environmentInjector
         )
             .editField((field) => {
@@ -46,7 +46,7 @@ export class TokenOptionGroupManagementComponent implements OnInit {
             .appendBuilder(
                 createFieldComponentWithLabel(
                     StringInputFieldComponent,
-                    'Group Name',
+                    'Token Option Group Name',
                     this.environmentInjector
                 ).editField((field) => {
                     field.validator = async ([field, value]: [StringInputFieldComponent, string]) => {
@@ -62,7 +62,7 @@ export class TokenOptionGroupManagementComponent implements OnInit {
             .appendBuilder(
                 createFieldComponentWithLabel(
                     StringTextareaFieldComponent,
-                    'Group Description',
+                    'Token Option Group Information / Directions',
                     this.environmentInjector
                 ).editField((field) => {
                     field.rows = 4;

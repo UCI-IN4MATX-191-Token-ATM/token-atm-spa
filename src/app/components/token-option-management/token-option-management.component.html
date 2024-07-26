@@ -32,6 +32,9 @@
 </div>
 <div class="modal-body">
     <p>Type: {{ typeName }}</p>
+    <p *ngIf="isMissingCredentials && !isReadOnly" class="text-danger">
+        Warning: no change (including editing or creating) could be saved because there are missing credentials.
+    </p>
     <div style="max-height: 65vh; overflow-y: auto">
         <ng-template #tokenOptionField></ng-template>
     </div>

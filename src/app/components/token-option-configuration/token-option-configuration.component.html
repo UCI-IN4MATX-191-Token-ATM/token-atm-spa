@@ -16,6 +16,9 @@
                         <i class="bi bi-gear-fill"></i>
                     </button>
                 </div>
+                <button class="col-auto btn btn-outline-primary mx-2" (click)="onExportProcessedRequests()">
+                    Export Processed Requests
+                </button>
                 <button class="col-auto btn btn-outline-success" (click)="onCreateTokenOptionGroup()">
                     New Token Option Group
                 </button>
@@ -72,7 +75,7 @@
     </div>
     <div class="modal-body">
         <p *ngIf="!canSaveGridViewPreferences" class="text-danger mx-auto my-2">
-            You did not save credentials with a password, so the column preferences won't be preserved if you leave the
+            You have not saved credentials with a password, so your column choices won't be preserved if you leave the
             "Token Options" page.
         </p>
         <div class="row mb-2">

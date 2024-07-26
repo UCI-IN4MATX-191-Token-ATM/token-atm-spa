@@ -9,7 +9,7 @@ type HasEndTime = {
 
 export class EndTimeTransformer extends TokenOptionInstructionTransformer<HasEndTime> {
     public get infoDescription(): string {
-        return 'End At';
+        return 'Can Request Until';
     }
 
     public process(tokenOptions: TokenOption[]): string[] {
@@ -18,7 +18,7 @@ export class EndTimeTransformer extends TokenOptionInstructionTransformer<HasEnd
             if (convertedObject == undefined) return '';
             const endTime = convertedObject.endTime;
             if (endTime instanceof Date) {
-                return format(endTime, 'MMM dd, yyyy kk:mm:ss');
+                return format(endTime, 'MMM dd, yyyy HH:mm:ss');
             } else {
                 return endTime.toHTML();
             }

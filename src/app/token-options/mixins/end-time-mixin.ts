@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { Constructor, DateDef } from 'app/utils/mixin-helper';
+import { type Constructor, DateDef } from 'app/utils/mixin-helper';
 import type { IGridViewDataSource } from './grid-view-data-source-mixin';
 
 export const EndTimeMixinDataDef = t.strict({
@@ -19,7 +19,7 @@ export function EndTimeMixin<TBase extends Constructor<IGridViewDataSource>>(Bas
         constructor(...args: any[]) {
             super(...args);
             this.registerDataPointSource(() => ({
-                colName: 'End At',
+                colName: 'Can Request Until',
                 type: 'date',
                 value: this.endTime
             }));

@@ -8,7 +8,7 @@ type Descriptable = {
 
 export class DescriptionTransformer extends TokenOptionInstructionTransformer<Descriptable> {
     public get infoDescription(): string {
-        return 'Description';
+        return 'Information / Directions';
     }
 
     public process(tokenOptions: TokenOption[]): (string | TableCellData)[] {

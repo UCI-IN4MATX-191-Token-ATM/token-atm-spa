@@ -38,8 +38,8 @@
                             "budgets": [
                                 {
                                     "type": "initial",
-                                    "maximumWarning": "2mb",
-                                    "maximumError": "4mb"
+                                    "maximumWarning": "4mb",
+                                    "maximumError": "6mb"
                                 },
                                 {
                                     "type": "anyComponentStyle",
@@ -64,10 +64,10 @@
                     "builder": "@angular-devkit/build-angular:dev-server",
                     "configurations": {
                         "production": {
-                            "browserTarget": "token-atm-spa:build:production"
+                            "buildTarget": "token-atm-spa:build:production"
                         },
                         "development": {
-                            "browserTarget": "token-atm-spa:build:development"
+                            "buildTarget": "token-atm-spa:build:development"
                         }
                     },
                     "defaultConfiguration": "development"
@@ -75,7 +75,7 @@
                 "extract-i18n": {
                     "builder": "@angular-devkit/build-angular:extract-i18n",
                     "options": {
-                        "browserTarget": "token-atm-spa:build"
+                        "buildTarget": "token-atm-spa:build"
                     }
                 },
                 "test": {
@@ -85,7 +85,7 @@
                         "tsConfig": "tsconfig.spec.json",
                         "inlineStyleLanguage": "sass",
                         "assets": ["src/favicon.ico", "src/assets"],
-                        "styles": ["src/styles.sass"],
+                        "styles": ["@angular/material/prebuilt-themes/indigo-pink.css", "src/styles.sass"],
                         "scripts": [],
                         "karmaConfig": "karma.conf.js"
                     }

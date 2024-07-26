@@ -123,7 +123,7 @@ export class PaginatedView<T> implements Iterable<T> {
 // const pageSize = 50;
 // const pageCount = 3;
 
-// const paginatedView = new PaginatedView(canvasTokenconst paginatedView = new PaginatedView(canvasToken, pageSize);
+// const paginatedView = new PaginatedView(canvasToken, pageSize);
 // paginatedView.getStudentNames(pageCount)
 //   .then((studentNames) => {
 //     console.log(studentNames);

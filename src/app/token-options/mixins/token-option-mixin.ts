@@ -1,7 +1,7 @@
 import * as t from 'io-ts';
 import { chain } from 'fp-ts/Either';
 import { Base64 } from 'js-base64';
-import { ErrorSerializer } from 'app/utils/error-serailizer';
+import { ErrorSerializer } from 'app/utils/error-serializer';
 import type { Constructor } from 'app/utils/mixin-helper';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import type { IGridViewDataSource } from './grid-view-data-source-mixin';
@@ -22,7 +22,7 @@ export const DescriptionDef = new t.Type<string, string | undefined, unknown>(
                 const result = Base64.decode(v);
                 return t.success(result);
             } catch (err: unknown) {
-                return t.failure(v, ctx, ErrorSerializer.serailize(err));
+                return t.failure(v, ctx, ErrorSerializer.serialize(err));
             }
         })(t.string.validate(v, ctx));
     },
@@ -61,8 +61,8 @@ export interface ITokenOption extends TokenOptionMixinData, IGridViewDataSource 
 
 /**
  * The mixin function for `TokenOption`.
- * @param Base The base class that need to be mixined.
- * @returns The class constructed by mixining the Base class with `TokenOption`. The class will implement `ITokenOption`.
+ * @param Base The base class that needs to be mixed in.
+ * @returns The class constructed by mixing in the Base class with `TokenOption`. The class will implement `ITokenOption`.
  */
 export function TokenOptionMixin<TBase extends Constructor<IGridViewDataSource>>(Base: TBase) {
     return class extends Base implements ITokenOption {
@@ -78,22 +78,22 @@ export function TokenOptionMixin<TBase extends Constructor<IGridViewDataSource>>
         constructor(...args: any[]) {
             super(...args);
             this.registerDataPointSource(() => ({
-                colName: 'Group',
+                colName: 'Token Option Group',
                 type: 'string',
                 value: this.group.name
             }));
             this.registerDataPointSource(() => ({
-                colName: 'Type',
+                colName: 'Token Option Type',
                 type: 'string',
                 value: this.type
             }));
             this.registerDataPointSource(() => ({
-                colName: 'ID',
+                colName: 'Token Option ID',
                 type: 'number',
                 value: this.id
             }));
             this.registerDataPointSource(() => ({
-                colName: 'Name',
+                colName: 'Token Option Name',
                 type: 'string',
                 value: this.name
             }));
@@ -103,7 +103,7 @@ export function TokenOptionMixin<TBase extends Constructor<IGridViewDataSource>>
                 value: this.tokenBalanceChange
             }));
             this.registerDataPointSource(() => ({
-                colName: 'Description',
+                colName: 'Information / Directions',
                 type: 'string',
                 value: this.description
             }));

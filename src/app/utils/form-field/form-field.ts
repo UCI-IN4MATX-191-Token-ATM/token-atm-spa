@@ -1,3 +1,5 @@
+import type { Observable } from 'rxjs';
+
 export interface FormField<S, D, VP> {
     set srcValue(srcValue: S);
     get destValue(): Promise<D>;
@@ -6,6 +8,10 @@ export interface FormField<S, D, VP> {
     label: string;
     errorMessage?: string;
     isReadOnly: boolean;
+}
+
+export interface ObservableFormField<V> {
+    get destValue$(): Observable<V>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

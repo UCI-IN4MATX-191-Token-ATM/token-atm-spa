@@ -1,14 +1,17 @@
-import { Component, EnvironmentInjector, Inject, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, EnvironmentInjector, Inject, Input, type OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Router } from '@angular/router';
 import { TokenOptionGroup } from 'app/data/token-option-group';
+import { CredentialManagerService } from 'app/services/credential-manager.service';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
-import { TokenOptionFieldComponentFactoryRegistry } from 'app/token-option-field-component-factories/token-option-field-component-factory-registry';
-import { TokenOptionResolverRegistry } from 'app/token-option-resolvers/token-option-resolver-registry';
+import { TokenOptionFieldComponentFactoryRegistry } from 'app/token-options/token-option-field-component-factory-registry';
+import { TokenOptionResolverRegistry } from 'app/token-options/token-option-resolver-registry';
 import type { TokenOption } from 'app/token-options/token-option';
 import { TokenOptionRegistry } from 'app/token-options/token-option-registry';
 import type { FormField } from 'app/utils/form-field/form-field';
 import { actionNeededTemplate } from 'app/utils/string-templates';
 import type { BsModalRef } from 'ngx-bootstrap/modal';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
     selector: 'app-token-option-management',
@@ -36,7 +39,9 @@ export class TokenOptionManagementComponent implements OnInit {
         private componentFactoryRegistry: TokenOptionFieldComponentFactoryRegistry,
         @Inject(TokenOptionRegistry) private tokenOptionRegistry: TokenOptionRegistry,
         @Inject(TokenOptionResolverRegistry) private tokenOptionResolverRegistry: TokenOptionResolverRegistry,
-        @Inject(EnvironmentInjector) private environmentInjector: EnvironmentInjector
+        @Inject(EnvironmentInjector) private environmentInjector: EnvironmentInjector,
+        @Inject(CredentialManagerService) private credentialManagerService: CredentialManagerService,
+        @Inject(Router) private router: Router
     ) {}
 
     ngOnInit() {
@@ -53,7 +58,7 @@ export class TokenOptionManagementComponent implements OnInit {
             this.environmentInjector
         );
         if (result == undefined)
-            throw new Error('Failed to intialize token option management modal: Unsupported token option type');
+            throw new Error('Failed to initialize token option management modal: Unsupported token option type');
         const [renderer, field] = result;
         this.field = field;
         this.field.srcValue = this.value;
@@ -79,10 +84,69 @@ export class TokenOptionManagementComponent implements OnInit {
         return this._isProcessing;
     }
 
-    onEdit(): void {
-        if (!this.field) return;
-        this.isReadOnly = false;
-        this.field.isReadOnly = false;
+    get isMissingCredentials(): boolean {
+        if (!this.tokenOptionType) return false;
+        const tokenOptionClass = this.tokenOptionRegistry.getTokenOptionClass(this.tokenOptionType);
+        if (!tokenOptionClass) return false;
+        return this.credentialManagerService.hasMissingCredentialsByClass(tokenOptionClass);
+    }
+
+    async onEdit(): Promise<void> {
+        if (!this.field || !this.tokenOptionType) return;
+        const tokenOptionClass = this.tokenOptionRegistry.getTokenOptionClass(this.tokenOptionType);
+        if (!tokenOptionClass) return;
+        this.isProcessing = true;
+        const missingCredentials =
+            this.credentialManagerService.getMissingCredentialsDescriptionByClass(tokenOptionClass);
+        if (missingCredentials.size == 0) {
+            this.isProcessing = false;
+            this.isReadOnly = false;
+            this.field.isReadOnly = false;
+            return;
+        }
+        const result = await this.modalManagerService.createMultipleChoiceModalWithoutRef(
+            `<p>This token option cannot be edited successfully until credentials for the following services are provided: <b>${[
+                ...missingCredentials
+            ].join(
+                ','
+            )}.</b></p><p>You can go back to the login screen now to provide these credentials.</p><p>You can also choose to enter the editing mode anyway, but please be aware that <b>no change could be saved!<b></p>`,
+            [
+                {
+                    name: 'Cancel',
+                    bsColor: 'outline-secondary'
+                },
+                {
+                    key: 'login',
+                    name: 'Back to Login',
+                    bsColor: 'primary'
+                },
+                {
+                    key: 'edit',
+                    name: 'Edit Anyway',
+                    bsColor: 'danger'
+                }
+            ],
+            {
+                name: 'Cancel'
+            },
+            'Missing Credentials'
+        );
+        switch (result) {
+            case 'login': {
+                this.credentialManagerService.clear();
+                const onHiddenPromise = this.modalRef?.onHidden ? firstValueFrom(this.modalRef.onHidden) : undefined;
+                this.modalRef?.hide();
+                if (onHiddenPromise) await onHiddenPromise;
+                this.router.navigate(['/login']);
+                break;
+            }
+            case 'edit': {
+                this.isReadOnly = false;
+                this.field.isReadOnly = false;
+                break;
+            }
+        }
+        this.isProcessing = false;
     }
 
     async onCreate(): Promise<void> {

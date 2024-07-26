@@ -4,21 +4,26 @@ import { ModuleItemInfo } from 'app/data/module-item-info';
 import { QuizSubmission } from 'app/data/quiz-submission';
 import { Student } from 'app/data/student';
 import { SubmissionComment } from 'app/data/submission-comment';
-import { PaginatedResult } from 'app/utils/paginated-result';
+import type { PaginatedResult } from 'app/utils/pagination/paginated-result';
+import { CanvasRESTPaginatedResult } from 'app/utils/pagination/canvas-rest-paginated-result';
 import { PaginatedView } from 'app/utils/paginated-view';
 import type { AxiosRequestConfig } from 'axios';
-import { compareAsc, formatISO, parseISO } from 'date-fns';
-import { AxiosService, IPCCompatibleAxiosResponse, isNetworkOrServerError } from './axios.service';
+import { compareAsc, compareDesc, formatISO, isEqual, parseISO } from 'date-fns';
+import { AxiosService, type IPCCompatibleAxiosResponse, isNetworkOrServerError } from './axios.service';
 import { User } from 'app/data/user';
 import type { QuizQuestion } from 'app/quiz-questions/quiz-question';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import { Quiz } from 'app/data/quiz';
-import { AssignmentOverride } from 'app/utils/assignment-override';
+import { type AssignmentOverride, AssignmentOverrideDef } from 'app/data/assignment-override';
 import { CanvasModule } from 'app/data/canvas-module';
-import { Assignment } from 'app/data/assignment';
+import { type Assignment, AssignmentDef } from 'app/data/assignment';
 import { AssignmentSubmission } from 'app/data/assignment-submission';
-import { ExponentialBackoffExecutor } from 'app/utils/exponential-backoff-executor';
 import { Section } from 'app/data/section';
+import { unwrapValidation } from 'app/utils/validation-unwrapper';
+import type { CanvasCredential } from 'app/data/token-atm-credentials';
+import { ExponentialBackoffExecutorService } from './exponential-backoff-executor.service';
+import { collectPointsPossible, type CanvasGradingType } from 'app/utils/canvas-grading';
+import { AssignmentGroupDef, type AssignmentGroup } from 'app/data/assignment-group';
 
 type QuizQuestionResponse = {
     id: string;
@@ -38,17 +43,25 @@ type StudentGradeInfo = {
 })
 export class CanvasService {
     private static ASSIGNMENT_OVERRIDE_MAX_SIZE = 35;
+    private static RETRY_MSG = 'Fail to communicate with Canvas. Retrying...';
 
     #url?: string;
     #accessToken?: string;
 
-    constructor(@Inject(AxiosService) private axiosService: AxiosService) {}
+    constructor(
+        @Inject(AxiosService) private axiosService: AxiosService,
+        @Inject(ExponentialBackoffExecutorService)
+        private exponentialBackoffExecutorService: ExponentialBackoffExecutorService
+    ) {}
 
     public hasCredentialConfigured(): boolean {
         return this.#url != undefined && this.#accessToken != undefined;
     }
 
-    public async configureCredential(url: string, accessToken: string): Promise<unknown | undefined> {
+    public async configureCredential({
+        canvasURL: url,
+        canvasAccessToken: accessToken
+    }: CanvasCredential): Promise<unknown | undefined> {
         this.#url = url;
         this.#accessToken = accessToken;
         try {
@@ -59,7 +72,7 @@ export class CanvasService {
         return undefined;
     }
 
-    public async clearCredential() {
+    public clearCredential() {
         this.#url = undefined;
         this.#accessToken = undefined;
     }
@@ -70,6 +83,7 @@ export class CanvasService {
         config?: AxiosRequestConfig
     ): Promise<IPCCompatibleAxiosResponse<T>> {
         const executor = async () => {
+            if (!this.hasCredentialConfigured()) throw new Error('Canvas credential is not configured!');
             return await this.axiosService.request<T>({
                 ...config,
                 url: this.#url + endpoint,
@@ -80,10 +94,11 @@ export class CanvasService {
                 }
             });
         };
-        return await ExponentialBackoffExecutor.execute(
+        return await this.exponentialBackoffExecutorService.execute(
             executor,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            async (_, err: any | undefined) => !isNetworkOrServerError(err)
+            async (_, err: any | undefined) => !isNetworkOrServerError(err),
+            CanvasService.RETRY_MSG
         );
     }
 
@@ -94,6 +109,7 @@ export class CanvasService {
 
     private async paginatedRequestHandler<T>(url: string): Promise<IPCCompatibleAxiosResponse<T>> {
         const executor = async () => {
+            if (!this.hasCredentialConfigured()) throw new Error('Canvas credential is not configured!');
             return await this.axiosService.request<T>({
                 url: url,
                 headers: {
@@ -102,10 +118,11 @@ export class CanvasService {
                 }
             });
         };
-        return await ExponentialBackoffExecutor.execute(
+        return await this.exponentialBackoffExecutorService.execute(
             executor,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            async (_, err: any | undefined) => !isNetworkOrServerError(err)
+            async (_, err: any | undefined) => !isNetworkOrServerError(err),
+            CanvasService.RETRY_MSG
         );
     }
 
@@ -150,7 +167,7 @@ export class CanvasService {
                 include: ['term']
             }
         });
-        return new PaginatedResult(
+        return new CanvasRESTPaginatedResult(
             response,
             async (url: string) => await this.paginatedRequestHandler(url),
             (data) => {
@@ -243,7 +260,7 @@ export class CanvasService {
 
     public async getPageIdByName(courseId: string, pageName: string): Promise<string> {
         let pageIds = await DataConversionHelper.convertAsyncIterableToList<[string, string]>(
-            new PaginatedResult<[string, string]>(
+            new CanvasRESTPaginatedResult<[string, string]>(
                 await this.rawAPIRequest(`/api/v1/courses/${courseId}/pages`, {
                     params: {
                         search_term: pageName,
@@ -283,7 +300,7 @@ export class CanvasService {
                 per_page: 100
             }
         });
-        return new PaginatedResult(
+        return new CanvasRESTPaginatedResult(
             response,
             async (url: string) => await this.paginatedRequestHandler(url),
             (data) => data.quiz_submissions.map((entry: unknown) => QuizSubmission.deserialize(entry))
@@ -419,6 +436,48 @@ export class CanvasService {
         });
     }
 
+    /**
+     * Warning! Has no internal guards to protect assignments/submissions.
+     */
+    public async gradeSubmissionWithPercentage(
+        courseId: string,
+        studentId: string,
+        assignmentId: string,
+        scorePercentage: number
+    ): Promise<void> {
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`, {
+            method: 'put',
+            data: {
+                submission: {
+                    posted_grade: (scorePercentage * 100).toFixed(2) + '%'
+                }
+            }
+        });
+    }
+
+    /**
+     * Warning! Has no internal guards to protect assignments/submissions.
+     */
+    public async postSubmissionGradeWithComment(
+        courseId: string,
+        studentId: string,
+        assignmentId: string,
+        postedGrade: string,
+        newComment: string
+    ): Promise<void> {
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`, {
+            method: 'put',
+            data: {
+                comment: {
+                    text_comment: newComment
+                },
+                submission: {
+                    posted_grade: postedGrade
+                }
+            }
+        });
+    }
+
     public async gradeSubmissionWithPostingComment(
         courseId: string,
         studentId: string,
@@ -457,6 +516,30 @@ export class CanvasService {
         throw new Error('Comment creation failed');
     }
 
+    public async getAssignments(courseId: string): Promise<PaginatedResult<Assignment>> {
+        return new CanvasRESTPaginatedResult<Assignment>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments`, {
+                params: {
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => data.map((entry) => unwrapValidation(AssignmentDef.decode(entry)))
+        );
+    }
+
+    public async getAssignment(courseId: string, assignmentId: string): Promise<Assignment> {
+        return unwrapValidation(
+            AssignmentDef.decode(
+                await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`, {
+                    params: {
+                        override_assignment_dates: false
+                    }
+                })
+            )
+        );
+    }
+
     public async getAssignmentIdByQuizId(courseId: string, quizId: string): Promise<string> {
         const data = await this.apiRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}`);
         return data.assignment_id;
@@ -469,9 +552,24 @@ export class CanvasService {
         studentId: string,
         quizSubmissionAttempt = 1,
         { assignmentId = undefined }: { assignmentId?: string } = {}
-    ): Promise<[Date, string[]]> {
+    ): Promise<[Date, string[]] | undefined> {
         if (!assignmentId) assignmentId = await this.getAssignmentIdByQuizId(courseId, quizId);
-        const questions = new PaginatedResult<QuizQuestionResponse>(
+        const pastSubmissions = (
+            await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`, {
+                params: {
+                    include: ['submission_history']
+                }
+            })
+        ).submission_history;
+        let curSubmission = undefined;
+        for (const submission of pastSubmissions) {
+            if (submission.attempt == quizSubmissionAttempt) {
+                curSubmission = submission;
+                break;
+            }
+        }
+        if (!curSubmission) return undefined;
+        const questions = new CanvasRESTPaginatedResult<QuizQuestionResponse>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions`, {
                 params: {
                     per_page: 100,
@@ -505,26 +603,14 @@ export class CanvasService {
                 questionOptions.get(question.id)?.set(option.id, option.text);
             }
         }
-        const pastSubmissions = (
-            await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`, {
-                params: {
-                    include: ['submission_history']
-                }
-            })
-        ).submission_history;
         const questionAnswers = new Map<string, string>();
-        let submissionDate = new Date();
-        for (const submission of pastSubmissions) {
-            if (submission.attempt != quizSubmissionAttempt) continue;
-            submissionDate = parseISO(submission.submitted_at);
-            const submissionData = submission.submission_data;
-            for (const answer of submissionData) {
-                if (answer.answer_id == undefined) continue;
-                const textAnswer = questionOptions.get(answer.question_id)?.get(answer.answer_id);
-                if (!textAnswer) continue;
-                questionAnswers.set(answer.question_id, textAnswer);
-            }
-            break;
+        const submissionDate = parseISO(curSubmission.submitted_at);
+        const submissionData = curSubmission.submission_data;
+        for (const answer of submissionData) {
+            if (answer.answer_id == undefined) continue;
+            const textAnswer = questionOptions.get(answer.question_id)?.get(answer.answer_id);
+            if (!textAnswer) continue;
+            questionAnswers.set(answer.question_id, textAnswer);
         }
         const result = [];
         for await (const question of questions) {
@@ -534,7 +620,7 @@ export class CanvasService {
     }
 
     public async getCourseStudentEnrollments(courseId: string): Promise<PaginatedResult<Student>> {
-        return new PaginatedResult<Student>(
+        return new CanvasRESTPaginatedResult<Student>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/users`, {
                 params: {
                     enrollment_type: ['student'],
@@ -551,7 +637,7 @@ export class CanvasService {
     public async getModuleScore(courseId: string, moduleId: string, studentId: string): Promise<[number, number]> {
         let obtainedPoints = 0,
             totalPoints = 0;
-        const moduleItems = new PaginatedResult<ModuleItemInfo>(
+        const moduleItems = new CanvasRESTPaginatedResult<ModuleItemInfo>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules/${moduleId}/items`, {
                 params: {
                     include: ['content_details'],
@@ -610,7 +696,7 @@ export class CanvasService {
         studentIds: string[]
     ): Promise<Map<string, number>> {
         // https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.for_students
-        const result = new PaginatedResult<StudentGradeInfo>(
+        const result = new CanvasRESTPaginatedResult<StudentGradeInfo>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/students/submissions`, {
                 params: {
                     student_ids: studentIds,
@@ -695,7 +781,7 @@ export class CanvasService {
     public async deleteModule(courseId: string, moduleId: string, deleteAllModuleItems = false): Promise<void> {
         await this.safeGuardForModule(courseId, moduleId);
         if (deleteAllModuleItems) {
-            const moduleItems = new PaginatedResult<ModuleItemInfo>(
+            const moduleItems = new CanvasRESTPaginatedResult<ModuleItemInfo>(
                 await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules/${moduleId}/items`, {
                     params: {
                         include: ['content_details'],
@@ -726,9 +812,22 @@ export class CanvasService {
         });
     }
 
+    public async getModules(courseId: string): Promise<PaginatedResult<CanvasModule>> {
+        return new CanvasRESTPaginatedResult(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules`, {
+                params: {
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) => {
+                return data.map((entry: unknown) => CanvasModule.deserialize(entry));
+            }
+        );
+    }
     public async getModuleIdByName(courseId: string, moduleName: string): Promise<string> {
         // TODO: Retrieve paginated result to avoid too many similar name
-        const modules = new PaginatedResult(
+        const modules = new CanvasRESTPaginatedResult(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/modules`, {
                 params: {
                     search_term: moduleName,
@@ -772,22 +871,22 @@ export class CanvasService {
         return data.id;
     }
 
-    public async getAssignmentGroupIdByName(courseId: string, assignmentGroupName: string) {
-        const assignmentGroups = new PaginatedResult<[string, string]>(
+    public async getAssignmentGroups(courseId: string): Promise<PaginatedResult<AssignmentGroup>> {
+        return new CanvasRESTPaginatedResult<AssignmentGroup>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignment_groups`, {
                 params: {
                     per_page: 100
                 }
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (data: any) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                return data.map((entry: any) => [entry.id, entry.name]);
-            }
+            (data: unknown[]) => data.map((entry) => unwrapValidation(AssignmentGroupDef.decode(entry)))
         );
+    }
+
+    public async getAssignmentGroupIdByName(courseId: string, assignmentGroupName: string): Promise<string> {
+        const assignmentGroups = await this.getAssignmentGroups(courseId);
         let result: string | undefined = undefined;
-        for await (const [id, name] of assignmentGroups) {
+        for await (const { id, name } of assignmentGroups) {
             if (name != assignmentGroupName) continue;
             if (result == undefined) {
                 result = id;
@@ -912,7 +1011,7 @@ export class CanvasService {
 
     public async clearQuizQuestions(courseId: string, quizId: string): Promise<void> {
         await this.safeGuardForQuiz(courseId, quizId);
-        const quizQuestionIds = new PaginatedResult<string>(
+        const quizQuestionIds = new CanvasRESTPaginatedResult<string>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions`, {
                 params: {
                     per_page: 100
@@ -946,7 +1045,7 @@ export class CanvasService {
     public async replaceQuizQuestions(courseId: string, quizId: string, quizQuestions: QuizQuestion[]): Promise<void> {
         await this.safeGuardForQuiz(courseId, quizId);
         const quizQuestionIds = await DataConversionHelper.convertAsyncIterableToList(
-            new PaginatedResult<string>(
+            new CanvasRESTPaginatedResult<string>(
                 await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes/${quizId}/questions`, {
                     params: {
                         per_page: 100
@@ -992,10 +1091,14 @@ export class CanvasService {
         courseId: string,
         assignmentId: string
     ): Promise<PaginatedResult<AssignmentOverride>> {
-        return new PaginatedResult<AssignmentOverride>(
-            await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`),
+        return new CanvasRESTPaginatedResult<AssignmentOverride>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
+                params: {
+                    per_page: 100
+                }
+            }),
             async (url: string) => await this.paginatedRequestHandler(url),
-            (data: unknown[]) => data.map((entry) => AssignmentOverride.deserialize(entry))
+            (data: unknown[]) => data.map((entry) => unwrapValidation(AssignmentOverrideDef.decode(entry)))
         );
     }
 
@@ -1009,19 +1112,20 @@ export class CanvasService {
         let targetOverride: AssignmentOverride | undefined = undefined,
             titleCnt = 0;
         for await (const override of await this.getAssignmentOverrides(courseId, assignmentId)) {
+            if (override.isSectionLevel) continue;
             const data = override.title.split(' - ');
             if (data.length >= 3) {
                 titleCnt = parseInt(data[2] as string) + 1;
             }
-            if (override.studentIds.includes(studentId)) return false;
+            if (override.studentIdsAsIndividualLevel.includes(studentId)) return false;
+            if (targetOverride != undefined) continue;
             if (
-                override.studentIds.length >= CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE ||
+                override.studentIdsAsIndividualLevel.length >= CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE ||
                 override.lockAt == undefined ||
                 compareAsc(override.lockAt, lockDate) != 0
             )
                 continue;
             targetOverride = override;
-            break;
         }
         if (!targetOverride) {
             await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
@@ -1041,7 +1145,7 @@ export class CanvasService {
                     method: 'put',
                     data: {
                         assignment_override: {
-                            student_ids: targetOverride.studentIds.concat([studentId]),
+                            student_ids: targetOverride.studentIdsAsIndividualLevel.concat([studentId]),
                             title: targetOverride.title,
                             lock_at: formatISO(lockDate)
                         }
@@ -1059,18 +1163,21 @@ export class CanvasService {
     ): Promise<boolean> {
         let targetOverride: AssignmentOverride | undefined = undefined;
         for await (const override of await this.getAssignmentOverrides(courseId, assignmentId)) {
-            if (!override.studentIds.includes(studentId)) continue;
+            if (override.isSectionLevel || !override.studentIdsAsIndividualLevel.includes(studentId)) continue;
             targetOverride = override;
             break;
         }
         if (targetOverride == undefined) return false;
-        if (targetOverride.studentIds.length == 1) {
+        if (targetOverride.studentIdsAsIndividualLevel.length == 1) {
             await this.apiRequest(
                 `/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${targetOverride.id}`,
                 { method: 'delete' }
             );
         } else {
-            targetOverride.studentIds.splice(targetOverride.studentIds.indexOf(studentId), 1);
+            targetOverride.studentIdsAsIndividualLevel.splice(
+                targetOverride.studentIdsAsIndividualLevel.indexOf(studentId),
+                1
+            );
             await this.apiRequest(
                 `/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${targetOverride.id}`,
                 {
@@ -1088,6 +1195,110 @@ export class CanvasService {
         return true;
     }
 
+    private mergeOverrideDate(a: Date | null, b: Date | null, min = true): Date | null {
+        if (a == null || b == null) return null;
+        if (min) {
+            return compareDesc(a, b) == 1 ? a : b;
+        } else {
+            return compareAsc(a, b) == 1 ? a : b;
+        }
+    }
+
+    private isOverrideDateEqual(a: Date | null, b: Date | null): boolean {
+        if (a == null && b == null) return true;
+        if (a == null || b == null) return false;
+        return isEqual(a, b);
+    }
+
+    public async extendAssignmentForStudent(
+        courseId: string,
+        assignmentId: string,
+        studentId: string,
+        overrideTitlePrefix: string
+    ): Promise<boolean> {
+        const overrides = await DataConversionHelper.convertAsyncIterableToList(
+            await this.getAssignmentOverrides(courseId, assignmentId)
+        );
+        const sections = new Set(
+            await DataConversionHelper.convertAsyncIterableToList(
+                await this.getStudentSectionEnrollments(courseId, studentId)
+            )
+        );
+        let lockDate: Date | null = null,
+            unlockDate: Date | null = null,
+            titleCnt = 0,
+            hasMatchedOverride = false;
+        for (const override of overrides) {
+            const data = override.title.split(' - ');
+            if (data.length >= 3) {
+                titleCnt = parseInt(data[2] as string) + 1;
+            }
+            if (override.isIndividualLevel) {
+                if (override.studentIdsAsIndividualLevel.includes(studentId)) return false;
+                continue;
+            }
+            if (sections.has(override.sectionIdAsSectionLevel)) {
+                if (!hasMatchedOverride) {
+                    lockDate = override.lockAt;
+                    unlockDate = override.unlockAt;
+                    hasMatchedOverride = true;
+                    continue;
+                }
+                lockDate = this.mergeOverrideDate(lockDate, override.lockAt, false);
+                unlockDate = this.mergeOverrideDate(unlockDate, override.unlockAt, true);
+            }
+        }
+        if (!hasMatchedOverride) {
+            const assignment = await this.getAssignment(courseId, assignmentId);
+            lockDate = assignment.lockAt;
+            unlockDate = assignment.unlockAt;
+        }
+        let targetOverride: AssignmentOverride | undefined = undefined;
+        for (const override of overrides) {
+            if (!override.isIndividualLevel) continue;
+            if (override.studentIdsAsIndividualLevel.length >= CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE) continue;
+            if (
+                this.isOverrideDateEqual(unlockDate, override.unlockAt) &&
+                this.isOverrideDateEqual(lockDate, override.lockAt) &&
+                this.isOverrideDateEqual(lockDate, override.dueAt)
+            ) {
+                targetOverride = override;
+                break;
+            }
+        }
+        if (targetOverride) {
+            await this.apiRequest(
+                `/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${targetOverride.id}`,
+                {
+                    method: 'put',
+                    data: {
+                        assignment_override: {
+                            student_ids: targetOverride.studentIdsAsIndividualLevel.concat([studentId]),
+                            title: targetOverride.title,
+                            lock_at: lockDate ? formatISO(lockDate) : null,
+                            unlock_at: unlockDate ? formatISO(unlockDate) : null,
+                            due_at: lockDate ? formatISO(lockDate) : null
+                        }
+                    }
+                }
+            );
+        } else {
+            await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
+                method: 'post',
+                data: {
+                    assignment_override: {
+                        student_ids: [studentId],
+                        title: `${overrideTitlePrefix} - ${titleCnt}`,
+                        lock_at: lockDate ? formatISO(lockDate) : null,
+                        unlock_at: unlockDate ? formatISO(unlockDate) : null,
+                        due_at: lockDate ? formatISO(lockDate) : null
+                    }
+                }
+            });
+        }
+        return false;
+    }
+
     public async getAssignmentSubmission(
         courseId: string,
         assignmentId: string,
@@ -1098,8 +1309,22 @@ export class CanvasService {
         );
     }
 
+    public async getQuizzes(courseId: string): Promise<PaginatedResult<Quiz>> {
+        return new CanvasRESTPaginatedResult<Quiz>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes`, {
+                params: {
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            (data: unknown[]) =>
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                data.filter((x: any) => x.assignment_id !== null).map((entry) => Quiz.deserialize(entry))
+        );
+    }
+
     public async getQuizIdByName(courseId: string, quizName: string) {
-        const quizzes = new PaginatedResult<Quiz>(
+        const quizzes = new CanvasRESTPaginatedResult<Quiz>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/quizzes`, {
                 params: {
                     search_term: quizName,
@@ -1107,7 +1332,9 @@ export class CanvasService {
                 }
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
-            (data: unknown[]) => data.map((entry) => Quiz.deserialize(entry))
+            (data: unknown[]) =>
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                data.filter((x: any) => x.assignment_id !== null).map((entry) => Quiz.deserialize(entry))
         );
         let result: string | undefined = undefined;
         for await (const quiz of quizzes) {
@@ -1115,15 +1342,15 @@ export class CanvasService {
             if (result == undefined) {
                 result = quiz.id;
             } else {
-                throw new Error('Multiple quizzes found');
+                throw new Error('Multiple Canvas quizzes found');
             }
         }
-        if (!result) throw new Error('Quiz not found');
+        if (!result) throw new Error('Canvas Quiz not found');
         return result;
     }
 
-    public async getAssignmentIdByName(courseId: string, assignmentName: string) {
-        const assignments = new PaginatedResult<Assignment>(
+    public async getAssignmentIdByName(courseId: string, assignmentName: string): Promise<string> {
+        const assignments = new CanvasRESTPaginatedResult<Assignment>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/assignments`, {
                 params: {
                     search_term: assignmentName,
@@ -1131,7 +1358,7 @@ export class CanvasService {
                 }
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
-            (data: unknown[]) => data.map((entry) => Assignment.deserialize(entry))
+            (data: unknown[]) => data.map((entry) => unwrapValidation(AssignmentDef.decode(entry)))
         );
         let result: string | undefined = undefined;
         for await (const assignment of assignments) {
@@ -1139,15 +1366,15 @@ export class CanvasService {
             if (result == undefined) {
                 result = assignment.id;
             } else {
-                throw new Error('Multiple assignments found');
+                throw new Error('Multiple Canvas assignments found');
             }
         }
-        if (!result) throw new Error('Assignment not found');
+        if (!result) throw new Error('Canvas assignment not found');
         return result;
     }
 
     public async getStudentByEmail(courseId: string, email: string): Promise<Student | undefined> {
-        const students = new PaginatedResult<Student>(
+        const students = new CanvasRESTPaginatedResult<Student>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/users`, {
                 params: {
                     enrollment_type: ['student'],
@@ -1211,26 +1438,220 @@ export class CanvasService {
     }
 
     public async getSections(courseId: string): Promise<PaginatedResult<Section>> {
-        return new PaginatedResult<Section>(
-            await this.rawAPIRequest(`/api/v1/courses/${courseId}/sections`),
+        return new CanvasRESTPaginatedResult<Section>(
+            await this.rawAPIRequest(`/api/v1/courses/${courseId}/sections`, {
+                params: {
+                    per_page: 100
+                }
+            }),
             async (url: string) => await this.paginatedRequestHandler(url),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (data: any) => data.map((entry: any) => Section.deserialize(entry))
         );
     }
 
+    public async getSectionsByNames(courseId: string, sectionNames: string[]): Promise<Section[]> {
+        if (new Set<string>(sectionNames).size != sectionNames.length)
+            throw new Error('Invalid data: cannot have multiple sections with the same name');
+        const sectionNameMap = new Map<string, Section>();
+        for await (const section of await this.getSections(courseId)) sectionNameMap.set(section.name, section);
+        return sectionNames.map((sectionName) => {
+            if (!sectionNameMap.has(sectionName))
+                throw new Error(`Invalid data: section with name ${sectionName} not found`);
+            return sectionNameMap.get(sectionName) as Section;
+        });
+    }
+
     public async getStudentSectionEnrollments(courseId: string, userId: string): Promise<PaginatedResult<string>> {
-        return new PaginatedResult<string>(
+        return new CanvasRESTPaginatedResult<string>(
             await this.rawAPIRequest(`/api/v1/courses/${courseId}/enrollments`, {
                 params: {
                     type: ['StudentEnrollment'],
                     state: ['active'],
-                    user_id: userId
+                    user_id: userId,
+                    per_page: 100
                 }
             }),
             async (url: string) => await this.paginatedRequestHandler(url),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (data: any) => data.map((entry: any) => entry.course_section_id)
         );
+    }
+
+    public async getSectionStudentsWithEmail(courseId: string, sectionId: string): Promise<Student[]> {
+        const studentIds = new PaginatedView<string>(
+            await this.rawAPIRequest(`/api/v1/sections/${sectionId}/enrollments`, {
+                params: {
+                    type: ['StudentEnrollment'],
+                    state: ['active'],
+                    per_page: 100
+                }
+            }),
+            async (url: string) => await this.paginatedRequestHandler(url),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (data: any) => data.map((entry: any) => entry.user.id)
+        );
+        let isFirstPage = true;
+        const students = [];
+        do {
+            if (isFirstPage) isFirstPage = false;
+            else studentIds.next();
+            students.push(
+                ...(await DataConversionHelper.convertAsyncIterableToList(
+                    new CanvasRESTPaginatedResult<Student>(
+                        await this.rawAPIRequest(`/api/v1/courses/${courseId}/users`, {
+                            params: {
+                                enrollment_type: ['student'],
+                                enrollment_state: ['active'],
+                                per_page: 100,
+                                user_ids: [...studentIds]
+                            }
+                        }),
+                        async (url: string) => await this.paginatedRequestHandler(url),
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (data: any) => data.map((entry: any) => Student.deserialize(entry))
+                    )
+                ))
+            );
+        } while (studentIds.hasNextPage());
+        return students;
+    }
+
+    /**
+     * Retrieves the IANA time zone for the course.
+     * @param courseId The Canvas course ID.
+     * @returns A string with the course's IANA time zone name
+     */
+    public async getCourseTimeZone(courseId: string): Promise<string> {
+        return (await this.apiRequest(`/api/v1/courses/${courseId}`))['time_zone'];
+    }
+
+    /**
+     * Throws an error when the local Token ATM time zone doesn't match the Canvas Course time zone.
+     * @param courseId The Canvas course ID.
+     * @throws Error message reports the mismatched time zones.
+     */
+    public async checkSameTimeZone(courseId: string): Promise<void> {
+        const data = await this.getCourseTimeZone(courseId);
+        const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (data !== localTimeZone) {
+            throw new Error(
+                `Canvas Course and Token ATM Time Zones do not match.\n` +
+                    `Canvas Course: ${data}\n` +
+                    `    Token ATM: ${localTimeZone}`
+            );
+        }
+    }
+
+    public async isPagePublished(courseId: string, pageId: string): Promise<boolean | undefined> {
+        return (await this.apiRequest(`/api/v1/courses/${courseId}/pages/${pageId}`))?.published;
+    }
+
+    public async modifyPagePublishedState(courseId: string, pageId: string, published: boolean): Promise<void> {
+        await this.safeGuardForPage(courseId, pageId);
+        await this.apiRequest(`/api/v1/courses/${courseId}/pages/${pageId}`, {
+            method: 'put',
+            data: {
+                wiki_page: {
+                    published: published
+                }
+            }
+        });
+    }
+
+    public async isAssignmentPublished(courseId: string, assignmentId: string): Promise<boolean | undefined> {
+        return (
+            await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`, {
+                params: {
+                    override_assignment_dates: false
+                }
+            })
+        )?.published;
+    }
+
+    public async modifyAssignmentPublishedState(
+        courseId: string,
+        assignmentId: string,
+        published: boolean
+    ): Promise<void> {
+        await this.safeGuardForAssignment(courseId, assignmentId);
+        await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`, {
+            method: 'put',
+            data: { assignment: { published: published } }
+        });
+    }
+
+    public async getAssignmentGradingType(
+        courseId: string,
+        assignmentId: string
+    ): Promise<keyof typeof CanvasGradingType> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`);
+        if (typeof data['grading_type'] != 'string') {
+            throw new Error('Invalid data');
+        }
+        return data['grading_type'] as keyof typeof CanvasGradingType;
+    }
+
+    public async getAssignmentGradingTypeAndPointsPossible(
+        courseId: string,
+        assignmentId: string
+    ): Promise<{ gradingType: keyof typeof CanvasGradingType; pointsPossible: number }> {
+        const data = await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`);
+        if (typeof data['grading_type'] != 'string' || typeof data['points_possible'] != 'number') {
+            throw new Error('Invalid data');
+        }
+        return {
+            gradingType: data['grading_type'] as keyof typeof CanvasGradingType,
+            pointsPossible: data['points_possible']
+        };
+    }
+
+    public async getSubmissionGradeAndScore(
+        courseId: string,
+        assignmentId: string,
+        studentId: string
+    ): Promise<{ grade: string | null; score: number | null; gradeMatchesCurrentSubmission: boolean }> {
+        const data = await this.apiRequest(
+            `/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`
+        );
+        if (
+            !(typeof data['grade'] === 'string' || data['grade'] === null) ||
+            !(typeof data['score'] === 'number' || data['score'] === null) ||
+            typeof data['grade_matches_current_submission'] != 'boolean'
+        ) {
+            throw new Error('Invalid data');
+        }
+        if (typeof data['entered_grade'] === 'string' || typeof data['entered_score'] === 'number') {
+            if (data['grade'] !== data['entered_grade'] || data['score'] !== data['entered_score']) {
+                throw new Error(
+                    `Warning: Entered & Actual submission scores don’t match. Grade: ${data['entered_grade']} & ${data['grade']}. Score: ${data['entered_score']} & ${data['score']}`
+                );
+            }
+        }
+        return {
+            grade: data['grade'],
+            score: data['score'],
+            gradeMatchesCurrentSubmission: data['grade_matches_current_submission']
+        };
+    }
+
+    public async getTotalPointsPossibleInAnAssignmentGroup(
+        courseId: string,
+        assignmentGroupId: string,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        skipCountingIf?: { [x: string]: any }
+    ): Promise<number> {
+        const data = await this.apiRequest(
+            `/api/v1/courses/${courseId}/assignment_groups/${assignmentGroupId}?include[]=assignments`
+        );
+        if (data['assignments'] == null) {
+            throw new Error('Invalid data');
+        }
+        return data['assignments'].reduce(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (accumulator: number, currentAssignment: any) =>
+                accumulator + collectPointsPossible(currentAssignment, skipCountingIf),
+            0
+        ) as number;
     }
 }

@@ -1,15 +1,17 @@
-import { Component, Inject, TemplateRef, ViewChild } from '@angular/core';
+import { Component, Inject, type TemplateRef, ViewChild } from '@angular/core';
 import type { Course } from 'app/data/course';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
-import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+import { type BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
 import { TokenOptionGroupManagementComponent } from '../token-option-group-management/token-option-group-management.component';
 import type { GridViewData } from 'app/token-options/mixins/grid-view-data-source-mixin';
-import { CdkDragDrop, moveItemInArray, transferArrayItem, CDK_DRAG_CONFIG } from '@angular/cdk/drag-drop';
-import { CredentialManagerService } from 'app/services/credential-manager.service';
+import { type CdkDragDrop, moveItemInArray, transferArrayItem, CDK_DRAG_CONFIG } from '@angular/cdk/drag-drop';
+import { StorageManagerService } from 'app/services/storage-manager.service';
 import { ModalManagerService } from 'app/services/modal-manager.service';
 import type { DisplayedColumnsChangedEvent } from 'ag-grid-community';
+import { ExportRequestModalComponent } from '../export-request-modal/export-request-modal.component';
+import { filter, first, fromEvent } from 'rxjs';
 
 @Component({
     selector: 'app-token-option-configuration',
@@ -35,7 +37,7 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
         @Inject(TokenATMConfigurationManagerService)
         private configurationManagerService: TokenATMConfigurationManagerService,
         @Inject(BsModalService) private modalService: BsModalService,
-        @Inject(CredentialManagerService) private credentialManagerService: CredentialManagerService,
+        @Inject(StorageManagerService) private storageManagerService: StorageManagerService,
         @Inject(ModalManagerService) private modalManagerService: ModalManagerService
     ) {}
 
@@ -70,8 +72,8 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
 
     loadGridViewColumnPreferences() {
         if (!this.configuration) return;
-        if (this.credentialManagerService.isStorageInitialized && !this.hasInitializedFromStorage) {
-            const value = this.credentialManagerService.getEntry('gridViewColumnPreferences');
+        if (this.storageManagerService.isStorageInitialized && !this.hasInitializedFromStorage) {
+            const value = this.storageManagerService.getEntry('gridViewColumnPreferences');
             if (value != undefined) [this.savedShownColumns, this.savedAvailableColumns] = JSON.parse(value);
             this.hasInitializedFromStorage = true;
         }
@@ -91,7 +93,7 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
         this.loadGridViewColumnPreferences();
         if (this.savedShownColumns.length == 0) {
             await this.modalManagerService.createNotificationModal(
-                'No columns are configured for the grid view. Please click the gear button at the top-left corner of "Token Options" page to configure the grid view.'
+                'No columns are configured for the grid view. Please click the gear button near the top-left corner of the "Token Options" page to configure the grid view.'
             );
             return;
         }
@@ -115,14 +117,19 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
         this.loadGridViewColumnPreferences();
         if (this.savedShownColumns.length == 0) {
             await this.modalManagerService.createNotificationModal(
-                'No columns are configured for the grid view. Please click the gear button at the top-left corner of "Token Options" page to configure the grid view.'
+                'No columns are configured for the grid view. Please click the gear button near the top-left corner of the "Token Options" page to configure the grid view.'
             );
             return;
         }
-        const windowRef = window.open(document.baseURI + 'grid-view', '_blank');
-        windowRef?.addEventListener(
-            'DOMContentLoaded',
-            () => {
+        let windowRef: Window | null = null;
+        fromEvent<MessageEvent>(window, 'message')
+            .pipe(
+                filter(
+                    (x: MessageEvent) => windowRef !== null && x.source === windowRef && x.data === 'GRID_VIEW_INIT'
+                ),
+                first()
+            )
+            .subscribe(() => {
                 if (!this.configuration) return;
                 windowRef?.postMessage({
                     type: 'GRID_VIEW_DATA',
@@ -133,11 +140,8 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
                         this.savedShownColumns
                     ]
                 });
-            },
-            {
-                once: true
-            }
-        );
+            });
+        windowRef = window.open(document.baseURI + 'grid-view', '_blank');
     }
 
     // https://material.angular.io/cdk/drag-drop/overview#transferring-items-between-lists
@@ -159,7 +163,7 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
     }
 
     get canSaveGridViewPreferences(): boolean {
-        return this.credentialManagerService.isStorageInitialized;
+        return this.storageManagerService.isStorageInitialized;
     }
 
     async onSaveGridViewPreferences(): Promise<void> {
@@ -167,7 +171,7 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
         this.savedShownColumns = this.shownColumns.slice(0);
         this.savedAvailableColumns = this.availableColumns.slice(0);
         if (this.canSaveGridViewPreferences) {
-            await this.credentialManagerService.updateEntry(
+            await this.storageManagerService.updateEntry(
                 'gridViewColumnPreferences',
                 JSON.stringify([this.savedShownColumns, this.savedAvailableColumns])
             );
@@ -190,13 +194,13 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
         this.savedAvailableColumns.splice(0, 0, ...this.savedShownColumns.filter((v) => !newColSet.has(v)));
         this.savedShownColumns = this.curShownColumns;
         if (this.canSaveGridViewPreferences) {
-            await this.credentialManagerService.updateEntry(
+            await this.storageManagerService.updateEntry(
                 'gridViewColumnPreferences',
                 JSON.stringify([this.savedShownColumns, this.savedAvailableColumns])
             );
         } else {
             await this.modalManagerService.createNotificationModal(
-                `You did not save credentials with a password, so the column preferences won't be preserved if you leave the "Token Options" page.`
+                'You have not saved credentials with a password, so your column choices won’t be preserved if you leave the "Token Options" page.'
             );
         }
         this.isProcessing = false;
@@ -213,5 +217,19 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
                 event.currentIndex
             );
         }
+    }
+
+    onExportProcessedRequests(): void {
+        if (!this.configuration) return;
+        const modalRef = this.modalService.show(ExportRequestModalComponent, {
+            initialState: {
+                configuration: this.configuration,
+                titleSuffix: 'All Token Options'
+            },
+            class: 'modal-lg',
+            backdrop: 'static',
+            keyboard: false
+        });
+        if (modalRef.content) modalRef.content.modalRef = modalRef;
     }
 }

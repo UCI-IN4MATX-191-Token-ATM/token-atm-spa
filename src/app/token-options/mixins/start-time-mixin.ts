@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { Constructor, DateDef } from 'app/utils/mixin-helper';
+import { type Constructor, DateDef } from 'app/utils/mixin-helper';
 import type { IGridViewDataSource } from './grid-view-data-source-mixin';
 
 export const StartTimeMixinDataDef = t.strict({
@@ -19,7 +19,7 @@ export function StartTimeMixin<TBase extends Constructor<IGridViewDataSource>>(B
         constructor(...args: any[]) {
             super(...args);
             this.registerDataPointSource(() => ({
-                colName: 'Start At',
+                colName: 'Can Request From',
                 type: 'date',
                 value: this.startTime
             }));

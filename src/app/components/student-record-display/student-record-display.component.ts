@@ -10,7 +10,6 @@ import { TokenOptionRegistry } from 'app/token-options/token-option-registry';
 import { format } from 'date-fns';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { PickTokenOptionModalComponent } from '../pick-token-option-modal/pick-token-option-modal.component';
-import { countAndNoun } from 'app/utils/pluralize';
 
 @Component({
     selector: 'app-student-record-display',
@@ -42,11 +41,7 @@ export class StudentRecordDisplayComponent {
     }
 
     formatDate(date: Date): string {
-        return format(date, 'MMM dd, yyyy kk:mm:ss');
-    }
-
-    balanceString(count: number): string {
-        return countAndNoun(count, 'Token');
+        return format(date, 'MMM dd, yyyy HH:mm:ss');
     }
 
     async onAddManualChange(): Promise<void> {

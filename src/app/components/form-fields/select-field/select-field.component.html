@@ -1,0 +1,11 @@
+<div class="m-3">
+    <div>
+        <label class="form-label">{{ label }}</label>
+        <select class="form-select" *ngIf="options" [(ngModel)]="value" [disabled]="isReadOnly">
+            <option *ngFor="let option of options" [ngValue]="option[1]">
+                {{ option[0] }}
+            </option>
+        </select>
+    </div>
+    <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
+</div>

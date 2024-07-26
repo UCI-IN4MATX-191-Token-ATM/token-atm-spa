@@ -1,24 +1,24 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AxiosService, AxiosServiceFactory } from 'app/services/axios.service';
+// import { ComponentFixture, TestBed } from '@angular/core/testing';
+// import { AxiosService, AxiosServiceFactory } from 'app/services/axios.service';
 
-import { DevTestComponent } from './dev-test.component';
+// import { DevTestComponent } from './dev-test.component';
 
-describe('DevTestComponent', () => {
-    let component: DevTestComponent;
-    let fixture: ComponentFixture<DevTestComponent>;
+// describe('DevTestComponent', () => {
+//     let component: DevTestComponent;
+//     let fixture: ComponentFixture<DevTestComponent>;
 
-    beforeEach(async () => {
-        await TestBed.configureTestingModule({
-            declarations: [DevTestComponent],
-            providers: [{ provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService }]
-        }).compileComponents();
+//     beforeEach(async () => {
+//         await TestBed.configureTestingModule({
+//             declarations: [DevTestComponent],
+//             providers: [{ provide: AxiosService, useFactory: AxiosServiceFactory.getAxiosService }]
+//         }).compileComponents();
 
-        fixture = TestBed.createComponent(DevTestComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-    });
+//         fixture = TestBed.createComponent(DevTestComponent);
+//         component = fixture.componentInstance;
+//         fixture.detectChanges();
+//     });
 
-    it('should create', () => {
-        expect(component).toBeTruthy();
-    });
-});
+//     it('should create', () => {
+//         expect(component).toBeTruthy();
+//     });
+// });

@@ -21,7 +21,7 @@ export function AssignmentMixin<TBase extends Constructor<IGridViewDataSource>>(
         constructor(...args: any[]) {
             super(...args);
             this.registerDataPointSource(() => ({
-                colName: 'Assignment Name',
+                colName: 'Canvas Assignment Name',
                 type: 'string',
                 value: this.assignmentName
             }));

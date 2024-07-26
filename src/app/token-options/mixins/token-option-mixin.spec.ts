@@ -1,10 +1,10 @@
 import { isLeft } from 'fp-ts/lib/Either';
 import {
     DescriptionDef,
-    ITokenOption,
-    RawTokenOptionMixinData,
+    type ITokenOption,
+    type RawTokenOptionMixinData,
     TokenOptionMixin,
-    TokenOptionMixinData,
+    type TokenOptionMixinData,
     TokenOptionMixinDataDef
 } from './token-option-mixin';
 import { Base64 } from 'js-base64';
@@ -19,7 +19,7 @@ describe('TokenOptionMixin', () => {
         const invalidValues = invalidRawValues;
 
         validRawValues.forEach((value) => {
-            it(`should decode sucessfully with base64 encoded form of string ${value}`, () => {
+            it(`should decode successfully with base64 encoded form of string ${value}`, () => {
                 const result = DescriptionDef.decode(value);
                 expect(isLeft(result)).toBeFalse();
                 if (!isLeft(result)) expect(result.right).toEqual(Base64.decode(value));
@@ -112,7 +112,7 @@ describe('TokenOptionMixin', () => {
         });
 
         validRawValuesPair.forEach(([expected, value]) => {
-            it(`should decode sucessfully with valid raw value ${JSON.stringify(value)}`, () => {
+            it(`should decode successfully with valid raw value ${JSON.stringify(value)}`, () => {
                 const result = TokenOptionMixinDataDef.decode(value);
                 expect(isLeft(result)).toBeFalse();
                 if (!isLeft(result)) expect(result.right).toEqual(expected);

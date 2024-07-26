@@ -18,8 +18,8 @@ export class RawRequestFetcherService {
         quizSubmissionId: string,
         curAttempt: number,
         assignmentId?: string
-    ): Promise<QuizSubmissionDetail> {
-        const [submittedAt, answers] = await this.canvasService.getQuizSubmissionAttempt(
+    ): Promise<QuizSubmissionDetail | undefined> {
+        const quizAttemptResult = await this.canvasService.getQuizSubmissionAttempt(
             configuration.course.id,
             tokenOptionGroup.quizId,
             quizSubmissionId,
@@ -27,6 +27,8 @@ export class RawRequestFetcherService {
             curAttempt,
             { assignmentId: assignmentId }
         );
+        if (!quizAttemptResult) return undefined;
+        const [submittedAt, answers] = quizAttemptResult;
         return new QuizSubmissionDetail(student, submittedAt, curAttempt, answers);
     }
 }

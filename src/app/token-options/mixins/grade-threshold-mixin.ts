@@ -19,7 +19,7 @@ export function GradeThresholdMixin<TBase extends Constructor<IGridViewDataSourc
         constructor(...args: any[]) {
             super(...args);
             this.registerDataPointSource(() => ({
-                colName: 'Grade Threshold',
+                colName: 'Passing Grade Threshold',
                 type: 'percentage',
                 value: this.gradeThreshold
             }));

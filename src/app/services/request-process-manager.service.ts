@@ -5,17 +5,18 @@ import type { Student } from 'app/data/student';
 import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
-import { RequestHandlerRegistry } from 'app/request-handlers/request-handler-registry';
-import { RequestResolverRegistry } from 'app/request-resolvers/request-resolver-registry';
-import type { TokenATMRequest } from 'app/requests/token-atm-request';
+import { RequestHandlerRegistry } from 'app/token-options/request-handler-registry';
+import { RequestResolverRegistry } from 'app/token-options/request-resolver-registry';
+import type { TokenATMRequest } from 'app/token-options/token-atm-request';
 import type { TokenOption } from 'app/token-options/token-option';
 import { compareAsc, format } from 'date-fns';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, type Observable } from 'rxjs';
 import { CanvasService } from './canvas.service';
 import { QualtricsService } from './qualtrics.service';
 import { RawRequestFetcherService } from './raw-request-fetcher.service';
 import { StudentRecordManagerService } from './student-record-manager.service';
 import { countAndNoun } from 'app/utils/pluralize';
+import { QuestionProService } from './question-pro.service';
 
 @Injectable({
     providedIn: 'root'
@@ -31,7 +32,8 @@ export class RequestProcessManagerService {
         @Inject(RequestResolverRegistry) private requestResolverRegistry: RequestResolverRegistry,
         @Inject(StudentRecordManagerService) private studentRecordManagerService: StudentRecordManagerService,
         @Inject(RequestHandlerRegistry) private requestHandlerRegistry: RequestHandlerRegistry,
-        @Inject(QualtricsService) private qualtricsService: QualtricsService
+        @Inject(QualtricsService) private qualtricsService: QualtricsService,
+        @Inject(QuestionProService) private questionProService: QuestionProService
     ) {}
 
     public startRequestProcessing(configuration: TokenATMConfiguration): Observable<[number, string]> {
@@ -53,6 +55,7 @@ export class RequestProcessManagerService {
         this._isRunning = false;
         this._isStopTriggered = false;
         this.qualtricsService.clearCache();
+        this.questionProService.clearCache();
         if (completeObservable) progressUpdate.complete();
     }
 
@@ -63,12 +66,13 @@ export class RequestProcessManagerService {
         this._isRunning = true;
         this._isStopTriggered = false;
         this.qualtricsService.clearCache();
+        this.questionProService.clearCache();
         let quizSubmissionMap, assignmentIdMap;
         try {
             [quizSubmissionMap, assignmentIdMap] = await this.gatherQuizSubmissions(configuration, progressUpdate);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
-            progressUpdate.error(["Encountered an error while gathering students' quiz submissions", err]);
+            progressUpdate.error(['Encountered an error while gathering students’ quiz submissions', err]);
             this.finishRequestProcessing(progressUpdate, false);
             return;
         }
@@ -130,7 +134,7 @@ export class RequestProcessManagerService {
                             progressUpdate.error([
                                 `Encountered an error while handling request to ${
                                     processedRequest ? processedRequest.tokenOptionName : request.tokenOption.name
-                                } submitted at ${format(request.submittedTime, 'MMM dd, yyyy kk:mm:ss')} by student ${
+                                } submitted at ${format(request.submittedTime, 'MMM dd, yyyy HH:mm:ss')} by student ${
                                     student.name + (student.email == '' ? '' : `(${student.email})`)
                                 }`,
                                 err
@@ -152,7 +156,7 @@ export class RequestProcessManagerService {
                                 processedRequest.tokenOptionName
                             } submitted at ${format(
                                 processedRequest.submittedTime,
-                                'MMM dd, yyyy kk:mm:ss'
+                                'MMM dd, yyyy HH:mm:ss'
                             )} by student ${student.name + (student.email == '' ? '' : `(${student.email})`)}`,
                             err
                         ]);
@@ -253,6 +257,7 @@ export class RequestProcessManagerService {
                     assignmentIdMap.get(group.quizId)
                 );
                 if (this._isStopTriggered) return [studentRecord, requests];
+                if (!quizSubmissionDetail) continue;
                 const request = await this.requestResolverRegistry.resolveRequest(group, quizSubmissionDetail);
                 if (!request) {
                     requests.push(

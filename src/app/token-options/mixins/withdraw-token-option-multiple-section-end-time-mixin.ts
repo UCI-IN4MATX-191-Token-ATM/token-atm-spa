@@ -19,13 +19,13 @@ export function WithdrawTokenOptionMultipleSectionEndTimeMixin<
             this.registerDataPointSource(() =>
                 this.endTime instanceof MultipleSectionDateMatcher
                     ? {
-                          colName: 'End At (with exceptions)',
+                          colName: 'Can Request Until (with exceptions)',
                           type: 'html',
                           value: this.endTime.toHTML()
                       }
                     : this.endTime instanceof Date
                     ? {
-                          colName: 'End At',
+                          colName: 'Can Request Until',
                           type: 'date',
                           value: this.endTime
                       }
@@ -34,7 +34,7 @@ export function WithdrawTokenOptionMultipleSectionEndTimeMixin<
         }
 
         public set endTime(_: Date | MultipleSectionDateMatcher | undefined) {
-            throw new Error('Cannot set End Time for Withdraw Token Option');
+            throw new Error('Cannot set Can Request Until Date/Time for Withdraw Token Option');
         }
 
         public get endTime(): Date | MultipleSectionDateMatcher | undefined {

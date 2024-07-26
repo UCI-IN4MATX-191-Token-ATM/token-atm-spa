@@ -1,8 +1,9 @@
 import { Inject, Injectable } from '@angular/core';
 import type { AxiosRequestConfig } from 'axios';
 import { unzipRaw } from 'unzipit';
-import { AxiosService, IPCCompatibleAxiosResponse, isNetworkOrServerError } from './axios.service';
-import { ExponentialBackoffExecutor } from 'app/utils/exponential-backoff-executor';
+import { AxiosService, type IPCCompatibleAxiosResponse, isNetworkOrServerError } from './axios.service';
+import type { QualtricsCredential } from 'app/credential-handlers/qualtrics-credential-handler';
+import { ExponentialBackoffExecutorService } from './exponential-backoff-executor.service';
 
 @Injectable({
     providedIn: 'root'
@@ -14,19 +15,37 @@ export class QualtricsService {
     #qualtricsAccessToken?: string;
     #qualtricsURL?: string;
     private static WAIT_SECONDS = 2;
+    private static RETRY_MSG = 'Fail to communicate with Qualtrics. Retrying...';
     private participationCache: Map<string, Set<string>> = new Map<string, Set<string>>();
 
-    constructor(@Inject(AxiosService) private axiosService: AxiosService) {}
+    constructor(
+        @Inject(AxiosService) private axiosService: AxiosService,
+        @Inject(ExponentialBackoffExecutorService)
+        private exponentialBackoffExecutorService: ExponentialBackoffExecutorService
+    ) {}
 
     public hasCredentialConfigured(): boolean {
         return this.#dataCenter != undefined && this.#clientID != undefined && this.#clientSecret != undefined;
     }
 
-    public async configureCredential(
-        dataCenter: string,
-        clientID: string,
-        clientSecret: string
-    ): Promise<unknown | undefined> {
+    public async validateCredential({
+        qualtricsDataCenter: dataCenter,
+        qualtricsClientID: clientID,
+        qualtricsClientSecret: clientSecret
+    }: QualtricsCredential): Promise<unknown | undefined> {
+        try {
+            await this.requestQualtricsAccessToken(dataCenter, clientID, clientSecret);
+        } catch (err: unknown) {
+            return err;
+        }
+        return undefined;
+    }
+
+    public async configureCredential({
+        qualtricsDataCenter: dataCenter,
+        qualtricsClientID: clientID,
+        qualtricsClientSecret: clientSecret
+    }: QualtricsCredential): Promise<unknown | undefined> {
         this.#dataCenter = dataCenter;
         this.#clientID = clientID;
         this.#clientSecret = clientSecret;
@@ -47,17 +66,20 @@ export class QualtricsService {
         this.#qualtricsAccessToken = undefined;
     }
 
-    private async refreshQualtricsAccessToken() {
+    private async requestQualtricsAccessToken(
+        dataCenter?: string,
+        clientID?: string,
+        clientSecret?: string
+    ): Promise<string | undefined> {
+        if (!dataCenter || !clientID || !clientSecret) throw new Error('Credentials for Qualtrics are invalid');
         const executor = async () => {
-            if (!this.#qualtricsURL || !this.#clientID || !this.#clientSecret)
-                throw new Error('Credentials for Qualtrics are invalid');
             return (
                 await this.axiosService.request({
-                    url: this.#qualtricsURL + '/oauth2/token',
+                    url: `https://${dataCenter}.qualtrics.com` + '/oauth2/token',
                     method: 'post',
                     auth: {
-                        username: this.#clientID,
-                        password: this.#clientSecret
+                        username: clientID,
+                        password: clientSecret
                     },
                     params: {
                         grant_type: 'client_credentials',
@@ -66,16 +88,23 @@ export class QualtricsService {
                 })
             ).data;
         };
-        const data = await ExponentialBackoffExecutor.execute(
+        const data = await this.exponentialBackoffExecutorService.execute(
             executor,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            async (_, err: any | undefined) => !isNetworkOrServerError(err)
+            async (_, err: any | undefined) => {
+                return !isNetworkOrServerError(err);
+            },
+            QualtricsService.RETRY_MSG
         );
-        if (typeof data['access_token'] == 'string') {
-            this.#qualtricsAccessToken = data['access_token'];
-        } else {
-            this.#qualtricsAccessToken = undefined;
-        }
+        return typeof data['access_token'] == 'string' ? data['access_token'] : undefined;
+    }
+
+    private async refreshQualtricsAccessToken() {
+        this.#qualtricsAccessToken = await this.requestQualtricsAccessToken(
+            this.#dataCenter,
+            this.#clientID,
+            this.#clientSecret
+        );
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,6 +121,7 @@ export class QualtricsService {
         while (true) {
             try {
                 const executor = async () => {
+                    if (!this.hasCredentialConfigured()) throw new Error('Qualtrics credential is not configured!');
                     const result = await this.axiosService.request<T>({
                         ...config,
                         url: this.#qualtricsURL + endpoint,
@@ -102,10 +132,11 @@ export class QualtricsService {
                     });
                     return result;
                 };
-                return await ExponentialBackoffExecutor.execute(
+                return await this.exponentialBackoffExecutorService.execute(
                     executor,
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    async (_, err: any | undefined) => !isNetworkOrServerError(err)
+                    async (_, err: any | undefined) => !isNetworkOrServerError(err),
+                    QualtricsService.RETRY_MSG
                 );
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
@@ -177,5 +208,53 @@ export class QualtricsService {
 
     public clearCache(): void {
         this.participationCache.clear();
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public async getSurveyResponseSchema(surveyId: string): Promise<any> {
+        return await this.apiRequest(`/API/v3/surveys/${surveyId}/response-schema`, {
+            method: 'get',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public async getSurveyFieldSchemas(surveyId: string): Promise<Map<string, any>> {
+        const data = (await this.getSurveyResponseSchema(surveyId)).result?.properties?.values?.properties;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return new Map<string, any>(data != null ? Object.entries(data) : null);
+    }
+
+    public async checkResponseSchemaForField(surveyId: string, fieldName: string): Promise<void> {
+        await this.checkSurveyExists(surveyId);
+        const data = await this.getSurveyFieldSchemas(surveyId);
+        const names = new Set<string>();
+        for (const [propName, propSchema] of data) {
+            // Filters for only specific type of data
+            if (propSchema?.dataType === 'embeddedData') {
+                names.add(propName); // Include JSON prop. name
+                if (propSchema?.exportTag) names.add(propSchema.exportTag); // Include Export Tag name
+            }
+        }
+        if (!names.has(fieldName)) {
+            throw new Error(`Field name '${fieldName}', from SSO authentication, not found in Survey`);
+        }
+    }
+
+    public async checkSurveyExists(surveyId: string): Promise<void> {
+        try {
+            await this.getSurveyResponseSchema(surveyId);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            if (error?.isAxiosError && error?.response?.status == 404) {
+                throw new Error(
+                    `Survey '${surveyId}' not found on Qualtrics. Check if this survey is associated with your account.`
+                );
+            } else {
+                throw error;
+            }
+        }
     }
 }

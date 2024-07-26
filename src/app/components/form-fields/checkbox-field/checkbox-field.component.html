@@ -1,0 +1,7 @@
+<div class="m-3">
+    <div class="d-flex align-items-center">
+        <input class="me-2" type="checkbox" [(ngModel)]="value" [disabled]="isReadOnly" />
+        <span>{{ label }}</span>
+    </div>
+    <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
+</div>
