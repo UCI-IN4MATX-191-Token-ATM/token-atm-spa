@@ -8,7 +8,7 @@ import type { BasicTokenOptionData } from 'app/token-options/basic/basic-token-o
 import type { EarnByModuleTokenOptionData } from 'app/token-options/earn-by-module/earn-by-module-token-option';
 import { type BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
-import { ErrorSerializer } from 'app/utils/error-serailizer';
+import { ErrorSerializer } from 'app/utils/error-serializer';
 import { EditConfigurationModalComponent } from '../edit-configuration-modal/edit-configuration-modal.component';
 import { TokenOptionResolverRegistry } from 'app/token-options/token-option-resolver-registry';
 import { actionNeededTemplate, tokenATMContentListTemplate } from 'app/utils/string-templates';
@@ -32,7 +32,7 @@ export class ConfigurationComponent implements CourseConfigurable {
         @Inject(TokenATMConfigurationManagerService)
         private configurationManagerService: TokenATMConfigurationManagerService,
         @Inject(CanvasService) private canvasService: CanvasService,
-        @Inject(BsModalService) private modalSerivce: BsModalService,
+        @Inject(BsModalService) private modalService: BsModalService,
         @Inject(TokenOptionResolverRegistry) private tokenOptionResolverRegistry: TokenOptionResolverRegistry,
         @Inject(ModalManagerService) private modalManagerService: ModalManagerService,
         @Inject(Router) private router: Router
@@ -118,7 +118,7 @@ export class ConfigurationComponent implements CourseConfigurable {
             );
             await this.configurationManagerService.addNewTokenOptionGroup(moduleGroup);
             this.moduleName = 'Course Preparation (Must pass with 70% or higher to earn 1 TOKEN)';
-            this.moduleNameModalRef = this.modalSerivce.show(this.moduleNameModalTemplate as TemplateRef<unknown>, {
+            this.moduleNameModalRef = this.modalService.show(this.moduleNameModalTemplate as TemplateRef<unknown>, {
                 backdrop: 'static',
                 keyboard: false
             });
@@ -148,7 +148,7 @@ export class ConfigurationComponent implements CourseConfigurable {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             await this.modalManagerService.createNotificationModal(
-                `Error occurred when creating test configuration: ${ErrorSerializer.serailize(err)}`,
+                `Error occurred when creating test configuration: ${ErrorSerializer.serialize(err)}`,
                 'Error'
             );
             this.isProcessing = false;
@@ -184,7 +184,7 @@ export class ConfigurationComponent implements CourseConfigurable {
                         'the',
                         '\n'
                     )}`
-                )}\nNote: You will be redirected to the course selection page after closing this notification.\n\nError Message: ${ErrorSerializer.serailize(
+                )}\nNote: You will be redirected to the course selection page after closing this notification.\n\nError Message: ${ErrorSerializer.serialize(
                     err
                 )}`,
                 'Error'
@@ -226,7 +226,7 @@ export class ConfigurationComponent implements CourseConfigurable {
                         ' ',
                         true
                     )} you just deleted). \n\nAfter importing from a backup, perform a Token ATM migration.`
-                )}\n\nError Message: ${ErrorSerializer.serailize(err)}`
+                )}\n\nError Message: ${ErrorSerializer.serialize(err)}`
             );
         } finally {
             this.isProcessing = false;
@@ -266,7 +266,7 @@ export class ConfigurationComponent implements CourseConfigurable {
                         ' ',
                         true
                     )} you just deleted). \n\nAfter importing from a backup, try the migration again.`
-                )}\n\nError Message: ${ErrorSerializer.serailize(err)}`
+                )}\n\nError Message: ${ErrorSerializer.serialize(err)}`
             );
         } finally {
             this.isProcessing = false;
@@ -283,7 +283,7 @@ export class ConfigurationComponent implements CourseConfigurable {
     async onEditConfigurationMetadata(): Promise<void> {
         if (!this.course) return;
         this.isProcessing = true;
-        const modalRef = this.modalSerivce.show(EditConfigurationModalComponent, {
+        const modalRef = this.modalService.show(EditConfigurationModalComponent, {
             initialState: {
                 configuration: await this.configurationManagerService.getTokenATMConfiguration(this.course)
             },
