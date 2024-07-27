@@ -86,6 +86,8 @@ import { LazySingleSelectionFieldComponent } from './components/form-fields/sele
 import { SwitchFieldComponent } from './components/form-fields/switch-field/switch-field.component';
 import { SwitchFieldItemWrapperComponent } from './components/form-fields/switch-field/switch-field-item-wrapper.component';
 import { EarnByQuestionProSurveyFormFieldComponent } from './token-options/earn-by-question-pro-survey/earn-by-question-pro-survey-token-option-field-component-factory';
+import { AdditionalDurationFieldComponent } from './components/form-fields/additional-duration-field/additional-duration-field.component';
+import { DurationFieldComponent } from './components/form-fields/duration-field/duration-field.component';
 
 @NgModule({
     declarations: [
@@ -140,7 +142,9 @@ import { EarnByQuestionProSurveyFormFieldComponent } from './token-options/earn-
         LazySingleSelectionFieldComponent,
         SwitchFieldComponent,
         SwitchFieldItemWrapperComponent,
-        EarnByQuestionProSurveyFormFieldComponent
+        EarnByQuestionProSurveyFormFieldComponent,
+        AdditionalDurationFieldComponent,
+        DurationFieldComponent
     ],
     imports: [
         BrowserModule,
