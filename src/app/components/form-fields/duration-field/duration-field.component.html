@@ -1,9 +1,22 @@
 <div class="mx-3 my-2">
     <div>
-        <label *ngIf="label !== ''" class="form-label mt-1">{{ label }}</label>
+        @if (label !== '') { <label class="form-label mt-1">{{ label }}</label> }
         <div class="d-flex align-items-center flex-wrap">
-            <span>duration-field works! TODO: Implement UI</span>
+            <mat-form-field appearance="outline" class="me-1">
+                <mat-label>Duration</mat-label>
+                <mat-select [disabled]="isReadOnly" [(ngModel)]="durValue">
+                    @for (duration of durations; track duration) {
+                    <mat-option [value]="duration">{{ duration | titlecase }}</mat-option>
+                    }
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+                <mat-label>Amount</mat-label>
+                <input [disabled]="isReadOnly" type="number" matInput [(ngModel)]="numValue" />
+            </mat-form-field>
         </div>
     </div>
-    <p *ngIf="errorMessage" class="text-danger mb-3">{{ errorMessage }}</p>
+    @if (errorMessage) {
+    <p class="text-danger mb-3">{{ errorMessage }}</p>
+    }
 </div>
