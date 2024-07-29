@@ -65,7 +65,7 @@ export class AdditionalDurationFieldComponent
         }
         if (!this._defaultDurationField || !this.listFieldComponent) return;
         this.listFieldComponent.defaultFieldSrcValueProvider = () => {
-            return this.defaultDurationValueProvider ? this.defaultDurationValueProvider() : ['days', 1];
+            return this.defaultDurationValueProvider ? this.defaultDurationValueProvider() : ['days', 0];
         };
         this.listFieldComponent.fieldFactory = () => {
             if (!this.durationFieldBuilderFactory)
