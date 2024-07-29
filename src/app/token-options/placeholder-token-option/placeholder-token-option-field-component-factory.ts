@@ -126,7 +126,8 @@ export class PlaceholderTokenOptionFieldComponentFactory extends TokenOptionFiel
                                         minutes: 0,
                                         seconds: 0,
                                         milliseconds: 0
-                                    })
+                                    }),
+                                    value.configuration.course.timeZone
                                 ]
                             ],
                             [
@@ -138,7 +139,8 @@ export class PlaceholderTokenOptionFieldComponentFactory extends TokenOptionFiel
                                         minutes: 59,
                                         seconds: 59,
                                         milliseconds: 999
-                                    })
+                                    }),
+                                    value.configuration.course.timeZone
                                 ]
                             ],
                             [false, 1],
@@ -157,7 +159,8 @@ export class PlaceholderTokenOptionFieldComponentFactory extends TokenOptionFiel
                                             minutes: 0,
                                             seconds: 0,
                                             milliseconds: 0
-                                        })
+                                        }),
+                                    value.group.configuration.course.timeZone
                                 ]
                             ],
                             [
@@ -170,7 +173,8 @@ export class PlaceholderTokenOptionFieldComponentFactory extends TokenOptionFiel
                                             minutes: 59,
                                             seconds: 59,
                                             milliseconds: 999
-                                        })
+                                        }),
+                                    value.group.configuration.course.timeZone
                                 ]
                             ],
                             [value.allowedRequestCnt != 1, value.allowedRequestCnt],

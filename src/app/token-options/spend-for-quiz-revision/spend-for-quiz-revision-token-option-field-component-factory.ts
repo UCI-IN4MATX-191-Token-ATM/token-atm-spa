@@ -55,25 +55,33 @@ export class SpendForQuizRevisionTokenOptionFieldComponentFactory extends TokenO
                 )
                 .transformSrc((value: SpendForQuizRevisionTokenOption | TokenOptionGroup) => {
                     if (value instanceof TokenOptionGroup) {
+                        const courseTimeZone = value.configuration.course.timeZone;
                         return [
                             value,
                             [value.configuration.course.id, undefined],
                             1,
                             [value.configuration.course.id, undefined],
-                            set(new Date(), {
-                                hours: 23,
-                                minutes: 59,
-                                seconds: 59,
-                                milliseconds: 999
-                            }),
-                            set(new Date(), {
-                                hours: 23,
-                                minutes: 59,
-                                seconds: 59,
-                                milliseconds: 999
-                            })
+                            [
+                                set(new Date(), {
+                                    hours: 23,
+                                    minutes: 59,
+                                    seconds: 59,
+                                    milliseconds: 999
+                                }),
+                                courseTimeZone
+                            ],
+                            [
+                                set(new Date(), {
+                                    hours: 23,
+                                    minutes: 59,
+                                    seconds: 59,
+                                    milliseconds: 999
+                                }),
+                                courseTimeZone
+                            ]
                         ];
                     } else {
+                        const courseTimeZone = value.group.configuration.course.timeZone;
                         return [
                             value,
                             [
@@ -91,8 +99,8 @@ export class SpendForQuizRevisionTokenOptionFieldComponentFactory extends TokenO
                                     name: value.assignmentName
                                 }
                             ],
-                            value.endTime,
-                            value.newDueTime
+                            [value.endTime, courseTimeZone],
+                            [value.newDueTime, courseTimeZone]
                         ];
                     }
                 })

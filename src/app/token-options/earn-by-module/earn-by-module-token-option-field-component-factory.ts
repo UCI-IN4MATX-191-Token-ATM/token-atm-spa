@@ -121,12 +121,15 @@ export class EarnByModuleTokenOptionFieldComponentFactory extends TokenOptionFie
                         return [
                             value,
                             [value.configuration.course.id, undefined],
-                            set(new Date(), {
-                                hours: 0,
-                                minutes: 0,
-                                seconds: 0,
-                                milliseconds: 0
-                            }),
+                            [
+                                set(new Date(), {
+                                    hours: 0,
+                                    minutes: 0,
+                                    seconds: 0,
+                                    milliseconds: 0
+                                }),
+                                value.configuration.course.timeZone
+                            ],
                             1
                         ];
                     } else {
@@ -139,7 +142,7 @@ export class EarnByModuleTokenOptionFieldComponentFactory extends TokenOptionFie
                                     name: value.moduleName
                                 }
                             ],
-                            value.startTime,
+                            [value.startTime, value.group.configuration.course.timeZone],
                             value.gradeThreshold
                         ];
                     }
