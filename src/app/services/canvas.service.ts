@@ -690,6 +690,9 @@ export class CanvasService {
         );
     }
 
+    /**
+     * @throws http error if assignment isn't published
+     */
     public async getStudentsGrades(
         courseId: string,
         assignmentId: string,
