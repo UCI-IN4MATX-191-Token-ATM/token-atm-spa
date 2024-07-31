@@ -8,7 +8,7 @@ import type { PaginatedResult } from 'app/utils/pagination/paginated-result';
 import { CanvasRESTPaginatedResult } from 'app/utils/pagination/canvas-rest-paginated-result';
 import { PaginatedView } from 'app/utils/paginated-view';
 import type { AxiosRequestConfig } from 'axios';
-import { compareAsc, compareDesc, formatISO, isEqual, parseISO } from 'date-fns';
+import { compareAsc, formatISO, parseISO } from 'date-fns';
 import { AxiosService, type IPCCompatibleAxiosResponse, isNetworkOrServerError } from './axios.service';
 import { User } from 'app/data/user';
 import type { QuizQuestion } from 'app/quiz-questions/quiz-question';
@@ -24,6 +24,12 @@ import type { CanvasCredential } from 'app/data/token-atm-credentials';
 import { ExponentialBackoffExecutorService } from './exponential-backoff-executor.service';
 import { collectPointsPossible, type CanvasGradingType } from 'app/utils/canvas-grading';
 import { AssignmentGroupDef, type AssignmentGroup } from 'app/data/assignment-group';
+import {
+    areOverrideDatesEqual,
+    defaultCanvasDateLevels,
+    mostSpecificDateSource,
+    type OverrideDates
+} from 'app/utils/canvas-merge-dates';
 
 type QuizQuestionResponse = {
     id: string;
@@ -1207,70 +1213,6 @@ export class CanvasService {
         studentId: string,
         overrideTitlePrefix: string
     ): Promise<boolean> {
-        type OverrideDate = Date | null;
-        type OverrideDates = { unlockAt: OverrideDate; lockAt: OverrideDate; dueAt: OverrideDate };
-
-        /**
-         * Merges two override dates into a single choice.
-         * @param min (default: true) if true, return earliest date. if false, return latest date.
-         * @param preserveDate (default: false) if true, returns the other date if one is null
-         * @returns the merged date or null
-         */
-        function mergeOverrideDate(a: OverrideDate, b: OverrideDate, min = true, preserveDate = false): OverrideDate {
-            if (a == null && preserveDate) return b;
-            if (b == null && preserveDate) return a;
-            if (a == null || b == null) return null;
-            if (min) {
-                return compareDesc(a, b) == 1 ? a : b;
-            } else {
-                return compareAsc(a, b) == 1 ? a : b;
-            }
-        }
-
-        /**
-         * @returns true if both dates are equal or both are null
-         */
-        function isOverrideDateEqual(a: OverrideDate, b: OverrideDate): boolean {
-            if (a == null && b == null) return true;
-            if (a == null || b == null) return false;
-            return isEqual(a, b);
-        }
-
-        /**
-         * @returns true if each pair of dates are equal (either same date or both null)
-         */
-        function areOverrideDatesEqual(a: OverrideDates, b: OverrideDates): boolean {
-            return (
-                isOverrideDateEqual(a.unlockAt, b.unlockAt) &&
-                isOverrideDateEqual(a.dueAt, b.dueAt) &&
-                isOverrideDateEqual(a.lockAt, b.lockAt)
-            );
-        }
-
-        /**
-         * Merges unlock, due, and lock dates.
-         * Due at and Lock at use the latest date. Unlock at uses the earliest.
-         * Null is basically both +∞ and -∞.
-         *
-         * @param preserveDate (default: false) will prioritize preserving dates (if true) or returning nulls (if false) for all override dates
-         * @param skipMerging configure if merging should be skipped for the specified override dates (returns the value of the `a` argument instead)
-         * @returns object with merged date results
-         */
-        function mergeOverrideDates(
-            a: OverrideDates,
-            b: OverrideDates,
-            preserveDate = false,
-            skipMerging: { [key in keyof OverrideDates]?: boolean } = {}
-        ): OverrideDates {
-            return {
-                unlockAt: skipMerging?.unlockAt
-                    ? a.unlockAt
-                    : mergeOverrideDate(a.unlockAt, b.unlockAt, true, preserveDate), // Merges to earliest unlock date
-                dueAt: skipMerging?.dueAt ? a.dueAt : mergeOverrideDate(a.dueAt, b.dueAt, false, preserveDate), // Merges to latest due date
-                lockAt: skipMerging?.lockAt ? a.lockAt : mergeOverrideDate(a.lockAt, b.lockAt, false, preserveDate) // Merges to latest lock date
-            };
-        }
-
         /**
          * All overrides for the assignment (multiple students can be in an override)
          */
@@ -1317,60 +1259,16 @@ export class CanvasService {
             return { lockAt, unlockAt, dueAt };
         };
 
-        type CheckAndCollect = { name: string; predicate: () => boolean; result: () => Promise<OverrideDates> } | null;
-        // Priority Order (highest to lowest), reduce to single appropriate level
-        const resolveLevel = (
-            [
-                {
-                    name: 'Individual Level',
-                    predicate: () => {
-                        const numIndividOverrides = individualOverridesWithThisStudent.length;
-                        if (numIndividOverrides > 1) {
-                            throw new Error(
-                                'This student was found in multiple individual level overrides for this assignment. They should only ever be in one per assignment.'
-                            );
-                        }
-                        return numIndividOverrides === 1;
-                    },
-                    result: async () => {
-                        return (individualOverridesWithThisStudent as OverrideDates[]).reduce((acc, cur) =>
-                            mergeOverrideDates(acc, cur)
-                        );
-                    }
-                },
-                {
-                    name: 'Section Level',
-                    predicate: () => {
-                        return sectionOverridesWithThisStudent.length > 0;
-                    },
-                    result: async () => {
-                        return (sectionOverridesWithThisStudent as OverrideDates[]).reduce((acc, cur) =>
-                            mergeOverrideDates(acc, cur)
-                        );
-                    }
-                },
-                {
-                    name: 'Assignment Level',
-                    predicate: () => {
-                        return true;
-                    },
-                    result: async () => {
-                        return await getAssignmentDates();
-                    }
-                }
-            ] as CheckAndCollect[]
-        ).reduce((choice, cur) => {
-            if (choice == null && cur?.predicate()) {
-                return cur;
-            } else {
-                return choice;
-            }
-        }, null);
+        const levels = defaultCanvasDateLevels(
+            individualOverridesWithThisStudent,
+            sectionOverridesWithThisStudent,
+            getAssignmentDates
+        );
 
         /**
          * The dates (most likely to be) currently assigned to this student for this assignment.
          */
-        const studentDates = await resolveLevel?.result();
+        const studentDates = await mostSpecificDateSource(levels)?.result();
         if (studentDates == null)
             throw new Error(
                 'Logic error in implementation. No unlock, due, and lock dates found for this student and assignment. This should be impossible.'
