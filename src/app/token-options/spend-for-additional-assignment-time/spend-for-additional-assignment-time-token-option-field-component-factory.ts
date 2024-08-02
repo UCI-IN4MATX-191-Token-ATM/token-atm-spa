@@ -17,7 +17,7 @@ import { Inject, Injectable, type EnvironmentInjector, type ViewContainerRef } f
 import type { FormField } from 'app/utils/form-field/form-field';
 import { CanvasService } from 'app/services/canvas.service';
 import { OptionalFieldComponent } from 'app/components/form-fields/optional-field/optional-field.component';
-import type { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
+import { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
 import {
     AdditionalDurationFieldComponent,
     type SingleDurationResult
@@ -25,6 +25,8 @@ import {
 import type { DirectFormField } from 'app/utils/form-field/direct-form-field';
 import { DurationFieldComponent } from 'app/components/form-fields/duration-field/duration-field.component';
 import type { ChangeAssignmentDatesMixinData } from '../mixins/change-assignment-dates-mixin';
+import { SwitchFieldComponent } from 'app/components/form-fields/switch-field/switch-field.component';
+import { StaticFormField } from 'app/utils/form-field/static-form-field';
 
 @Injectable()
 export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory extends TokenOptionFieldComponentFactory<SpendForAdditionalAssignmentTimeTokenOption> {
@@ -41,13 +43,6 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
             any
         >
     ] {
-        const createDurationListComponent = (label = 'Change Date/Time By') => {
-            return createAdditionalAssignmentDurationComponent(
-                () => createFieldComponentWithLabel(DurationFieldComponent, '', environmentInjector),
-                label,
-                environmentInjector
-            );
-        };
         return tokenOptionValidationWrapper(
             environmentInjector,
             tokenOptionFieldComponentBuilder(environmentInjector)
@@ -65,7 +60,7 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
                         'Change ‘Available From’',
                         environmentInjector
                     ).editField((field) => {
-                        field.fieldBuilder = createDurationListComponent();
+                        field.fieldBuilder = createDurationListComponent('Change Date/Time By', environmentInjector);
                     })
                 )
                 .appendBuilder(
@@ -74,7 +69,7 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
                         'Change ‘Due’',
                         environmentInjector
                     ).editField((field) => {
-                        field.fieldBuilder = createDurationListComponent();
+                        field.fieldBuilder = createDurationListComponent('Change Date/Time By', environmentInjector);
                     })
                 )
                 .appendBuilder(
@@ -83,7 +78,7 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
                         'Change ‘Available Until’',
                         environmentInjector
                     ).editField((field) => {
-                        field.fieldBuilder = createDurationListComponent();
+                        field.fieldBuilder = createDurationListComponent('Change Date/Time By', environmentInjector);
                     })
                 )
                 .appendBuilder(createOptionalAllowMultipleApprovedRequestsComponentBuilder(environmentInjector))
@@ -178,3 +173,33 @@ function changeDateTransform(x: ChangeDatesType): [boolean, NonNullable<ChangeDa
     // TODO: Change `x ?? {}` once Switch Field is implemented
     return [x === undefined ? false : true, x ?? {}];
 }
+
+function createDurationListComponent(label: string, environmentInjector: EnvironmentInjector) {
+    return createAdditionalAssignmentDurationComponent(
+        () => createFieldComponentWithLabel(DurationFieldComponent, '', environmentInjector),
+        label,
+        environmentInjector
+    );
+}
+
+function createRemoveOrAddDurationSwitchComponent(label: string, environmentInjector: EnvironmentInjector) {
+    return createFieldComponentWithLabel(
+        SwitchFieldComponent<
+            'Removing It' | 'Adjusting the Time',
+            { 'Removing It': null; 'Adjusting the Time': ChangeDatesType },
+            { 'Removing It': null; 'Adjusting the Time': ChangeDatesType }
+        >,
+        label,
+        environmentInjector
+    ).editField((field) => {
+        field.addField(
+            'Removing It',
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            new FormFieldComponentBuilder().setField(new StaticFormField<null>()).transformDest(async (_v) => {
+                return null;
+            })
+        );
+        field.addField('Adjusting the Time', createDurationListComponent('', environmentInjector));
+    });
+}
+createRemoveOrAddDurationSwitchComponent;
