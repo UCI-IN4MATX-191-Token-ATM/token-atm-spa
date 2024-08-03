@@ -6,6 +6,7 @@ import {
     defaultCanvasDateLevels,
     type OverrideDates
 } from './canvas-merge-dates';
+import type { AssignmentOverride } from 'app/data/assignment-override';
 
 describe('Canvas Merge Dates Tests', () => {
     const equalDate = new Date();
@@ -142,8 +143,8 @@ describe('Canvas Merge Dates Tests', () => {
         });
     });
 
-    const nullOverrideDates = { unlockAt: null, dueAt: null, lockAt: null };
     describe('Generate Empty Level Tests', () => {
+        const nullOverrideDates = { unlockAt: null, dueAt: null, lockAt: null };
         const test = defaultCanvasDateLevels([], []);
         it('Empty Result', () => {
             expect(test.length).toBe(2);
@@ -160,8 +161,59 @@ describe('Canvas Merge Dates Tests', () => {
         });
     });
 
-    // describe('Individual Level Returned', () => {});
-    // describe('Section Level Returned', () => {});
+    describe('Merging Array of Assignment Overrides', () => {
+        const fakeOverrideAllDiff = allDiff as AssignmentOverride;
+        const fakeOverrideAllNull = allNull as AssignmentOverride;
+        const fakeOverrideAllEqual = allEqual as AssignmentOverride;
+        const oneOverride = [fakeOverrideAllNull];
+        const oneWithAllNullResult = defaultCanvasDateLevels(oneOverride, oneOverride);
+        const fourOverrides = [fakeOverrideAllEqual, fakeOverrideAllEqual, fakeOverrideAllDiff, fakeOverrideAllNull];
+        const fourWithAllNullResult = defaultCanvasDateLevels(fourOverrides, fourOverrides);
+        const zeroOverrides = defaultCanvasDateLevels([], []);
+        function equal(a: OverrideDates, b = allNull) {
+            return expect(areOverrideDatesEqual(a, b)).toBeTrue();
+        }
+        it('Individual Level Predicate throws error with more than 1 override', () => {
+            expect(() => fourWithAllNullResult[0].predicate()).toThrow();
+        });
+        it('Individual Level Predicate is true with 1 override', () => {
+            expect(oneWithAllNullResult[0].predicate()).toBeTrue();
+        });
+        it('Individual Level Predicate is false with no overrides', () => {
+            expect(zeroOverrides[0].predicate()).toBeFalse();
+        });
+        it('Individual Level Result reduces to a single `Override Dates`', async () => {
+            equal(await oneWithAllNullResult[0].result(), allNull);
+            equal(await fourWithAllNullResult[0].result(), allNull);
+        });
+        it('Section Level Predicate is false with 0 overrides', () => {
+            expect(zeroOverrides[1].predicate()).toBeFalse();
+        });
+        it('Section Level Predicate is true with 1 or more overrides', () => {
+            expect(oneWithAllNullResult[1].predicate()).toBeTrue();
+            expect(fourWithAllNullResult[1].predicate()).toBeTrue();
+        });
+        it('Section Level Result reduces to a single `Override Dates`', async () => {
+            equal(await oneWithAllNullResult[1].result(), allNull);
+            equal(await fourWithAllNullResult[1].result(), allNull);
+        });
+        describe('Brief Array Merge Tests', () => {
+            const diffMerges = defaultCanvasDateLevels(
+                [fakeOverrideAllEqual, fakeOverrideAllEqual, fakeOverrideAllEqual],
+                [fakeOverrideAllEqual, fakeOverrideAllEqual, fakeOverrideAllDiff]
+            );
+            it('Merges to All Equal', async () => {
+                equal(await diffMerges[0].result(), allEqual);
+            });
+            it('Merges to All Diff', async () => {
+                equal(await diffMerges[1].result(), allDiff);
+            });
+            it('Merge With Empty Arrays throws Error', async () => {
+                await expectAsync(zeroOverrides[0].result()).toBeRejectedWithError();
+                await expectAsync(zeroOverrides[1].result()).toBeRejectedWithError();
+            });
+        });
+    });
 
     describe('Most Specific Dates Test', () => {
         it('Empty Array returns null', () => {

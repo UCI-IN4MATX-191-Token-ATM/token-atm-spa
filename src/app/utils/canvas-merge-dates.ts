@@ -95,8 +95,8 @@ export function defaultCanvasDateLevels(
     individualOverridesWithThisStudent: AssignmentOverride[],
     sectionOverridesWithThisStudent: AssignmentOverride[],
     getAssignmentDates?: () => Promise<OverrideDates>
-): CheckAndCollect[] {
-    const result = [
+) {
+    let result: [CheckAndCollect, CheckAndCollect] | [CheckAndCollect, CheckAndCollect, CheckAndCollect] = [
         {
             name: 'Individual Level',
             predicate: () => {
@@ -128,15 +128,18 @@ export function defaultCanvasDateLevels(
     ];
 
     if (getAssignmentDates != null) {
-        result.push({
-            name: 'Assignment Level',
-            predicate: () => {
-                return true;
-            },
-            result: async () => {
-                return await getAssignmentDates();
+        result = [
+            ...result,
+            {
+                name: 'Assignment Level',
+                predicate: () => {
+                    return true;
+                },
+                result: async () => {
+                    return await getAssignmentDates();
+                }
             }
-        });
+        ];
     }
     return result;
 }
