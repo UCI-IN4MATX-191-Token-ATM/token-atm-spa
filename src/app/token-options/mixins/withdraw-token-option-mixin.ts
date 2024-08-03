@@ -46,7 +46,7 @@ export function WithdrawTokenOptionMixin<T extends ITokenOption, TBase extends C
             this._withdrawTokenOptionId = withdrawTokenId;
         }
 
-        private initalizeWithdrawTokenOption() {
+        private initializeWithdrawTokenOption() {
             if (this._isCachedWithdrawTokenOptionInitialized) return;
             this._isCachedWithdrawTokenOptionInitialized = true;
             const tokenOption = this.group.configuration.getTokenOptionById(this._withdrawTokenOptionId);
@@ -59,12 +59,12 @@ export function WithdrawTokenOptionMixin<T extends ITokenOption, TBase extends C
         }
 
         public get hasWithdrawTokenOption(): boolean {
-            this.initalizeWithdrawTokenOption();
+            this.initializeWithdrawTokenOption();
             return this._cachedWithdrawTokenOption != undefined;
         }
 
         public get withdrawTokenOption(): T | undefined {
-            this.initalizeWithdrawTokenOption();
+            this.initializeWithdrawTokenOption();
             return this._cachedWithdrawTokenOption;
         }
     };
