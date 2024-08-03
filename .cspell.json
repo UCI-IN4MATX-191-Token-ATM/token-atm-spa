@@ -31,5 +31,5 @@
         "camerfoul"
     ],
     "flagWords": ["hte"],
-    "ignorePaths": ["node_modules/**", "custom-schematics/node_modules/**", "dist/**"]
+    "ignorePaths": ["node_modules/**", "custom-schematics/node_modules/**", "dist/**", "coverage/**"]
 }

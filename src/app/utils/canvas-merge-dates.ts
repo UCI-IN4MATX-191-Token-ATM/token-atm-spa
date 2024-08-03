@@ -81,7 +81,7 @@ export function mostSpecificDateSource(levels: (CheckAndCollect | null)[]) {
 }
 
 /**
- * Provides default stucture that properly resolves the final override dates for a student.
+ * Provides default structure that properly resolves the final override dates for a student.
  * Attempts to follow the way Canvas works.
  *
  * Also allows levels to be skipped (for testing and audit purposes)
@@ -100,13 +100,13 @@ export function defaultCanvasDateLevels(
         {
             name: 'Individual Level',
             predicate: () => {
-                const numIndividOverrides = individualOverridesWithThisStudent.length;
-                if (numIndividOverrides > 1) {
+                const numIndividualOverrides = individualOverridesWithThisStudent.length;
+                if (numIndividualOverrides > 1) {
                     throw new Error(
                         'This student was found in multiple individual level overrides for this assignment. They should only ever be in one per assignment.'
                     );
                 }
-                return numIndividOverrides === 1;
+                return numIndividualOverrides === 1;
             },
             result: async () => {
                 return (individualOverridesWithThisStudent as OverrideDates[]).reduce((acc, cur) =>
