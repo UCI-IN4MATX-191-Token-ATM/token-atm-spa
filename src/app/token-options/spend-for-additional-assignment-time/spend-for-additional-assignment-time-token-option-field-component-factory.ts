@@ -14,7 +14,7 @@ import {
 } from 'app/token-options/token-option-field-component-factory';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import { Inject, Injectable, type EnvironmentInjector, type ViewContainerRef } from '@angular/core';
-import type { FormField } from 'app/utils/form-field/form-field';
+import type { FormField, ObservableFormField } from 'app/utils/form-field/form-field';
 import { CanvasService } from 'app/services/canvas.service';
 import { OptionalFieldComponent } from 'app/components/form-fields/optional-field/optional-field.component';
 import { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
@@ -27,6 +27,7 @@ import { DurationFieldComponent } from 'app/components/form-fields/duration-fiel
 import type { ChangeAssignmentDatesMixinData } from '../mixins/change-assignment-dates-mixin';
 import { SwitchFieldComponent } from 'app/components/form-fields/switch-field/switch-field.component';
 import { StaticFormField } from 'app/utils/form-field/static-form-field';
+import { SingleSelectionFieldComponent } from 'app/components/form-fields/selection-fields/single-selection-field/single-selection-field.component';
 
 @Injectable()
 export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory extends TokenOptionFieldComponentFactory<SpendForAdditionalAssignmentTimeTokenOption> {
@@ -175,15 +176,9 @@ function createAdditionalAssignmentDurationComponent(
 }
 
 type ChangeDatesType = ChangeAssignmentDatesMixinData['dueAtChange'];
-type SwitchDestType =
-    | [undefined, undefined]
-    | ['Removing It', null]
-    | ['Adjusting the Time', NonNullable<ChangeDatesType>];
+type SwitchDestType = ['Removing It', null] | ['Adjusting the Time', NonNullable<ChangeDatesType>];
 function changeDateTransform(x: ChangeDatesType): [boolean, SwitchDestType] {
-    return [
-        x === undefined ? false : true,
-        x == null ? (x === undefined ? [undefined, undefined] : ['Removing It', x]) : ['Adjusting the Time', x]
-    ];
+    return [x === undefined ? false : true, x === null ? ['Removing It', x] : ['Adjusting the Time', x ?? {}]];
 }
 
 function createDurationListComponent(label: string, environmentInjector: EnvironmentInjector) {
@@ -195,16 +190,8 @@ function createDurationListComponent(label: string, environmentInjector: Environ
 }
 
 function createRemoveOrAddDurationSwitchComponent(label: string, environmentInjector: EnvironmentInjector) {
-    return createFieldComponentWithLabel(
-        SwitchFieldComponent<
-            'Removing It' | 'Adjusting the Time',
-            { 'Removing It': null; 'Adjusting the Time': ChangeDatesType },
-            { 'Removing It': null; 'Adjusting the Time': ChangeDatesType }
-        >,
-        label,
-        environmentInjector
-    ).editField((field) => {
-        /* field.wrappedField = createFieldComponentWithLabel(
+    return (
+        createFieldComponentWithLabel(
             SingleSelectionFieldComponent<'Removing It' | 'Adjusting the Time'>,
             label,
             environmentInjector
@@ -222,18 +209,29 @@ function createRemoveOrAddDurationSwitchComponent(label: string, environmentInje
             .transformObservableSrc((v: 'Removing It' | 'Adjusting the Time') => [
                 v,
                 async () => ['Removing It', 'Adjusting the Time']
-            ])  as FormFieldComponentBuilder<
+            ]) as FormFieldComponentBuilder<
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             DirectFormField<'Removing It' | 'Adjusting the Time' | undefined, any> &
                 ObservableFormField<'Removing It' | 'Adjusting the Time' | undefined>
-        >; */
-        field.addField(
-            'Removing It',
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            new FormFieldComponentBuilder().setField(new StaticFormField<null>()).transformDest(async (_v) => {
-                return null;
-            })
-        );
-        field.addField('Adjusting the Time', createDurationListComponent('', environmentInjector));
-    });
+        >
+    ).wrapSuffix(
+        createFieldComponentWithLabel(
+            SwitchFieldComponent<
+                'Removing It' | 'Adjusting the Time',
+                { 'Removing It': null; 'Adjusting the Time': ChangeDatesType },
+                { 'Removing It': null; 'Adjusting the Time': ChangeDatesType }
+            >,
+            '',
+            environmentInjector
+        ).editField((field) => {
+            field.addField(
+                'Removing It',
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                new FormFieldComponentBuilder().setField(new StaticFormField<null>()).transformDest(async (_v) => {
+                    return null;
+                })
+            );
+            field.addField('Adjusting the Time', createDurationListComponent('', environmentInjector));
+        })
+    );
 }
