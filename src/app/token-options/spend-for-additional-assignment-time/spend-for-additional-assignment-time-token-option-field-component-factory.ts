@@ -53,32 +53,40 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
                         'Canvas Assignment to Add Time to'
                     )
                 )
-                // TODO: Use Switch Field to alternate between Null or Duration results
                 .appendBuilder(
                     createFieldComponentWithLabel(
-                        OptionalFieldComponent<AdditionalAssignmentDurationComponent>,
+                        OptionalFieldComponent<AdditionalTimeSwitchComponent>,
                         'Change ‘Available From’',
                         environmentInjector
                     ).editField((field) => {
-                        field.fieldBuilder = createDurationListComponent('Change Date/Time By', environmentInjector);
+                        field.fieldBuilder = createRemoveOrAddDurationSwitchComponent(
+                            'Change Date/Time By',
+                            environmentInjector
+                        );
                     })
                 )
                 .appendBuilder(
                     createFieldComponentWithLabel(
-                        OptionalFieldComponent<AdditionalAssignmentDurationComponent>,
+                        OptionalFieldComponent<AdditionalTimeSwitchComponent>,
                         'Change ‘Due’',
                         environmentInjector
                     ).editField((field) => {
-                        field.fieldBuilder = createDurationListComponent('Change Date/Time By', environmentInjector);
+                        field.fieldBuilder = createRemoveOrAddDurationSwitchComponent(
+                            'Change Date/Time By',
+                            environmentInjector
+                        );
                     })
                 )
                 .appendBuilder(
                     createFieldComponentWithLabel(
-                        OptionalFieldComponent<AdditionalAssignmentDurationComponent>,
+                        OptionalFieldComponent<AdditionalTimeSwitchComponent>,
                         'Change ‘Available Until’',
                         environmentInjector
                     ).editField((field) => {
-                        field.fieldBuilder = createDurationListComponent('Change Date/Time By', environmentInjector);
+                        field.fieldBuilder = createRemoveOrAddDurationSwitchComponent(
+                            'Change Date/Time By',
+                            environmentInjector
+                        );
                     })
                 )
                 .appendBuilder(createOptionalAllowMultipleApprovedRequestsComponentBuilder(environmentInjector))
@@ -89,9 +97,9 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
                         return [
                             value,
                             [courseId, undefined],
-                            [false, {}],
-                            [false, {}],
-                            [false, {}],
+                            changeDateTransform(undefined),
+                            changeDateTransform(undefined),
+                            changeDateTransform(undefined),
                             [false, 1],
                             ['', value.configuration]
                         ];
@@ -128,9 +136,9 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
                             ...tokenOptionData,
                             type: 'spend-for-additional-assignment-time',
                             assignmentName,
-                            unlockAtChange,
-                            dueAtChange,
-                            lockAtChange,
+                            unlockAtChange: unlockAtChange?.[1],
+                            dueAtChange: dueAtChange?.[1],
+                            lockAtChange: lockAtChange?.[1],
                             assignmentId,
                             allowedRequestCnt,
                             excludeTokenOptionIds
@@ -147,9 +155,7 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
 }
 
 type extractBuiltType<T> = T extends FormFieldComponentBuilder<infer U> ? U : never;
-type AdditionalAssignmentDurationComponent = extractBuiltType<
-    ReturnType<typeof createAdditionalAssignmentDurationComponent>
->;
+type AdditionalTimeSwitchComponent = extractBuiltType<ReturnType<typeof createRemoveOrAddDurationSwitchComponent>>;
 
 function createAdditionalAssignmentDurationComponent(
     durationFieldBuilderFactory: () => FormFieldComponentBuilder<
@@ -169,9 +175,15 @@ function createAdditionalAssignmentDurationComponent(
 }
 
 type ChangeDatesType = ChangeAssignmentDatesMixinData['dueAtChange'];
-function changeDateTransform(x: ChangeDatesType): [boolean, NonNullable<ChangeDatesType>] {
-    // TODO: Change `x ?? {}` once Switch Field is implemented
-    return [x === undefined ? false : true, x ?? {}];
+type SwitchDestType =
+    | [undefined, undefined]
+    | ['Removing It', null]
+    | ['Adjusting the Time', NonNullable<ChangeDatesType>];
+function changeDateTransform(x: ChangeDatesType): [boolean, SwitchDestType] {
+    return [
+        x === undefined ? false : true,
+        x == null ? (x === undefined ? [undefined, undefined] : ['Removing It', x]) : ['Adjusting the Time', x]
+    ];
 }
 
 function createDurationListComponent(label: string, environmentInjector: EnvironmentInjector) {
@@ -192,6 +204,29 @@ function createRemoveOrAddDurationSwitchComponent(label: string, environmentInje
         label,
         environmentInjector
     ).editField((field) => {
+        /* field.wrappedField = createFieldComponentWithLabel(
+            SingleSelectionFieldComponent<'Removing It' | 'Adjusting the Time'>,
+            label,
+            environmentInjector
+        )
+            .editField((field) => {
+                field.validator = async ([v, f]: ['Removing It' | 'Adjusting the Time' | undefined, typeof field]) => {
+                    f.errorMessage = undefined;
+                    if (v === undefined) {
+                        f.errorMessage = 'Please select the change you want to make.';
+                        return false;
+                    }
+                    return true;
+                };
+            })
+            .transformObservableSrc((v: 'Removing It' | 'Adjusting the Time') => [
+                v,
+                async () => ['Removing It', 'Adjusting the Time']
+            ])  as FormFieldComponentBuilder<
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            DirectFormField<'Removing It' | 'Adjusting the Time' | undefined, any> &
+                ObservableFormField<'Removing It' | 'Adjusting the Time' | undefined>
+        >; */
         field.addField(
             'Removing It',
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -202,4 +237,3 @@ function createRemoveOrAddDurationSwitchComponent(label: string, environmentInje
         field.addField('Adjusting the Time', createDurationListComponent('', environmentInjector));
     });
 }
-createRemoveOrAddDurationSwitchComponent;
