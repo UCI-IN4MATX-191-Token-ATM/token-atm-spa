@@ -20,7 +20,7 @@ export class DurationFieldComponent extends BaseDirectFormField<
     [DurationFieldComponent, SingleDurationResult, boolean]
 > {
     private _durValue: SingleDurationResult[0];
-    private _numValue: number;
+    private _numValue: SingleDurationResult[1];
     isSelectionValid = true;
 
     durations = structuredClone(DurationProperties);

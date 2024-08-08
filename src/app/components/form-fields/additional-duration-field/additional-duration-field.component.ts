@@ -19,7 +19,7 @@ export class AdditionalDurationFieldComponent
 {
     @Input() durationFieldBuilderFactory?: () => FormFieldComponentBuilder<
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        DirectFormField<SingleDurationResult, any> // TODO: Check types
+        DirectFormField<SingleDurationResult, any>
     >;
 
     @Input() defaultDurationValueProvider?: () => SingleDurationResult;
@@ -39,7 +39,7 @@ export class AdditionalDurationFieldComponent
     private _defaultDurationField?: DirectFormField<
         SingleDurationResult,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        [DirectFormField<SingleDurationResult, any>, SingleDurationResult, boolean] // TODO: Check last 2 types
+        [DirectFormField<SingleDurationResult, any>, SingleDurationResult, boolean]
     >;
     private isInitialized = false;
     private _delayedInitValue?: ValidDurationData;
