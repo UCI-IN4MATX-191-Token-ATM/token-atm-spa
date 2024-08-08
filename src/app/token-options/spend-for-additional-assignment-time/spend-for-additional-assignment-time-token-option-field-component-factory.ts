@@ -17,7 +17,7 @@ import { Inject, Injectable, type EnvironmentInjector, type ViewContainerRef } f
 import type { ExtractSrc, FormField, ObservableFormField } from 'app/utils/form-field/form-field';
 import { CanvasService } from 'app/services/canvas.service';
 import { OptionalFieldComponent } from 'app/components/form-fields/optional-field/optional-field.component';
-import { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-component-builder';
+import { FormFieldComponentBuilder, type ExtractBuiltType } from 'app/utils/form-field/form-field-component-builder';
 import {
     AdditionalDurationFieldComponent,
     type SingleDurationResult
@@ -156,7 +156,6 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
     }
 }
 
-type ExtractBuiltType<T> = T extends FormFieldComponentBuilder<infer U> ? U : never;
 type AdditionalTimeSwitchComponent = ExtractBuiltType<ReturnType<typeof createRemoveOrAddDurationSwitchComponent>>;
 
 function createAdditionalAssignmentDurationComponent(
