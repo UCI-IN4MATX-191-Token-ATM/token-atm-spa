@@ -62,21 +62,15 @@ export function mergeOverrideDates(
     };
 }
 
-type CheckAndCollect = { name: string; predicate: () => boolean; result: () => Promise<OverrideDates> };
+export type CheckAndCollect = { name: string; predicate: () => boolean; result: () => Promise<OverrideDates> };
 
 /**
  * Takes a Priority Ordered (highest to lowest) array and reduces it to single appropriate level.
  *
- * @returns The first non-null option with a true predicate is returned. If none found, returns null.
+ * @returns The first option with a true predicate is returned. If none found, returns undefined.
  */
-export function mostSpecificDateSource(levels: (CheckAndCollect | null)[]) {
-    return levels.reduce((choice, cur) => {
-        if (choice == null && cur?.predicate()) {
-            return cur;
-        } else {
-            return choice;
-        }
-    }, null);
+export function mostSpecificDateSource(levels: CheckAndCollect[]) {
+    return levels.find((level) => level?.predicate?.());
 }
 
 /**

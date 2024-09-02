@@ -4,7 +4,8 @@ import {
     mergeOverrideDates,
     mostSpecificDateSource,
     defaultCanvasDateLevels,
-    type OverrideDates
+    type OverrideDates,
+    type CheckAndCollect
 } from './canvas-merge-dates';
 
 describe('Canvas Merge Dates Tests', () => {
@@ -148,7 +149,7 @@ describe('Canvas Merge Dates Tests', () => {
         it('Empty Result', () => {
             expect(test.length).toBe(2);
             expect(test.some((x) => x.predicate())).toBeFalse();
-            expect(mostSpecificDateSource(test)).toBeNull();
+            expect(mostSpecificDateSource(test)).toBeUndefined();
         });
         it('Using Fallback Function', async () => {
             const test = defaultCanvasDateLevels([], [], () => Promise.resolve(nullOverrideDates));
@@ -215,11 +216,12 @@ describe('Canvas Merge Dates Tests', () => {
     });
 
     describe('Most Specific Dates Test', () => {
-        it('Empty Array returns null', () => {
-            expect(mostSpecificDateSource([])).toBeNull();
+        const emptyObject = {} as CheckAndCollect;
+        it('Empty Array returns undefined', () => {
+            expect(mostSpecificDateSource([])).toBeUndefined();
         });
-        it('Array of nulls returns null', () => {
-            expect(mostSpecificDateSource([null, null, null])).toBeNull();
+        it('Array of empty objects returns undefined', () => {
+            expect(mostSpecificDateSource([emptyObject, emptyObject, emptyObject])).toBeUndefined();
         });
         const falsePred = {
             name: 'Always Fails',
@@ -236,8 +238,8 @@ describe('Canvas Merge Dates Tests', () => {
             predicate: () => true,
             result: () => Promise.resolve({ unlockAt: null, dueAt: null, lockAt: null })
         };
-        it('Single false source returns null', () => {
-            expect(mostSpecificDateSource([falsePred])).toBeNull();
+        it('Single false source returns undefined', () => {
+            expect(mostSpecificDateSource([falsePred])).toBeUndefined();
         });
         it('Single true source is returned', () => {
             expect(mostSpecificDateSource([truePred])).toBe(truePred);
@@ -246,10 +248,19 @@ describe('Canvas Merge Dates Tests', () => {
         it('First true source is returned', () => {
             expect(mostSpecificDateSource([falsePred, falsePred, truePred2nd, truePred])).toBe(truePred2nd);
         });
-        it('Mix of nulls and objects returns first true non-null object', () => {
-            expect(mostSpecificDateSource([null, falsePred, null, falsePred, truePred2nd, null, null, truePred])).toBe(
-                truePred2nd
-            );
+        it('Mix of empty objects and objects returns first true non-empty object', () => {
+            expect(
+                mostSpecificDateSource([
+                    emptyObject,
+                    falsePred,
+                    emptyObject,
+                    falsePred,
+                    truePred2nd,
+                    emptyObject,
+                    emptyObject,
+                    truePred
+                ])
+            ).toBe(truePred2nd);
         });
     });
 });
