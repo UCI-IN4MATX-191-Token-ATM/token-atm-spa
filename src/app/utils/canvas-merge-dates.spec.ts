@@ -6,7 +6,6 @@ import {
     defaultCanvasDateLevels,
     type OverrideDates
 } from './canvas-merge-dates';
-import type { AssignmentOverride } from 'app/data/assignment-override';
 
 describe('Canvas Merge Dates Tests', () => {
     const equalDate = new Date();
@@ -162,9 +161,9 @@ describe('Canvas Merge Dates Tests', () => {
     });
 
     describe('Merging Array of Assignment Overrides', () => {
-        const fakeOverrideAllDiff = allDiff as AssignmentOverride;
-        const fakeOverrideAllNull = allNull as AssignmentOverride;
-        const fakeOverrideAllEqual = allEqual as AssignmentOverride;
+        const fakeOverrideAllDiff = allDiff;
+        const fakeOverrideAllNull = allNull;
+        const fakeOverrideAllEqual = allEqual;
         const oneOverride = [fakeOverrideAllNull];
         const oneWithAllNullResult = defaultCanvasDateLevels(oneOverride, oneOverride);
         const fourOverrides = [fakeOverrideAllEqual, fakeOverrideAllEqual, fakeOverrideAllDiff, fakeOverrideAllNull];

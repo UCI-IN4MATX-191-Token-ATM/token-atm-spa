@@ -1,4 +1,3 @@
-import type { AssignmentOverride } from 'app/data/assignment-override';
 import { compareAsc, compareDesc, isEqual } from 'date-fns';
 
 export type OverrideDate = Date | null;
@@ -92,8 +91,8 @@ export function mostSpecificDateSource(levels: (CheckAndCollect | null)[]) {
  * @returns Array of objects used to resolve and collect the override dates for a student
  */
 export function defaultCanvasDateLevels(
-    individualOverridesWithThisStudent: AssignmentOverride[],
-    sectionOverridesWithThisStudent: AssignmentOverride[],
+    individualOverridesWithThisStudent: OverrideDates[],
+    sectionOverridesWithThisStudent: OverrideDates[],
     getAssignmentDates?: () => Promise<OverrideDates>
 ) {
     let result: [CheckAndCollect, CheckAndCollect] | [CheckAndCollect, CheckAndCollect, CheckAndCollect] = [
