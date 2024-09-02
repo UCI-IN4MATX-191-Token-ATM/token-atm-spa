@@ -1274,7 +1274,7 @@ export class CanvasService {
         const studentDates = await mostSpecificDateSource(levels)?.result();
         if (studentDates == null)
             throw new Error(
-                'Logic error in implementation. No unlock, due, and lock dates found for this student and assignment. This should be impossible.'
+                'Logic error in implementation. Please contact the Token ATM developers and let them know: No unlock, due, and lock dates found for a student and assignment. Which should be impossible.'
             );
 
         function makeDueMatchLock(overrideDates: OverrideDates): OverrideDates {
