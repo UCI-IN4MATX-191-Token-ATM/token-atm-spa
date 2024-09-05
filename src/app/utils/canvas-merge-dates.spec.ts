@@ -10,24 +10,28 @@ import {
 
 describe('Canvas Merge Dates Tests', () => {
     const equalDate = new Date();
+    /** Override Dates that are all the same day */
     const allEqual: OverrideDates = { unlockAt: equalDate, dueAt: equalDate, lockAt: equalDate };
+    /** Override Dates that are all different, and are the least restrictive for each kind */
     const allDiff: OverrideDates = {
         unlockAt: add(equalDate, { days: -1 }),
         dueAt: add(equalDate, { days: 1 }),
         lockAt: add(equalDate, { days: 2 })
     };
+    /** Override Dates that are all set to Null */
     const allNull: OverrideDates = { unlockAt: null, dueAt: null, lockAt: null };
     describe('Equality Tests', () => {
         function equal(a: OverrideDates, b?: OverrideDates) {
             return areOverrideDatesEqual(a, b ?? structuredClone(a));
         }
-        it('All Equal Dates', () => {
+        it('All Equal Dates are found Equal', () => {
             expect(equal(allEqual)).toBeTrue();
+            expect(equal(allDiff)).toBeTrue();
         });
-        it('All Equal Nulls', () => {
+        it('All Nulls are found Equal', () => {
             expect(equal(allNull)).toBeTrue();
         });
-        it('Unequal Dates', () => {
+        it('Differing Dates are found Unequal', () => {
             expect(equal(allEqual, allDiff)).toBeFalse();
             // TODO: Use combination generator to test all possibilities
             expect(equal(allEqual, { ...allDiff, unlockAt: equalDate })).toBeFalse();
@@ -37,11 +41,11 @@ describe('Canvas Merge Dates Tests', () => {
             expect(equal(allEqual, { ...allDiff, dueAt: equalDate, lockAt: equalDate })).toBeFalse();
             expect(equal(allEqual, { ...allDiff, lockAt: equalDate, unlockAt: equalDate })).toBeFalse();
         });
-        it('Equal Dates & Nulls are not Equal', () => {
+        it('Dates & Nulls are not Equal', () => {
             expect(equal(allEqual, allNull)).toBeFalse();
             // TODO: Test all combinations programmatically
         });
-        it('Unequal Dates & Nulls are not Equal', () => {
+        it('More Dates & Nulls are not Equal', () => {
             expect(equal(allDiff, allNull)).toBeFalse();
             // TODO: Test all combinations programmatically
         });
@@ -161,14 +165,19 @@ describe('Canvas Merge Dates Tests', () => {
         });
     });
 
-    describe('Merging Array of Assignment Overrides', () => {
+    describe('Merging Array of OverrideDates', () => {
         const fakeOverrideAllDiff = allDiff;
         const fakeOverrideAllNull = allNull;
         const fakeOverrideAllEqual = allEqual;
+        /** Array with one set of OverrideDates */
         const oneOverride = [fakeOverrideAllNull];
+        /** Default Canvas Priority Levels when both Individual and Section Overrides have 1 set of all null dates */
         const oneWithAllNullResult = defaultCanvasDateLevels(oneOverride, oneOverride);
+        /** Array with 4 sets of OverrideDates */
         const fourOverrides = [fakeOverrideAllEqual, fakeOverrideAllEqual, fakeOverrideAllDiff, fakeOverrideAllNull];
+        /** Default Canvas Priority Levels when both Individual and Section Overrides have 4 set of OverrideDates */
         const fourWithAllNullResult = defaultCanvasDateLevels(fourOverrides, fourOverrides);
+        /** Used to check how `defaultCanvasDateLevels` handles empty arguments */
         const zeroOverrides = defaultCanvasDateLevels([], []);
         function equal(a: OverrideDates, b = allNull) {
             return expect(areOverrideDatesEqual(a, b)).toBeTrue();
@@ -182,7 +191,7 @@ describe('Canvas Merge Dates Tests', () => {
         it('Individual Level Predicate is false with no overrides', () => {
             expect(zeroOverrides[0].predicate()).toBeFalse();
         });
-        it('Individual Level Result reduces to a single `Override Dates`', async () => {
+        it('Individual Level Result reduces to a single `OverrideDates`', async () => {
             equal(await oneWithAllNullResult[0].result(), allNull);
             equal(await fourWithAllNullResult[0].result(), allNull);
         });
@@ -193,7 +202,7 @@ describe('Canvas Merge Dates Tests', () => {
             expect(oneWithAllNullResult[1].predicate()).toBeTrue();
             expect(fourWithAllNullResult[1].predicate()).toBeTrue();
         });
-        it('Section Level Result reduces to a single `Override Dates`', async () => {
+        it('Section Level Result reduces to a single `OverrideDates`', async () => {
             equal(await oneWithAllNullResult[1].result(), allNull);
             equal(await fourWithAllNullResult[1].result(), allNull);
         });
@@ -202,13 +211,13 @@ describe('Canvas Merge Dates Tests', () => {
                 [fakeOverrideAllEqual, fakeOverrideAllEqual, fakeOverrideAllEqual],
                 [fakeOverrideAllEqual, fakeOverrideAllEqual, fakeOverrideAllDiff]
             );
-            it('Merges to All Equal', async () => {
+            it('Merging the Same Day results in the Same Day', async () => {
                 equal(await diffMerges[0].result(), allEqual);
             });
-            it('Merges to All Diff', async () => {
+            it('Merging differing days results in the least Restrictive Days', async () => {
                 equal(await diffMerges[1].result(), allDiff);
             });
-            it('Merge With Empty Arrays throws Error', async () => {
+            it('Merging with Empty Arrays throws Error', async () => {
                 await expectAsync(zeroOverrides[0].result()).toBeRejectedWithError();
                 await expectAsync(zeroOverrides[1].result()).toBeRejectedWithError();
             });
@@ -241,11 +250,9 @@ describe('Canvas Merge Dates Tests', () => {
         it('Single false source returns undefined', () => {
             expect(mostSpecificDateSource([falsePred])).toBeUndefined();
         });
-        it('Single true source is returned', () => {
+        it('First single true source is returned', () => {
             expect(mostSpecificDateSource([truePred])).toBe(truePred);
             expect(mostSpecificDateSource([truePred, truePred2nd])).toBe(truePred);
-        });
-        it('First true source is returned', () => {
             expect(mostSpecificDateSource([falsePred, falsePred, truePred2nd, truePred])).toBe(truePred2nd);
         });
         it('Mix of empty objects and objects returns first true non-empty object', () => {
