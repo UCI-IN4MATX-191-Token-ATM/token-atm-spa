@@ -65,7 +65,7 @@ export function mergeOverrideDates(
 export type CheckAndCollect = { name: string; predicate: () => boolean; result: () => Promise<OverrideDates> };
 
 /**
- * Takes a Priority Ordered (highest to lowest) array and reduces it to single appropriate level.
+ * Takes a Priority Ordered (highest to lowest) array and finds the first appropriate level.
  *
  * @returns The first option with a true predicate is returned. If none found, returns undefined.
  */
