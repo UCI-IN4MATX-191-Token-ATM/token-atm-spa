@@ -59,49 +59,60 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
                         OptionalFieldComponent<AdditionalTimeSwitchComponent>,
                         'Change ‘Available From’',
                         environmentInjector
-                    ).editField((field) => {
-                        field.fieldBuilder = createRemoveOrAddDurationSwitchComponent(
-                            'Change Date/Time By',
-                            environmentInjector
-                        );
-                    })
+                    )
+                        .editField((field) => {
+                            field.fieldBuilder = createRemoveOrAddDurationSwitchComponent(
+                                'Change Date/Time By',
+                                environmentInjector
+                            );
+                        })
+                        .transformSrc((v: ChangeDatesType) => {
+                            return optionalChangeDateSrcTransform(v);
+                        })
                 )
                 .appendBuilder(
                     createFieldComponentWithLabel(
                         OptionalFieldComponent<AdditionalTimeSwitchComponent>,
                         'Change ‘Due’',
                         environmentInjector
-                    ).editField((field) => {
-                        field.fieldBuilder = createRemoveOrAddDurationSwitchComponent(
-                            'Change Date/Time By',
-                            environmentInjector
-                        );
-                    })
+                    )
+                        .editField((field) => {
+                            field.fieldBuilder = createRemoveOrAddDurationSwitchComponent(
+                                'Change Date/Time By',
+                                environmentInjector
+                            );
+                        })
+                        .transformSrc((v: ChangeDatesType) => {
+                            return optionalChangeDateSrcTransform(v);
+                        })
                 )
                 .appendBuilder(
                     createFieldComponentWithLabel(
                         OptionalFieldComponent<AdditionalTimeSwitchComponent>,
                         'Change ‘Available Until’',
                         environmentInjector
-                    ).editField((field) => {
-                        field.fieldBuilder = createRemoveOrAddDurationSwitchComponent(
-                            'Change Date/Time By',
-                            environmentInjector
-                        );
-                    })
+                    )
+                        .editField((field) => {
+                            field.fieldBuilder = createRemoveOrAddDurationSwitchComponent(
+                                'Change Date/Time By',
+                                environmentInjector
+                            );
+                        })
+                        .transformSrc((v: ChangeDatesType) => {
+                            return optionalChangeDateSrcTransform(v);
+                        })
                 )
                 .appendBuilder(createOptionalAllowMultipleApprovedRequestsComponentBuilder(environmentInjector))
                 .appendBuilder(createExcludeTokenOptionsComponentBuilder(environmentInjector))
                 .transformSrc((value: SpendForAdditionalAssignmentTimeTokenOption | TokenOptionGroup) => {
-                    const opSwitchSrc = optionalChangeDateSrcTransform;
                     if (value instanceof TokenOptionGroup) {
                         const courseId = value.configuration.course.id;
                         return [
                             value,
                             [courseId, undefined],
-                            opSwitchSrc(undefined),
-                            opSwitchSrc(undefined),
-                            opSwitchSrc(undefined),
+                            undefined,
+                            undefined,
+                            undefined,
                             [false, 1],
                             ['', value.configuration]
                         ];
@@ -116,9 +127,9 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
                                     name: value.assignmentName
                                 }
                             ],
-                            opSwitchSrc(value.unlockAtChange),
-                            opSwitchSrc(value.dueAtChange),
-                            opSwitchSrc(value.lockAtChange),
+                            value.unlockAtChange,
+                            value.dueAtChange,
+                            value.lockAtChange,
                             [value.allowedRequestCnt != 1, value.allowedRequestCnt],
                             [value.excludeTokenOptionIds.join(','), value.group.configuration]
                         ];
