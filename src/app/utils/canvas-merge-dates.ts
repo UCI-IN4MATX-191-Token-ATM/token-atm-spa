@@ -21,6 +21,31 @@ function mergeOverrideDate(a: OverrideDate, b: OverrideDate, min = true, preserv
 }
 
 /**
+ * Reports the date comparisons between unlock, due, and lock dates.
+ *
+ * - `lowerBound` compares unlock and due, `-1` means due is before unlock
+ * - `upperBound` compares due and lock, `-1` means lock is before due
+ * - `endpoints` compares unlock and lock, `-1` means lock is before unlock
+ *
+ * `0`s mean the dates are equal, and `1`s mean the ordering is correct
+ * @param param0 Override dates to check the boundries of
+ * @returns Object with the relevant boundry comparisons
+ */
+export function boundsCheck({ unlockAt, dueAt, lockAt }: OverrideDates) {
+    const result: { lowerBound?: number; upperBound?: number; endpoints?: number } = {};
+    if (unlockAt !== null && dueAt !== null) {
+        result['lowerBound'] = compareDesc(unlockAt, dueAt);
+    }
+    if (lockAt !== null && dueAt !== null) {
+        result['upperBound'] = compareDesc(dueAt, lockAt);
+    }
+    if (unlockAt !== null && lockAt !== null) {
+        result['endpoints'] = compareDesc(unlockAt, lockAt);
+    }
+    return result;
+}
+
+/**
  * @returns true if both dates are equal or both are null
  */
 function isOverrideDateEqual(a: OverrideDate, b: OverrideDate): boolean {

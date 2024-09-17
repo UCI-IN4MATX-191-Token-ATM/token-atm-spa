@@ -5,21 +5,23 @@ import {
     mostSpecificDateSource,
     defaultCanvasDateLevels,
     type OverrideDates,
-    type CheckAndCollect
+    type CheckAndCollect,
+    boundsCheck
 } from './canvas-merge-dates';
 
+const equalDate = new Date();
+/** Override Dates that are all the same day */
+const allEqual: OverrideDates = { unlockAt: equalDate, dueAt: equalDate, lockAt: equalDate };
+/** Override Dates that are all different, and are the least restrictive for each kind */
+const allDiff: OverrideDates = {
+    unlockAt: add(equalDate, { days: -1 }),
+    dueAt: add(equalDate, { days: 1 }),
+    lockAt: add(equalDate, { days: 2 })
+};
+/** Override Dates that are all set to Null */
+const allNull: OverrideDates = { unlockAt: null, dueAt: null, lockAt: null };
+
 describe('Canvas Merge Dates Tests', () => {
-    const equalDate = new Date();
-    /** Override Dates that are all the same day */
-    const allEqual: OverrideDates = { unlockAt: equalDate, dueAt: equalDate, lockAt: equalDate };
-    /** Override Dates that are all different, and are the least restrictive for each kind */
-    const allDiff: OverrideDates = {
-        unlockAt: add(equalDate, { days: -1 }),
-        dueAt: add(equalDate, { days: 1 }),
-        lockAt: add(equalDate, { days: 2 })
-    };
-    /** Override Dates that are all set to Null */
-    const allNull: OverrideDates = { unlockAt: null, dueAt: null, lockAt: null };
     describe('Equality Tests', () => {
         function equal(a: OverrideDates, b?: OverrideDates) {
             return areOverrideDatesEqual(a, b ?? structuredClone(a));
@@ -269,5 +271,48 @@ describe('Canvas Merge Dates Tests', () => {
                 ])
             ).toBe(truePred2nd);
         });
+    });
+});
+
+describe('Canvas Check Dates Boundries', () => {
+    it('All null dates have no boundries', () => {
+        const result = boundsCheck(allNull);
+        expect(Object.values(result).filter((x) => x === -1).length).toEqual(0);
+        expect(result).toEqual({});
+    });
+
+    it('Null due date has at most `endpoints` boundry', () => {
+        const adjusted = { ...allEqual, dueAt: null };
+        expect(boundsCheck(adjusted)).toEqual({ endpoints: 0 });
+        expect(boundsCheck({ ...adjusted, lockAt: null })).toEqual({});
+        expect(boundsCheck({ ...adjusted, unlockAt: null })).toEqual({});
+    });
+
+    it('Null unlock date has at most `upperBound`', () => {
+        const adjusted = { ...allEqual, unlockAt: null };
+        expect(boundsCheck(adjusted)).toEqual({ upperBound: 0 });
+        expect(boundsCheck({ ...adjusted, dueAt: null })).toEqual({});
+        expect(boundsCheck({ ...adjusted, lockAt: null })).toEqual({});
+    });
+
+    it('Null lock date has at most `lowerBound', () => {
+        const adjusted = { ...allEqual, lockAt: null };
+        expect(boundsCheck(adjusted)).toEqual({ lowerBound: 0 });
+        expect(boundsCheck({ ...adjusted, dueAt: null })).toEqual({});
+        expect(boundsCheck({ ...adjusted, unlockAt: null })).toEqual({});
+    });
+
+    it('All equal dates results in 3 equal boundries', () => {
+        expect(Object.values(boundsCheck(allEqual))).toEqual([0, 0, 0]);
+    });
+
+    it('All differing least restrictive dates results in 3 valid boundries', () => {
+        expect(Object.values(boundsCheck(allDiff))).toEqual([1, 1, 1]);
+    });
+
+    it('Reversed all differing least restrictive dates results in 3 invalid boundries', () => {
+        const reversed = { unlockAt: allDiff.lockAt, dueAt: allDiff.dueAt, lockAt: allDiff.unlockAt };
+        const result = boundsCheck(reversed);
+        expect(result).toEqual({ lowerBound: -1, upperBound: -1, endpoints: -1 });
     });
 });
