@@ -274,7 +274,7 @@ describe('Canvas Merge Dates Tests', () => {
     });
 });
 
-describe('Canvas Check Dates Boundries', () => {
+describe('Canvas Check Override Dates Boundries', () => {
     it('All null dates have no boundries', () => {
         const result = boundsCheck(allNull);
         expect(Object.values(result).filter((x) => x === -1).length).toEqual(0);
@@ -310,7 +310,7 @@ describe('Canvas Check Dates Boundries', () => {
         expect(Object.values(boundsCheck(allDiff))).toEqual([1, 1, 1]);
     });
 
-    it('Reversed all differing least restrictive dates results in 3 invalid boundries', () => {
+    it('Reversing all differing least restrictive dates results in 3 invalid boundries', () => {
         const reversed = { unlockAt: allDiff.lockAt, dueAt: allDiff.dueAt, lockAt: allDiff.unlockAt };
         const result = boundsCheck(reversed);
         expect(result).toEqual({ lowerBound: -1, upperBound: -1, endpoints: -1 });
