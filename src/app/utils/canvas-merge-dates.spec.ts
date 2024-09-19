@@ -6,8 +6,10 @@ import {
     defaultCanvasDateLevels,
     type OverrideDates,
     type CheckAndCollect,
-    boundsCheck
+    boundsCheck,
+    changeOverrideDates
 } from './canvas-merge-dates';
+import type { DurationData } from 'app/data/date-fns-duration';
 
 const equalDate = new Date();
 /** Override Dates that are all the same day */
@@ -314,5 +316,98 @@ describe('Canvas Check Override Dates Boundries', () => {
         const reversed = { unlockAt: allDiff.lockAt, dueAt: allDiff.dueAt, lockAt: allDiff.unlockAt };
         const result = boundsCheck(reversed);
         expect(result).toEqual({ lowerBound: -1, upperBound: -1, endpoints: -1 });
+    });
+});
+
+describe('Change Canvas Override Dates Tests', () => {
+    it('Make No Change', () => {
+        expect(changeOverrideDates(allDiff, {})).toEqual(allDiff);
+        expect(changeOverrideDates(allEqual, {})).toEqual(allEqual);
+        expect(changeOverrideDates(allNull, {})).toEqual(allNull);
+    });
+
+    it('Make Single Null Change', () => {
+        expect(changeOverrideDates(allDiff, { unlockAtChange: null })).toEqual({ ...allDiff, unlockAt: null });
+        expect(changeOverrideDates(allEqual, { dueAtChange: null })).toEqual({ ...allEqual, dueAt: null });
+        expect(changeOverrideDates(allDiff, { lockAtChange: null })).toEqual({ ...allDiff, lockAt: null });
+        expect(changeOverrideDates(allNull, { lockAtChange: null })).toEqual(allNull);
+    });
+
+    it('Make 2 Null Changes', () => {
+        expect(changeOverrideDates(allDiff, { unlockAtChange: null, dueAtChange: null })).toEqual({
+            ...allDiff,
+            unlockAt: null,
+            dueAt: null
+        });
+        expect(changeOverrideDates(allEqual, { dueAtChange: null, lockAtChange: null })).toEqual({
+            ...allEqual,
+            dueAt: null,
+            lockAt: null
+        });
+        expect(changeOverrideDates(allDiff, { unlockAtChange: null, lockAtChange: null })).toEqual({
+            ...allDiff,
+            unlockAt: null,
+            lockAt: null
+        });
+        expect(changeOverrideDates(allNull, { lockAtChange: null, dueAtChange: null })).toEqual(allNull);
+    });
+
+    it('Make 3 Null Changes', () => {
+        expect(changeOverrideDates(allDiff, { unlockAtChange: null, dueAtChange: null, lockAtChange: null })).toEqual(
+            allNull
+        );
+        expect(changeOverrideDates(allEqual, { unlockAtChange: null, dueAtChange: null, lockAtChange: null })).toEqual(
+            allNull
+        );
+        expect(changeOverrideDates(allNull, { unlockAtChange: null, dueAtChange: null, lockAtChange: null })).toEqual(
+            allNull
+        );
+    });
+
+    describe('Adding Time Tests', () => {
+        const addDuration: DurationData = { years: 1, months: 1, days: 1, hours: 1, minutes: 1, seconds: 1 };
+        const addNegDuration: DurationData = Object.fromEntries(
+            Object.entries(addDuration).map(([k, v]) => [k, v * -2])
+        );
+        it('Adding to Null, still results in Null', () => {
+            expect(
+                changeOverrideDates(allNull, {
+                    unlockAtChange: addDuration,
+                    dueAtChange: addDuration,
+                    lockAtChange: addDuration
+                })
+            ).toEqual(allNull);
+            expect(
+                changeOverrideDates(allNull, {
+                    unlockAtChange: addNegDuration,
+                    dueAtChange: addNegDuration,
+                    lockAtChange: addNegDuration
+                })
+            ).toEqual(allNull);
+        });
+        it('Passing duration is the same as adding manually', () => {
+            expect(
+                changeOverrideDates(allDiff, {
+                    unlockAtChange: addDuration,
+                    dueAtChange: addDuration,
+                    lockAtChange: addDuration
+                })
+            ).toEqual({
+                unlockAt: add(allDiff.unlockAt!, addDuration),
+                dueAt: add(allDiff.dueAt!, addDuration),
+                lockAt: add(allDiff.lockAt!, addDuration)
+            });
+            expect(
+                changeOverrideDates(allDiff, {
+                    unlockAtChange: addNegDuration,
+                    dueAtChange: addNegDuration,
+                    lockAtChange: addNegDuration
+                })
+            ).toEqual({
+                unlockAt: add(allDiff.unlockAt!, addNegDuration),
+                dueAt: add(allDiff.dueAt!, addNegDuration),
+                lockAt: add(allDiff.lockAt!, addNegDuration)
+            });
+        });
     });
 });

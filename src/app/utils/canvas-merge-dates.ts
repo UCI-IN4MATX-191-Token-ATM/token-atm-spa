@@ -1,4 +1,5 @@
-import { compareAsc, compareDesc, isEqual } from 'date-fns';
+import type { ChangeAssignmentDatesMixinData } from 'app/token-options/mixins/change-assignment-dates-mixin';
+import { add, compareAsc, compareDesc, isEqual } from 'date-fns';
 
 export type OverrideDate = Date | null;
 export type OverrideDates = { unlockAt: OverrideDate; lockAt: OverrideDate; dueAt: OverrideDate };
@@ -160,4 +161,20 @@ export function defaultCanvasDateLevels(
         ];
     }
     return result;
+}
+
+/**
+ *
+ * @param src The source Override Dates to change
+ * @param change The changes to make (either add duration or make null)
+ * @returns Override Dates object with the supplied changes
+ */
+export function changeOverrideDates(src: OverrideDates, change: ChangeAssignmentDatesMixinData): OverrideDates {
+    const changeFunc = (dateType: keyof OverrideDates) => {
+        const s = src[dateType];
+        const c = change[`${dateType}Change`];
+        return s === null || c === undefined ? s : c === null ? null : add(s, c);
+    };
+
+    return { unlockAt: changeFunc('unlockAt'), dueAt: changeFunc('dueAt'), lockAt: changeFunc('lockAt') };
 }
