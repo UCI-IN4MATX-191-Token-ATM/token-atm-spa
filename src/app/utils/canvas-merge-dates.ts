@@ -178,3 +178,22 @@ export function changeOverrideDates(src: OverrideDates, change: ChangeAssignment
 
     return { unlockAt: changeFunc('unlockAt'), dueAt: changeFunc('dueAt'), lockAt: changeFunc('lockAt') };
 }
+
+/**
+ *
+ * @param src The source Override Dates to replace
+ * @param replace The replacements to make (either a new or an existing Override Date)
+ * @returns Override Dates object with the supplied replacements
+ */
+export function replaceOverrideDates(
+    src: OverrideDates,
+    replace: { [k in keyof ChangeAssignmentDatesMixinData]: keyof OverrideDates | OverrideDate }
+): OverrideDates {
+    const replaceFunc = (dateType: keyof OverrideDates) => {
+        const s = src[dateType];
+        const c = replace[`${dateType}Change`];
+        return typeof c === 'string' ? src[c] : c === undefined ? s : c;
+    };
+
+    return { unlockAt: replaceFunc('unlockAt'), dueAt: replaceFunc('dueAt'), lockAt: replaceFunc('lockAt') };
+}

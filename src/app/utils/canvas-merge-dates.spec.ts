@@ -7,7 +7,8 @@ import {
     type OverrideDates,
     type CheckAndCollect,
     boundsCheck,
-    changeOverrideDates
+    changeOverrideDates,
+    replaceOverrideDates
 } from './canvas-merge-dates';
 import type { DurationData } from 'app/data/date-fns-duration';
 
@@ -320,10 +321,16 @@ describe('Canvas Check Override Dates Boundries', () => {
 });
 
 describe('Change Canvas Override Dates Tests', () => {
+    /** Similar to an empty object, but now each property is defined as undefined */
+    const emptyChanges = { unlockAtChange: undefined, dueAtChange: undefined, lockAtChange: undefined };
+
     it('Make No Change', () => {
         expect(changeOverrideDates(allDiff, {})).toEqual(allDiff);
         expect(changeOverrideDates(allEqual, {})).toEqual(allEqual);
         expect(changeOverrideDates(allNull, {})).toEqual(allNull);
+        expect(changeOverrideDates(allDiff, emptyChanges)).toEqual(allDiff);
+        expect(changeOverrideDates(allEqual, emptyChanges)).toEqual(allEqual);
+        expect(changeOverrideDates(allNull, emptyChanges)).toEqual(allNull);
     });
 
     it('Make Single Null Change', () => {
@@ -408,6 +415,122 @@ describe('Change Canvas Override Dates Tests', () => {
                 dueAt: add(allDiff.dueAt!, addNegDuration),
                 lockAt: add(allDiff.lockAt!, addNegDuration)
             });
+        });
+    });
+
+    describe('Replacing Canvas Override Dates Tests', () => {
+        it('Make no Replacements', () => {
+            expect(replaceOverrideDates(allNull, {})).toEqual(allNull);
+            expect(replaceOverrideDates(allEqual, {})).toEqual(allEqual);
+            expect(replaceOverrideDates(allDiff, {})).toEqual(allDiff);
+            expect(replaceOverrideDates(allNull, emptyChanges)).toEqual(allNull);
+            expect(replaceOverrideDates(allEqual, emptyChanges)).toEqual(allEqual);
+            expect(replaceOverrideDates(allDiff, emptyChanges)).toEqual(allDiff);
+        });
+
+        it('Replace with Nulls', () => {
+            expect(
+                replaceOverrideDates(allEqual, { unlockAtChange: null, dueAtChange: null, lockAtChange: null })
+            ).toEqual(allNull);
+            expect(
+                replaceOverrideDates(allDiff, { unlockAtChange: null, dueAtChange: null, lockAtChange: null })
+            ).toEqual(allNull);
+        });
+
+        it('Replace with Dates', () => {
+            expect(
+                replaceOverrideDates(allNull, {
+                    unlockAtChange: equalDate,
+                    dueAtChange: equalDate,
+                    lockAtChange: equalDate
+                })
+            ).toEqual(allEqual);
+            expect(
+                replaceOverrideDates(allDiff, {
+                    unlockAtChange: equalDate,
+                    dueAtChange: equalDate,
+                    lockAtChange: equalDate
+                })
+            ).toEqual(allEqual);
+            expect(
+                replaceOverrideDates(allEqual, {
+                    unlockAtChange: equalDate,
+                    dueAtChange: equalDate,
+                    lockAtChange: equalDate
+                })
+            ).toEqual(allEqual);
+        });
+
+        it('Replace all with Unlock', () => {
+            expect(
+                replaceOverrideDates(allNull, {
+                    unlockAtChange: 'unlockAt',
+                    dueAtChange: 'unlockAt',
+                    lockAtChange: 'unlockAt'
+                })
+            ).toEqual(allNull);
+            expect(
+                replaceOverrideDates(allEqual, {
+                    unlockAtChange: 'unlockAt',
+                    dueAtChange: 'unlockAt',
+                    lockAtChange: 'unlockAt'
+                })
+            ).toEqual(allEqual);
+            expect(
+                replaceOverrideDates(allDiff, {
+                    unlockAtChange: 'unlockAt',
+                    dueAtChange: 'unlockAt',
+                    lockAtChange: 'unlockAt'
+                })
+            ).toEqual({ unlockAt: allDiff.unlockAt, dueAt: allDiff.unlockAt, lockAt: allDiff.unlockAt });
+        });
+
+        it('Replace all with Due', () => {
+            expect(
+                replaceOverrideDates(allNull, {
+                    unlockAtChange: 'dueAt',
+                    dueAtChange: 'dueAt',
+                    lockAtChange: 'dueAt'
+                })
+            ).toEqual(allNull);
+            expect(
+                replaceOverrideDates(allEqual, {
+                    unlockAtChange: 'dueAt',
+                    dueAtChange: 'dueAt',
+                    lockAtChange: 'dueAt'
+                })
+            ).toEqual(allEqual);
+            expect(
+                replaceOverrideDates(allDiff, {
+                    unlockAtChange: 'dueAt',
+                    dueAtChange: 'dueAt',
+                    lockAtChange: 'dueAt'
+                })
+            ).toEqual({ unlockAt: allDiff.dueAt, dueAt: allDiff.dueAt, lockAt: allDiff.dueAt });
+        });
+
+        it('Replace all with Lock', () => {
+            expect(
+                replaceOverrideDates(allNull, {
+                    unlockAtChange: 'lockAt',
+                    dueAtChange: 'lockAt',
+                    lockAtChange: 'lockAt'
+                })
+            ).toEqual(allNull);
+            expect(
+                replaceOverrideDates(allEqual, {
+                    unlockAtChange: 'lockAt',
+                    dueAtChange: 'lockAt',
+                    lockAtChange: 'lockAt'
+                })
+            ).toEqual(allEqual);
+            expect(
+                replaceOverrideDates(allDiff, {
+                    unlockAtChange: 'lockAt',
+                    dueAtChange: 'lockAt',
+                    lockAtChange: 'lockAt'
+                })
+            ).toEqual({ unlockAt: allDiff.lockAt, dueAt: allDiff.lockAt, lockAt: allDiff.lockAt });
         });
     });
 });
