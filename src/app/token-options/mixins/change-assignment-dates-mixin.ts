@@ -5,10 +5,11 @@ import { DurationDataDef } from 'app/data/date-fns-duration';
 import { formatDuration } from 'date-fns';
 
 // TODO: Make this implementation subsume the existing Canvas Assignment Dates changers
+const ChangeDateDataDef = t.union([DurationDataDef, t.null]);
 const propsAndTypes = {
-    unlockAtChange: t.union([DurationDataDef, t.null]),
-    dueAtChange: t.union([DurationDataDef, t.null]),
-    lockAtChange: t.union([DurationDataDef, t.null])
+    unlockAtChange: ChangeDateDataDef,
+    dueAtChange: ChangeDateDataDef,
+    lockAtChange: ChangeDateDataDef
 };
 
 export const ChangeAssignmentDatesMixinDataDef = t.exact(t.partial(propsAndTypes));
