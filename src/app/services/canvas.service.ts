@@ -26,10 +26,13 @@ import { collectPointsPossible, type CanvasGradingType } from 'app/utils/canvas-
 import { AssignmentGroupDef, type AssignmentGroup } from 'app/data/assignment-group';
 import {
     areOverrideDatesEqual,
+    boundsCheck,
+    changeOverrideDates,
     defaultCanvasDateLevels,
     mostSpecificDateSource,
     type OverrideDates
 } from 'app/utils/canvas-merge-dates';
+import type { ChangeAssignmentDatesMixinData } from 'app/token-options/mixins/change-assignment-dates-mixin';
 
 type QuizQuestionResponse = {
     id: string;
@@ -1208,13 +1211,17 @@ export class CanvasService {
     /**
      * Extends the time a Student has on a Canvas Assignment
      *
-     * Overrides the student's assignment due at to match the assignment's lock at.
+     * - Overrides the student's assignment due at to match the assignment's lock at.
+     * - Or changes override dates by adding time or making it null
+     *
+     * @param changeDates Object with desired changes. If missing, makes due match lock
      */
     public async extendAssignmentForStudent(
         courseId: string,
         assignmentId: string,
         studentId: string,
-        overrideTitlePrefix: string
+        overrideTitlePrefix: string,
+        changeDates?: ChangeAssignmentDatesMixinData
     ): Promise<boolean> {
         /**
          * All overrides for the assignment (multiple students can be in an override)
@@ -1249,7 +1256,7 @@ export class CanvasService {
         );
 
         // Return early without extending, if the student has an existing individual level override
-        if (individualOverridesWithThisStudent.length > 0) return false;
+        if (changeDates === undefined && individualOverridesWithThisStudent.length > 0) return false;
 
         // Collect section overrides for this student
         const sectionOverridesWithThisStudent = overrides.filter(
@@ -1289,7 +1296,13 @@ export class CanvasService {
         /**
          * New override dates that should be used for this student
          */
-        const resultDates = makeDueMatchLock(studentDates);
+        const resultDates =
+            changeDates === undefined ? makeDueMatchLock(studentDates) : changeOverrideDates(studentDates, changeDates);
+
+        if (Object.values(boundsCheck(resultDates)).some((x) => x === -1)) {
+            // TODO: Handle improper bounds
+            throw new Error('Unimplemented Functionality: Correcting Improper Bounds');
+        }
 
         /**
          * Predicate for an override that holds individual students, isn't full, and has exactly matching dates as the new resulting dates
