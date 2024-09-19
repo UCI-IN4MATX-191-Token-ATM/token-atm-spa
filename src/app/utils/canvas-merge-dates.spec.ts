@@ -277,14 +277,14 @@ describe('Canvas Merge Dates Tests', () => {
     });
 });
 
-describe('Canvas Check Override Dates Boundries', () => {
-    it('All null dates have no boundries', () => {
+describe('Canvas Check Override Dates Boundaries', () => {
+    it('All null dates have no boundaries', () => {
         const result = boundsCheck(allNull);
         expect(Object.values(result).filter((x) => x === -1).length).toEqual(0);
         expect(result).toEqual({});
     });
 
-    it('Null due date has at most `endpoints` boundry', () => {
+    it('Null due date has at most `endpoints` boundary', () => {
         const adjusted = { ...allEqual, dueAt: null };
         expect(boundsCheck(adjusted)).toEqual({ endpoints: 0 });
         expect(boundsCheck({ ...adjusted, lockAt: null })).toEqual({});
@@ -305,15 +305,15 @@ describe('Canvas Check Override Dates Boundries', () => {
         expect(boundsCheck({ ...adjusted, unlockAt: null })).toEqual({});
     });
 
-    it('All equal dates results in 3 equal boundries', () => {
+    it('All equal dates results in 3 equal boundaries', () => {
         expect(Object.values(boundsCheck(allEqual))).toEqual([0, 0, 0]);
     });
 
-    it('All differing least restrictive dates results in 3 valid boundries', () => {
+    it('All differing least restrictive dates results in 3 valid boundaries', () => {
         expect(Object.values(boundsCheck(allDiff))).toEqual([1, 1, 1]);
     });
 
-    it('Reversing all differing least restrictive dates results in 3 invalid boundries', () => {
+    it('Reversing all differing least restrictive dates results in 3 invalid boundaries', () => {
         const reversed = { unlockAt: allDiff.lockAt, dueAt: allDiff.dueAt, lockAt: allDiff.unlockAt };
         const result = boundsCheck(reversed);
         expect(result).toEqual({ lowerBound: -1, upperBound: -1, endpoints: -1 });

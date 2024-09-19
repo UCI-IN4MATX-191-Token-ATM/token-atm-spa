@@ -29,8 +29,8 @@ function mergeOverrideDate(a: OverrideDate, b: OverrideDate, min = true, preserv
  * - `endpoints` compares unlock and lock, `-1` means lock is before unlock
  *
  * `0`s mean the dates are equal, and `1`s mean the ordering is correct
- * @param param0 Override dates to check the boundries of
- * @returns Object with the relevant boundry comparisons
+ * @param param0 Override dates to check the boundaries of
+ * @returns Object with the relevant boundary comparisons
  */
 export function boundsCheck({ unlockAt, dueAt, lockAt }: OverrideDates) {
     const result: { lowerBound?: number; upperBound?: number; endpoints?: number } = {};
