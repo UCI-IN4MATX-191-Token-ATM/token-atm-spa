@@ -1170,17 +1170,12 @@ export class CanvasService {
         return true;
     }
 
-    public async deleteAssignmentOverrideForStudent(
+    private async deleteKnownAssignmentOverrideForStudent(
         courseId: string,
         assignmentId: string,
-        studentId: string
+        studentId: string,
+        targetOverride?: AssignmentOverride
     ): Promise<boolean> {
-        let targetOverride: AssignmentOverride | undefined = undefined;
-        for await (const override of await this.getAssignmentOverrides(courseId, assignmentId)) {
-            if (override.isSectionLevel || !override.studentIdsAsIndividualLevel.includes(studentId)) continue;
-            targetOverride = override;
-            break;
-        }
         if (targetOverride == undefined) return false;
         if (targetOverride.studentIdsAsIndividualLevel.length == 1) {
             await this.apiRequest(
@@ -1207,6 +1202,20 @@ export class CanvasService {
             );
         }
         return true;
+    }
+
+    public async deleteAssignmentOverrideForStudent(
+        courseId: string,
+        assignmentId: string,
+        studentId: string
+    ): Promise<boolean> {
+        let targetOverride: AssignmentOverride | undefined = undefined;
+        for await (const override of await this.getAssignmentOverrides(courseId, assignmentId)) {
+            if (override.isSectionLevel || !override.studentIdsAsIndividualLevel.includes(studentId)) continue;
+            targetOverride = override;
+            break;
+        }
+        return await this.deleteKnownAssignmentOverrideForStudent(courseId, assignmentId, studentId, targetOverride);
     }
 
     /**
@@ -1339,6 +1348,22 @@ export class CanvasService {
                 due_at: encode('dueAt'),
                 lock_at: encode('lockAt')
             };
+        }
+
+        // Before adding student to the targetOverride,
+        // check if they need a new override,
+        // and remove them from existing one
+        if (individualOverridesWithThisStudent.length > 0 && individualOverridesWithThisStudent[0] != null) {
+            if (areOverrideDatesEqual(resultDates, individualOverridesWithThisStudent[0])) {
+                return false; // Don't charge for not making a change.
+            }
+
+            await this.deleteKnownAssignmentOverrideForStudent(
+                courseId,
+                assignmentId,
+                studentId,
+                individualOverridesWithThisStudent[0]
+            );
         }
 
         if (targetOverride) {
