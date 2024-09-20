@@ -28,6 +28,7 @@ import {
     areOverrideDatesEqual,
     boundsCheck,
     changeOverrideDates,
+    checkAndFixBoundaries,
     defaultCanvasDateLevels,
     mostSpecificDateSource,
     type OverrideDates
@@ -1297,11 +1298,20 @@ export class CanvasService {
          * New override dates that should be used for this student
          */
         const resultDates =
-            changeDates === undefined ? makeDueMatchLock(studentDates) : changeOverrideDates(studentDates, changeDates);
+            changeDates === undefined
+                ? makeDueMatchLock(studentDates)
+                : checkAndFixBoundaries(changeOverrideDates(studentDates, changeDates));
 
+        // TODO: Improve implementation so these errors are not required. (Maybe via review functionality?)
+        if (resultDates.unlockAt != null && resultDates.unlockAt === resultDates.lockAt) {
+            throw new Error(
+                'Changing the dates for this student resulted in the Available From and Available Until being the exact same.\n\nPlease manually edit the student’s dates on Canvas, or change this token options configuration.'
+            );
+        }
         if (Object.values(boundsCheck(resultDates)).some((x) => x === -1)) {
-            // TODO: Handle improper bounds
-            throw new Error('Unimplemented Functionality: Correcting Improper Bounds');
+            throw new Error(
+                'Token ATM couldn’t ensure that Available From <= Due <= Available Until for this student and assignment.'
+            );
         }
 
         /**
