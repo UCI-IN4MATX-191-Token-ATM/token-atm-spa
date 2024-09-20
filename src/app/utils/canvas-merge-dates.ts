@@ -197,3 +197,46 @@ export function replaceOverrideDates(
 
     return { unlockAt: replaceFunc('unlockAt'), dueAt: replaceFunc('dueAt'), lockAt: replaceFunc('lockAt') };
 }
+
+/**
+ * Canvas allows invalid ordered dates to be applied to learning objects. This function does its
+ * best to transparently make a reasonable choice.
+ *
+ * Note: The worst edge case is when the unlock date is after the lock date. The decision here made
+ * here is to make both the same datetime. A manual instructor correction is required to fix this outcome.
+ *
+ * @param result the Override Dates to check and fix the boundaries of
+ * @param preserveLocks (default: true) if false, return the least restrictive fix
+ * @returns The same result object if there are no boundary errors, otherwise the best fix
+ */
+export function checkAndFixBoundaries(result: OverrideDates, preserveLocks = true): OverrideDates {
+    const { lowerBound, upperBound, endpoints } = boundsCheck(result);
+    if (lowerBound !== -1 && upperBound !== -1 && endpoints !== -1) return result;
+
+    // Endpoints are improperly ordered dates
+    if (endpoints === -1) {
+        // Set them both to latest date
+        const latestDatetime = preserveLocks
+            ? mergeOverrideDate(result.unlockAt, result.lockAt, false, true)
+            : Object.values(result).reduce((a, c) => mergeOverrideDate(a, c, false, true));
+        // Keep dueAt the same if it is null
+        return replaceOverrideDates(result, {
+            unlockAtChange: latestDatetime,
+            dueAtChange: result.dueAt === null ? undefined : latestDatetime,
+            lockAtChange: latestDatetime
+        });
+    }
+    // Endpoints will not be improperly ordered, so only need to fix either a lowerBound or upperBound error
+    if (lowerBound === -1) {
+        return replaceOverrideDates(result, {
+            dueAtChange: preserveLocks ? 'unlockAt' : undefined,
+            unlockAtChange: preserveLocks ? undefined : 'dueAt'
+        });
+        /* upperBound === -1*/
+    } else {
+        return replaceOverrideDates(result, {
+            dueAtChange: preserveLocks ? 'lockAt' : undefined,
+            lockAtChange: preserveLocks ? undefined : 'dueAt'
+        });
+    }
+}

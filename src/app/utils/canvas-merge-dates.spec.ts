@@ -8,7 +8,8 @@ import {
     type CheckAndCollect,
     boundsCheck,
     changeOverrideDates,
-    replaceOverrideDates
+    replaceOverrideDates,
+    checkAndFixBoundaries
 } from './canvas-merge-dates';
 import type { DurationData } from 'app/data/date-fns-duration';
 
@@ -317,6 +318,78 @@ describe('Canvas Check Override Dates Boundaries', () => {
         const reversed = { unlockAt: allDiff.lockAt, dueAt: allDiff.dueAt, lockAt: allDiff.unlockAt };
         const result = boundsCheck(reversed);
         expect(result).toEqual({ lowerBound: -1, upperBound: -1, endpoints: -1 });
+    });
+
+    describe('Fix Override Dates Boundaries', () => {
+        it('Valid Boundaries require no fixes and return same argument', () => {
+            function validIsEqual(test: OverrideDates, option = true) {
+                expect(checkAndFixBoundaries(test, option)).toEqual(test);
+                expect(checkAndFixBoundaries(test, option)).toBe(test);
+            }
+            [allNull, allEqual, allDiff].forEach((x) => {
+                validIsEqual(x);
+                validIsEqual(x, false);
+                expect(checkAndFixBoundaries(x)).toEqual(x);
+                expect(checkAndFixBoundaries(x)).toBe(x);
+            });
+        });
+
+        const future = add(allDiff.dueAt!, { years: 1 });
+        const past = add(allDiff.dueAt!, { years: -1 });
+        it('Endpoint boundary errors use latest date and return new object', () => {
+            function endpointsAreInvalid(test: OverrideDates, option = true, expectedDate?: OverrideDates['dueAt']) {
+                if (expectedDate === undefined) {
+                    expectedDate = test.unlockAt;
+                }
+                const expected = {
+                    unlockAt: expectedDate,
+                    dueAt: test.dueAt === null ? null : expectedDate,
+                    lockAt: expectedDate
+                };
+
+                expect(checkAndFixBoundaries(test, option)).toEqual(expected);
+                expect(checkAndFixBoundaries(test, option)).not.toBe(test);
+                expect(checkAndFixBoundaries({ ...test }, option)).not.toBe(test);
+            }
+            const reversed = { unlockAt: allDiff.lockAt, dueAt: allDiff.dueAt, lockAt: allDiff.unlockAt };
+            const tests: ([OverrideDates] | [OverrideDates, OverrideDates['dueAt']])[] = [
+                [reversed],
+                [reversed, allDiff.lockAt],
+                [{ ...reversed, dueAt: null }],
+                [{ ...reversed, dueAt: past }],
+                [{ ...reversed, dueAt: future }, future]
+            ];
+            tests.forEach((x) => {
+                endpointsAreInvalid(x[0], true, x[0].unlockAt);
+                endpointsAreInvalid(x[0], false, x[1]);
+            });
+        });
+
+        it('Lower Boundary error changes due or unlock', () => {
+            function lowerBoundaryInvalid(test: OverrideDates) {
+                expect(checkAndFixBoundaries(test, true)).toEqual({ ...test, dueAt: test.unlockAt });
+                expect(checkAndFixBoundaries(test, true)).not.toBe(test);
+                expect(checkAndFixBoundaries({ ...test }, true)).not.toBe(test);
+
+                expect(checkAndFixBoundaries(test, false)).toEqual({ ...test, unlockAt: test.dueAt });
+                expect(checkAndFixBoundaries(test, false)).not.toBe(test);
+                expect(checkAndFixBoundaries({ ...test }, false)).not.toBe(test);
+            }
+            lowerBoundaryInvalid({ ...allDiff, dueAt: past });
+        });
+
+        it('Upper Boundary error changes due or lock', () => {
+            function upperBoundaryInvalid(test: OverrideDates) {
+                expect(checkAndFixBoundaries(test, true)).toEqual({ ...test, dueAt: test.lockAt });
+                expect(checkAndFixBoundaries(test, true)).not.toBe(test);
+                expect(checkAndFixBoundaries({ ...test }, true)).not.toBe(test);
+
+                expect(checkAndFixBoundaries(test, false)).toEqual({ ...test, lockAt: test.dueAt });
+                expect(checkAndFixBoundaries(test, false)).not.toBe(test);
+                expect(checkAndFixBoundaries({ ...test }, false)).not.toBe(test);
+            }
+            upperBoundaryInvalid({ ...allDiff, dueAt: future });
+        });
     });
 });
 
