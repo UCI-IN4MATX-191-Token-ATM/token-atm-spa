@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { type ProcessedRequest } from 'app/data/processed-request';
+import { ProcessedRequest } from 'app/data/processed-request';
 import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
 import type { DefaultRequest } from 'app/token-options/token-atm-request';
@@ -33,22 +33,32 @@ export class SpendForAdditionalAssignmentTimeRequestHandler extends RequestHandl
             new SufficientTokenBalanceGuard(studentRecord.tokenBalance, request.tokenOption.tokenBalanceChange)
         ]);
         await guardExecutor.check();
-        configuration;
-        this.canvasService;
-        // TODO: Complete Handler (Add Durations to selected times)
-        throw new Error('Handle Method not implemented.');
-        // return new ProcessedRequest(
-        //     configuration,
-        //     request.tokenOption.id,
-        //     request.tokenOption.name,
-        //     studentRecord.student,
-        //     false, // TODO-Now: whether the request is approved
-        //     request.submittedTime,
-        //     new Date(), // when did the request get processed
-        //     0, // TODO-Now: token balance change for student
-        //     'Request handling logic for this type of token option has not been implemented yet!', // TODO-Now: description for the request processing result
-        //     request.tokenOption.group.id
-        // );
+
+        let isExtended = false;
+        if (!guardExecutor.isRejected) {
+            const { unlockAtChange, dueAtChange, lockAtChange } = request.tokenOption;
+            isExtended = await this.canvasService.extendAssignmentForStudent(
+                configuration.course.id,
+                request.tokenOption.assignmentId,
+                request.student.id,
+                `Token ATM - ${configuration.uid}`,
+                { unlockAtChange, dueAtChange, lockAtChange }
+            );
+        }
+
+        const isApproved = !guardExecutor.isRejected && isExtended;
+        return new ProcessedRequest(
+            configuration,
+            request.tokenOption.id,
+            request.tokenOption.name,
+            studentRecord.student,
+            isApproved,
+            request.submittedTime,
+            new Date(),
+            !isApproved ? 0 : request.tokenOption.tokenBalanceChange,
+            guardExecutor.message ?? (isExtended ? '' : 'Existing Assignment dates won’t be changed by this request'),
+            request.tokenOption.group.id
+        );
     }
 
     public get type(): string {
