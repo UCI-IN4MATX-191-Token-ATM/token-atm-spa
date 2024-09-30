@@ -49,7 +49,7 @@ export function boundsCheck({ unlockAt, dueAt, lockAt }: OverrideDates) {
 /**
  * @returns true if both dates are equal or both are null
  */
-function isOverrideDateEqual(a: OverrideDate, b: OverrideDate): boolean {
+export function isOverrideDateEqual(a: OverrideDate, b: OverrideDate): boolean {
     if (a == null && b == null) return true;
     if (a == null || b == null) return false;
     return isEqual(a, b);

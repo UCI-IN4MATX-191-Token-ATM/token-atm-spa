@@ -30,6 +30,7 @@ import {
     changeOverrideDates,
     checkAndFixBoundaries,
     defaultCanvasDateLevels,
+    isOverrideDateEqual,
     mostSpecificDateSource,
     type OverrideDates
 } from 'app/utils/canvas-merge-dates';
@@ -1312,9 +1313,9 @@ export class CanvasService {
                 : checkAndFixBoundaries(changeOverrideDates(studentDates, changeDates));
 
         // TODO: Improve implementation so these errors are not required. (Maybe via review functionality?)
-        if (resultDates.unlockAt != null && resultDates.unlockAt === resultDates.lockAt) {
+        if (resultDates.unlockAt != null && isOverrideDateEqual(resultDates.unlockAt, resultDates.lockAt)) {
             throw new Error(
-                'Changing the dates for this student resulted in the Available From and Available Until being the exact same.\n\nPlease manually edit the student’s dates on Canvas, or change this token options configuration.'
+                'Changing the assignment dates for this student would result in the Available From and Available Until being the exact same.\n\nPlease manually edit the student’s, or assignment’s, dates on Canvas, or change this token option’s configuration.'
             );
         }
         if (Object.values(boundsCheck(resultDates)).some((x) => x === -1)) {
