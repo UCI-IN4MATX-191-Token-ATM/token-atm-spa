@@ -15,7 +15,6 @@ export class QuestionProService {
     #apiKey?: string;
 
     static readonly PER_PAGE_MAX = 1000;
-    perPage?: number = 950; // TODO: Improve this band aid fix, so we handle 413 errors in Paginated Requests
 
     private participationCache: Map<string, Map<string, Set<string>>> = new Map<string, Map<string, Set<string>>>();
 
@@ -184,25 +183,74 @@ export class QuestionProService {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private async getResponses(surveyId: string): Promise<PaginatedResult<any>> {
-        try {
-            return new QuestionProPaginatedResult(
+        let responses: unknown[] | undefined = undefined;
+        let curPerPage = QuestionProService.PER_PAGE_MAX;
+        let collectedErrors: Error | undefined = undefined;
+        const collectResponses = async (): Promise<unknown[]> => {
+            const pagination = new QuestionProPaginatedResult(
                 await this.#rawAPIRequest(`/surveys/${surveyId}/responses`, {
                     params: {
-                        perPage: this.perPage ?? QuestionProService.PER_PAGE_MAX,
+                        perPage: curPerPage,
                         page: 1
                     }
                 }),
                 (url: string) => this.#paginatedRequest(url),
                 (v) => v
             );
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (err: any) {
-            if (err?.isAxiosError && err?.response?.status === 404) {
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
-                return (async function* () {})();
+            const responses = [];
+            for await (const response of pagination) responses.push(response);
+            return responses;
+        };
+        while (responses === undefined) {
+            try {
+                responses = await collectResponses();
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (err: any) {
+                // HTTP 404 means no responses
+                if (err?.isAxiosError && err?.response?.status === 404) {
+                    responses = [];
+                    break;
+                }
+                // HTTP 413 means page size needs to be reduced and drop any previously collected responses
+                if (
+                    err?.isAxiosError &&
+                    err?.reponse?.status === 413 &&
+                    err?.response?.data?.response?.error?.httpStatusCode === 413
+                ) {
+                    responses = undefined;
+                    const suggestedPageSizes = (
+                        (err?.response?.data?.response?.error?.message as string | undefined)?.match(/\d+/g) ?? []
+                    )
+                        .map((x) => parseInt(x, 10))
+                        .filter((x) => Number.isFinite(x) && x < curPerPage && x > 0);
+                    // 0 < newPerPage < curPerPage
+                    curPerPage =
+                        suggestedPageSizes.length > 0 ? Math.max(...suggestedPageSizes) : Math.ceil(curPerPage / 2);
+
+                    // HTTP 413 errors could conceivably happen multiple times, so track previous errors
+                    collectedErrors = new Error('QuestionPro Page Size Too Large', {
+                        cause: { error: err, previous: collectedErrors }
+                    });
+                    continue;
+                }
+                if (collectedErrors == null) {
+                    throw err;
+                } else {
+                    throw new Error('Failed to handle QuestionPro Responses Page Size Change', {
+                        cause: { error: err, previous: collectedErrors }
+                    });
+                }
             }
-            throw err;
         }
+        return (async function* (responses?: unknown[]) {
+            if (responses == null) {
+                /* empty */
+            } else {
+                for (const response of responses) {
+                    yield response;
+                }
+            }
+        })(responses);
     }
 
     public async hasQuestion(surveyId: string, questionId: string): Promise<boolean> {
