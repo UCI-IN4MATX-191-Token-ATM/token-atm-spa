@@ -15,6 +15,7 @@ export class QuestionProService {
     #apiKey?: string;
 
     static readonly PER_PAGE_MAX = 1000;
+    perPage?: number = 950; // TODO: Improve this band aid fix, so we handle 413 errors in Paginated Requests
 
     private participationCache: Map<string, Map<string, Set<string>>> = new Map<string, Map<string, Set<string>>>();
 
@@ -187,7 +188,7 @@ export class QuestionProService {
             return new QuestionProPaginatedResult(
                 await this.#rawAPIRequest(`/surveys/${surveyId}/responses`, {
                     params: {
-                        perPage: QuestionProService.PER_PAGE_MAX,
+                        perPage: this.perPage ?? QuestionProService.PER_PAGE_MAX,
                         page: 1
                     }
                 }),
