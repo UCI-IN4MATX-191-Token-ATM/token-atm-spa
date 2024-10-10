@@ -186,24 +186,21 @@ export class QuestionProService {
         let responses: unknown[] | undefined = undefined;
         let curPerPage = QuestionProService.PER_PAGE_MAX;
         let collectedErrors: Error | undefined = undefined;
-        const collectResponses = async (): Promise<unknown[]> => {
-            const pagination = new QuestionProPaginatedResult(
-                await this.#rawAPIRequest(`/surveys/${surveyId}/responses`, {
-                    params: {
-                        perPage: curPerPage,
-                        page: 1
-                    }
-                }),
-                (url: string) => this.#paginatedRequest(url),
-                (v) => v
-            );
-            const responses = [];
-            for await (const response of pagination) responses.push(response);
-            return responses;
-        };
+
         while (responses === undefined) {
             try {
-                responses = await collectResponses();
+                const paginatedResponses = new QuestionProPaginatedResult(
+                    await this.#rawAPIRequest(`/surveys/${surveyId}/responses`, {
+                        params: {
+                            perPage: curPerPage,
+                            page: 1
+                        }
+                    }),
+                    (url: string) => this.#paginatedRequest(url),
+                    (v) => v
+                );
+                responses = [];
+                for await (const response of paginatedResponses) responses.push(response);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
                 // HTTP 404 means no responses
