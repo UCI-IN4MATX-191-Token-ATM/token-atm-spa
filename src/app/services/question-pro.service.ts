@@ -244,9 +244,11 @@ export class QuestionProService {
                 }
             }
         }
-        return (async function* (responses?: unknown[]) {
+        return (async function* (responses: unknown[] | undefined) {
             if (responses == null) {
-                /* empty */
+                throw new Error(
+                    'Question Pro Survey Responses could not be collected. Try again later, or contact the Token ATM Developers'
+                );
             } else {
                 for (const response of responses) {
                     yield response;
