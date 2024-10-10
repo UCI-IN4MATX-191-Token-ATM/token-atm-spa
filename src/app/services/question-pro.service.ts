@@ -203,12 +203,16 @@ export class QuestionProService {
                 for await (const response of paginatedResponses) responses.push(response);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
+                // Clear any collected responses
+                if (responses) responses.length = 0;
+
                 // HTTP 404 means no responses
                 if (err?.isAxiosError && err?.response?.status === 404) {
-                    responses = [];
+                    if (responses === undefined) responses = [];
                     break;
                 }
-                // HTTP 413 means page size needs to be reduced and drop any previously collected responses
+
+                // HTTP 413 means page size needs to be reduced and responses collected again
                 if (
                     err?.isAxiosError &&
                     err?.reponse?.status === 413 &&
@@ -220,6 +224,7 @@ export class QuestionProService {
                     )
                         .map((x) => parseInt(x, 10))
                         .filter((x) => Number.isFinite(x) && x < curPerPage && x > 0);
+
                     // 0 < newPerPage < curPerPage
                     curPerPage =
                         suggestedPageSizes.length > 0 ? Math.max(...suggestedPageSizes) : Math.ceil(curPerPage / 2);
