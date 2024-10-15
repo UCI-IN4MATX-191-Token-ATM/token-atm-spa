@@ -1310,7 +1310,10 @@ export class CanvasService {
         const resultDates =
             changeDates === undefined
                 ? makeDueMatchLock(studentDates)
-                : checkAndFixBoundaries(changeOverrideDates(studentDates, changeDates));
+                : checkAndFixBoundaries(
+                      changeOverrideDates(studentDates, changeDates),
+                      changeDates.dateConflict === 'extend' ? false : true
+                  );
 
         // TODO: Improve implementation so these errors are not required. (Maybe via review functionality?)
         if (resultDates.unlockAt != null && isOverrideDateEqual(resultDates.unlockAt, resultDates.lockAt)) {

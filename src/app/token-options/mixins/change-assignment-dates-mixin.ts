@@ -9,7 +9,8 @@ const ChangeDateDataDef = t.union([DurationDataDef, t.null]);
 const propsAndTypes = {
     unlockAtChange: ChangeDateDataDef,
     dueAtChange: ChangeDateDataDef,
-    lockAtChange: ChangeDateDataDef
+    lockAtChange: ChangeDateDataDef,
+    dateConflict: t.keyof({ constrain: null, extend: null })
 };
 
 export const ChangeAssignmentDatesMixinDataDef = t.exact(t.partial(propsAndTypes));
@@ -24,6 +25,7 @@ export function ChangeAssignmentDatesMixin<TBase extends Constructor<IGridViewDa
         unlockAtChange: ChangeAssignmentDatesMixinData['unlockAtChange'] = undefined;
         dueAtChange: ChangeAssignmentDatesMixinData['dueAtChange'] = undefined;
         lockAtChange: ChangeAssignmentDatesMixinData['lockAtChange'] = undefined;
+        dateConflict: ChangeAssignmentDatesMixinData['dateConflict'] = undefined;
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         constructor(...args: any[]) {

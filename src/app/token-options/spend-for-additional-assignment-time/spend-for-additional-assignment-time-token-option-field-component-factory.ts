@@ -73,7 +73,7 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
                 .appendBuilder(
                     createFieldComponentWithLabel(
                         OptionalFieldComponent<AdditionalTimeSwitchComponent>,
-                        'Change ‘Due’',
+                        'Change ‘Due Date’',
                         environmentInjector
                     )
                         .editField((field) => {
@@ -102,6 +102,7 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
                             return optionalChangeDateSrcTransform(v);
                         })
                 )
+                .appendBuilder(createDateConflictHandlerSelection('Handle Date Conflicts by', environmentInjector))
                 .appendBuilder(createOptionalAllowMultipleApprovedRequestsComponentBuilder(environmentInjector))
                 .appendBuilder(createExcludeTokenOptionsComponentBuilder(environmentInjector))
                 .transformSrc((value: SpendForAdditionalAssignmentTimeTokenOption | TokenOptionGroup) => {
@@ -110,6 +111,7 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
                         return [
                             value,
                             [courseId, undefined],
+                            undefined,
                             undefined,
                             undefined,
                             undefined,
@@ -130,6 +132,7 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
                             value.unlockAtChange,
                             value.dueAtChange,
                             value.lockAtChange,
+                            value.dateConflict,
                             [value.allowedRequestCnt != 1, value.allowedRequestCnt],
                             [value.excludeTokenOptionIds.join(','), value.group.configuration]
                         ];
@@ -142,9 +145,11 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
                         unlockAtChange,
                         dueAtChange,
                         lockAtChange,
+                        dateConflict,
                         allowedRequestCnt,
                         excludeTokenOptionIds
                     ]) => {
+                        const handleConflict: typeof dateConflict | undefined = dateConflict;
                         return {
                             ...tokenOptionData,
                             type: 'spend-for-additional-assignment-time',
@@ -152,6 +157,7 @@ export class SpendForAdditionalAssignmentTimeTokenOptionFieldComponentFactory ex
                             unlockAtChange,
                             dueAtChange,
                             lockAtChange,
+                            dateConflict: handleConflict,
                             assignmentId,
                             allowedRequestCnt,
                             excludeTokenOptionIds
@@ -250,5 +256,34 @@ function createRemoveOrAddDurationSwitchComponent(label: string, environmentInje
         )
         .transformDest(async ([, result]) => {
             return result;
+        });
+}
+
+function createDateConflictHandlerSelection(label: string, environmentInjector: EnvironmentInjector) {
+    const CONSTRAIN_TEXT = 'Keeping ‘Due’ date between ‘From’ and ‘Until’ dates';
+    const EXTEND_TEXT = 'Extending ‘Until’, or ‘From’, date to match ‘Due’ date';
+    return createFieldComponentWithLabel(SingleSelectionFieldComponent<string>, label, environmentInjector)
+        .editField((field) => {
+            field.validator = async ([v, field]: [string | undefined, SingleSelectionFieldComponent<string>]) => {
+                field.errorMessage = undefined;
+                if (v == null) {
+                    field.errorMessage = 'Please select a way to handle Date conflicts.';
+                    return false;
+                }
+                return true;
+            };
+        })
+        .transformSrc((handleBy: 'constrain' | 'extend' | undefined) => [
+            handleBy === 'constrain' ? CONSTRAIN_TEXT : handleBy === 'extend' ? EXTEND_TEXT : undefined,
+            async () => [CONSTRAIN_TEXT, EXTEND_TEXT]
+        ])
+        .transformDest(async (selection) => {
+            if (selection === CONSTRAIN_TEXT) {
+                return 'constrain';
+            } else if (selection === EXTEND_TEXT) {
+                return 'extend';
+            } else {
+                throw new Error('Invalid data');
+            }
         });
 }
