@@ -163,13 +163,15 @@ export function defaultCanvasDateLevels(
     return result;
 }
 
+type ChangeDatesType = Omit<ChangeAssignmentDatesMixinData, 'dateConflict'>;
+
 /**
  *
  * @param src The source Override Dates to change
  * @param change The changes to make (either add duration or make null)
  * @returns Override Dates object with the supplied changes
  */
-export function changeOverrideDates(src: OverrideDates, change: ChangeAssignmentDatesMixinData): OverrideDates {
+export function changeOverrideDates(src: OverrideDates, change: ChangeDatesType): OverrideDates {
     const changeFunc = (dateType: keyof OverrideDates) => {
         const s = src[dateType];
         const c = change[`${dateType}Change`];
@@ -187,7 +189,7 @@ export function changeOverrideDates(src: OverrideDates, change: ChangeAssignment
  */
 export function replaceOverrideDates(
     src: OverrideDates,
-    replace: { [k in keyof ChangeAssignmentDatesMixinData]: keyof OverrideDates | OverrideDate }
+    replace: { [k in keyof ChangeDatesType]: keyof OverrideDates | OverrideDate }
 ): OverrideDates {
     const replaceFunc = (dateType: keyof OverrideDates) => {
         const s = src[dateType];
@@ -202,8 +204,8 @@ export function replaceOverrideDates(
  * Canvas allows invalid ordered dates to be applied to learning objects. This function does its
  * best to transparently make a reasonable choice.
  *
- * Note: The worst edge case is when the unlock date is after the lock date. The decision here made
- * here is to make both the same datetime. A manual instructor correction is required to fix this outcome.
+ * Note: The worst edge case is when the unlock date is after the lock date. The decision made here
+ * is to make both the same datetime. A manual instructor correction is required to fix this outcome.
  *
  * @param result the Override Dates to check and fix the boundaries of
  * @param preserveLocks (default: true) if false, return the least restrictive fix
