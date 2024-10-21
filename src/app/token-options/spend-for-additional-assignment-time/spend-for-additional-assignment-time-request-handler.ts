@@ -36,13 +36,13 @@ export class SpendForAdditionalAssignmentTimeRequestHandler extends RequestHandl
 
         let isExtended = false;
         if (!guardExecutor.isRejected) {
-            const { unlockAtChange, dueAtChange, lockAtChange } = request.tokenOption;
+            const { unlockAtChange, dueAtChange, lockAtChange, dateConflict } = request.tokenOption;
             isExtended = await this.canvasService.extendAssignmentForStudent(
                 configuration.course.id,
                 request.tokenOption.assignmentId,
                 request.student.id,
                 `Token ATM - ${configuration.uid}`,
-                { unlockAtChange, dueAtChange, lockAtChange }
+                { unlockAtChange, dueAtChange, lockAtChange, dateConflict }
             );
         }
 
