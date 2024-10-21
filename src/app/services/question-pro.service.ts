@@ -14,6 +14,9 @@ export class QuestionProService {
     #userId?: string;
     #apiKey?: string;
 
+    static readonly PER_PAGE_MAX = 1000;
+    perPage?: number = 950; // TODO: Improve this band aid fix, so we handle 413 errors in Paginated Requests
+
     private participationCache: Map<string, Map<string, Set<string>>> = new Map<string, Map<string, Set<string>>>();
 
     constructor(@Inject(AxiosService) private axiosService: AxiosService) {}
@@ -97,7 +100,7 @@ export class QuestionProService {
         return new QuestionProPaginatedResult(
             await this.#rawAPIRequest(`/users/${this.#userId}/surveys`, {
                 params: {
-                    perPage: 1000,
+                    perPage: QuestionProService.PER_PAGE_MAX,
                     page: 1
                 }
             }),
@@ -156,7 +159,7 @@ export class QuestionProService {
             return new QuestionProPaginatedResult(
                 await this.#rawAPIRequest(`/surveys/${surveyId}/questions`, {
                     params: {
-                        perPage: 1000,
+                        perPage: QuestionProService.PER_PAGE_MAX,
                         page: 1
                     }
                 }),
@@ -185,7 +188,7 @@ export class QuestionProService {
             return new QuestionProPaginatedResult(
                 await this.#rawAPIRequest(`/surveys/${surveyId}/responses`, {
                     params: {
-                        perPage: 1000,
+                        perPage: this.perPage ?? QuestionProService.PER_PAGE_MAX,
                         page: 1
                     }
                 }),
