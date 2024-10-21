@@ -211,7 +211,6 @@ export function replaceOverrideDates(
  */
 export function checkAndFixBoundaries(result: OverrideDates, preserveLocks = true): OverrideDates {
     const { lowerBound, upperBound, endpoints } = boundsCheck(result);
-    if (lowerBound !== -1 && upperBound !== -1 && endpoints !== -1) return result;
 
     // Endpoints are improperly ordered dates
     if (endpoints === -1) {
@@ -227,16 +226,17 @@ export function checkAndFixBoundaries(result: OverrideDates, preserveLocks = tru
         });
     }
     // Endpoints will not be improperly ordered, so only need to fix either a lowerBound or upperBound error
-    if (lowerBound === -1) {
+    else if (lowerBound === -1) {
         return replaceOverrideDates(result, {
             dueAtChange: preserveLocks ? 'unlockAt' : undefined,
             unlockAtChange: preserveLocks ? undefined : 'dueAt'
         });
-        /* upperBound === -1*/
-    } else {
+    } else if (upperBound === -1) {
         return replaceOverrideDates(result, {
             dueAtChange: preserveLocks ? 'lockAt' : undefined,
             lockAtChange: preserveLocks ? undefined : 'dueAt'
         });
+    } else {
+        return result;
     }
 }
