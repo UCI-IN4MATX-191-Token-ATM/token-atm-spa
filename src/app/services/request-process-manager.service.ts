@@ -9,7 +9,7 @@ import { RequestHandlerRegistry } from 'app/token-options/request-handler-regist
 import { RequestResolverRegistry } from 'app/token-options/request-resolver-registry';
 import type { TokenATMRequest } from 'app/token-options/token-atm-request';
 import type { TokenOption } from 'app/token-options/token-option';
-import { compareAsc, format } from 'date-fns';
+import { compareAsc } from 'date-fns';
 import { BehaviorSubject, type Observable } from 'rxjs';
 import { CanvasService } from './canvas.service';
 import { QualtricsService } from './qualtrics.service';
@@ -17,6 +17,7 @@ import { RawRequestFetcherService } from './raw-request-fetcher.service';
 import { StudentRecordManagerService } from './student-record-manager.service';
 import { countAndNoun } from 'app/utils/pluralize';
 import { QuestionProService } from './question-pro.service';
+import { readableDate } from 'app/utils/readableDateFormat';
 
 @Injectable({
     providedIn: 'root'
@@ -134,7 +135,7 @@ export class RequestProcessManagerService {
                             progressUpdate.error([
                                 `Encountered an error while handling request to ${
                                     processedRequest ? processedRequest.tokenOptionName : request.tokenOption.name
-                                } submitted at ${format(request.submittedTime, 'MMM dd, yyyy HH:mm:ss')} by student ${
+                                } submitted at ${readableDate(request.submittedTime)} by student ${
                                     student.name + (student.email == '' ? '' : `(${student.email})`)
                                 }`,
                                 err
@@ -154,10 +155,9 @@ export class RequestProcessManagerService {
                         progressUpdate.error([
                             `Encountered an error while logging request to ${
                                 processedRequest.tokenOptionName
-                            } submitted at ${format(
-                                processedRequest.submittedTime,
-                                'MMM dd, yyyy HH:mm:ss'
-                            )} by student ${student.name + (student.email == '' ? '' : `(${student.email})`)}`,
+                            } submitted at ${readableDate(processedRequest.submittedTime)} by student ${
+                                student.name + (student.email == '' ? '' : `(${student.email})`)
+                            }`,
                             err
                         ]);
                         this.finishRequestProcessing(progressUpdate, false);

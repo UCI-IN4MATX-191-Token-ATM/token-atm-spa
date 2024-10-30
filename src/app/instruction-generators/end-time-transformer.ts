@@ -1,7 +1,7 @@
 import type { TokenOption } from 'app/token-options/token-option';
-import { format } from 'date-fns';
 import { TokenOptionInstructionTransformer } from './token-option-instruction-transformer';
 import { MultipleSectionDateMatcher } from 'app/utils/multiple-section-date-matcher';
+import { readableDate } from 'app/utils/readableDateFormat';
 
 type HasEndTime = {
     endTime: Date | MultipleSectionDateMatcher;
@@ -18,7 +18,7 @@ export class EndTimeTransformer extends TokenOptionInstructionTransformer<HasEnd
             if (convertedObject == undefined) return '';
             const endTime = convertedObject.endTime;
             if (endTime instanceof Date) {
-                return format(endTime, 'MMM dd, yyyy HH:mm:ss');
+                return readableDate(endTime);
             } else {
                 return endTime.toHTML();
             }

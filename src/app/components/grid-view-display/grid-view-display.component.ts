@@ -8,7 +8,7 @@ import type {
     ValueFormatterParams
 } from 'ag-grid-community';
 import type { GridViewData, GridViewDataPoint } from 'app/token-options/mixins/grid-view-data-source-mixin';
-import { format } from 'date-fns';
+import { readableDate } from 'app/utils/readableDateFormat';
 
 type AGGridDataSource = {
     [key in string]: GridViewDataPoint['value'];
@@ -101,7 +101,7 @@ export class GridViewDisplayComponent {
                     colDef.cellDataType = 'date';
                     colDef.valueFormatter = (
                         params: ValueFormatterParams<AGGridDataSource, GridViewDataPoint['value']>
-                    ) => (params.value instanceof Date ? format(params.value, 'MMM dd, yyyy HH:mm:ss') : '');
+                    ) => (params.value instanceof Date ? readableDate(params.value) : '');
                     break;
                 }
                 case 'boolean': {

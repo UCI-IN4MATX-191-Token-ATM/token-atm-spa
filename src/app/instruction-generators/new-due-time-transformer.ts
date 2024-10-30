@@ -1,7 +1,7 @@
 import type { TokenOption } from 'app/token-options/token-option';
-import { format } from 'date-fns';
 import { TokenOptionInstructionTransformer } from './token-option-instruction-transformer';
 import { MultipleSectionDateMatcher } from 'app/utils/multiple-section-date-matcher';
+import { readableDate } from 'app/utils/readableDateFormat';
 
 type HasNewDueTime = {
     newDueTime: Date | MultipleSectionDateMatcher;
@@ -18,7 +18,7 @@ export class NewDueTimeTransformer extends TokenOptionInstructionTransformer<Has
             if (convertedObject == undefined) return '';
             const newDueTime = convertedObject.newDueTime;
             if (newDueTime instanceof Date) {
-                return format(newDueTime, 'MMM dd, yyyy HH:mm:ss');
+                return readableDate(newDueTime);
             } else {
                 return newDueTime.toHTML();
             }

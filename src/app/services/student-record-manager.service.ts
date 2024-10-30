@@ -3,10 +3,11 @@ import type { ProcessedRequest } from 'app/data/processed-request';
 import type { Student } from 'app/data/student';
 import { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
-import { compareAsc, format, fromUnixTime } from 'date-fns';
+import { compareAsc, fromUnixTime } from 'date-fns';
 import { CanvasService } from './canvas.service';
 import { v4 as uuidv4 } from 'uuid';
 import { actionNeededTemplate } from 'app/utils/string-templates';
+import { readableDate } from 'app/utils/readableDateFormat';
 
 @Injectable({
     providedIn: 'root'
@@ -123,9 +124,8 @@ export class StudentRecordManagerService {
             configuration.logAssignmentId,
             `Your request to ${processedRequest.tokenOptionName} has been processed.\nResult: ${
                 processedRequest.isApproved ? 'Approved' : '*REJECTED*'
-            }\nSubmitted at: ${format(processedRequest.submittedTime, 'MMM dd, yyyy HH:mm:ss')}\nProcessed at: ${format(
-                processedRequest.processedTime,
-                'MMM dd, yyyy HH:mm:ss'
+            }\nSubmitted at: ${readableDate(processedRequest.submittedTime)}\nProcessed at: ${readableDate(
+                processedRequest.processedTime
             )}\nToken Balance Change: ${oldTokenBalance} -> ${studentRecord.tokenBalance}${
                 processedRequest.message != '' ? `\nMessage: ${processedRequest.message}` : ''
             }`

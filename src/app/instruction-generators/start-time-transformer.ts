@@ -1,7 +1,7 @@
 import type { TokenOption } from 'app/token-options/token-option';
-import { format } from 'date-fns';
 import { TokenOptionInstructionTransformer } from './token-option-instruction-transformer';
 import { MultipleSectionDateMatcher } from 'app/utils/multiple-section-date-matcher';
+import { readableDate } from 'app/utils/readableDateFormat';
 
 type HasStartTime = {
     startTime: Date | MultipleSectionDateMatcher;
@@ -18,7 +18,7 @@ export class StartTimeTransformer extends TokenOptionInstructionTransformer<HasS
             if (convertedObject == undefined) return '';
             const startTime = convertedObject.startTime;
             if (startTime instanceof Date) {
-                return format(startTime, 'MMM dd, yyyy HH:mm:ss');
+                return readableDate(startTime);
             } else {
                 return startTime.toHTML();
             }
