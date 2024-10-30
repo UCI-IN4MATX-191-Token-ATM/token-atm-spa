@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { BaseFormField } from 'app/utils/form-field/form-field';
 import { isValid } from 'date-fns';
-import { formatInTimeZone } from 'date-fns-tz';
+import { tz } from '@date-fns/tz';
+import { format } from 'date-fns';
 
 @Component({
     selector: 'app-date-time-field',
@@ -54,11 +55,9 @@ export class DateTimeFieldComponent extends BaseFormField<
         if (!this.isTimeValid || !isValid(this.value)) {
             this.courseTime = 'Course Time: ';
         } else {
-            this.courseTime = `Course Time: ${formatInTimeZone(
-                this.value,
-                this.courseTimeZone,
-                'MMM dd, yyyy HH:mm:ss'
-            )}`;
+            this.courseTime = `Course Time: ${format(this.value, 'MMM dd, yyyy HH:mm:ss', {
+                in: tz(this.courseTimeZone)
+            })}`;
         }
     }
 

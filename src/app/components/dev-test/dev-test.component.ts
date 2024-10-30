@@ -11,8 +11,8 @@ import {
     type WithdrawAssignmentResubmissionTokenOptionData
 } from 'app/token-options/withdraw-assignment-resubmission/withdraw-assignment-resubmission-token-option';
 import { QualtricsService } from 'app/services/qualtrics.service';
-import { addHours, formatISO, isEqual, set } from 'date-fns';
-import { formatInTimeZone } from 'date-fns-tz';
+import { addHours, formatISO, isEqual, set, format } from 'date-fns';
+import { tz } from '@date-fns/tz';
 
 @Component({
     selector: 'app-dev-test',
@@ -182,13 +182,13 @@ export class DevTestComponent {
         if (!this.course) return;
         const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const time = Date.now();
-        const local = formatInTimeZone(time, localTimeZone, 'MMM dd, yyyy HH:mm:ss');
+        const local = format(time, 'MMM dd, yyyy HH:mm:ss', { in: tz(localTimeZone) });
         if (localTimeZone === this.course.timeZone) {
             console.log('Time:', local);
         } else {
             console.log(
                 ` Local: ${local}\n` +
-                    `Course: ${formatInTimeZone(time, this.course.timeZone, 'MMM dd, yyyy HH:mm:ss')}`
+                    `Course: ${format(time, 'MMM dd, yyyy HH:mm:ss', { in: tz(this.course.timeZone) })}`
             );
         }
     }
