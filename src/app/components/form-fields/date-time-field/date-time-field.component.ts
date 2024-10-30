@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { BaseFormField } from 'app/utils/form-field/form-field';
 import { isValid } from 'date-fns';
-import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
+import { formatInTimeZone } from 'date-fns-tz';
 
 @Component({
     selector: 'app-date-time-field',

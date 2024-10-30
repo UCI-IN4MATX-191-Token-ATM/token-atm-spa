@@ -12,7 +12,7 @@ import {
 } from 'app/token-options/withdraw-assignment-resubmission/withdraw-assignment-resubmission-token-option';
 import { QualtricsService } from 'app/services/qualtrics.service';
 import { addHours, formatISO, isEqual, set } from 'date-fns';
-import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
+import { formatInTimeZone } from 'date-fns-tz';
 
 @Component({
     selector: 'app-dev-test',
