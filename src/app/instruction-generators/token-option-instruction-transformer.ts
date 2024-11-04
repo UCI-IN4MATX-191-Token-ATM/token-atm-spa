@@ -1,8 +1,9 @@
 import type { TokenOption } from 'app/token-options/token-option';
+import type { DateContext } from 'app/utils/readableDateFormat';
 import type { TableCellData } from 'app/utils/table-cell-render-helper';
 
 export abstract class TokenOptionInstructionTransformer<S> {
-    public abstract process(tokenOptions: TokenOption[]): (string | TableCellData)[];
+    public abstract process(tokenOptions: TokenOption[], context?: DateContext): (string | TableCellData)[];
 
     public abstract validate(tokenOption: TokenOption): S | undefined;
 

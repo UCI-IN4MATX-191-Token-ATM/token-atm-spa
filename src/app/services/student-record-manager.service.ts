@@ -7,7 +7,7 @@ import { compareAsc, fromUnixTime } from 'date-fns';
 import { CanvasService } from './canvas.service';
 import { v4 as uuidv4 } from 'uuid';
 import { actionNeededTemplate } from 'app/utils/string-templates';
-import { readableDate } from 'app/utils/readableDateFormat';
+import { canvasReadableDate } from 'app/utils/readableDateFormat';
 
 @Injectable({
     providedIn: 'root'
@@ -124,8 +124,12 @@ export class StudentRecordManagerService {
             configuration.logAssignmentId,
             `Your request to ${processedRequest.tokenOptionName} has been processed.\nResult: ${
                 processedRequest.isApproved ? 'Approved' : '*REJECTED*'
-            }\nSubmitted at: ${readableDate(processedRequest.submittedTime)}\nProcessed at: ${readableDate(
-                processedRequest.processedTime
+            }\nSubmitted at: ${canvasReadableDate(
+                processedRequest.submittedTime,
+                configuration.course.timeZone
+            )}\nProcessed at: ${canvasReadableDate(
+                processedRequest.processedTime,
+                configuration.course.timeZone
             )}\nToken Balance Change: ${oldTokenBalance} -> ${studentRecord.tokenBalance}${
                 processedRequest.message != '' ? `\nMessage: ${processedRequest.message}` : ''
             }`

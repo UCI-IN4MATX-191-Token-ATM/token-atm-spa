@@ -1,7 +1,7 @@
 import type { TokenOption } from 'app/token-options/token-option';
 import { TokenOptionInstructionTransformer } from './token-option-instruction-transformer';
 import { MultipleSectionDateMatcher } from 'app/utils/multiple-section-date-matcher';
-import { readableDate } from 'app/utils/readableDateFormat';
+import { canvasReadableDate, type DateContext } from 'app/utils/readableDateFormat';
 
 type HasNewDueTime = {
     newDueTime: Date | MultipleSectionDateMatcher;
@@ -12,15 +12,15 @@ export class NewDueTimeTransformer extends TokenOptionInstructionTransformer<Has
         return 'Allows Submitting Canvas Assignment/Quiz Until'; // TODO: Phrasing may need more work
     }
 
-    public process(tokenOptions: TokenOption[]): string[] {
+    public process(tokenOptions: TokenOption[], context: DateContext): string[] {
         return tokenOptions.map((tokenOption) => {
             const convertedObject = this.validate(tokenOption);
             if (convertedObject == undefined) return '';
             const newDueTime = convertedObject.newDueTime;
             if (newDueTime instanceof Date) {
-                return readableDate(newDueTime);
+                return canvasReadableDate(newDueTime, context.timezone);
             } else {
-                return newDueTime.toHTML();
+                return newDueTime.toHTML(context);
             }
         });
     }

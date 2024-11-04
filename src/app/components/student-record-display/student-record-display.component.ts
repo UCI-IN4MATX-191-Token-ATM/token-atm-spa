@@ -47,7 +47,7 @@ export class StudentRecordDisplayComponent {
     }
 
     formatDate(date: Date): string {
-        return readableDate(date);
+        return readableDate(date, this.configuration?.course?.timeZone);
     }
 
     async onAddManualChange(): Promise<void> {

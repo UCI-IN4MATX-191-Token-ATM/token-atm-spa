@@ -3,7 +3,7 @@ import * as t from 'io-ts';
 import { chain } from 'fp-ts/Either';
 import { DateDef } from './mixin-helper';
 import { unwrapValidation } from './validation-unwrapper';
-import { readableDate } from './readableDateFormat';
+import { canvasReadableDate, type DateContext } from './readableDateFormat';
 
 export const DateOverrideDef = t.strict({
     sections: t.array(t.tuple([t.string, t.string])),
@@ -44,9 +44,9 @@ export class MultipleSectionDateMatcher implements MultipleSectionDateMatcherDat
         return this.defaultDate;
     }
 
-    public toHTML(): string {
+    public toHTML(context: DateContext): string {
         if (this._overrides.length == 0) {
-            return readableDate(this.defaultDate);
+            return canvasReadableDate(this.defaultDate, context.timezone);
         }
         return [
             '<table style="border-collapse: collapse; width: 100%;">',
@@ -55,13 +55,19 @@ export class MultipleSectionDateMatcher implements MultipleSectionDateMatcherDat
                 return [
                     `<tr>`,
                     `<td style="text-align: end; text-wrap: nowrap">${override.name}:</td>`,
-                    `<td style="text-align: start; text-wrap: nowrap">${readableDate(override.date)}</td>`,
+                    `<td style="text-align: start; text-wrap: nowrap">${canvasReadableDate(
+                        override.date,
+                        context.timezone
+                    )}</td>`,
                     `</tr>`
                 ].join('');
             }),
             '<tr>',
             '<td style="text-align: end; text-wrap: nowrap">Default:</td>',
-            `<td style="text-align: start; text-wrap: nowrap">${readableDate(this.defaultDate)}</td>`,
+            `<td style="text-align: start; text-wrap: nowrap">${canvasReadableDate(
+                this.defaultDate,
+                context.timezone
+            )}</td>`,
             '</tr>',
             '</tbody>',
             '</table>'

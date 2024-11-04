@@ -1,7 +1,7 @@
 import type { TokenOption } from 'app/token-options/token-option';
 import { TokenOptionInstructionTransformer } from './token-option-instruction-transformer';
 import { MultipleSectionDateMatcher } from 'app/utils/multiple-section-date-matcher';
-import { readableDate } from 'app/utils/readableDateFormat';
+import { canvasReadableDate, type DateContext } from 'app/utils/readableDateFormat';
 
 type HasStartTime = {
     startTime: Date | MultipleSectionDateMatcher;
@@ -12,15 +12,15 @@ export class StartTimeTransformer extends TokenOptionInstructionTransformer<HasS
         return 'Can Request From';
     }
 
-    public process(tokenOptions: TokenOption[]): string[] {
+    public process(tokenOptions: TokenOption[], context: DateContext): string[] {
         return tokenOptions.map((tokenOption) => {
             const convertedObject = this.validate(tokenOption);
             if (convertedObject == undefined) return '';
             const startTime = convertedObject.startTime;
             if (startTime instanceof Date) {
-                return readableDate(startTime);
+                return canvasReadableDate(startTime, context.timezone);
             } else {
-                return startTime.toHTML();
+                return startTime.toHTML(context);
             }
         });
     }
