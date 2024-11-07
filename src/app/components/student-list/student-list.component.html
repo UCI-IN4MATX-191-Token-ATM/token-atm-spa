@@ -2,11 +2,17 @@
     <app-canvas-loading-toast></app-canvas-loading-toast>
 </div>
 <ng-template #studentListPanel>
+    <div *ngIf="!isLogPublished" class="d-flex align-items-center justify-content-center mx-5 mt-5 mb-1">
+        <span class="bi bi-exclamation-triangle-fill text-info mx-3"></span> The Token ATM Log wasn’t published on
+        Canvas when this page was loaded. If you’ve manually published the Log, reload the Students page by navigating
+        away from it and then back to it.
+    </div>
     <div
         class="d-flex align-items-center justify-content-center mx-5 mt-5 mb-3"
         [class.is-hidden]="isShowingIndividualStudent"
+        [tooltip]="isLogPublished ? undefined : 'Token ATM Log must be published to adjust token balances'"
     >
-        <button class="btn btn-primary" (click)="batchImport()">
+        <button class="btn btn-primary" (click)="batchImport()" [disabled]="!isLogPublished">
             Import CSV for Batch Manual Token Balance Change
         </button>
     </div>
@@ -28,7 +34,7 @@
             <div class="d-inline-block mx-auto">
                 <span>Number of Students Per Page: </span>
                 <select class="form-select" [ngModel]="pageCnt" (ngModelChange)="changePageSize($event)">
-                    <option *ngFor="let possiblePageCnt of POSSIBLE_PAGE_CNTS" [ngValue]="possiblePageCnt">
+                    <option *ngFor="let possiblePageCnt of POSSIBLE_PAGE_COUNTS" [ngValue]="possiblePageCnt">
                         {{ possiblePageCnt }}
                     </option>
                 </select>
@@ -69,6 +75,6 @@
         </div>
     </div>
     <div [class.is-hidden]="!isShowingIndividualStudent">
-        <app-student-record-display #individaulStudentRecordDisplay (goBack)="onGoBack()"></app-student-record-display>
+        <app-student-record-display #individualStudentRecordDisplay (goBack)="onGoBack()"></app-student-record-display>
     </div>
 </ng-template>

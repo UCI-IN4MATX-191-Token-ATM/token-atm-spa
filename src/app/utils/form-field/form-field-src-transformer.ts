@@ -4,7 +4,7 @@ import type { ExtractDest, ExtractSrc, ExtractVP, FormField } from './form-field
 export class FormFieldSrcTransformer<F extends FormField<any, any, any>, S1>
     implements FormField<S1, ExtractDest<F>, ExtractVP<F>>
 {
-    constructor(private field: F, private srcTransformer: (value: S1) => ExtractSrc<F>) {}
+    constructor(public field: F, private srcTransformer: (value: S1) => ExtractSrc<F>) {}
 
     public set label(label: string) {
         this.field.label = label;

@@ -16,7 +16,7 @@ export class AssignmentGroup implements AssignmentGroupData {
 }
 
 export const AssignmentGroupDef = new t.Type<AssignmentGroup, unknown, unknown>(
-    'Assignment',
+    'AssignmentGroup',
     (v): v is AssignmentGroup => v instanceof AssignmentGroup,
     (v, ctx) =>
         chain((v: AssignmentGroupData) => t.success(Object.assign(new AssignmentGroup(), v)))(

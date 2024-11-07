@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { Course } from 'app/data/course';
+import { type Course, CourseDef } from 'app/data/course';
 import { ModuleItemInfo } from 'app/data/module-item-info';
 import { QuizSubmission } from 'app/data/quiz-submission';
 import { Student } from 'app/data/student';
@@ -8,7 +8,7 @@ import type { PaginatedResult } from 'app/utils/pagination/paginated-result';
 import { CanvasRESTPaginatedResult } from 'app/utils/pagination/canvas-rest-paginated-result';
 import { PaginatedView } from 'app/utils/paginated-view';
 import type { AxiosRequestConfig } from 'axios';
-import { compareAsc, compareDesc, formatISO, isEqual, parseISO } from 'date-fns';
+import { compareAsc, formatISO, parseISO } from 'date-fns';
 import { AxiosService, type IPCCompatibleAxiosResponse, isNetworkOrServerError } from './axios.service';
 import { User } from 'app/data/user';
 import type { QuizQuestion } from 'app/quiz-questions/quiz-question';
@@ -24,6 +24,12 @@ import type { CanvasCredential } from 'app/data/token-atm-credentials';
 import { ExponentialBackoffExecutorService } from './exponential-backoff-executor.service';
 import { collectPointsPossible, type CanvasGradingType } from 'app/utils/canvas-grading';
 import { AssignmentGroupDef, type AssignmentGroup } from 'app/data/assignment-group';
+import {
+    areOverrideDatesEqual,
+    defaultCanvasDateLevels,
+    mostSpecificDateSource,
+    type OverrideDates
+} from 'app/utils/canvas-merge-dates';
 
 type QuizQuestionResponse = {
     id: string;
@@ -189,7 +195,7 @@ export class CanvasService {
                         course.term = termInfoMap.get(course['enrollment_term_id']);
                     }
                 }
-                return processedData.map((entry: unknown) => Course.deserialize(entry));
+                return processedData.map((entry: unknown) => unwrapValidation(CourseDef.decode(entry)));
             }
         );
     }
@@ -533,6 +539,7 @@ export class CanvasService {
             AssignmentDef.decode(
                 await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}`, {
                     params: {
+                        // Necessary to collect the default/base due and (un)locks
                         override_assignment_dates: false
                     }
                 })
@@ -690,6 +697,9 @@ export class CanvasService {
         );
     }
 
+    /**
+     * @throws http error if assignment isn't published
+     */
     public async getStudentsGrades(
         courseId: string,
         assignmentId: string,
@@ -1195,78 +1205,121 @@ export class CanvasService {
         return true;
     }
 
-    private mergeOverrideDate(a: Date | null, b: Date | null, min = true): Date | null {
-        if (a == null || b == null) return null;
-        if (min) {
-            return compareDesc(a, b) == 1 ? a : b;
-        } else {
-            return compareAsc(a, b) == 1 ? a : b;
-        }
-    }
-
-    private isOverrideDateEqual(a: Date | null, b: Date | null): boolean {
-        if (a == null && b == null) return true;
-        if (a == null || b == null) return false;
-        return isEqual(a, b);
-    }
-
+    /**
+     * Extends the time a Student has on a Canvas Assignment
+     *
+     * Overrides the student's assignment due at to match the assignment's lock at.
+     */
     public async extendAssignmentForStudent(
         courseId: string,
         assignmentId: string,
         studentId: string,
         overrideTitlePrefix: string
     ): Promise<boolean> {
+        /**
+         * All overrides for the assignment (multiple students can be in an override)
+         */
         const overrides = await DataConversionHelper.convertAsyncIterableToList(
             await this.getAssignmentOverrides(courseId, assignmentId)
         );
+        /**
+         * Sections the Student is enrolled in
+         */
         const sections = new Set(
             await DataConversionHelper.convertAsyncIterableToList(
                 await this.getStudentSectionEnrollments(courseId, studentId)
             )
         );
-        let lockDate: Date | null = null,
-            unlockDate: Date | null = null,
-            titleCnt = 0,
-            hasMatchedOverride = false;
-        for (const override of overrides) {
-            const data = override.title.split(' - ');
-            if (data.length >= 3) {
-                titleCnt = parseInt(data[2] as string) + 1;
-            }
-            if (override.isIndividualLevel) {
-                if (override.studentIdsAsIndividualLevel.includes(studentId)) return false;
-                continue;
-            }
-            if (sections.has(override.sectionIdAsSectionLevel)) {
-                if (!hasMatchedOverride) {
-                    lockDate = override.lockAt;
-                    unlockDate = override.unlockAt;
-                    hasMatchedOverride = true;
-                    continue;
-                }
-                lockDate = this.mergeOverrideDate(lockDate, override.lockAt, false);
-                unlockDate = this.mergeOverrideDate(unlockDate, override.unlockAt, true);
+
+        function getTitleCnt(override: AssignmentOverride, baseCount = 0): number {
+            const splitTitle = override.title.split(' - ');
+            if (splitTitle.length >= 3) {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                const titleNum = parseInt(splitTitle[2]!);
+                return Number.isFinite(titleNum) ? titleNum : baseCount;
+            } else {
+                return baseCount;
             }
         }
-        if (!hasMatchedOverride) {
-            const assignment = await this.getAssignment(courseId, assignmentId);
-            lockDate = assignment.lockAt;
-            unlockDate = assignment.unlockAt;
+        const highestTitleCnt = Math.max(0, ...overrides.map((override) => getTitleCnt(override)));
+
+        // Collect individual level overrides for this student
+        const individualOverridesWithThisStudent = overrides.filter(
+            (override) => override.isIndividualLevel && override.studentIdsAsIndividualLevel.includes(studentId)
+        );
+
+        // Return early without extending, if the student has an existing individual level override
+        if (individualOverridesWithThisStudent.length > 0) return false;
+
+        // Collect section overrides for this student
+        const sectionOverridesWithThisStudent = overrides.filter(
+            (override) => override.isSectionLevel && sections.has(override.sectionIdAsSectionLevel)
+        );
+
+        const getAssignmentDates = async (): Promise<OverrideDates> => {
+            // Be aware, this.getAssignment must use `override_assignment_dates: false` param to get the correct dates
+            const { lockAt, unlockAt, dueAt } = await this.getAssignment(courseId, assignmentId);
+            return { lockAt, unlockAt, dueAt };
+        };
+
+        const levels = defaultCanvasDateLevels(
+            individualOverridesWithThisStudent,
+            sectionOverridesWithThisStudent,
+            getAssignmentDates
+        );
+
+        /**
+         * The dates (most likely to be) currently assigned to this student for this assignment.
+         */
+        const studentDates = await mostSpecificDateSource(levels)?.result();
+        if (studentDates == null)
+            throw new Error(
+                'Logic error in implementation. Please contact the Token ATM developers and let them know: No unlock, due, and lock dates found for a student and assignment. Which should be impossible.'
+            );
+
+        function makeDueMatchLock(overrideDates: OverrideDates): OverrideDates {
+            const { unlockAt, lockAt } = overrideDates;
+            return {
+                unlockAt,
+                dueAt: lockAt,
+                lockAt
+            };
         }
-        let targetOverride: AssignmentOverride | undefined = undefined;
-        for (const override of overrides) {
-            if (!override.isIndividualLevel) continue;
-            if (override.studentIdsAsIndividualLevel.length >= CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE) continue;
-            if (
-                this.isOverrideDateEqual(unlockDate, override.unlockAt) &&
-                this.isOverrideDateEqual(lockDate, override.lockAt) &&
-                this.isOverrideDateEqual(lockDate, override.dueAt)
-            ) {
-                targetOverride = override;
-                break;
-            }
+
+        /**
+         * New override dates that should be used for this student
+         */
+        const resultDates = makeDueMatchLock(studentDates);
+
+        /**
+         * Predicate for an override that holds individual students, isn't full, and has exactly matching dates as the new resulting dates
+         */
+        const targetOverridePredicate = (override: AssignmentOverride) => {
+            return (
+                override.isIndividualLevel &&
+                override.studentIdsAsIndividualLevel.length < CanvasService.ASSIGNMENT_OVERRIDE_MAX_SIZE &&
+                areOverrideDatesEqual(resultDates, override)
+            );
+        };
+        /**
+         * An existing override this Student should be included in
+         */
+        const targetOverride = overrides.find(targetOverridePredicate);
+
+        function encodeForCanvas(overrideDates: OverrideDates) {
+            const encode = (prop: 'unlockAt' | 'dueAt' | 'lockAt') => {
+                const val = overrideDates[prop];
+                return val ? formatISO(val) : null;
+            };
+            return {
+                unlock_at: encode('unlockAt'),
+                due_at: encode('dueAt'),
+                lock_at: encode('lockAt')
+            };
         }
+
         if (targetOverride) {
+            // Update ad-hoc group of students that have existing matching override to include this student
             await this.apiRequest(
                 `/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides/${targetOverride.id}`,
                 {
@@ -1275,28 +1328,25 @@ export class CanvasService {
                         assignment_override: {
                             student_ids: targetOverride.studentIdsAsIndividualLevel.concat([studentId]),
                             title: targetOverride.title,
-                            lock_at: lockDate ? formatISO(lockDate) : null,
-                            unlock_at: unlockDate ? formatISO(unlockDate) : null,
-                            due_at: lockDate ? formatISO(lockDate) : null
+                            ...encodeForCanvas(resultDates)
                         }
                     }
                 }
             );
         } else {
+            // Upload a new override for an ad-hoc group of students sharing the same dates (currently only contains this student)
             await this.apiRequest(`/api/v1/courses/${courseId}/assignments/${assignmentId}/overrides`, {
                 method: 'post',
                 data: {
                     assignment_override: {
                         student_ids: [studentId],
-                        title: `${overrideTitlePrefix} - ${titleCnt}`,
-                        lock_at: lockDate ? formatISO(lockDate) : null,
-                        unlock_at: unlockDate ? formatISO(unlockDate) : null,
-                        due_at: lockDate ? formatISO(lockDate) : null
+                        title: `${overrideTitlePrefix} - ${highestTitleCnt + 1}`,
+                        ...encodeForCanvas(resultDates)
                     }
                 }
             });
         }
-        return false;
+        return true;
     }
 
     public async getAssignmentSubmission(
@@ -1515,32 +1565,6 @@ export class CanvasService {
             );
         } while (studentIds.hasNextPage());
         return students;
-    }
-
-    /**
-     * Retrieves the IANA time zone for the course.
-     * @param courseId The Canvas course ID.
-     * @returns A string with the course's IANA time zone name
-     */
-    public async getCourseTimeZone(courseId: string): Promise<string> {
-        return (await this.apiRequest(`/api/v1/courses/${courseId}`))['time_zone'];
-    }
-
-    /**
-     * Throws an error when the local Token ATM time zone doesn't match the Canvas Course time zone.
-     * @param courseId The Canvas course ID.
-     * @throws Error message reports the mismatched time zones.
-     */
-    public async checkSameTimeZone(courseId: string): Promise<void> {
-        const data = await this.getCourseTimeZone(courseId);
-        const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (data !== localTimeZone) {
-            throw new Error(
-                `Canvas Course and Token ATM Time Zones do not match.\n` +
-                    `Canvas Course: ${data}\n` +
-                    `    Token ATM: ${localTimeZone}`
-            );
-        }
     }
 
     public async isPagePublished(courseId: string, pageId: string): Promise<boolean | undefined> {

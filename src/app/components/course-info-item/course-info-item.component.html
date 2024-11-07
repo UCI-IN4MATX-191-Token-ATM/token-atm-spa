@@ -11,9 +11,9 @@
         <h6
             class="card-subtitle text-truncate text-muted"
             placement="right"
-            [tooltip]="course.term.length > 20 ? course.term : undefined"
+            [tooltip]="course.term.name.length > 20 ? course.term.name : undefined"
         >
-            {{ course.term }}
+            {{ course.term.name }}
         </h6>
     </div>
 </div>

@@ -61,7 +61,7 @@ export class RequestResolverRegistry {
 
     private getRequestResolver(type: string): GenericRequestResolver {
         const result = this._requestResolversMap.get(type);
-        if (!result) throw new Error('Unspported request type');
+        if (!result) throw new Error('Unsupported request type');
         return result;
     }
 

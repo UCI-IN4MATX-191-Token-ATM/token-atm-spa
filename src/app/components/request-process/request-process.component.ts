@@ -5,11 +5,12 @@ import { ModalManagerService } from 'app/services/modal-manager.service';
 import { RequestProcessManagerService } from 'app/services/request-process-manager.service';
 import { TokenATMConfigurationManagerService } from 'app/services/token-atm-configuration-manager.service';
 import type { CourseConfigurable } from '../dashboard/dashboard-routing';
-import { ErrorSerializer } from 'app/utils/error-serailizer';
+import { ErrorSerializer } from 'app/utils/error-serializer';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { CredentialManagerService } from 'app/services/credential-manager.service';
+import { checkAndConfirmTokenATMLogPublished } from 'app/utils/reusable-modals';
 
 @Component({
     selector: 'app-request-process',
@@ -56,11 +57,16 @@ export class RequestProcessComponent implements CourseConfigurable {
             this.isProcessing = false;
             return;
         }
-        if (!(await this.configurationManager.isTokenATMLogPublished(this.configuration))) {
-            if (!(await this.onPublishLog())) {
-                this.isProcessing = false;
-                return;
-            }
+        if (
+            !(await checkAndConfirmTokenATMLogPublished(
+                'process student requests',
+                this.configuration,
+                this.configurationManager,
+                this.modalManagerService
+            ))
+        ) {
+            this.isProcessing = false;
+            return;
         }
         this.requestProcessManagerService.startRequestProcessing(this.configuration).subscribe({
             next: ([progress, message]: [progress: number, message: string]) => {
@@ -78,7 +84,7 @@ export class RequestProcessComponent implements CourseConfigurable {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             error: async ([message, err]: [message: string, err: any]) => {
                 await this.modalManagerService.createNotificationModal(
-                    message + `\n______________\nError message: ${ErrorSerializer.serailize(err)}`
+                    message + `\n______________\nError message: ${ErrorSerializer.serialize(err)}`
                 );
                 await this.onRequestProcessingComplete(false);
             }
@@ -100,26 +106,6 @@ export class RequestProcessComponent implements CourseConfigurable {
         return this.requestProcessManagerService.isRunning;
     }
 
-    public async onPublishLog(): Promise<boolean> {
-        if (!this.configuration) return false;
-        const [confirmationRef, result] = await this.modalManagerService.createConfirmationModal(
-            'The Token ATM Log assignment on Canvas must be published to process student requests.\n\nWould you like Token ATM to publish this assignment for you?',
-            'Publish Token ATM Log?',
-            false,
-            'I’ll publish it myself.',
-            'Yes, publish it for me.'
-        );
-        if (result) {
-            if (confirmationRef.content) confirmationRef.content.disableButton = true;
-            await this.configurationManager.publishTokenATMLog(this.configuration);
-            confirmationRef.hide();
-            return true;
-        } else {
-            confirmationRef.hide();
-            return false;
-        }
-    }
-
     private async checkMissingCredentials(): Promise<boolean> {
         if (!this.configuration) return false;
         if (!this.missingCredentialModalTemplate) return false;
@@ -138,10 +124,10 @@ export class RequestProcessComponent implements CourseConfigurable {
             backdrop: 'static',
             keyboard: false
         });
-        const onHideenPromise = modalRef.onHidden ? firstValueFrom(modalRef.onHidden) : undefined;
+        const onHiddenPromise = modalRef.onHidden ? firstValueFrom(modalRef.onHidden) : undefined;
         const result = await promise;
         modalRef.hide();
-        if (onHideenPromise) await onHideenPromise;
+        if (onHiddenPromise) await onHiddenPromise;
         switch (result) {
             case 'proceed':
                 return true;

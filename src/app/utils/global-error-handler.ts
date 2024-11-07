@@ -1,11 +1,12 @@
 import { isDevMode, type ErrorHandler } from '@angular/core';
-import { ErrorSerializer } from './error-serailizer';
+import { ErrorSerializer } from './error-serializer';
 
 export class GlobalErrorHandler implements ErrorHandler {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public handleError(error: any) {
         if (isDevMode()) {
             console.error(error);
+            if (error.cause != null) console.error('Cause:', error.cause);
             return;
         }
         const win = window.open('about:blank', '_blank');
@@ -16,7 +17,7 @@ export class GlobalErrorHandler implements ErrorHandler {
         win.document.open();
         win.document.write(
             `<head><title>Error Report</title></head>
-            <body style="white-space: pre-line; overflow-wrap: anywhere;">An Error occurred. Sorry for the inconvenience. <br/>______________<br/>Error Message: ${ErrorSerializer.serailize(
+            <body style="white-space: pre-line; overflow-wrap: anywhere;">An Error occurred. Sorry for the inconvenience. <br/>______________<br/>Error Message: ${ErrorSerializer.serialize(
                 error
             )}</body>`
         );

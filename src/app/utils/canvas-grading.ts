@@ -509,7 +509,7 @@ function convertNumberToMaxDecimalString(num: number, maxDecimals = MAX_DECIMALS
     if (Number.isInteger(num)) return `${num}`;
     const sign = num < 0 ? -1 : 1;
     maxDecimals = Math.min(Math.ceil(+maxDecimals), MAX_DECIMALS);
-    // fixes Javascript rounding, now rounds away from 0 and attempts to maintain an arbirary number of decimal places
+    // fixes Javascript rounding, now rounds away from 0 and attempts to maintain an arbitrary number of decimal places
     return `${sign * (Math.round((num * sign + Number.EPSILON) * 10 ** maxDecimals) / 10 ** maxDecimals)}`;
 }
 
