@@ -186,11 +186,11 @@ export class QuestionProService {
         let responses: unknown[] | undefined = undefined;
         let curPerPage = QuestionProService.PER_PAGE_MAX;
         let collectedErrors: Error | undefined = undefined;
-        let count = 0;
-        const MAX_TRYS = 3;
+        let attempt = 0;
+        const MAX_ATTEMPTS = 3;
 
-        while (responses === undefined && count < MAX_TRYS) {
-            count++;
+        while (responses === undefined && attempt < MAX_ATTEMPTS) {
+            attempt++;
             try {
                 const paginatedResponses = new QuestionProPaginatedResult(
                     await this.#rawAPIRequest(`/surveys/${surveyId}/responses`, {
@@ -242,7 +242,7 @@ export class QuestionProService {
                     throw err;
                 } else {
                     throw new Error(
-                        `Error occured while attempting to handle QuestionPro Responses Page Size Change (Attempt: ${count})`,
+                        `Error occurred while attempting to handle QuestionPro Responses Page Size Change (Attempt: ${attempt})`,
                         {
                             cause: { error: err, previous: collectedErrors }
                         }
@@ -250,9 +250,9 @@ export class QuestionProService {
                 }
             }
         }
-        if (count === MAX_TRYS && responses === undefined) {
+        if (attempt === MAX_ATTEMPTS && responses === undefined) {
             throw new Error(
-                `Failed to handle QuestionPro Responses Page Size Change in ${MAX_TRYS} attempts`,
+                `Failed to handle QuestionPro Responses Page Size Change in ${attempt} attempts`,
                 collectedErrors != null
                     ? {
                           cause: { previous: collectedErrors }

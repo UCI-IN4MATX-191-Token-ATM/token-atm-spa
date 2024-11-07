@@ -51,14 +51,14 @@ describe('QuestionProService', () => {
                 response: { status: 413, data: { response: { error: { httpStatusCode: 413, message: '' } } } }
             };
             it('Reaching upper bound of retries throws error', async () => {
-                const MAX_RETRIES = 3;
+                const MAX_ATTEMPTS = 3;
 
                 fakeAxiosService.request.and.returnValue(Promise.reject(http_413));
 
                 await expectAsync(
                     service.checkParticipation('1', { type: 'customVariable', variableName: 'custom4' }, '1')
                 ).toBeRejectedWithError();
-                expect(fakeAxiosService.request).toHaveBeenCalledTimes(MAX_RETRIES);
+                expect(fakeAxiosService.request).toHaveBeenCalledTimes(MAX_ATTEMPTS);
             });
 
             it('Single retry defaults to halving page size', async () => {
@@ -144,7 +144,7 @@ describe('QuestionProService', () => {
                     service.checkParticipation('1', { type: 'customVariable', variableName: 'custom4' }, '1')
                 ).toBeRejectedWithError(
                     Error,
-                    'Error occured while attempting to handle QuestionPro Responses Page Size Change (Attempt: 2)'
+                    'Error occurred while attempting to handle QuestionPro Responses Page Size Change (Attempt: 2)'
                 );
             });
         });
