@@ -50,9 +50,8 @@ describe('QuestionProService', () => {
                 isAxiosError: true,
                 response: { status: 413, data: { response: { error: { httpStatusCode: 413, message: '' } } } }
             };
+            const MAX_ATTEMPTS = 3;
             it('Reaching upper bound of retries throws error', async () => {
-                const MAX_ATTEMPTS = 3;
-
                 fakeAxiosService.request.and.returnValue(Promise.reject(http_413));
 
                 await expectAsync(
@@ -146,6 +145,46 @@ describe('QuestionProService', () => {
                     Error,
                     'Error occurred while attempting to handle QuestionPro Responses Page Size Change (Attempt: 2)'
                 );
+            });
+
+            it('Error causes from previous retries are collected', async () => {
+                const mes1 = '1, 5, text text, 80.00, 100, text 750.1';
+                const mes3 = 'Non-Digit containing message';
+                const pageMes = 'QuestionPro Page Size Too Large';
+                fakeAxiosService.request.and.returnValues(
+                    Promise.reject(message_413(mes1)), // Returned after Page Size: 1000
+                    Promise.reject(http_413), // Returned after Page Size: 750
+                    Promise.reject(message_413(mes3)) // Returned after Page Size 375
+                );
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                let error: any;
+                try {
+                    await service.checkParticipation('1', { type: 'customVariable', variableName: 'custom4' }, '1');
+                } catch (e: unknown) {
+                    error = e;
+                }
+
+                // Outer Error Wrapper
+                expect(error).toBeTruthy();
+                expect(error?.cause).toBeTruthy();
+                expect(error?.message).toEqual(
+                    `Failed to handle QuestionPro Responses Page Size Change in ${MAX_ATTEMPTS} attempts`
+                );
+
+                // Inner Retry Errors
+                expect(error?.cause?.previous?.message).toEqual(pageMes);
+                expect(error?.cause?.previous?.cause?.error).toEqual(message_413(mes3));
+                expect(error?.cause?.previous?.cause?.previous?.message).toEqual(pageMes);
+                expect(error?.cause?.previous?.cause?.previous?.cause?.error).toEqual(http_413);
+                expect(error?.cause?.previous?.cause?.previous?.cause?.previous?.message).toEqual(pageMes);
+                expect(error?.cause?.previous?.cause?.previous?.cause?.previous?.cause?.error).toEqual(
+                    message_413(mes1)
+                );
+
+                // Axios Service Request Double Check
+                expect(fakeAxiosService.request).toHaveBeenCalledTimes(3);
+                expect(fakeAxiosService.request.calls.mostRecent().args[0].params.perPage).toBe(375);
             });
         });
     });
