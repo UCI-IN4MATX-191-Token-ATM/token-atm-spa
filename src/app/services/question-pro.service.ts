@@ -218,7 +218,7 @@ export class QuestionProService {
                 // HTTP 413 means page size needs to be reduced and responses collected again
                 if (
                     err?.isAxiosError &&
-                    err?.reponse?.status === 413 &&
+                    err?.response?.status === 413 &&
                     err?.response?.data?.response?.error?.httpStatusCode === 413
                 ) {
                     responses = undefined;
