@@ -6,6 +6,7 @@ export class GlobalErrorHandler implements ErrorHandler {
     public handleError(error: any) {
         if (isDevMode()) {
             console.error(error);
+            if (error.cause != null) console.error('Cause:', error.cause);
             return;
         }
         const win = window.open('about:blank', '_blank');
