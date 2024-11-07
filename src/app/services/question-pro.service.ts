@@ -15,7 +15,6 @@ export class QuestionProService {
     #apiKey?: string;
 
     static readonly PER_PAGE_MAX = 1000;
-    perPage?: number = 950; // TODO: Improve this band aid fix, so we handle 413 errors in Paginated Requests
 
     private participationCache: Map<string, Map<string, Set<string>>> = new Map<string, Map<string, Set<string>>>();
 
@@ -184,25 +183,94 @@ export class QuestionProService {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private async getResponses(surveyId: string): Promise<PaginatedResult<any>> {
-        try {
-            return new QuestionProPaginatedResult(
-                await this.#rawAPIRequest(`/surveys/${surveyId}/responses`, {
-                    params: {
-                        perPage: this.perPage ?? QuestionProService.PER_PAGE_MAX,
-                        page: 1
-                    }
-                }),
-                (url: string) => this.#paginatedRequest(url),
-                (v) => v
-            );
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (err: any) {
-            if (err?.isAxiosError && err?.response?.status === 404) {
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
-                return (async function* () {})();
+        let responses: unknown[] | undefined = undefined;
+        let curPerPage = QuestionProService.PER_PAGE_MAX;
+        let collectedErrors: Error | undefined = undefined;
+        let attempt = 0;
+        const MAX_ATTEMPTS = 3;
+
+        while (responses === undefined && attempt < MAX_ATTEMPTS) {
+            attempt++;
+            try {
+                const paginatedResponses = new QuestionProPaginatedResult(
+                    await this.#rawAPIRequest(`/surveys/${surveyId}/responses`, {
+                        params: {
+                            perPage: curPerPage,
+                            page: 1
+                        }
+                    }),
+                    (url: string) => this.#paginatedRequest(url),
+                    (v) => v
+                );
+                responses = [];
+                for await (const response of paginatedResponses) responses.push(response);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (err: any) {
+                // Clear any collected responses
+                if (responses) responses.length = 0;
+
+                // HTTP 404 means no responses
+                if (err?.isAxiosError && err?.response?.status === 404) {
+                    if (responses === undefined) responses = [];
+                    break;
+                }
+
+                // HTTP 413 means page size needs to be reduced and responses collected again
+                if (
+                    err?.isAxiosError &&
+                    err?.response?.status === 413 &&
+                    err?.response?.data?.response?.error?.httpStatusCode === 413
+                ) {
+                    responses = undefined;
+                    const suggestedPageSizes = (
+                        (err?.response?.data?.response?.error?.message as string | undefined)?.match(/\d+/g) ?? []
+                    )
+                        .map((x) => parseInt(x, 10))
+                        .filter((x) => Number.isFinite(x) && x < curPerPage && x > 0);
+
+                    // 0 < newPerPage < curPerPage
+                    curPerPage =
+                        suggestedPageSizes.length > 0 ? Math.max(...suggestedPageSizes) : Math.ceil(curPerPage / 2);
+
+                    // HTTP 413 errors could conceivably happen multiple times, so track previous errors
+                    collectedErrors = new Error('QuestionPro Page Size Too Large', {
+                        cause: { error: err, previous: collectedErrors }
+                    });
+                    continue;
+                }
+                if (collectedErrors == null) {
+                    throw err;
+                } else {
+                    throw new Error(
+                        `Error occurred while attempting to handle QuestionPro Responses Page Size Change (Attempt: ${attempt})`,
+                        {
+                            cause: { error: err, previous: collectedErrors }
+                        }
+                    );
+                }
             }
-            throw err;
         }
+        if (attempt === MAX_ATTEMPTS && responses === undefined) {
+            throw new Error(
+                `Failed to handle QuestionPro Responses Page Size Change in ${attempt} attempts`,
+                collectedErrors != null
+                    ? {
+                          cause: { previous: collectedErrors }
+                      }
+                    : undefined
+            );
+        }
+        return (async function* (responses: unknown[] | undefined) {
+            if (responses == null) {
+                throw new Error(
+                    'Question Pro Survey Responses could not be collected. Try again later, or contact the Token ATM Developers'
+                );
+            } else {
+                for (const response of responses) {
+                    yield response;
+                }
+            }
+        })(responses);
     }
 
     public async hasQuestion(surveyId: string, questionId: string): Promise<boolean> {
