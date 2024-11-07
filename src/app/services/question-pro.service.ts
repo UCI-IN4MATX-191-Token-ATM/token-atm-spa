@@ -250,7 +250,7 @@ export class QuestionProService {
                 }
             }
         }
-        if (count === MAX_TRYS) {
+        if (count === MAX_TRYS && responses === undefined) {
             throw new Error(
                 `Failed to handle QuestionPro Responses Page Size Change in ${MAX_TRYS} attempts`,
                 collectedErrors != null
