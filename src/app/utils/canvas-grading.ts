@@ -517,8 +517,8 @@ function convertNumberToMaxDecimalString(num: number, maxDecimals = MAX_DECIMALS
  * Collects the value for the 'points_possible' property of a Canvas Assignment JSON object.
  * @param canvasAssignmentJSON Raw JSON object. (Assumed to be a Canvas Assignment)
  * @param skipCountingIf Optionally used to skip this assignment's points possible. Takes an
- * object and checks if any of the key-value pairs strictly equal (===) the same properties in the
- * canvasAssignmentJSON. If there any strictly equal matches then 0 is returned.
+ * object and checks if any of its key-value pairs strictly equal (===) the same properties in the
+ * canvasAssignmentJSON. If there are any strictly equal matches then 0 is returned for this Canvas Assignment.
  *
  * If a given value is an array, the array's elements are used for the strict equality check.
  * @returns the Canvas Assignment's points possible or 0
