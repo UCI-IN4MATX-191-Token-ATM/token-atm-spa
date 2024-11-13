@@ -27,73 +27,25 @@ export enum CanvasGradingType {
 //             a number + '%', only 0% or 100%
 
 // N.B. for adding to a current score, only percent and points grading_type are supported
+
 const MAX_DECIMALS = 10; // 16 seems to be the Canvas or Javascript limit;
 
-/**
- * Adds a percentage of the pointsPossible to the current grade, and returns the new grade in same format as current.
- *
- * Only guaranteed to work for 'points' and 'percent' grading_type assignments.
- * @param additionalPercentage percentage to add in decimal number format
- * @param current string of the current grade/score on Canvas (e.g. '10' or '10%')
- * @param pointsPossible the denominator used for ratio conversions
- * @param maxDecimals optionally provide the max precision of the returned string (<= 10 places)
- * @returns A string for the Canvas submission posted_grade
- */
-export function addPercentToPointsOrPercentType(
-    additionalPercentage: number,
-    current: string,
-    pointsPossible: number,
-    maxDecimals?: number
-): string {
-    const cur = parseCanvasPercentsAndPoints(current);
-    if (current.endsWith('%')) {
-        const sum = additionalPercentage + cur;
-        return convertNumberToMaxDecimalString(sum * 100, maxDecimals) + '%';
-    } else {
-        const sum = additionalPercentage * pointsPossible + cur;
-        return convertNumberToMaxDecimalString(sum, maxDecimals);
-    }
-}
-
-/**
- * Adds points to the current grade, and returns new grade in the same format as current.
- * Uses pointsPossible to convert to/from percentages, if needed.
- *
- * Only guaranteed to work for 'points' and 'percent' Canvas grading_type assignments.
- * @param additionalPoints points to add
- * @param current string of the current grade/score on Canvas (e.g. '10' or '10%')
- * @param pointsPossible the denominator used for ratio conversions
- * @param maxDecimals optionally provide the max precision of the returned string (<= 10 places)
- * @returns A string for the Canvas submission posted_grade
- */
-export function addPointsToPercentOrPointsType(
-    additionalPoints: number,
-    current: string,
-    pointsPossible: number,
-    maxDecimals?: number
-): string {
-    const cur = parseCanvasPercentsAndPoints(current);
-    if (current.endsWith('%')) {
-        const sum = additionalPoints / pointsPossible + cur;
-        return convertNumberToMaxDecimalString(sum * 100, maxDecimals) + '%';
-    } else {
-        const sum = additionalPoints + cur;
-        return convertNumberToMaxDecimalString(sum, maxDecimals);
-    }
-}
-
+// TODO: Turn the CanvasGradeScorePossible types into runtime checked data using `io-ts`
+/** Type that contains the Grade Types, Grade, Score, and Points Possible that Canvas API could supply */
 export type CanvasGradeScorePossible = {
     gradeType?: keyof typeof CanvasGradingType;
     grade: string | null;
     score: number | null;
     pointsPossible: number | null;
 };
+/** Subset of CanvasGradeScorePossible type that is necessary to add arbitrary points or percentages to a Canvas Assignment */
 type FixedCanvasGradeScorePossible = {
     gradeType: 'percent' | 'points';
     grade: string;
     score: number;
     pointsPossible: number;
 };
+/** Data used to update Canvas. The single grade to post to Canvas. The message summarizing the grade change calculation */
 export type UpdatePostedGrade = { postedGrade: string; updateMessage: string };
 
 /**
@@ -115,11 +67,16 @@ export function addPercentOrPointsToCanvasGrade(
     if (target.gradeType == null) {
         throw new Error('Invalid data, can’t add points to an Assignment without a grading type');
     }
-    const tar = normalizeGradeScorePossible(target);
-    const postedGrade = decideNewPostedGrade(add, tar, basedOn);
-    const updateMessage = generatePostedGradeMessage(add, tar, postedGrade, basedOn);
+    const targetFixed = normalizeGradeScorePossible(target);
+    const postedGrade = decideNewPostedGrade(add, targetFixed, basedOn);
+    const updateMessage = generatePostedGradeMessage(add, targetFixed, postedGrade, basedOn);
     return { postedGrade, updateMessage };
 }
+
+/**
+ * Fixes values and sets them to proper 'zero-ed' default if missing
+ * @throws Error if gradeType isn't 'percent' or 'points'
+ */
 function normalizeGradeScorePossible(value: CanvasGradeScorePossible): FixedCanvasGradeScorePossible {
     const { gradeType, grade, score, pointsPossible } = value;
     if (gradeType == null || (gradeType !== 'percent' && gradeType !== 'points')) {
@@ -132,12 +89,21 @@ function normalizeGradeScorePossible(value: CanvasGradeScorePossible): FixedCanv
         pointsPossible: pointsPossible ?? NaN
     };
 }
+
 type valueState = 'percent' | 'points';
+
+/**
+ * @param add Number or percentage to add
+ * @param target Normalized grade and score to add to
+ * @param basedOn Optional denominator for converting percentages to equivalent value
+ * @returns The summed value that should be posted to Canvas
+ * @throws Error if the decided value to add, isn't a finite number
+ */
 function decideNewPostedGrade(add: string, target: FixedCanvasGradeScorePossible, basedOn?: number): string {
     const forcePointsResult = target.pointsPossible === 0;
-    // If needed, scales addition to be in terms of target's points possible
+    // If needed, scales addition value to be in terms of the target's points possible
     const scaledAdd = scaleAddAndMarkMorePreciseType(add, target, basedOn);
-    const [toAdd, addTo, addTypeState] = decideWhatToAdd(forcePointsResult, scaledAdd, target);
+    const { toAdd, addTo, addTypeState } = decideWhatToAdd(forcePointsResult, scaledAdd, target);
     const addScoreFunc = addTypeState === 'points' ? addPointsToPercentOrPointsType : addPercentToPointsOrPercentType;
     const parsedAdd = parseCanvasPercentsAndPoints(toAdd);
     if (!Number.isFinite(parsedAdd)) {
@@ -145,6 +111,14 @@ function decideNewPostedGrade(add: string, target: FixedCanvasGradeScorePossible
     }
     return addScoreFunc(parsedAdd, addTo, target.pointsPossible);
 }
+
+/**
+ * Represents the `add` value as equivalent number and percentage values.
+ * Returned object also states if one value is found to be more precise than the other.
+ *
+ * Percentage `add` values are first scaled by the conversionDenom, if present.
+ * And finally scaled in terms of the points possible for the target summand.
+ */
 function scaleAddAndMarkMorePreciseType(add: string, target: FixedCanvasGradeScorePossible, conversionDenom?: number) {
     const { pointsPossible } = target;
     const addPercent = add.includes('%');
@@ -159,6 +133,13 @@ function scaleAddAndMarkMorePreciseType(add: string, target: FixedCanvasGradeSco
     };
     const rGrade = percentResult();
     const rScore = addPercent ? a * (conversionDenom ?? pointsPossible) : a;
+
+    /**
+     * Multiplies each value by 10 until one is a non-zero integer.
+     * Returns the type of first found to be an integer.
+     *
+     * Returns null if neither is found to be a non-zero integer.
+     */
     function findMorePreciseType(grade: number, score: number, attemptsLeft = MAX_DECIMALS + 2): valueState | null {
         const check = (v: number) => Number.isInteger(v) && v !== 0;
         if (attemptsLeft === 0) return null;
@@ -177,18 +158,37 @@ function scaleAddAndMarkMorePreciseType(add: string, target: FixedCanvasGradeSco
         mostPreciseType: findMorePreciseType(rGrade, rScore)
     };
 }
+
+/**
+ * @param forcePointsResult If true, only a points result type is valid
+ * @param scaledAddInfo Information about addend (including most precise value)
+ * @param targetAddToInfo Information about target to add to
+ * @returns An object containing the value to add, the target value to add to, and the type we expect to add ('points' | 'percent')
+ */
 function decideWhatToAdd(
     forcePointsResult: boolean,
     scaledAddInfo: FixedCanvasGradeScorePossible & { mostPreciseType: valueState | null },
     targetAddToInfo: FixedCanvasGradeScorePossible
-): [string, string, valueState] {
+): { toAdd: string; addTo: string; addTypeState: valueState } {
     type errorState = valueState | 'both' | 'none';
     type validAdditions = { addGrade?: string; addScore?: string; errorState: errorState };
+
+    /**
+     * @param target Grade and Score Info to find valid values
+     * @param forceValueType Let only a single value type be valid
+     * @param keepPred Predicate used to to identify possible valid values
+     * @returns Object with the valid values and final errorState
+     */
     function findValidValues(
         target: FixedCanvasGradeScorePossible,
         forceValueType?: valueState,
         keepPred = isFinite
     ): validAdditions {
+        /**
+         * Closure that tracks errors, used as a state machine.
+         *
+         * Pass in what caused error, always returns the current error state.
+         */
         function errorState() {
             let errorType: errorState = 'none';
             return (e?: errorState) => {
@@ -217,6 +217,7 @@ function decideWhatToAdd(
         const { grade, score } = target;
         // Track what fails the predicate
         [grade, score.toString(10)].map((v) => (!keepPred(v) ? getType(v) : undefined)).forEach(errorTracker);
+        // Track the non-forced value type
         errorTracker(forceValueType ? (forceValueType === 'percent' ? 'points' : 'percent') : undefined);
         // Grade must be a percent
         errorTracker(!grade.includes('%') ? 'percent' : undefined);
@@ -224,14 +225,16 @@ function decideWhatToAdd(
         // Both values should be zero or non-zero, otherwise drop the 0 valued type
         errorTracker(gNum === 0 && score !== 0 ? 'percent' : undefined);
         errorTracker(score === 0 && gNum !== 0 ? 'points' : undefined);
-        if (errorTracker() === 'both') {
-            return { errorState: errorTracker() };
-        } else if (errorTracker() === 'none') {
-            return { addScore: score.toString(10), addGrade: grade, errorState: errorTracker() };
+
+        const finalErrorState = errorTracker();
+        if (finalErrorState === 'both') {
+            return { errorState: finalErrorState };
+        } else if (finalErrorState === 'none') {
+            return { addScore: score.toString(10), addGrade: grade, errorState: finalErrorState };
         } else {
-            return errorTracker() !== 'points'
-                ? { addScore: score.toString(10), errorState: errorTracker() }
-                : { addGrade: grade, errorState: errorTracker() };
+            return finalErrorState !== 'points'
+                ? { addScore: score.toString(10), errorState: finalErrorState }
+                : { addGrade: grade, errorState: finalErrorState };
         }
     }
     function isFinite(v: unknown) {
@@ -243,13 +246,16 @@ function decideWhatToAdd(
     function getType(v: string): valueState {
         return v.includes('%') ? 'percent' : 'points';
     }
-    function getValidType(v: validAdditions): errorState {
+    type validState = errorState;
+    /** Inverts the errorState to get the valid value types */
+    function getValidType(v: validAdditions): validState {
         if (v.errorState === 'none') return 'both';
         else if (v.errorState === 'both') return 'none';
         else if (v.errorState === 'percent') return 'points';
         /*v.errorState === 'points'*/ else return 'percent';
     }
-    function getEqualType(v1: validAdditions, v2: validAdditions): errorState {
+    /** Returns the valid value type shared across both validAdditions */
+    function getEqualType(v1: validAdditions, v2: validAdditions): validState {
         const v1T = getValidType(v1);
         const v2T = getValidType(v2);
         if (v1T === 'none' || v2T === 'none') return 'none';
@@ -259,14 +265,25 @@ function decideWhatToAdd(
         else if (v1T !== v2T) return 'none';
         else throw new Error('Should be unreachable code.');
     }
-    function singleBestAdd(v: validAdditions, prefer?: valueState): string | null | undefined {
+    /**
+     * Returns the single best valid choice, or a null-ish value if there isn't one
+     *
+     * Optionally a preferred value type can be provided to break ties.
+     */
+    function singleBestAddChoice(v: validAdditions, prefer?: valueState): string | null | undefined {
         const valid = getValidType(v);
         if (valid === 'both') return prefer ? (prefer === 'percent' ? v.addGrade : v.addScore) ?? null : null;
         else if (valid === 'none') return undefined;
         else return (valid === 'percent' ? v.addGrade : v.addScore) ?? null;
     }
+
+    /**
+     * Resolves the possible available choices for the addTo and toAdd values into a single decision.
+     *
+     * Attempts to find a pair of integers to sum, and if it can't then falls back to any finite values
+     */
     const resolve = (keepPred = isInt): { addTo: string; toAdd: string } => {
-        const { gradeType: originalAddType, mostPreciseType, pointsPossible: denom } = scaledAddInfo;
+        const { gradeType: originalToAddType, mostPreciseType, pointsPossible: denom } = scaledAddInfo;
         const { gradeType: addToPreference } = targetAddToInfo;
         const toAddPreference = mostPreciseType ?? undefined;
 
@@ -274,8 +291,8 @@ function decideWhatToAdd(
         const validAddTos = findValidValues(targetAddToInfo, forcePointsResult ? 'points' : undefined, keepPred);
 
         // If only one best option for each exists, use them
-        let toAdd = singleBestAdd(validToAdds) ?? '';
-        let addTo = singleBestAdd(validAddTos) ?? '';
+        let toAdd = singleBestAddChoice(validToAdds) ?? '';
+        let addTo = singleBestAddChoice(validAddTos) ?? '';
 
         // If only integer values are valid...
         if (keepPred === isInt) {
@@ -286,8 +303,14 @@ function decideWhatToAdd(
                 // If there is only a single way to add a pair of ints, use it
                 [toAdd, addTo] =
                     intPair === 'percent'
-                        ? [singleBestAdd(validToAdds, 'percent') ?? '', singleBestAdd(validAddTos, 'percent') ?? '']
-                        : [singleBestAdd(validToAdds, 'points') ?? '', singleBestAdd(validAddTos, 'points') ?? ''];
+                        ? [
+                              singleBestAddChoice(validToAdds, 'percent') ?? '',
+                              singleBestAddChoice(validAddTos, 'percent') ?? ''
+                          ]
+                        : [
+                              singleBestAddChoice(validToAdds, 'points') ?? '',
+                              singleBestAddChoice(validAddTos, 'points') ?? ''
+                          ];
             } else {
                 // Nothing. Use same resolution code as finite values below
             }
@@ -297,36 +320,51 @@ function decideWhatToAdd(
         // Prioritize by: 1) more precise addition value, then
         //                2) target assignment type, and finally
         //                3) type of addition originally provided
-        if (!toAdd)
+        if (!toAdd) {
             toAdd =
-                singleBestAdd(validToAdds, toAddPreference) ??
-                singleBestAdd(validToAdds, addToPreference) ??
-                singleBestAdd(validToAdds, originalAddType) ??
+                singleBestAddChoice(validToAdds, toAddPreference) ??
+                singleBestAddChoice(validToAdds, addToPreference) ??
+                singleBestAddChoice(validToAdds, originalToAddType) ??
                 '';
+        }
 
         // If the best choice for the posted grade type hasn't been found yet,
         // Prioritize using 1) the more precise addition value type.
-        if (!addTo) addTo = singleBestAdd(validAddTos, toAddPreference) ?? '';
+        if (!addTo) {
+            addTo = singleBestAddChoice(validAddTos, toAddPreference) ?? '';
+        }
 
         // If the best choice for the posted grade type still hasn't been found,
         // attempt to use 2) whatever type the addition value has settled on.
         if (!!toAdd && !addTo) {
-            addTo = singleBestAdd(validAddTos, getType(toAdd)) ?? '';
+            addTo = singleBestAddChoice(validAddTos, getType(toAdd)) ?? '';
         }
 
         // And if the best posted grade type still isn't found, fallback to,
         // 3) the target assignment type, or 4) the type of addition originally provided
         if (!addTo) {
-            addTo = singleBestAdd(validAddTos, addToPreference) ?? singleBestAdd(validAddTos, originalAddType) ?? '';
+            addTo =
+                singleBestAddChoice(validAddTos, addToPreference) ??
+                singleBestAddChoice(validAddTos, originalToAddType) ??
+                '';
         }
 
+        // Edge Case:
+        // - No resolved valid value to add
+        // - There is a valid target value to add to
+        // - The target does not have a denominator, a.k.a pointsPossible
         if (!toAdd && !!addTo && Number.isNaN(denom)) {
+            // TODO: reassess the decision below...
             // Throw Error?
             // if (getValidType(validToAdds) === 'none') throw new Error(`Found no valid way to add to this assignment.`);
             // Or default to adding 0?
             toAdd = getType(addTo) === 'percent' ? '0%' : '0';
         }
 
+        // Edge Case:
+        // - No resolved valid value to add
+        // - The target is out of 0 total points
+        // - The points value type is forced to be the only valid choice
         if (!toAdd && denom === 0 && forcePointsResult) {
             toAdd = '0';
             if (!addTo) {
@@ -350,20 +388,25 @@ function decideWhatToAdd(
     const { toAdd, addTo } = resolve();
     // Decides which addition function will be used
     const addTypeState = getType(toAdd);
-    return [toAdd, addTo, addTypeState];
+    return { toAdd, addTo, addTypeState };
 }
+
+/**
+ * @returns A human readable message summarizing the change from original grade/score to the summed grade/score
+ */
 function generatePostedGradeMessage(
     add: string,
     target: FixedCanvasGradeScorePossible,
     postedGrade: string,
     basedOn?: number
 ): string {
-    // decides connection phrase: 'out of' for points, 'of' for percents
+    /** decides connection phrase: 'out of' for points, 'of' for percents */
     const of = (n: string | number, d: number) => `${n} ${`${n}`.includes('%') ? '' : 'out '}of ${d}`;
-    // append 'total ' to 'point(s)', if using custom pointsPossible
+    /** append 'total ' to 'point(s)', if using custom pointsPossible */
     const points = (count: number, total = false) => `${total ? 'total ' : ''}${pluralize('point', count)}`;
+    /** combines `of()` and `points()` */
     const ofPoints = (n: string | number, d: number, total = false) => `${of(n, d)} ${points(d, total)}`;
-    // Displays the change provided by instructor, and grade display of assignment
+
     const addType = add.includes('%') ? 'percent' : 'points';
     const gradeType = target.gradeType;
     const curGrade = gradeType === 'percent' ? target.grade : target.score;
@@ -378,10 +421,11 @@ function generatePostedGradeMessage(
             : gradeType === 'points'
             ? ofPoints(add, target.pointsPossible)
             : add;
-    const firstLine = `Added ${addText} to ${ofPoints(curGrade, target.pointsPossible)}\n`;
-    // Displays the actual change provided to Canvas via posted_grade
+    /** Displays the change provided by instructor, and grade display of assignment */
+    const firstLine = `Added ${addText} to ${ofPoints(curGrade, target.pointsPossible)}`;
+    /** Displays the actual change provided to Canvas via posted_grade */
     const secondLine = `Change: ${postedGrade.includes('%') ? target.grade : target.score} => ${postedGrade}`;
-    return firstLine + secondLine;
+    return firstLine + '\n' + secondLine;
 }
 
 /**
@@ -406,6 +450,61 @@ export function parseCanvasPercentsAndPoints(postedGrade: string): number {
     return parsed / (isPercent ? 100 : 1);
 }
 
+/**
+ * Adds a percentage of the pointsPossible to the current grade, and returns the new grade in same format as current.
+ *
+ * Only guaranteed to work for 'points' and 'percent' grading_type assignments.
+ * @deprecated Use `addPercentOrPointsToCanvasGrade()` instead.
+ * @param additionalPercentage percentage to add in decimal number format
+ * @param current string of the current grade/score on Canvas (e.g. '10' or '10%')
+ * @param pointsPossible the denominator used for ratio conversions
+ * @param maxDecimals optionally provide the max precision of the returned string (<= 10 places)
+ * @returns A string for the Canvas submission posted_grade
+ */
+export function addPercentToPointsOrPercentType(
+    additionalPercentage: number,
+    current: string,
+    pointsPossible: number,
+    maxDecimals?: number
+): string {
+    const cur = parseCanvasPercentsAndPoints(current);
+    if (current.endsWith('%')) {
+        const sum = additionalPercentage + cur;
+        return convertNumberToMaxDecimalString(sum * 100, maxDecimals) + '%';
+    } else {
+        const sum = additionalPercentage * pointsPossible + cur;
+        return convertNumberToMaxDecimalString(sum, maxDecimals);
+    }
+}
+
+/**
+ * Adds points to the current grade, and returns new grade in the same format as current.
+ * Uses pointsPossible to convert to/from percentages, if needed.
+ *
+ * Only guaranteed to work for 'points' and 'percent' Canvas grading_type assignments.
+ * @deprecated Use `addPercentOrPointsToCanvasGrade()` instead.
+ * @param additionalPoints points to add
+ * @param current string of the current grade/score on Canvas (e.g. '10' or '10%')
+ * @param pointsPossible the denominator used for ratio conversions
+ * @param maxDecimals optionally provide the max precision of the returned string (<= 10 places)
+ * @returns A string for the Canvas submission posted_grade
+ */
+export function addPointsToPercentOrPointsType(
+    additionalPoints: number,
+    current: string,
+    pointsPossible: number,
+    maxDecimals?: number
+): string {
+    const cur = parseCanvasPercentsAndPoints(current);
+    if (current.endsWith('%')) {
+        const sum = additionalPoints / pointsPossible + cur;
+        return convertNumberToMaxDecimalString(sum * 100, maxDecimals) + '%';
+    } else {
+        const sum = additionalPoints + cur;
+        return convertNumberToMaxDecimalString(sum, maxDecimals);
+    }
+}
+
 function convertNumberToMaxDecimalString(num: number, maxDecimals = MAX_DECIMALS): string {
     if (Number.isInteger(num)) return `${num}`;
     const sign = num < 0 ? -1 : 1;
@@ -418,8 +517,8 @@ function convertNumberToMaxDecimalString(num: number, maxDecimals = MAX_DECIMALS
  * Collects the value for the 'points_possible' property of a Canvas Assignment JSON object.
  * @param canvasAssignmentJSON Raw JSON object. (Assumed to be a Canvas Assignment)
  * @param skipCountingIf Optionally used to skip this assignment's points possible. Takes an
- * object where if any of the key-value pairs strictly equal (===) the same properties in the
- * canvasAssignmentJSON, then 0 is returned.
+ * object and checks if any of its key-value pairs strictly equal (===) the same properties in the
+ * canvasAssignmentJSON. If there are any strictly equal matches then 0 is returned for this Canvas Assignment.
  *
  * If a given value is an array, the array's elements are used for the strict equality check.
  * @returns the Canvas Assignment's points possible or 0
