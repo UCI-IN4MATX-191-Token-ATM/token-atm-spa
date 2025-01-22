@@ -4,11 +4,14 @@ import type {
     RawEarnBySurveyTokenOptionData
 } from 'app/token-options/earn-by-survey/earn-by-survey-token-option';
 // import type { PlaceholderTokenOptionData } from 'app/token-options/placeholder-token-option/placeholder-token-option';
-import type { TokenOptionData } from 'app/token-options/token-option';
+import type { RawTokenOptionData, TokenOptionData } from 'app/token-options/token-option';
 import { getUnixTime } from 'date-fns';
 import { Base64 } from 'js-base64';
 
-function* genRawTokenOptionDataEquivs<T extends TokenOptionData>(v: T, genExtra = false): Generator<T, void, any> {
+function* genRawTokenOptionDataEquivs<T extends TokenOptionData>(
+    v: T,
+    genExtra = false
+): Generator<T & RawTokenOptionData, void, any> {
     const descriptionData = {
         *[Symbol.iterator]() {
             if (v.description === '') {
@@ -47,24 +50,28 @@ function* genRawTokenOptionDataEquivs<T extends TokenOptionData>(v: T, genExtra 
 export function* genRawEarnBySurveyDataEquivs<T extends EarnBySurveyTokenOptionData>(
     v: T,
     genExtra = false
-): Generator<T, void, any> {
-    const result: RawEarnBySurveyTokenOptionData = {
+): Generator<
+    ((T | Omit<T, 'surveyId'>) & RawEarnBySurveyTokenOptionData) | (T & Omit<RawEarnBySurveyTokenOptionData, 'quizId'>),
+    void,
+    any
+> {
+    const result: Omit<T, 'surveyId'> & RawEarnBySurveyTokenOptionData = {
         ...v,
         quizId: v.surveyId,
         startTime: getUnixTime(v.startTime),
         endTime: getUnixTime(v.endTime)
     };
     delete (result as any)['surveyId'];
-    yield* genRawTokenOptionDataEquivs<T>(result as any, genExtra);
+    yield* genRawTokenOptionDataEquivs(result, genExtra);
     if (genExtra) {
-        // Preserves the 'surveyId' field
-        yield* genRawTokenOptionDataEquivs<T>(
+        // Preserves only the 'surveyId' field
+        yield* genRawTokenOptionDataEquivs<T & Omit<RawEarnBySurveyTokenOptionData, 'quizId'>>(
             { ...v, surveyId: 'New surveyId Format', startTime: result.startTime, endTime: result.endTime },
             genExtra
         );
         // Includes both `surveyId` and `quizId` field. both are accepted in the Raw Data
         // `surveyId` should be the priority pick
-        yield* genRawTokenOptionDataEquivs<T>(
+        yield* genRawTokenOptionDataEquivs<T & RawEarnBySurveyTokenOptionData>(
             {
                 ...v,
                 surveyId: 'Prioritized surveyId value',
