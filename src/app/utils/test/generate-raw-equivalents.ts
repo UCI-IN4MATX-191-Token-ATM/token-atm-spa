@@ -1,17 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type {
     EarnBySurveyTokenOptionData,
     RawEarnBySurveyTokenOptionData
 } from 'app/token-options/earn-by-survey/earn-by-survey-token-option';
-// import type { PlaceholderTokenOptionData } from 'app/token-options/placeholder-token-option/placeholder-token-option';
+import type {
+    PlaceholderTokenOptionData,
+    RawPlaceholderTokenOptionData
+} from 'app/token-options/placeholder-token-option/placeholder-token-option';
 import type { RawTokenOptionData, TokenOptionData } from 'app/token-options/token-option';
 import { getUnixTime } from 'date-fns';
 import { Base64 } from 'js-base64';
+import { genRawMultipleSectionTimeValues } from '../multiple-section-date-matcher';
+import type { RawExcludeTokenOptionIdsMixinData } from 'app/token-options/mixins/exclude-token-option-ids-mixin';
 
 function* genRawTokenOptionDataEquivs<T extends TokenOptionData>(
     v: T,
     genExtra = false
-): Generator<T & RawTokenOptionData, void, any> {
+): Generator<T & RawTokenOptionData, void, unknown> {
     const descriptionData = {
         *[Symbol.iterator]() {
             if (v.description === '') {
@@ -53,7 +57,7 @@ export function* genRawEarnBySurveyDataEquivs<T extends EarnBySurveyTokenOptionD
 ): Generator<
     ((T | Omit<T, 'surveyId'>) & RawEarnBySurveyTokenOptionData) | (T & Omit<RawEarnBySurveyTokenOptionData, 'quizId'>),
     void,
-    any
+    unknown
 > {
     const result: Omit<T, 'surveyId'> & RawEarnBySurveyTokenOptionData = {
         ...v,
@@ -61,6 +65,7 @@ export function* genRawEarnBySurveyDataEquivs<T extends EarnBySurveyTokenOptionD
         startTime: getUnixTime(v.startTime),
         endTime: getUnixTime(v.endTime)
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (result as any)['surveyId'];
     yield* genRawTokenOptionDataEquivs(result, genExtra);
     if (genExtra) {
@@ -84,7 +89,32 @@ export function* genRawEarnBySurveyDataEquivs<T extends EarnBySurveyTokenOptionD
     }
 }
 
-// export function* genRawPlaceholderDataEquivs<T extends PlaceholderTokenOptionData>(
-//     v: T,
-//     genExtra = false
-// ): Generator<T, void, any> {}
+export function* genRawPlaceholderDataEquivs<T extends PlaceholderTokenOptionData>(
+    v: T,
+    genExtra = false
+): Generator<T & RawPlaceholderTokenOptionData, void, unknown> {
+    const excludeIdsData = {
+        *[Symbol.iterator](): Generator<T & RawExcludeTokenOptionIdsMixinData, void, unknown> {
+            if (v.excludeTokenOptionIds.length === 0 || genExtra) {
+                const r = { ...v };
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                delete (r as any)['excludeTokenOptionIds'];
+                yield { ...v, excludeTokenOptionIds: undefined };
+                yield r;
+            }
+            if (genExtra && v.excludeTokenOptionIds.length === 0) {
+                yield { ...v, excludeTokenOptionIds: [1, 2, 3] };
+            }
+        }
+    };
+    for (const rawExcludesData of excludeIdsData) {
+        for (const startTimeValues of genRawMultipleSectionTimeValues(rawExcludesData.startTime, genExtra)) {
+            for (const endTimeValues of genRawMultipleSectionTimeValues(rawExcludesData.endTime, genExtra)) {
+                yield* genRawTokenOptionDataEquivs(
+                    { ...rawExcludesData, startTime: startTimeValues, endTime: endTimeValues },
+                    genExtra
+                );
+            }
+        }
+    }
+}
