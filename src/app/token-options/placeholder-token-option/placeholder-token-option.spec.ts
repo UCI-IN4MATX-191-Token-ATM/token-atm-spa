@@ -5,7 +5,7 @@ import {
     PlaceholderTokenOptionDataDef
 } from './placeholder-token-option';
 import { fromUnixTime, getUnixTime } from 'date-fns';
-import { genRawPlaceholderDataEquivs } from 'app/utils/test/generate-raw-equivalents';
+import { genRawPlaceholderDataEquivalents } from 'app/utils/test/generate-raw-equivalents';
 import { MultipleSectionDateMatcher } from 'app/utils/multiple-section-date-matcher';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import { TO_BE_SUPER_SET_OF_MATCHER } from 'app/utils/test/to-be-super-set-of-matcher';
@@ -49,13 +49,9 @@ describe('PlaceholderTokenOption', () => {
 
     describe('PlaceholderTokenOptionDataDef', () => {
         for (const expected of validValues) {
-            for (const value of genRawPlaceholderDataEquivs(expected)) {
+            for (const value of genRawPlaceholderDataEquivalents(expected)) {
                 it(`should decode successfully with valid raw value ${JSON.stringify(value)}`, () => {
                     const result = PlaceholderTokenOptionDataDef.decode(value);
-                    if (isLeft(result)) {
-                        console.log('E:', expected);
-                        console.log('V:', value);
-                    }
                     expect(isLeft(result)).toBeFalse();
                     if (!isLeft(result)) expect(result.right).toEqual(expected);
                 });
@@ -63,11 +59,20 @@ describe('PlaceholderTokenOption', () => {
         }
 
         for (const expected of validValues) {
-            for (const value of genRawPlaceholderDataEquivs(expected, true)) {
-                it(`should decode successfully all extra raw data based on ${JSON.stringify(value)}`, () => {
+            for (const value of genRawPlaceholderDataEquivalents(expected, true)) {
+                describe(`Test generated raw data (${JSON.stringify(value)})`, () => {
                     const result = PlaceholderTokenOptionDataDef.decode(value);
-                    expect(isLeft(result)).toBeFalse();
-                    expect(isRight(result)).toBeTrue();
+                    it(`should decode successfully`, () => {
+                        expect(isLeft(result)).toBeFalse();
+                        expect(isRight(result)).toBeTrue();
+                    });
+                    if (isRight(result) && (result.right.startTime === null || result.right.startTime === null)) {
+                        it(`decode-encode should strip \`null\` \`startTime\`s and \`endTimes\`s`, () => {
+                            const encode = PlaceholderTokenOptionDataDef.encode(result.right);
+                            expect(encode.startTime).not.toBeNull();
+                            expect(encode.endTime).not.toBeNull();
+                        });
+                    }
                 });
             }
         }
@@ -93,7 +98,7 @@ describe('PlaceholderTokenOption', () => {
 
         for (const value of validValues) {
             it(`should encode successfully with valid value ${JSON.stringify(value)}`, () => {
-                const equalRawValues = Array.from(genRawPlaceholderDataEquivs(value));
+                const equalRawValues = Array.from(genRawPlaceholderDataEquivalents(value));
                 const result = PlaceholderTokenOptionDataDef.encode(value);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 expect(equalRawValues).toContain(result as any);
@@ -193,7 +198,7 @@ describe('PlaceholderTokenOption', () => {
         });
 
         for (const data of validValues) {
-            for (const rawData of genRawPlaceholderDataEquivs(data)) {
+            for (const rawData of genRawPlaceholderDataEquivalents(data)) {
                 it(`should decode successfully with raw data ${JSON.stringify(rawData)}`, () => {
                     expect(value.fromRawData(rawData)).toBeSupersetOf(data);
                 });
@@ -223,7 +228,7 @@ describe('PlaceholderTokenOption', () => {
             it(`should encode successfully to raw data with data ${JSON.stringify(data)}`, () => {
                 const result = value.fromData(data).toJSON();
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                expect(Array.from(genRawPlaceholderDataEquivs(data))).toContain(result as any);
+                expect(Array.from(genRawPlaceholderDataEquivalents(data))).toContain(result as any);
             });
         }
     });

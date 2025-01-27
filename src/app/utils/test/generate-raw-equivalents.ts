@@ -9,10 +9,21 @@ import type {
 import type { RawTokenOptionData, TokenOptionData } from 'app/token-options/token-option';
 import { getUnixTime } from 'date-fns';
 import { Base64 } from 'js-base64';
-import { genRawMultipleSectionTimeValues } from '../multiple-section-date-matcher';
+import {
+    genMultipleSectionDateMatcherValues,
+    MultipleSectionDateMatcherDataDef
+} from '../multiple-section-date-matcher';
 import type { RawExcludeTokenOptionIdsMixinData } from 'app/token-options/mixins/exclude-token-option-ids-mixin';
+import type {
+    OptionalMultipleSectionEndTimeMixinData,
+    RawOptionalMultipleSectionEndTimeMixinData
+} from 'app/token-options/mixins/optional-multiple-section-end-time-mixin';
+import type {
+    OptionalMultipleSectionStartTimeMixinData,
+    RawOptionalMultipleSectionStartTimeMixinData
+} from 'app/token-options/mixins/optional-multiple-section-start-time-mixin';
 
-function* genRawTokenOptionDataEquivs<T extends TokenOptionData>(
+function* genRawTokenOptionDataEquivalents<T extends TokenOptionData>(
     v: T,
     genExtra = false
 ): Generator<T & RawTokenOptionData, void, unknown> {
@@ -51,7 +62,7 @@ function* genRawTokenOptionDataEquivs<T extends TokenOptionData>(
  * @param v an object to use as a baseline
  * @param genExtra boolean flag for generating extra non-equal but valid transformations
  */
-export function* genRawEarnBySurveyDataEquivs<T extends EarnBySurveyTokenOptionData>(
+export function* genRawEarnBySurveyDataEquivalents<T extends EarnBySurveyTokenOptionData>(
     v: T,
     genExtra = false
 ): Generator<
@@ -67,16 +78,16 @@ export function* genRawEarnBySurveyDataEquivs<T extends EarnBySurveyTokenOptionD
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (result as any)['surveyId'];
-    yield* genRawTokenOptionDataEquivs(result, genExtra);
+    yield* genRawTokenOptionDataEquivalents(result, genExtra);
     if (genExtra) {
         // Preserves only the 'surveyId' field
-        yield* genRawTokenOptionDataEquivs<T & Omit<RawEarnBySurveyTokenOptionData, 'quizId'>>(
+        yield* genRawTokenOptionDataEquivalents<T & Omit<RawEarnBySurveyTokenOptionData, 'quizId'>>(
             { ...v, surveyId: 'New surveyId Format', startTime: result.startTime, endTime: result.endTime },
             genExtra
         );
         // Includes both `surveyId` and `quizId` field. both are accepted in the Raw Data
         // `surveyId` should be the priority pick
-        yield* genRawTokenOptionDataEquivs<T & RawEarnBySurveyTokenOptionData>(
+        yield* genRawTokenOptionDataEquivalents<T & RawEarnBySurveyTokenOptionData>(
             {
                 ...v,
                 surveyId: 'Prioritized surveyId value',
@@ -89,7 +100,7 @@ export function* genRawEarnBySurveyDataEquivs<T extends EarnBySurveyTokenOptionD
     }
 }
 
-export function* genRawPlaceholderDataEquivs<T extends PlaceholderTokenOptionData>(
+export function* genRawPlaceholderDataEquivalents<T extends PlaceholderTokenOptionData>(
     v: T,
     genExtra = false
 ): Generator<T & RawPlaceholderTokenOptionData, void, unknown> {
@@ -108,13 +119,55 @@ export function* genRawPlaceholderDataEquivs<T extends PlaceholderTokenOptionDat
         }
     };
     for (const rawExcludesData of excludeIdsData) {
-        for (const startTimeValues of genRawMultipleSectionTimeValues(rawExcludesData.startTime, genExtra)) {
-            for (const endTimeValues of genRawMultipleSectionTimeValues(rawExcludesData.endTime, genExtra)) {
-                yield* genRawTokenOptionDataEquivs(
+        for (const startTimeValues of genRawOptionalMultipleSectionTimeValues(rawExcludesData.startTime, genExtra)) {
+            for (const endTimeValues of genRawOptionalMultipleSectionTimeValues(rawExcludesData.endTime, genExtra)) {
+                yield* genRawTokenOptionDataEquivalents(
                     { ...rawExcludesData, startTime: startTimeValues, endTime: endTimeValues },
                     genExtra
                 );
             }
         }
+    }
+}
+
+type OptionalSectionTimeValues =
+    | OptionalMultipleSectionEndTimeMixinData['endTime']
+    | OptionalMultipleSectionStartTimeMixinData['startTime'];
+type RawOptionalSectionTimeValues =
+    | RawOptionalMultipleSectionEndTimeMixinData['endTime']
+    | RawOptionalMultipleSectionStartTimeMixinData['startTime'];
+
+/**
+ * Generate Raw values for MultipleSectionTimeOverrides Data
+ * @param v valid value
+ * @param genExtra flag for generating valid but not equal Raw values
+ */
+export function* genRawOptionalMultipleSectionTimeValues(
+    v: OptionalSectionTimeValues,
+    genExtra = false
+): Generator<RawOptionalSectionTimeValues, void, unknown> {
+    if (v === null) {
+        yield null;
+        yield undefined;
+        if (genExtra) {
+            yield getUnixTime(new Date());
+            yield* genMultipleSectionDateMatcherValues(undefined, genExtra);
+        }
+    } else if (v instanceof Date || Object.prototype.toString.call(v) === '[object Date]') {
+        yield getUnixTime(v as Date);
+        if (genExtra) {
+            yield null;
+            yield undefined;
+            yield* genMultipleSectionDateMatcherValues(undefined, genExtra);
+        }
+    } else if (MultipleSectionDateMatcherDataDef.is(v)) {
+        yield* genMultipleSectionDateMatcherValues(v, genExtra);
+        if (genExtra) {
+            yield null;
+            yield undefined;
+            yield getUnixTime(new Date());
+        }
+    } else {
+        throw Error(`Unimplemented Generator for Raw Multiple Section Time Values of type: (${typeof v})`);
     }
 }

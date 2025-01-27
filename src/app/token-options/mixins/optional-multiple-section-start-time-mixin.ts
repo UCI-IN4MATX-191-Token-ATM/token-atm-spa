@@ -1,33 +1,33 @@
 import * as t from 'io-ts';
-// import { chain } from 'fp-ts/Either';
 import { type Constructor, DateDef } from 'app/utils/mixin-helper';
 import type { IGridViewDataSource } from './grid-view-data-source-mixin';
 import { MultipleSectionDateMatcher, MultipleSectionDateMatcherDef } from 'app/utils/multiple-section-date-matcher';
 
-export const OptionalMultipleSectionStartTimeMixinDataDef = t.strict({
+const MultipleSectionStartTimeMixinDataDef = t.strict({
     startTime: t.union([DateDef, MultipleSectionDateMatcherDef, t.null])
 });
-// type MultipleSectionStartTimeMixinData = t.TypeOf<typeof MultipleSectionStartTimeMixinDataDef>;
-// const PartialMultipleSectionStartTimeMixinDataDef = t.exact(t.partial(MultipleSectionStartTimeMixinDataDef.type.props));
-// type PartialMultipleSectionStartTimeMixinData = t.TypeOf<typeof PartialMultipleSectionStartTimeMixinDataDef>;
+type MultipleSectionStartTimeMixinData = t.TypeOf<typeof MultipleSectionStartTimeMixinDataDef>;
+const PartialMultipleSectionStartTimeMixinDataDef = t.exact(t.partial(MultipleSectionStartTimeMixinDataDef.type.props));
+type RawPartialMultipleSectionStartTimeMixinData = t.OutputOf<typeof PartialMultipleSectionStartTimeMixinDataDef>;
 
-// // TODO: Make Utility for constructing this kind of `io-ts` Type
-// // (see also `optional-multiple-section-end-time-mixin.ts`)
-// export const OptionalMultipleSectionStartTimeMixinDataDef = new t.Type<
-//     MultipleSectionStartTimeMixinData,
-//     PartialMultipleSectionStartTimeMixinData,
-//     unknown
-// >(
-//     'OptionalMultipleSectionStartTimeMixinDataDef',
-//     MultipleSectionStartTimeMixinDataDef.is,
-//     (v, ctx) =>
-//         chain((v: PartialMultipleSectionStartTimeMixinData): t.Validation<MultipleSectionStartTimeMixinData> => {
-//             return v.startTime === undefined
-//                 ? t.success({ startTime: null })
-//                 : MultipleSectionStartTimeMixinDataDef.validate(v, ctx);
-//         })(PartialMultipleSectionStartTimeMixinDataDef.validate(v, ctx)),
-//     (v) => (v.startTime === null ? { startTime: undefined } : { startTime: v.startTime })
-// );
+// TODO: Make Utility for constructing this kind of `io-ts` Type
+// (see also `optional-multiple-section-end-time-mixin.ts`)
+export const OptionalMultipleSectionStartTimeMixinDataDef = new t.Type<
+    MultipleSectionStartTimeMixinData,
+    RawPartialMultipleSectionStartTimeMixinData,
+    unknown
+>(
+    'OptionalMultipleSectionStartTimeMixinDataDef',
+    MultipleSectionStartTimeMixinDataDef.is,
+    (v, ctx) => {
+        if (PartialMultipleSectionStartTimeMixinDataDef.is(v) && v.startTime === undefined) {
+            return t.success({ startTime: null });
+        } else {
+            return MultipleSectionStartTimeMixinDataDef.validate(v, ctx);
+        }
+    },
+    (v) => (v.startTime === null ? { startTime: undefined } : MultipleSectionStartTimeMixinDataDef.encode(v))
+);
 
 export type OptionalMultipleSectionStartTimeMixinData = t.TypeOf<typeof OptionalMultipleSectionStartTimeMixinDataDef>;
 export type RawOptionalMultipleSectionStartTimeMixinData = t.OutputOf<

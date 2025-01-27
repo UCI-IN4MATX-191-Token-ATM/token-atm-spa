@@ -1,34 +1,34 @@
 import * as t from 'io-ts';
-// import { chain } from 'fp-ts/Either';
 import { type Constructor, DateDef } from 'app/utils/mixin-helper';
 import type { IGridViewDataSource } from './grid-view-data-source-mixin';
 import { MultipleSectionDateMatcher, MultipleSectionDateMatcherDef } from 'app/utils/multiple-section-date-matcher';
 
-export const OptionalMultipleSectionEndTimeMixinDataDef = t.strict({
+const MultipleSectionEndTimeMixinDataDef = t.strict({
     endTime: t.union([DateDef, MultipleSectionDateMatcherDef, t.null])
 });
 
-// type MultipleSectionEndTimeMixinData = t.TypeOf<typeof MultipleSectionEndTimeMixinDataDef>;
-// const PartialMultipleSectionEndTimeMixinDataDef = t.exact(t.partial(MultipleSectionEndTimeMixinDataDef.type.props));
-// type PartialMultipleSectionEndTimeMixinData = t.TypeOf<typeof PartialMultipleSectionEndTimeMixinDataDef>;
+type MultipleSectionEndTimeMixinData = t.TypeOf<typeof MultipleSectionEndTimeMixinDataDef>;
+const PartialMultipleSectionEndTimeMixinDataDef = t.exact(t.partial(MultipleSectionEndTimeMixinDataDef.type.props));
+type RawPartialMultipleSectionEndTimeMixinData = t.OutputOf<typeof PartialMultipleSectionEndTimeMixinDataDef>;
 
 // TODO: Make Utility for constructing this kind of `io-ts` Type
 // (see also `optional-multiple-section-start-time-mixin.ts`)
-// export const OptionalMultipleSectionEndTimeMixinDataDef = new t.Type<
-//     MultipleSectionEndTimeMixinData,
-//     PartialMultipleSectionEndTimeMixinData,
-//     unknown
-// >(
-//     'OptionalMultipleSectionEndTimeMixinDataDef',
-//     MultipleSectionEndTimeMixinDataDef.is,
-//     (v, ctx) =>
-//         chain((v: PartialMultipleSectionEndTimeMixinData): t.Validation<MultipleSectionEndTimeMixinData> => {
-//             return v.endTime === undefined
-//                 ? t.success({ endTime: null })
-//                 : MultipleSectionEndTimeMixinDataDef.validate(v, ctx);
-//         })(PartialMultipleSectionEndTimeMixinDataDef.validate(v, ctx)),
-//     (v) => (v.endTime === null ? { endTime: undefined } : { endTime: v.endTime })
-// );
+export const OptionalMultipleSectionEndTimeMixinDataDef = new t.Type<
+    MultipleSectionEndTimeMixinData,
+    RawPartialMultipleSectionEndTimeMixinData,
+    unknown
+>(
+    'OptionalMultipleSectionEndTimeMixinDataDef',
+    MultipleSectionEndTimeMixinDataDef.is,
+    (v, ctx) => {
+        if (PartialMultipleSectionEndTimeMixinDataDef.is(v) && v.endTime === undefined) {
+            return t.success({ endTime: null });
+        } else {
+            return MultipleSectionEndTimeMixinDataDef.validate(v, ctx);
+        }
+    },
+    (v) => (v.endTime === null ? { endTime: undefined } : MultipleSectionEndTimeMixinDataDef.encode(v))
+);
 
 export type OptionalMultipleSectionEndTimeMixinData = t.TypeOf<typeof OptionalMultipleSectionEndTimeMixinDataDef>;
 export type RawOptionalMultipleSectionEndTimeMixinData = t.OutputOf<typeof OptionalMultipleSectionEndTimeMixinDataDef>;

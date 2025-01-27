@@ -9,7 +9,7 @@ import {
 import { fromUnixTime, getUnixTime } from 'date-fns';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import { TO_BE_SUPER_SET_OF_MATCHER } from 'app/utils/test/to-be-super-set-of-matcher';
-import { genRawEarnBySurveyDataEquivs } from 'app/utils/test/generate-raw-equivalents';
+import { genRawEarnBySurveyDataEquivalents } from 'app/utils/test/generate-raw-equivalents';
 
 describe('EarnBySurveyTokenOption', () => {
     const testDate = fromUnixTime(getUnixTime(new Date()));
@@ -41,12 +41,12 @@ describe('EarnBySurveyTokenOption', () => {
         return [v, result];
     });
 
-    it('genRawDataEquivs contains the previous validRawValue(s)', () => {
+    it('genRawDataEquivalents contains the previous validRawValue(s)', () => {
         for (const [valid, raw] of validRawValuesPair) {
-            const b = Array.from(genRawEarnBySurveyDataEquivs(valid));
+            const b = Array.from(genRawEarnBySurveyDataEquivalents(valid));
             let i = 0;
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            for (const _ of genRawEarnBySurveyDataEquivs(valid)) {
+            for (const _ of genRawEarnBySurveyDataEquivalents(valid)) {
                 i++;
             }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -111,7 +111,7 @@ describe('EarnBySurveyTokenOption', () => {
 
     describe('EarnBySurveyTokenOptionDataDef', () => {
         for (const expected of validValues) {
-            for (const value of genRawEarnBySurveyDataEquivs(expected)) {
+            for (const value of genRawEarnBySurveyDataEquivalents(expected)) {
                 it(`should decode successfully with valid raw value ${JSON.stringify(value)}`, () => {
                     const result = EarnBySurveyTokenOptionDataDef.decode(value);
                     expect(isLeft(result)).toBeFalse();
@@ -121,7 +121,7 @@ describe('EarnBySurveyTokenOption', () => {
         }
 
         for (const expected of validValues) {
-            for (const value of genRawEarnBySurveyDataEquivs(expected, true)) {
+            for (const value of genRawEarnBySurveyDataEquivalents(expected, true)) {
                 it(`should decode successfully all extra raw data values based on ${JSON.stringify(value)}`, () => {
                     const result = EarnBySurveyTokenOptionDataDef.decode(value);
                     expect(isLeft(result)).toBeFalse();
@@ -153,7 +153,7 @@ describe('EarnBySurveyTokenOption', () => {
             it(`should encode successfully with valid value ${JSON.stringify(value)}`, () => {
                 const result = EarnBySurveyTokenOptionDataDef.encode(value);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                expect(Array.from(genRawEarnBySurveyDataEquivs(value))).toContain(result as any);
+                expect(Array.from(genRawEarnBySurveyDataEquivalents(value))).toContain(result as any);
             });
         }
     });
@@ -243,7 +243,7 @@ describe('EarnBySurveyTokenOption', () => {
         });
 
         for (const data of validValues) {
-            for (const rawData of genRawEarnBySurveyDataEquivs(data)) {
+            for (const rawData of genRawEarnBySurveyDataEquivalents(data)) {
                 it(`should decode successfully with raw data ${JSON.stringify(rawData)}`, () => {
                     expect(value.fromRawData(rawData)).toBeSupersetOf(data);
                 });
@@ -273,7 +273,7 @@ describe('EarnBySurveyTokenOption', () => {
             it(`should encode successfully to raw data with data ${JSON.stringify(data)}`, () => {
                 const result = value.fromData(data).toJSON();
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                expect(Array.from(genRawEarnBySurveyDataEquivs(data))).toContain(result as any);
+                expect(Array.from(genRawEarnBySurveyDataEquivalents(data))).toContain(result as any);
             });
         }
     });

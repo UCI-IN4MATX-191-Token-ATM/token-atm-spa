@@ -127,7 +127,7 @@ export const MultipleSectionDateMatcherDef = new t.Type<
  * @param o valid Multiple Section Date Matcher Data or undefined
  * @param genExtra flag for generating valid but not equal raw data
  */
-function* genMultipleSectionValues(
+export function* genMultipleSectionDateMatcherValues(
     o?: MultipleSectionDateMatcherData,
     genExtra = false
 ): Generator<RawMultipleSectionDateMatcherData, void, unknown> {
@@ -155,35 +155,5 @@ function* genMultipleSectionValues(
                 ? undefined
                 : [{ sections: [['', ''] as [string, string]], name: '', date: getUnixTime(o.defaultDate) }]
         };
-    }
-}
-
-/**
- * Generate Raw values for MultipleSectionTimeOverrides Data
- * @param v valid value
- * @param genExtra flag for generating valid but not equal Raw values
- */
-export function* genRawMultipleSectionTimeValues(
-    v: Date | MultipleSectionDateMatcherData | null,
-    genExtra = false
-): Generator<number | RawMultipleSectionDateMatcherData | null, void, unknown> {
-    if (v === null) {
-        yield null;
-        if (genExtra) {
-            yield getUnixTime(new Date());
-            yield* genMultipleSectionValues(undefined, genExtra);
-        }
-    } else if (v && Object.prototype.toString.call(v) === '[object Date]') {
-        yield getUnixTime(v as Date);
-        if (genExtra) {
-            yield null;
-            yield* genMultipleSectionValues(undefined, genExtra);
-        }
-    } else if ((v as MultipleSectionDateMatcherData)?.defaultDate !== undefined) {
-        yield* genMultipleSectionValues(v as MultipleSectionDateMatcherData, genExtra);
-        if (genExtra) {
-            yield null;
-            yield getUnixTime(new Date());
-        }
     }
 }
