@@ -36,6 +36,18 @@ describe('PlaceholderTokenOption', () => {
             ...validTemplate,
             startTime: new MultipleSectionDateMatcher(testDate),
             endTime: new MultipleSectionDateMatcher(testDate)
+        },
+        {
+            ...validTemplate,
+            startTime: new MultipleSectionDateMatcher(testDate, [
+                { sections: [['', ''] as const, ['a', 'b']], name: '', date: testDate }
+            ])
+        },
+        {
+            ...validTemplate,
+            endTime: new MultipleSectionDateMatcher(testDate, [
+                { sections: [['', ''] as const, ['a', 'b']], name: '', date: testDate }
+            ])
         }
     ];
 
