@@ -117,3 +117,43 @@ export const MultipleSectionDateMatcherDef = new t.Type<
             overrides: v.overrides
         })
 );
+
+/**
+ * Generates valid Raw Multiple Section Date Matcher Data values
+ *
+ * Note: passing (`undefined`, `false`) will result in early termination.
+ * No values will be returned for this case.
+ *
+ * @param o valid Multiple Section Date Matcher Data or undefined
+ * @param genExtra flag for generating valid but not equal raw data
+ */
+export function* genMultipleSectionDateMatcherValues(
+    o?: MultipleSectionDateMatcherData,
+    genExtra = false
+): Generator<RawMultipleSectionDateMatcherData, void, unknown> {
+    if (o === undefined && !genExtra) {
+        return;
+    }
+    o = o
+        ? o
+        : {
+              defaultDate: new Date(),
+              overrides: undefined
+          };
+    yield {
+        defaultDate: getUnixTime(o.defaultDate),
+        overrides: o.overrides
+            ? o.overrides.map((x) => {
+                  return { ...x, date: getUnixTime(x.date) };
+              })
+            : undefined
+    };
+    if (genExtra) {
+        yield {
+            defaultDate: getUnixTime(o.defaultDate),
+            overrides: o.overrides
+                ? undefined
+                : [{ sections: [['', ''] as [string, string]], name: '', date: getUnixTime(o.defaultDate) }]
+        };
+    }
+}
