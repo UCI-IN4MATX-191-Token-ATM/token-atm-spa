@@ -146,6 +146,6 @@ export class GridViewDisplayComponent {
     }
 
     onFirstDataRendered(event: FirstDataRenderedEvent) {
-        event.columnApi.autoSizeAllColumns();
+        event.api.autoSizeAllColumns();
     }
 }

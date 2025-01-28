@@ -26,6 +26,7 @@ export const PlaceholderTokenOptionDataDef = t.intersection([
 ]);
 
 export type PlaceholderTokenOptionData = t.TypeOf<typeof PlaceholderTokenOptionDataDef>;
+export type RawPlaceholderTokenOptionData = t.OutputOf<typeof PlaceholderTokenOptionDataDef>;
 
 export class PlaceholderTokenOption extends FromDataMixin(
     ToJSONMixin(
