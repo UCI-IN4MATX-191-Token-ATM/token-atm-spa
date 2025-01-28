@@ -181,9 +181,9 @@ export class TokenOptionConfigurationComponent implements CourseConfigurable {
     }
 
     onColumnChange(event: DisplayedColumnsChangedEvent): void {
-        this.curShownColumns = event.columnApi
+        this.curShownColumns = event.api
             .getAllDisplayedColumns()
-            .map((c) => c.getDefinition().headerName)
+            .map((c) => c.getDefinition()?.headerName)
             .filter((v) => v != undefined) as string[];
     }
 

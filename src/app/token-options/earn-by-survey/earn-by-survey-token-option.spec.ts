@@ -1,4 +1,4 @@
-import { isLeft } from 'fp-ts/lib/Either';
+import { isLeft, isRight } from 'fp-ts/lib/Either';
 import { Base64 } from 'js-base64';
 import {
     EarnBySurveyTokenOptionDataDef,
@@ -9,6 +9,7 @@ import {
 import { fromUnixTime, getUnixTime } from 'date-fns';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import { TO_BE_SUPER_SET_OF_MATCHER } from 'app/utils/test/to-be-super-set-of-matcher';
+import { genRawEarnBySurveyDataEquivalents } from 'app/utils/test/generate-raw-equivalents';
 
 describe('EarnBySurveyTokenOption', () => {
     const testDate = fromUnixTime(getUnixTime(new Date()));
@@ -38,6 +39,20 @@ describe('EarnBySurveyTokenOption', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (result as any)['surveyId'];
         return [v, result];
+    });
+
+    it('genRawDataEquivalents contains the previous validRawValue(s)', () => {
+        for (const [valid, raw] of validRawValuesPair) {
+            const b = Array.from(genRawEarnBySurveyDataEquivalents(valid));
+            let i = 0;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            for (const _ of genRawEarnBySurveyDataEquivalents(valid)) {
+                i++;
+            }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            expect(b).toContain(raw as any);
+            expect(b.length).toBeLessThanOrEqual(i);
+        }
     });
     const invalidValues = [
         {},
@@ -95,13 +110,25 @@ describe('EarnBySurveyTokenOption', () => {
     ];
 
     describe('EarnBySurveyTokenOptionDataDef', () => {
-        validRawValuesPair.forEach(([expected, value]) => {
-            it(`should decode successfully with valid raw value ${JSON.stringify(value)}`, () => {
-                const result = EarnBySurveyTokenOptionDataDef.decode(value);
-                expect(isLeft(result)).toBeFalse();
-                if (!isLeft(result)) expect(result.right).toEqual(expected);
-            });
-        });
+        for (const expected of validValues) {
+            for (const value of genRawEarnBySurveyDataEquivalents(expected)) {
+                it(`should decode successfully with valid raw value ${JSON.stringify(value)}`, () => {
+                    const result = EarnBySurveyTokenOptionDataDef.decode(value);
+                    expect(isLeft(result)).toBeFalse();
+                    if (!isLeft(result)) expect(result.right).toEqual(expected);
+                });
+            }
+        }
+
+        for (const expected of validValues) {
+            for (const value of genRawEarnBySurveyDataEquivalents(expected, true)) {
+                it(`should decode successfully all extra raw data values based on ${JSON.stringify(value)}`, () => {
+                    const result = EarnBySurveyTokenOptionDataDef.decode(value);
+                    expect(isLeft(result)).toBeFalse();
+                    expect(isRight(result)).toBeTrue();
+                });
+            }
+        }
 
         invalidRawValues.forEach((value) => {
             it(`should fail to decode with invalid raw value ${JSON.stringify(value)}`, () => {
@@ -122,15 +149,13 @@ describe('EarnBySurveyTokenOption', () => {
             });
         });
 
-        validRawValuesPair.forEach(([value, expected]) => {
+        for (const value of validValues) {
             it(`should encode successfully with valid value ${JSON.stringify(value)}`, () => {
                 const result = EarnBySurveyTokenOptionDataDef.encode(value);
-                expect(result).toEqual({
-                    ...expected,
-                    description: expected.description ?? ''
-                });
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                expect(Array.from(genRawEarnBySurveyDataEquivalents(value))).toContain(result as any);
             });
-        });
+        }
     });
 
     describe('EarnBySurveyTokenOption', () => {
@@ -217,11 +242,13 @@ describe('EarnBySurveyTokenOption', () => {
             expect(value.endTime).toEqual(date);
         });
 
-        validRawValuesPair.forEach(([data, rawData]) => {
-            it(`should decode successfully with raw data ${JSON.stringify(rawData)}`, () => {
-                expect(value.fromRawData(rawData)).toBeSupersetOf(data);
-            });
-        });
+        for (const data of validValues) {
+            for (const rawData of genRawEarnBySurveyDataEquivalents(data)) {
+                it(`should decode successfully with raw data ${JSON.stringify(rawData)}`, () => {
+                    expect(value.fromRawData(rawData)).toBeSupersetOf(data);
+                });
+            }
+        }
 
         invalidRawValues.forEach((rawData) => {
             it(`should fail to decode with invalid raw data ${JSON.stringify(rawData)}`, () => {
@@ -242,14 +269,12 @@ describe('EarnBySurveyTokenOption', () => {
             });
         });
 
-        validRawValuesPair.forEach(([data, rawData]) => {
+        for (const data of validValues) {
             it(`should encode successfully to raw data with data ${JSON.stringify(data)}`, () => {
                 const result = value.fromData(data).toJSON();
-                expect(result).toEqual({
-                    ...rawData,
-                    description: rawData.description ?? ''
-                });
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                expect(Array.from(genRawEarnBySurveyDataEquivalents(data))).toContain(result as any);
             });
-        });
+        }
     });
 });

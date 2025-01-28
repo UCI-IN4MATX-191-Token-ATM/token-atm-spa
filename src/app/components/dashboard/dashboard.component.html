@@ -4,13 +4,23 @@
         id="sidebar"
         class="d-flex flex-column flex-shrink-0 align-items-center px-3 py-5 bg-light vh-100 me-0 overflow-y-auto"
     >
-        <img src="assets/logo3.png" alt="logo" />
+        <img
+            src="assets/tokenATMLogo.svg"
+            alt="logo"
+            class="mb-3"
+            style="object-fit: contain; max-width: 160px; max-height: 80px"
+        />
         <div class="d-flex flex-column align-items-center">
-            <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" />
+            <img
+                *ngIf="avatarUrl"
+                [src]="avatarUrl"
+                alt="Avatar"
+                style="object-fit: scale-down; max-width: 128px; max-height: 128px"
+            />
             <p *ngIf="name">{{ name }}</p>
             <p *ngIf="email">{{ email }}</p>
         </div>
-        <div *ngIf="course" class="d-flex flex-column align-items-center my-5">
+        <div *ngIf="course" class="d-flex flex-column align-items-center my-4">
             <p>{{ course.name }}</p>
             <p>{{ course.term.name }}</p>
             <p *ngIf="localTimeZone !== course.timeZone" (click)="onWarningClick()">
