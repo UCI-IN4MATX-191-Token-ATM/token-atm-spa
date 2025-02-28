@@ -1546,6 +1546,8 @@ export class CanvasService {
         do {
             if (isFirstPage) isFirstPage = false;
             else studentIds.next();
+            const validIds = [...studentIds];
+            if (validIds.length === 0) continue; // Prevent collecting Students if there are no Ids
             students.push(
                 ...(await DataConversionHelper.convertAsyncIterableToList(
                     new CanvasRESTPaginatedResult<Student>(
@@ -1554,7 +1556,7 @@ export class CanvasService {
                                 enrollment_type: ['student'],
                                 enrollment_state: ['active'],
                                 per_page: 100,
-                                user_ids: [...studentIds]
+                                user_ids: validIds
                             }
                         }),
                         async (url: string) => await this.paginatedRequestHandler(url),
