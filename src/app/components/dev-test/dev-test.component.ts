@@ -12,6 +12,8 @@ import {
 } from 'app/token-options/withdraw-assignment-resubmission/withdraw-assignment-resubmission-token-option';
 import { QualtricsService } from 'app/services/qualtrics.service';
 import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
+import { DataConversionHelper } from 'app/utils/data-conversion-helper';
+import type { Student } from 'app/data/student';
 
 @Component({
     selector: 'app-dev-test',
@@ -275,5 +277,84 @@ export class DevTestComponent {
                 await this.canvasService.getTotalPointsPossibleInAnAssignmentGroup(this.course.id, id, skipIf)
             );
         }
+    }
+
+    async compareUsersAndEnrollments(): Promise<void> {
+        if (!this.course) return;
+        console.log('_______________________________________________');
+        console.log('Canvas Users and Section Enrollment Comparisons');
+        function nonSubset<T>(sub: Set<T>, sup: Set<T>): number {
+            let count = 0;
+            for (const el of sub) {
+                if (!sup.has(el)) count++;
+            }
+            return count;
+        }
+
+        // Active Student Users
+        const courseActiveStudentUsers = await DataConversionHelper.convertAsyncIterableToList(
+            await this.canvasService.getCourseStudentEnrollments(this.course.id)
+        );
+        const courseActiveStudentUserIds = new Set<string>(courseActiveStudentUsers.map((s) => s.id));
+        if (courseActiveStudentUsers.length !== courseActiveStudentUserIds.size)
+            console.log('Warning! Active Student Users do not have unique Ids');
+
+        // Sections and their Students
+        const sections = await DataConversionHelper.convertAsyncIterableToList(
+            await this.canvasService.getSections(this.course.id)
+        );
+        const sectionIdStudentsMap = new Map<string, Student[]>();
+        for (const section of sections) {
+            sectionIdStudentsMap.set(
+                section.id,
+                await this.canvasService.getSectionStudentsWithEmail(this.course.id, section.id)
+            );
+        }
+        const sectionIdStudentIdsMap = new Map<string, Set<string>>(
+            Array.from(sectionIdStudentsMap.entries()).map((entry) => {
+                const [k, v] = entry;
+                return [k, new Set<string>(v.map((s) => s.id))];
+            })
+        );
+        let sectionEnrollmentMismatch = false;
+        for (const [sectionId, students] of sectionIdStudentsMap) {
+            if (students.length !== sectionIdStudentIdsMap.get(sectionId)?.size) {
+                sectionEnrollmentMismatch = true;
+                break;
+            }
+        }
+        if (sectionEnrollmentMismatch)
+            console.log("Warning! A section's Active StudentEnrollments doesn't have unique Ids");
+
+        // Collate and Compare every Section's StuIds
+        const allSectionsStuIds = new Set<string>();
+        for (const [sectionId, stuIdSet] of sectionIdStudentIdsMap) {
+            for (const id of stuIdSet) {
+                allSectionsStuIds.add(id);
+            }
+            const nonSubsetCount = nonSubset(stuIdSet, courseActiveStudentUserIds);
+            if (nonSubsetCount > 0) {
+                console.log(
+                    'Section Id:',
+                    sectionId,
+                    'has',
+                    nonSubsetCount,
+                    'students that are not Active Student Users (Section has Excess Students)'
+                );
+            }
+        }
+
+        const nonSubsetCountAllSections = nonSubset(allSectionsStuIds, courseActiveStudentUserIds);
+        console.log(
+            'Totalling All Sections, there are',
+            nonSubsetCountAllSections,
+            'students that are not Active Student Users'
+        );
+        if (allSectionsStuIds.size !== courseActiveStudentUserIds.size) {
+            console.log(
+                `  And the total number of unique Active StudentEnrollments (${allSectionsStuIds.size}) in sections does not match the number of unique Active Student Users (${courseActiveStudentUserIds.size})`
+            );
+        }
+        console.log('Comparison Completed');
     }
 }
