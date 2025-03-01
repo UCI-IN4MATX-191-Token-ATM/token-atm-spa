@@ -316,15 +316,25 @@ export class DevTestComponent {
                 return [k, new Set<string>(v.map((s) => s.id))];
             })
         );
-        let sectionEnrollmentMismatch = false;
         for (const [sectionId, students] of sectionIdStudentsMap) {
             if (students.length !== sectionIdStudentIdsMap.get(sectionId)?.size) {
-                sectionEnrollmentMismatch = true;
-                break;
+                console.log("Warning! A section's Active StudentEnrollments doesn't have unique Ids");
+                console.log(
+                    `  Section Id: ${sectionId}, Section Name: ${sections
+                        .filter((s) => s.id === sectionId)
+                        .map((s) => s.name)}`
+                );
+                // const repeatedIds: string[] = [];
+                // const foundIds = new Set<string>();
+                // for (const stu of students) {
+                //     if (foundIds.has(stu.id)) {
+                //         repeatedIds.push(stu.id);
+                //     }
+                //     foundIds.add(stu.id);
+                // }
+                // console.log('  Repeated Ids:', repeatedIds);
             }
         }
-        if (sectionEnrollmentMismatch)
-            console.log("Warning! A section's Active StudentEnrollments doesn't have unique Ids");
 
         // Collate and Compare every Section's StuIds
         const allSectionsStuIds = new Set<string>();
@@ -355,6 +365,47 @@ export class DevTestComponent {
                 `  And the total number of unique Active StudentEnrollments (${allSectionsStuIds.size}) in sections does not match the number of unique Active Student Users (${courseActiveStudentUserIds.size})`
             );
         }
+
+        // Compare enumerating sections based on Users
+        const sectionIdUserIdsMap = new Map<string, Set<string>>();
+        // Collect Sections based on Users
+        for (const stuId of courseActiveStudentUserIds) {
+            let noStuSections = true;
+            for await (const stuSection of await this.canvasService.getStudentSectionEnrollments(
+                this.course.id,
+                stuId
+            )) {
+                if (noStuSections) noStuSections = false;
+                if (!sectionIdUserIdsMap.has(stuSection)) sectionIdUserIdsMap.set(stuSection, new Set<string>());
+                sectionIdUserIdsMap.get(stuSection)?.add(stuId);
+            }
+            if (noStuSections)
+                console.log(`Warning! An Active Student User (id: ${stuId}) isn't enrolled in any sections`);
+        }
+        // Compare Enumerated Sections
+        if (sectionIdUserIdsMap.size - sectionIdStudentIdsMap.size !== 0) {
+            console.log(
+                `When enumerating sections by Active Student Users, ${
+                    sectionIdUserIdsMap.size - sectionIdStudentIdsMap.size
+                } more are found.`
+            );
+            if (sectionIdUserIdsMap.size - sectionIdStudentIdsMap.size < 0)
+                console.log(
+                    'Warning! Assumption that User based enumeration of sections returns all sections has been broken.'
+                );
+        }
+        for (const [sectionId, stuUserIds] of sectionIdUserIdsMap) {
+            const sectionStus = sectionIdStudentIdsMap.get(sectionId) ?? new Set();
+            const secSubUser = nonSubset(sectionStus, stuUserIds);
+            const userSubSec = nonSubset(stuUserIds, sectionStus);
+
+            if (secSubUser !== 0 || userSubSec !== 0) {
+                console.log(`== Students in Section Id (${sectionId}) Comparison ==`);
+                console.log(`   ${secSubUser} students in Section missing from Users`);
+                console.log(`   ${userSubSec} students in Users missing from Section`);
+            }
+        }
+
         console.log('Comparison Completed');
     }
 }
