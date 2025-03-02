@@ -290,6 +290,13 @@ export class DevTestComponent {
             }
             return count;
         }
+        function difference<T>(a: Set<T>, b: Set<T>) {
+            const result = new Set(a);
+            for (const el of b) {
+                result.delete(el);
+            }
+            return result;
+        }
 
         // Active Student Users
         const courseActiveStudentUsers = await DataConversionHelper.convertAsyncIterableToList(
@@ -365,6 +372,14 @@ export class DevTestComponent {
                 `  And the total number of unique Active StudentEnrollments (${allSectionsStuIds.size}) in sections does not match the number of unique Active Student Users (${courseActiveStudentUserIds.size})`
             );
         }
+        console.log(
+            '  Unique Ids missing from unique Active StudentEnrollments:',
+            difference(courseActiveStudentUserIds, allSectionsStuIds)
+        );
+        console.log(
+            '  Unique Ids missing from unique Active Student Users:',
+            difference(allSectionsStuIds, courseActiveStudentUserIds)
+        );
 
         // Compare enumerating sections based on Users
         const sectionIdUserIdsMap = new Map<string, Set<string>>();
