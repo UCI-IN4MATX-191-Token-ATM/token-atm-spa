@@ -1548,7 +1548,7 @@ export class CanvasService {
         const idStudentMap = new Map<string, Student>();
         do {
             if (isFirstPage) isFirstPage = false;
-            else studentIds.next();
+            else await studentIds.next();
             const validIds = [...studentIds];
             if (validIds.length === 0) continue; // Prevent collecting Students if there are no Ids
             const students = new CanvasRESTPaginatedResult<Student>(
