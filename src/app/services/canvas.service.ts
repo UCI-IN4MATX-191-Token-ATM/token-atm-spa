@@ -1528,6 +1528,9 @@ export class CanvasService {
         );
     }
 
+    /**
+     * @returns An array of unique active Students with an active StudentEnrollment in a Section (uniqueness based on Student Id)
+     */
     public async getSectionStudentsWithEmail(courseId: string, sectionId: string): Promise<Student[]> {
         const studentIds = new PaginatedView<string>(
             await this.rawAPIRequest(`/api/v1/sections/${sectionId}/enrollments`, {
@@ -1542,31 +1545,30 @@ export class CanvasService {
             (data: any) => data.map((entry: any) => entry.user.id)
         );
         let isFirstPage = true;
-        const students = [];
+        const idStudentMap = new Map<string, Student>();
         do {
             if (isFirstPage) isFirstPage = false;
             else studentIds.next();
             const validIds = [...studentIds];
             if (validIds.length === 0) continue; // Prevent collecting Students if there are no Ids
-            students.push(
-                ...(await DataConversionHelper.convertAsyncIterableToList(
-                    new CanvasRESTPaginatedResult<Student>(
-                        await this.rawAPIRequest(`/api/v1/courses/${courseId}/users`, {
-                            params: {
-                                enrollment_type: ['student'],
-                                enrollment_state: ['active'],
-                                per_page: 100,
-                                user_ids: validIds
-                            }
-                        }),
-                        async (url: string) => await this.paginatedRequestHandler(url),
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (data: any) => data.map((entry: any) => Student.deserialize(entry))
-                    )
-                ))
+            const students = new CanvasRESTPaginatedResult<Student>(
+                await this.rawAPIRequest(`/api/v1/courses/${courseId}/users`, {
+                    params: {
+                        enrollment_type: ['student'],
+                        enrollment_state: ['active'],
+                        per_page: 100,
+                        user_ids: validIds
+                    }
+                }),
+                async (url: string) => await this.paginatedRequestHandler(url),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (data: any) => data.map((entry: any) => Student.deserialize(entry))
             );
+            for await (const student of students) {
+                idStudentMap.set(student.id, student);
+            }
         } while (studentIds.hasNextPage());
-        return students;
+        return Array.from(idStudentMap.values());
     }
 
     public async isPagePublished(courseId: string, pageId: string): Promise<boolean | undefined> {
