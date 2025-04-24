@@ -71,4 +71,16 @@
     <button class="btn btn-primary my-3" (click)="compareUsersAndEnrollments()">
         Compare Active Student Users and Active StudentEnrollments in Sections
     </button>
+
+    <label>
+        Password:
+        <input [(ngModel)]="testPassword" type="text" name="testPassword" />
+    </label>
+    <label>
+        Salt:
+        <input [(ngModel)]="testSalt" type="text" name="testSalt" />
+    </label>
+    <button class="btn btn-primary my-3" (click)="checkAllStudentRecordsDecryption()">
+        Check Decryption of all Student Records
+    </button>
 </div>

@@ -13,7 +13,11 @@ import {
 import { QualtricsService } from 'app/services/qualtrics.service';
 import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
-import type { Student } from 'app/data/student';
+import { Student } from 'app/data/student';
+import { Base64 } from 'js-base64';
+import { CryptoHelper } from 'app/utils/crypto-helper';
+import { StudentRecord } from 'app/data/student-record';
+import { StudentRecordManagerService } from 'app/services/student-record-manager.service';
 
 @Component({
     selector: 'app-dev-test',
@@ -28,6 +32,9 @@ export class DevTestComponent {
     private testPageId?: string;
     testPageName = 'Token ATM Configuration';
     testAssignmentName = 'Token ATM Log';
+    testPassword = '';
+    testSalt = '';
+    private encryptedCommentsCache: string[] = [];
 
     constructor(
         @Inject(TokenATMConfigurationManagerService) private manager: TokenATMConfigurationManagerService,
@@ -422,5 +429,68 @@ export class DevTestComponent {
         }
 
         console.log('Comparison Completed');
+    }
+
+    async checkAllStudentRecordsDecryption(): Promise<void> {
+        if (!this.course) {
+            return;
+        }
+
+        const password = this.testPassword;
+        const salt = this.testSalt;
+        if (password === '' || salt === '') {
+            console.log('Invalid test Password or Salt...');
+            return;
+        }
+
+        const testEncryptionKey = await CryptoHelper.deriveAESKey(password, Base64.toUint8Array(salt));
+        const config = await this.manager.getTokenATMConfiguration(this.course);
+        const placeholderStudent: Student = new Student('0', 'Test');
+        let invalidRecordCount = 0;
+
+        if (this.encryptedCommentsCache.length === 0) {
+            const students = await DataConversionHelper.convertAsyncIterableToList(
+                await this.canvasService.getCourseStudentEnrollments(config.course.id)
+            );
+            for (const student of students) {
+                const logComments = await this.canvasService.getSubmissionComments(
+                    config.course.id,
+                    student.id,
+                    config.logAssignmentId
+                );
+                let recordCommentCount = logComments.length;
+                for (const { content } of logComments) {
+                    if (content.startsWith(StudentRecordManagerService.PROMPT)) {
+                        const encrypted = content.split('\n')[1];
+                        if (encrypted !== undefined) this.encryptedCommentsCache.push(encrypted);
+                    } else recordCommentCount--;
+                }
+                if (recordCommentCount !== 1) {
+                    console.log(`WARNING: Student found with ${recordCommentCount} encrypted comments`);
+                }
+            }
+
+            students.length = 0;
+        }
+
+        let decryptedResult: unknown = undefined;
+        for (const encryptedComment of this.encryptedCommentsCache) {
+            decryptedResult = encryptedComment;
+            try {
+                // TODO: 2 tests (decrypt and valid Student Record)
+                decryptedResult = await config.decryptStudentRecord(encryptedComment, testEncryptionKey);
+                StudentRecord.deserialize(config, placeholderStudent, '0', NaN, decryptedResult);
+            } catch (error) {
+                invalidRecordCount++;
+            }
+        }
+
+        if (invalidRecordCount === 0) {
+            if (decryptedResult === undefined) console.log('No Encrypted Records Found');
+            else console.log('Valid Password and Salt!');
+        } else {
+            console.log('Invalid Student Records with this Password and Salt:', invalidRecordCount);
+            console.log('Example:', decryptedResult);
+        }
     }
 }

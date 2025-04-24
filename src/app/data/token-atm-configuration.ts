@@ -178,14 +178,24 @@ export class TokenATMConfiguration {
         );
     }
 
-    public async decryptStudentRecord(encryptedData: string): Promise<unknown> {
-        if (this.#encryptionKey == undefined) await this.#generateKey();
-        if (this.#encryptionKey == undefined) throw new Error('AES encryption key generation failed');
+    public async decryptStudentRecord(encryptedData: string, altEncryptionKey?: CryptoKey): Promise<unknown> {
+        if (altEncryptionKey === undefined) {
+            if (this.#encryptionKey == undefined) await this.#generateKey();
+            if (this.#encryptionKey == undefined) throw new Error('AES encryption key generation failed');
+        }
         const [iv, data] = TypedArrayHelper.splitUint8Array(
             Base64.toUint8Array(encryptedData),
             CryptoHelper.AES_IV_LENGTH
         );
-        return decompress(JSON.parse(await CryptoHelper.decryptAES(this.#encryptionKey, data, iv)));
+        return decompress(
+            JSON.parse(
+                await CryptoHelper.decryptAES(
+                    altEncryptionKey === undefined ? this.#encryptionKey! : altEncryptionKey,
+                    data,
+                    iv
+                )
+            )
+        );
     }
 
     public static deserialize(
