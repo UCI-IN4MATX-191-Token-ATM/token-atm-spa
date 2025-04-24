@@ -38,7 +38,16 @@ export class TokenATMConfigurationManagerService {
             if (entry.type != 'tag' || entry.name != 'p') continue;
             if (entry.children[0]?.type != 'text') continue;
             if (typeof entry.children[0]?.data != 'string') continue;
-            return entry.children[0]?.data;
+
+            let result = entry.children[0].data;
+            let next = entry.children[0].next;
+            while (next) {
+                if (next.type === 'text' && typeof next.data === 'string') {
+                    result += next.data;
+                }
+                next = next.next?.type === 'text' ? next.next : null;
+            }
+            return result;
         }
         throw new Error('Page resolve failed');
     }
