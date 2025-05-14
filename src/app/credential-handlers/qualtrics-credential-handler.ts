@@ -20,7 +20,8 @@ const QUALTRICS_CREDENTIAL_KEY = 'qualtrics';
 export class QualtricsCredentialHandler implements CredentialHandler<QualtricsCredential> {
     readonly key = QUALTRICS_CREDENTIAL_KEY;
     readonly descriptiveName = 'Qualtrics';
-    readonly documentLink = 'https://docs.google.com/document/d/1H4cvBXV7wwVp1IA2squ0mtrug5HkDVlBf4qKhh1o_vQ/view';
+    readonly documentLink =
+        'https://docs.google.com/document/d/1H4cvBXV7wwVp1IA2squ0mtrug5HkDVlBf4qKhh1o_vQ/preview?rm=embedded';
 
     constructor(@Inject(QualtricsService) private qualtricsService: QualtricsService) {}
 
