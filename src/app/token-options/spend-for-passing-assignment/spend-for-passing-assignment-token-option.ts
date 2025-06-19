@@ -18,6 +18,9 @@ export const SpendForPassingAssignmentTokenOptionDataDef = t.intersection([
 ]);
 
 export type SpendForPassingAssignmentTokenOptionData = t.TypeOf<typeof SpendForPassingAssignmentTokenOptionDataDef>;
+export type RawSpendForPassingAssignmentTokenOptionData = t.OutputOf<
+    typeof SpendForPassingAssignmentTokenOptionDataDef
+>;
 
 export class SpendForPassingAssignmentTokenOption extends FromDataMixin(
     ToJSONMixin(
