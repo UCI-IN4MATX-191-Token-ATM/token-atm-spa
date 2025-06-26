@@ -82,7 +82,7 @@
         "eslint-plugin-markdown": "^3.0.0",
         "eslint-plugin-prettier": "^4.2.1",
         "husky": "^8.0.0",
-        "jasmine-core": "~4.5.0",
+        "jasmine-core": "~4.6.1",
         "karma": "~6.4.0",
         "karma-chrome-launcher": "~3.1.0",
         "karma-coverage": "~2.2.0",
