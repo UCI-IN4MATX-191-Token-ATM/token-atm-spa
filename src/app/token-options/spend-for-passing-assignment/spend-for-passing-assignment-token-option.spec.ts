@@ -1,52 +1,53 @@
 import { isLeft, isRight } from 'fp-ts/lib/Either';
 import { Base64 } from 'js-base64';
 import {
-    EarnBySurveyTokenOptionDataDef,
-    type EarnBySurveyTokenOptionData,
-    type RawEarnBySurveyTokenOptionData,
-    EarnBySurveyTokenOption
-} from './earn-by-survey-token-option';
-import { fromUnixTime, getUnixTime } from 'date-fns';
+    SpendForPassingAssignmentTokenOptionDataDef,
+    type SpendForPassingAssignmentTokenOptionData,
+    type RawSpendForPassingAssignmentTokenOptionData,
+    SpendForPassingAssignmentTokenOption
+} from './spend-for-passing-assignment-token-option';
 import type { TokenOptionGroup } from 'app/data/token-option-group';
 import { TO_BE_SUPER_SET_OF_MATCHER } from 'app/utils/test/to-be-super-set-of-matcher';
-import { genRawEarnBySurveyDataEquivalents } from 'app/utils/test/generate-raw-equivalents';
+import { genRawSpendForPassingAssignmentDataEquivalents } from 'app/utils/test/generate-raw-equivalents';
 
-describe('EarnBySurveyTokenOption', () => {
-    const testDate = fromUnixTime(getUnixTime(new Date()));
-
-    const validValues: EarnBySurveyTokenOptionData[] = [
+describe('SpendForPassingAssignmentTokenOption', () => {
+    const validValues: SpendForPassingAssignmentTokenOptionData[] = [
         {
-            type: 'earn-by-survey',
+            type: 'spend-for-passing-assignment',
             id: 1,
             name: 'A',
             description: '',
             tokenBalanceChange: 1,
             isMigrating: undefined,
-            surveyId: '',
-            fieldName: '',
-            startTime: testDate,
-            endTime: testDate
+            assignmentName: '',
+            assignmentId: '',
+            gradeThreshold: 1,
+            excludeTokenOptionIds: []
         }
     ];
-    const validRawValuesPair: [EarnBySurveyTokenOptionData, RawEarnBySurveyTokenOptionData][] = validValues.map((v) => {
-        const result: RawEarnBySurveyTokenOptionData = {
+    const validRawValuesPair: [
+        SpendForPassingAssignmentTokenOptionData,
+        RawSpendForPassingAssignmentTokenOptionData
+    ][] = validValues.map((v) => {
+        const result: RawSpendForPassingAssignmentTokenOptionData = {
             ...v,
             description: v.description ? Base64.encode(v.description) : undefined,
-            quizId: v.surveyId,
-            startTime: getUnixTime(v.startTime),
-            endTime: getUnixTime(v.endTime)
+            excludeTokenOptionIds: v.excludeTokenOptionIds.length === 0 ? undefined : v.excludeTokenOptionIds
         };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        delete (result as any)['surveyId'];
+        // Placeholder for backwards compatiblity check
+        // if (v.replaceGrade.includes('%')) {
+        //     result.gradeThreshold = parseFloat(v.replaceGrade) / 100;
+        //     delete result['replaceGrade'];
+        // }
         return [v, result];
     });
 
     it('genRawDataEquivalents contains the previous validRawValue(s)', () => {
         for (const [valid, raw] of validRawValuesPair) {
-            const b = Array.from(genRawEarnBySurveyDataEquivalents(valid));
+            const b = Array.from(genRawSpendForPassingAssignmentDataEquivalents(valid));
             let i = 0;
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            for (const _ of genRawEarnBySurveyDataEquivalents(valid)) {
+            for (const _ of genRawSpendForPassingAssignmentDataEquivalents(valid)) {
                 i++;
             }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,19 +55,32 @@ describe('EarnBySurveyTokenOption', () => {
             expect(b.length).toBeLessThanOrEqual(i);
         }
     });
+
     const invalidValues = [
         {},
         {
-            type: undefined,
+            type: 'undefined',
             id: '1',
             name: 1,
             description: 1,
             tokenBalanceChange: '1',
             isMigrating: 'true',
-            surveyId: 1,
-            fieldName: 1,
-            startTime: 1,
-            endTime: 1
+            assignmentName: 1,
+            assignmentId: 1,
+            gradeThreshold: '100%',
+            excludeTokenOptionIds: 5
+        },
+        {
+            type: 'spend-for-passing-assignment',
+            id: 1,
+            name: 'A',
+            description: '',
+            tokenBalanceChange: 1,
+            isMigrating: undefined,
+            assignmentName: '',
+            assignmentId: '',
+            gradeThreshold: '100%',
+            excludeTokenOptionIds: []
         },
         {
             type: undefined,
@@ -75,45 +89,19 @@ describe('EarnBySurveyTokenOption', () => {
             description: '',
             tokenBalanceChange: 1,
             isMigrating: undefined,
-            surveyId: '',
-            fieldName: '',
-            startTime: new Date(),
-            endTime: new Date()
+            assignmentName: '',
+            assignmentId: '',
+            gradeThreshold: 1,
+            excludeTokenOptionIds: []
         }
     ];
-    const invalidRawValues = [
-        {},
-        {
-            type: undefined,
-            id: '1',
-            name: 1,
-            description: 1,
-            tokenBalanceChange: '1',
-            isMigrating: 'true',
-            surveyId: 1,
-            fieldName: 1,
-            startTime: undefined,
-            endTime: undefined
-        },
-        {
-            type: undefined,
-            id: 1,
-            name: 'A',
-            description: '',
-            tokenBalanceChange: 1,
-            isMigrating: undefined,
-            surveyId: '',
-            fieldName: '',
-            startTime: getUnixTime(new Date()),
-            endTime: getUnixTime(new Date())
-        }
-    ];
+    const invalidRawValues = [{}];
 
-    describe('EarnBySurveyTokenOptionDataDef', () => {
+    describe('SpendForPassingAssignmentTokenOptionDataDef', () => {
         for (const expected of validValues) {
-            for (const value of genRawEarnBySurveyDataEquivalents(expected)) {
+            for (const value of genRawSpendForPassingAssignmentDataEquivalents(expected)) {
                 it(`should decode successfully with valid raw value ${JSON.stringify(value)}`, () => {
-                    const result = EarnBySurveyTokenOptionDataDef.decode(value);
+                    const result = SpendForPassingAssignmentTokenOptionDataDef.decode(value);
                     expect(isLeft(result)).toBeFalse();
                     if (!isLeft(result)) expect(result.right).toEqual(expected);
                 });
@@ -121,9 +109,9 @@ describe('EarnBySurveyTokenOption', () => {
         }
 
         for (const expected of validValues) {
-            for (const value of genRawEarnBySurveyDataEquivalents(expected, true)) {
+            for (const value of genRawSpendForPassingAssignmentDataEquivalents(expected, true)) {
                 it(`should decode successfully all extra raw data values based on ${JSON.stringify(value)}`, () => {
-                    const result = EarnBySurveyTokenOptionDataDef.decode(value);
+                    const result = SpendForPassingAssignmentTokenOptionDataDef.decode(value);
                     expect(isLeft(result)).toBeFalse();
                     expect(isRight(result)).toBeTrue();
                 });
@@ -132,37 +120,37 @@ describe('EarnBySurveyTokenOption', () => {
 
         invalidRawValues.forEach((value) => {
             it(`should fail to decode with invalid raw value ${JSON.stringify(value)}`, () => {
-                const result = EarnBySurveyTokenOptionDataDef.decode(value);
+                const result = SpendForPassingAssignmentTokenOptionDataDef.decode(value);
                 expect(isLeft(result)).toBeTrue();
             });
         });
 
         validValues.forEach((value) => {
             it(`should validate successfully with valid value ${JSON.stringify(value)}`, () => {
-                expect(EarnBySurveyTokenOptionDataDef.is(value)).toBeTrue();
+                expect(SpendForPassingAssignmentTokenOptionDataDef.is(value)).toBeTrue();
             });
         });
 
         invalidValues.forEach((value) => {
             it(`should fail to validate with invalid value ${JSON.stringify(value)}`, () => {
-                expect(EarnBySurveyTokenOptionDataDef.is(value)).toBeFalse();
+                expect(SpendForPassingAssignmentTokenOptionDataDef.is(value)).toBeFalse();
             });
         });
 
         for (const value of validValues) {
             it(`should encode successfully with valid value ${JSON.stringify(value)}`, () => {
-                const result = EarnBySurveyTokenOptionDataDef.encode(value);
+                const result = SpendForPassingAssignmentTokenOptionDataDef.encode(value);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                expect(Array.from(genRawEarnBySurveyDataEquivalents(value))).toContain(result as any);
+                expect(Array.from(genRawSpendForPassingAssignmentDataEquivalents(value))).toContain(result as any);
             });
         }
     });
 
-    describe('EarnBySurveyTokenOption', () => {
-        let value: EarnBySurveyTokenOption;
+    describe('SpendForPassingAssignmentTokenOption', () => {
+        let value: SpendForPassingAssignmentTokenOption;
 
         beforeEach(() => {
-            value = new EarnBySurveyTokenOption();
+            value = new SpendForPassingAssignmentTokenOption();
             jasmine.addMatchers(TO_BE_SUPER_SET_OF_MATCHER);
         });
 
@@ -216,34 +204,34 @@ describe('EarnBySurveyTokenOption', () => {
             expect(() => value.group).toThrowError('Token option group is not set yet!');
         });
 
-        it('should have property `surveyId`', () => {
-            expect(value.surveyId).toEqual('');
-            value.surveyId = 'Survey ID';
-            expect(value.surveyId).toEqual('Survey ID');
+        it('should have property `assignmentName`', () => {
+            expect(value.assignmentName).toEqual('');
+            value.assignmentName = 'Assignment Name';
+            expect(value.assignmentName).toEqual('Assignment Name');
         });
 
-        it('should have property `fieldName`', () => {
-            expect(value.fieldName).toEqual('');
-            value.fieldName = 'Field Name';
-            expect(value.fieldName).toEqual('Field Name');
+        it('should have property `assignmentId`', () => {
+            expect(value.assignmentName).toEqual('');
+            value.assignmentId = 'Assignment ID';
+            expect(value.assignmentId).toEqual('Assignment ID');
+        });
+
+        // TODO: Update after making backwards compatible change
+        it('should have property `gradeThreshold`', () => {
+            expect(value.gradeThreshold).toEqual(1);
+            value.gradeThreshold = 0.5;
+            expect(value.gradeThreshold).toEqual(0.5);
         });
 
         it('should have property `startTime`', () => {
-            expect(value.startTime).toBeInstanceOf(Date);
-            const date = new Date();
-            value.startTime = date;
-            expect(value.startTime).toEqual(date);
-        });
-
-        it('should have property `endTime`', () => {
-            expect(value.endTime).toBeInstanceOf(Date);
-            const date = new Date();
-            value.endTime = date;
-            expect(value.endTime).toEqual(date);
+            expect(value.excludeTokenOptionIds).toBeInstanceOf(Array);
+            const numArray = [1, 2, 3];
+            value.excludeTokenOptionIds = numArray as never[]; // TODO: figure out why jasmine assumes this type
+            expect(value.excludeTokenOptionIds).toEqual(numArray as never[]);
         });
 
         for (const data of validValues) {
-            for (const rawData of genRawEarnBySurveyDataEquivalents(data)) {
+            for (const rawData of genRawSpendForPassingAssignmentDataEquivalents(data)) {
                 it(`should decode successfully with raw data ${JSON.stringify(rawData)}`, () => {
                     expect(value.fromRawData(rawData)).toBeSupersetOf(data);
                 });
@@ -273,7 +261,7 @@ describe('EarnBySurveyTokenOption', () => {
             it(`should encode successfully to raw data with data ${JSON.stringify(data)}`, () => {
                 const result = value.fromData(data).toJSON();
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                expect(Array.from(genRawEarnBySurveyDataEquivalents(data))).toContain(result as any);
+                expect(Array.from(genRawSpendForPassingAssignmentDataEquivalents(data))).toContain(result as any);
             });
         }
     });

@@ -23,6 +23,7 @@ export class StudentRecordDisplayComponent {
     tokenAdjustmentCount = 0;
     tokenAdjustmentMessage = '';
     @Output() goBack = new EventEmitter<void>();
+    logPublished = false;
 
     constructor(
         @Inject(StudentRecordManagerService) private recordManagerService: StudentRecordManagerService,
@@ -31,12 +32,17 @@ export class StudentRecordDisplayComponent {
         @Inject(TokenOptionRegistry) private tokenOptionRegistry: TokenOptionRegistry
     ) {}
 
-    public async configureStudent(configuration: TokenATMConfiguration, student: Student): Promise<void> {
+    public async configureStudent(
+        configuration: TokenATMConfiguration,
+        student: Student,
+        logPublished = false
+    ): Promise<void> {
         this.studentRecord = undefined;
         this.tokenAdjustmentCount = 0;
         this.tokenAdjustmentMessage = '';
         this.configuration = configuration;
         this.student = student;
+        this.logPublished = logPublished;
         this.studentRecord = await this.recordManagerService.getStudentRecord(this.configuration, this.student);
     }
 

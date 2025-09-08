@@ -81,20 +81,14 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                         return [
                             value,
                             [value.configuration.course.id, undefined],
-                            set(new Date(), {
-                                hours: 0,
-                                minutes: 0,
-                                seconds: 0,
-                                milliseconds: 0
-                            }),
                             [
-                                value.configuration.course.id,
                                 set(new Date(), {
-                                    hours: 23,
-                                    minutes: 59,
-                                    seconds: 59,
-                                    milliseconds: 999
-                                })
+                                    hours: 0,
+                                    minutes: 0,
+                                    seconds: 0,
+                                    milliseconds: 0
+                                }),
+                                value.configuration.course.timeZone
                             ],
                             [
                                 value.configuration.course.id,
@@ -103,7 +97,18 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                                     minutes: 59,
                                     seconds: 59,
                                     milliseconds: 999
-                                })
+                                }),
+                                value.configuration.course.timeZone
+                            ],
+                            [
+                                value.configuration.course.id,
+                                set(new Date(), {
+                                    hours: 23,
+                                    minutes: 59,
+                                    seconds: 59,
+                                    milliseconds: 999
+                                }),
+                                value.configuration.course.timeZone
                             ]
                         ];
                     } else {
@@ -116,9 +121,17 @@ export class SpendForAssignmentResubmissionTokenOptionFieldComponentFactory exte
                                     name: value.assignmentName
                                 }
                             ],
-                            value.startTime,
-                            [value.group.configuration.course.id, value.endTime],
-                            [value.group.configuration.course.id, value.newDueTime]
+                            [value.startTime, value.group.configuration.course.timeZone],
+                            [
+                                value.group.configuration.course.id,
+                                value.endTime,
+                                value.group.configuration.course.timeZone
+                            ],
+                            [
+                                value.group.configuration.course.id,
+                                value.newDueTime,
+                                value.group.configuration.course.timeZone
+                            ]
                         ];
                     }
                 })

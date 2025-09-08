@@ -11,6 +11,9 @@ import {
     type WithdrawAssignmentResubmissionTokenOptionData
 } from 'app/token-options/withdraw-assignment-resubmission/withdraw-assignment-resubmission-token-option';
 import { QualtricsService } from 'app/services/qualtrics.service';
+import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
+import { DataConversionHelper } from 'app/utils/data-conversion-helper';
+import type { Student } from 'app/data/student';
 
 @Component({
     selector: 'app-dev-test',
@@ -169,13 +172,26 @@ export class DevTestComponent {
 
     async timeZoneCheck(): Promise<void> {
         if (!this.course) return;
-        const courseTimeZone = await this.canvasService.getCourseTimeZone(this.course.id);
         const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const match = courseTimeZone === localTimeZone;
+        const match = this.course.timeZone === localTimeZone;
         console.log(
-            `Time zones ${match ? '' : 'do not '}match. ${courseTimeZone} ${match ? '' : '!'}= ${localTimeZone}`
+            `Time zones ${match ? '' : 'do not '}match. ${this.course.timeZone} ${match ? '' : '!'}= ${localTimeZone}`
         );
-        await this.canvasService.checkSameTimeZone(this.course.id);
+    }
+
+    async timeZoneDisplay(): Promise<void> {
+        if (!this.course) return;
+        const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const time = Date.now();
+        const local = formatInTimeZone(time, localTimeZone, 'MMM dd, yyyy HH:mm:ss');
+        if (localTimeZone === this.course.timeZone) {
+            console.log('Time:', local);
+        } else {
+            console.log(
+                ` Local: ${local}\n` +
+                    `Course: ${formatInTimeZone(time, this.course.timeZone, 'MMM dd, yyyy HH:mm:ss')}`
+            );
+        }
     }
 
     async checkQualtricsSurveyExists(): Promise<void> {
@@ -261,5 +277,150 @@ export class DevTestComponent {
                 await this.canvasService.getTotalPointsPossibleInAnAssignmentGroup(this.course.id, id, skipIf)
             );
         }
+    }
+
+    async compareUsersAndEnrollments(): Promise<void> {
+        if (!this.course) return;
+        console.log('_______________________________________________');
+        console.log('Canvas Users and Section Enrollment Comparisons');
+        function nonSubset<T>(sub: Set<T>, sup: Set<T>): number {
+            let count = 0;
+            for (const el of sub) {
+                if (!sup.has(el)) count++;
+            }
+            return count;
+        }
+        function difference<T>(a: Set<T>, b: Set<T>) {
+            const result = new Set(a);
+            for (const el of b) {
+                result.delete(el);
+            }
+            return result;
+        }
+
+        // Active Student Users
+        const courseActiveStudentUsers = await DataConversionHelper.convertAsyncIterableToList(
+            await this.canvasService.getCourseStudentEnrollments(this.course.id)
+        );
+        const courseActiveStudentUserIds = new Set<string>(courseActiveStudentUsers.map((s) => s.id));
+        if (courseActiveStudentUsers.length !== courseActiveStudentUserIds.size)
+            console.log('Warning! Active Student Users do not have unique Ids');
+
+        // Sections and their Students
+        const sections = await DataConversionHelper.convertAsyncIterableToList(
+            await this.canvasService.getSections(this.course.id)
+        );
+        const sectionIdStudentsMap = new Map<string, Student[]>();
+        for (const section of sections) {
+            sectionIdStudentsMap.set(
+                section.id,
+                await this.canvasService.getSectionStudentsWithEmail(this.course.id, section.id)
+            );
+        }
+        const sectionIdStudentIdsMap = new Map<string, Set<string>>(
+            Array.from(sectionIdStudentsMap.entries()).map((entry) => {
+                const [k, v] = entry;
+                return [k, new Set<string>(v.map((s) => s.id))];
+            })
+        );
+        for (const [sectionId, students] of sectionIdStudentsMap) {
+            if (students.length !== sectionIdStudentIdsMap.get(sectionId)?.size) {
+                console.log("Warning! A section's Active StudentEnrollments doesn't have unique Ids");
+                console.log(
+                    `  Section Id: ${sectionId}, Section Name: ${sections
+                        .filter((s) => s.id === sectionId)
+                        .map((s) => s.name)}`
+                );
+                // const repeatedIds: string[] = [];
+                // const foundIds = new Set<string>();
+                // for (const stu of students) {
+                //     if (foundIds.has(stu.id)) {
+                //         repeatedIds.push(stu.id);
+                //     }
+                //     foundIds.add(stu.id);
+                // }
+                // console.log('  Repeated Ids:', repeatedIds);
+            }
+        }
+
+        // Collate and Compare every Section's StuIds
+        const allSectionsStuIds = new Set<string>();
+        for (const [sectionId, stuIdSet] of sectionIdStudentIdsMap) {
+            for (const id of stuIdSet) {
+                allSectionsStuIds.add(id);
+            }
+            const nonSubsetCount = nonSubset(stuIdSet, courseActiveStudentUserIds);
+            if (nonSubsetCount > 0) {
+                console.log(
+                    'Section Id:',
+                    sectionId,
+                    'has',
+                    nonSubsetCount,
+                    'students that are not Active Student Users (Section has Excess Students)'
+                );
+            }
+        }
+
+        const nonSubsetCountAllSections = nonSubset(allSectionsStuIds, courseActiveStudentUserIds);
+        console.log(
+            'Totalling All Sections, there are',
+            nonSubsetCountAllSections,
+            'students that are not Active Student Users'
+        );
+        if (allSectionsStuIds.size !== courseActiveStudentUserIds.size) {
+            console.log(
+                `  And the total number of unique Active StudentEnrollments (${allSectionsStuIds.size}) in sections does not match the number of unique Active Student Users (${courseActiveStudentUserIds.size})`
+            );
+        }
+        console.log(
+            '  Unique Ids missing from unique Active StudentEnrollments:',
+            difference(courseActiveStudentUserIds, allSectionsStuIds)
+        );
+        console.log(
+            '  Unique Ids missing from unique Active Student Users:',
+            difference(allSectionsStuIds, courseActiveStudentUserIds)
+        );
+
+        // Compare enumerating sections based on Users
+        const sectionIdUserIdsMap = new Map<string, Set<string>>();
+        // Collect Sections based on Users
+        for (const stuId of courseActiveStudentUserIds) {
+            let noStuSections = true;
+            for await (const stuSection of await this.canvasService.getStudentSectionEnrollments(
+                this.course.id,
+                stuId
+            )) {
+                if (noStuSections) noStuSections = false;
+                if (!sectionIdUserIdsMap.has(stuSection)) sectionIdUserIdsMap.set(stuSection, new Set<string>());
+                sectionIdUserIdsMap.get(stuSection)?.add(stuId);
+            }
+            if (noStuSections)
+                console.log(`Warning! An Active Student User (id: ${stuId}) isn't enrolled in any sections`);
+        }
+        // Compare Enumerated Sections
+        if (sectionIdUserIdsMap.size - sectionIdStudentIdsMap.size !== 0) {
+            console.log(
+                `When enumerating sections by Active Student Users, ${
+                    sectionIdUserIdsMap.size - sectionIdStudentIdsMap.size
+                } more are found.`
+            );
+            if (sectionIdUserIdsMap.size - sectionIdStudentIdsMap.size < 0)
+                console.log(
+                    'Warning! Assumption that User based enumeration of sections returns all sections has been broken.'
+                );
+        }
+        for (const [sectionId, stuUserIds] of sectionIdUserIdsMap) {
+            const sectionStus = sectionIdStudentIdsMap.get(sectionId) ?? new Set();
+            const secSubUser = nonSubset(sectionStus, stuUserIds);
+            const userSubSec = nonSubset(stuUserIds, sectionStus);
+
+            if (secSubUser !== 0 || userSubSec !== 0) {
+                console.log(`== Students in Section Id (${sectionId}) Comparison ==`);
+                console.log(`   ${secSubUser} students in Section missing from Users`);
+                console.log(`   ${userSubSec} students in Users missing from Section`);
+            }
+        }
+
+        console.log('Comparison Completed');
     }
 }

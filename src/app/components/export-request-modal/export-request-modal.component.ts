@@ -25,7 +25,6 @@ import { ModalManagerService } from 'app/services/modal-manager.service';
 import { v4 as uuidv4 } from 'uuid';
 import { ErrorSerializer } from 'app/utils/error-serializer';
 import { OptionalFieldComponent } from '../form-fields/optional-field/optional-field.component';
-import type { DirectFormField } from 'app/utils/form-field/direct-form-field';
 
 @Component({
     selector: 'app-export-request-modal',
@@ -99,7 +98,10 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
                 .appendBuilder(
                     createFieldComponentWithLabel(
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        OptionalFieldComponent<DirectFormField<[Date, Date], any>>,
+                        OptionalFieldComponent<
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            FormField<[{ data: Date | [Date, string] }, Date | [Date, string]], [Date, Date], any>
+                        >,
                         'Specify a time range for requests',
                         this.environmentInjector
                     ).editField((field) => {
@@ -108,6 +110,7 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
                             'Include Requests Since',
                             this.environmentInjector
                         )
+                            .transformSrc((v: { data: Date | [Date, string] }) => v.data)
                             .appendBuilder(
                                 createFieldComponentWithLabel(
                                     DateTimeFieldComponent,
@@ -118,7 +121,7 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
                             .appendVP(
                                 async (field) =>
                                     <[DateTimeFieldComponent, DateTimeFieldComponent, [Date, Date]]>[
-                                        field.fieldA,
+                                        field.fieldA.field,
                                         field.fieldB,
                                         await field.destValue
                                     ]
@@ -157,7 +160,10 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
                 options,
                 [
                     ExportRequestModalComponent.IS_TIME_RANGE_FILTER_ENABLED,
-                    [ExportRequestModalComponent.SAVED_START_TIME, ExportRequestModalComponent.SAVED_END_TIME]
+                    [
+                        { data: [ExportRequestModalComponent.SAVED_START_TIME, this.configuration.course.timeZone] },
+                        [ExportRequestModalComponent.SAVED_END_TIME, this.configuration.course.timeZone]
+                    ]
                 ],
                 false
             ];
@@ -200,8 +206,12 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
                     break;
                 }
                 case 'course-section': {
+                    /**
+                     * Mapping from `Student` Object Reference to the Section Name that Object Ref is related to.
+                     */
                     const studentSectionMapping = new Map<Student, string>();
                     for await (const section of await this.canvasService.getSections(this.configuration.course.id)) {
+                        // Enumerating Students in a Section returns a Student Obj Ref that is unique for that Section.
                         for (const student of await this.canvasService.getSectionStudentsWithEmail(
                             this.configuration.course.id,
                             section.id
@@ -211,6 +221,7 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
                         }
                     }
                     classifier = async (_, student) => {
+                        // TODO: UUID is unique per call, should it be?
                         return studentSectionMapping.get(student) ?? 'others' + uuidv4();
                     };
                     break;
