@@ -34,6 +34,7 @@ import type {
     RawChangeAssignmentDatesMixinData
 } from 'app/token-options/mixins/change-assignment-dates-mixin';
 import type { DurationData } from 'app/data/date-fns-duration';
+import type { SpendForPassingAssignmentTokenOptionData } from 'app/token-options/spend-for-passing-assignment/spend-for-passing-assignment-token-option';
 
 function* genRawTokenOptionDataEquivalents<T extends TokenOptionData>(
     v: T,
@@ -183,6 +184,33 @@ export function* genRawOptionalMultipleSectionTimeValues(
         }
     } else {
         throw Error(`Unimplemented Generator for Raw Multiple Section Time Values of type: (${typeof v})`);
+    }
+}
+
+export function* genRawSpendForPassingAssignmentDataEquivalents<T extends SpendForPassingAssignmentTokenOptionData>(
+    v: T,
+    genExtra = false
+): Generator<T & SpendForPassingAssignmentTokenOptionData, void, unknown> {
+    /**
+     * @todo extract into generator function (also in {@link genRawPlaceholderDataEquivalents})
+     */
+    const excludeIdsData = {
+        *[Symbol.iterator](): Generator<T & RawExcludeTokenOptionIdsMixinData, void, unknown> {
+            if (v.excludeTokenOptionIds.length === 0 || genExtra) {
+                const r = { ...v };
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                delete (r as any)['excludeTokenOptionIds'];
+                yield { ...v, excludeTokenOptionIds: undefined };
+                yield r;
+            }
+            if (genExtra && v.excludeTokenOptionIds.length === 0) {
+                yield { ...v, excludeTokenOptionIds: [1, 2, 3] };
+            }
+        }
+    };
+
+    for (const excludeIds of excludeIdsData) {
+        yield* genRawTokenOptionDataEquivalents(excludeIds, genExtra);
     }
 }
 

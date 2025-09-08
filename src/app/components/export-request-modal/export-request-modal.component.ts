@@ -206,8 +206,12 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
                     break;
                 }
                 case 'course-section': {
+                    /**
+                     * Mapping from `Student` Object Reference to the Section Name that Object Ref is related to.
+                     */
                     const studentSectionMapping = new Map<Student, string>();
                     for await (const section of await this.canvasService.getSections(this.configuration.course.id)) {
+                        // Enumerating Students in a Section returns a Student Obj Ref that is unique for that Section.
                         for (const student of await this.canvasService.getSectionStudentsWithEmail(
                             this.configuration.course.id,
                             section.id
@@ -217,6 +221,7 @@ export class ExportRequestModalComponent implements OnInit, OnDestroy {
                         }
                     }
                     classifier = async (_, student) => {
+                        // TODO: UUID is unique per call, should it be?
                         return studentSectionMapping.get(student) ?? 'others' + uuidv4();
                     };
                     break;
