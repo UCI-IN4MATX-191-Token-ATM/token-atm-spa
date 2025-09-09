@@ -44,7 +44,15 @@ export class MultipleSectionDateMatcher implements MultipleSectionDateMatcherDat
         return this.defaultDate;
     }
 
-    public toHTML(context: DateContext): string {
+    /**
+     * @todo Find a way to make the context non-optional (optional needed for AG Grid mixins)
+     * @param context Context including timezone to print dates in
+     * @returns HTML content as a string
+     */
+    public toHTML(context?: DateContext): string {
+        if (context === undefined) {
+            context = { timezone: Intl.DateTimeFormat().resolvedOptions().timeZone };
+        }
         if (this._overrides.length == 0) {
             return canvasReadableDate(this.defaultDate, context.timezone);
         }

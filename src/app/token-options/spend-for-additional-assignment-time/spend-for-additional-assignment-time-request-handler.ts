@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@angular/core';
 import { ProcessedRequest } from 'app/data/processed-request';
 import type { StudentRecord } from 'app/data/student-record';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
-import type { DefaultRequest } from 'app/token-options/token-atm-request';
+import type { TokenATMRequest } from 'app/token-options/token-atm-request';
 import type { SpendForAdditionalAssignmentTimeTokenOption } from './spend-for-additional-assignment-time-token-option';
 import { RequestHandler } from 'app/token-options/request-handler';
 import { RequestHandlerGuardExecutor } from '../request-handler-guards/request-handler-guard-executor';
@@ -11,7 +11,7 @@ import { ExcludeTokenOptionsGuard } from '../request-handler-guards/exclude-toke
 import { SufficientTokenBalanceGuard } from '../request-handler-guards/sufficient-token-balance-guard';
 import { CanvasService } from 'app/services/canvas.service';
 
-type SpendForAdditionalAssignmentTimeRequest = DefaultRequest<SpendForAdditionalAssignmentTimeTokenOption>;
+type SpendForAdditionalAssignmentTimeRequest = TokenATMRequest<SpendForAdditionalAssignmentTimeTokenOption>;
 
 @Injectable()
 export class SpendForAdditionalAssignmentTimeRequestHandler extends RequestHandler<

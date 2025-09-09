@@ -21,7 +21,8 @@ export const QUESTION_PRO_CREDENTIAL_KEY = 'question_pro';
 export class QuestionProCredentialHandler implements CredentialHandler<QuestionProCredential> {
     readonly key = QUESTION_PRO_CREDENTIAL_KEY;
     readonly descriptiveName = 'QuestionPro';
-    readonly documentLink = 'https://docs.google.com/document/d/1H4cvBXV7wwVp1IA2squ0mtrug5HkDVlBf4qKhh1o_vQ/view';
+    readonly documentLink =
+        'https://docs.google.com/document/d/1H4cvBXV7wwVp1IA2squ0mtrug5HkDVlBf4qKhh1o_vQ/preview?rm=embedded';
 
     constructor(@Inject(QuestionProService) private questionProService: QuestionProService) {}
 

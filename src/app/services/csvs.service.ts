@@ -46,7 +46,7 @@ export class CSVsService {
         if (namesAndContent.size === 0) {
             throw new Error('No filename or data provided to make a file');
         } else if (namesAndContent.size === 1 && zipName === undefined && zipFixes === undefined) {
-            return this.makeCSVFile(namesAndContent.entries().next().value, fixes);
+            return this.makeCSVFile(namesAndContent.entries().next().value!, fixes);
         } else {
             return await this.makeZipFile(namesAndContent, fixes, zipName, zipFixes);
         }
