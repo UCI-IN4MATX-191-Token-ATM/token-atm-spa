@@ -15,7 +15,7 @@
     "dependencies": {
         "@angular-devkit/core": "^18.2.20",
         "@angular-devkit/schematics": "^18.2.20",
-        "typescript": "~5.4.5"
+        "typescript": "~5.5.4"
     },
     "devDependencies": {
         "@types/jasmine": "^5.1.9",
