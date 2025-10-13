@@ -15,7 +15,8 @@ export type LazyLoadData<T> = {
 @Component({
     selector: 'app-lazy-single-selection-field',
     templateUrl: './lazy-single-selection-field.component.html',
-    styleUrls: ['./single-selection-field.component.sass']
+    styleUrls: ['./single-selection-field.component.sass'],
+    standalone: false
 })
 export class LazySingleSelectionFieldComponent<T>
     extends BaseFormField<

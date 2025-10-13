@@ -1,7 +1,8 @@
 import { Directive, ElementRef, type OnInit, Renderer2, Inject } from '@angular/core';
 
 @Directive({
-    selector: '[appCenter]'
+    selector: '[appCenter]',
+    standalone: false
 })
 export class CenterDirective implements OnInit {
     // https://angular.io/api/core/ElementRef

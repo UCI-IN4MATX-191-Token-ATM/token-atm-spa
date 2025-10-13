@@ -3,7 +3,8 @@ import { Component, EventEmitter, Input, type OnInit, ViewChild, ViewContainerRe
 @Component({
     selector: 'app-list-field-item-wrapper',
     templateUrl: './list-field-item-wrapper.component.html',
-    styleUrls: ['./list-field-item-wrapper.component.sass']
+    styleUrls: ['./list-field-item-wrapper.component.sass'],
+    standalone: false
 })
 export class ListFieldItemWrapperComponent implements OnInit {
     @Input() renderer?: (viewContainerRef: ViewContainerRef) => void;

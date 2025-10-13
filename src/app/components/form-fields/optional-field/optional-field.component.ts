@@ -5,7 +5,8 @@ import type { FormFieldComponentBuilder } from 'app/utils/form-field/form-field-
 @Component({
     selector: 'app-optional-field',
     templateUrl: './optional-field.component.html',
-    styleUrls: ['./optional-field.component.sass']
+    styleUrls: ['./optional-field.component.sass'],
+    standalone: false
 })
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class OptionalFieldComponent<T extends FormField<any, any, any>>

@@ -16,7 +16,8 @@ import { firstValueFrom } from 'rxjs';
 @Component({
     selector: 'app-token-option-management',
     templateUrl: './token-option-management.component.html',
-    styleUrls: ['./token-option-management.component.sass']
+    styleUrls: ['./token-option-management.component.sass'],
+    standalone: false
 })
 export class TokenOptionManagementComponent implements OnInit {
     @Input() tokenOptionType?: string;

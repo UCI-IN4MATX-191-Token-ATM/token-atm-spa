@@ -9,7 +9,8 @@ import { createFieldComponentWithLabel } from 'app/token-options/token-option-fi
 @Component({
     selector: 'app-create-configuration-modal',
     templateUrl: './create-configuration-modal.component.html',
-    styleUrls: ['./create-configuration-modal.component.sass']
+    styleUrls: ['./create-configuration-modal.component.sass'],
+    standalone: false
 })
 export class CreateConfigurationModalComponent implements OnInit {
     private _isProcessing = false;

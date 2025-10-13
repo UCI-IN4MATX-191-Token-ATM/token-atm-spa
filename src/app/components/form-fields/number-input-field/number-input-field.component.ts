@@ -5,7 +5,8 @@ import { v4 } from 'uuid';
 @Component({
     selector: 'app-number-input-field',
     templateUrl: './number-input-field.component.html',
-    styleUrls: ['./number-input-field.component.sass']
+    styleUrls: ['./number-input-field.component.sass'],
+    standalone: false
 })
 export class NumberInputFieldComponent extends BaseDirectFormField<number, [NumberInputFieldComponent, number]> {
     fieldId = v4();

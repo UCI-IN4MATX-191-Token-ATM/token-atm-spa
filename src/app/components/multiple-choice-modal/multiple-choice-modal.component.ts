@@ -4,7 +4,8 @@ import type { ModalChoice } from 'app/services/modal-manager.service';
 @Component({
     selector: 'app-multiple-choice-modal',
     templateUrl: './multiple-choice-modal.component.html',
-    styleUrls: ['./multiple-choice-modal.component.sass']
+    styleUrls: ['./multiple-choice-modal.component.sass'],
+    standalone: false
 })
 export class MultipleChoiceModalComponent {
     @Input() message = '';

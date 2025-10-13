@@ -13,7 +13,8 @@ import { CredentialManagerService } from 'app/services/credential-manager.servic
 @Component({
     selector: 'app-token-option-display',
     templateUrl: './token-option-display.component.html',
-    styleUrls: ['./token-option-display.component.sass']
+    styleUrls: ['./token-option-display.component.sass'],
+    standalone: false
 })
 export class TokenOptionDisplayComponent {
     hoverFocus = false;

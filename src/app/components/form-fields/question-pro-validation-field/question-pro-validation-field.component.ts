@@ -10,7 +10,8 @@ import { format } from 'date-fns';
 @Component({
     selector: 'app-question-pro-validation-field',
     templateUrl: './question-pro-validation-field.component.html',
-    styleUrls: ['./question-pro-validation-field.component.sass']
+    styleUrls: ['./question-pro-validation-field.component.sass'],
+    standalone: false
 })
 export class QuestionProValidationFieldComponent<
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

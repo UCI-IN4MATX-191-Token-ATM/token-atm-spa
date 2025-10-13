@@ -17,7 +17,8 @@ type AGGridDataSource = {
 @Component({
     selector: 'app-grid-view-display',
     templateUrl: './grid-view-display.component.html',
-    styleUrls: ['./grid-view-display.component.sass']
+    styleUrls: ['./grid-view-display.component.sass'],
+    standalone: false
 })
 export class GridViewDisplayComponent {
     gridViewColDef?: ColDef<AGGridDataSource, GridViewDataPoint['value']>[];

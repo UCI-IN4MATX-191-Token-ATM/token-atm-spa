@@ -9,7 +9,8 @@ import { ModalManagerService } from 'app/services/modal-manager.service';
 @Component({
     selector: 'app-dashboard',
     templateUrl: './dashboard.component.html',
-    styleUrls: ['./dashboard.component.sass']
+    styleUrls: ['./dashboard.component.sass'],
+    standalone: false
 })
 export class DashboardComponent implements OnDestroy {
     private courseSubscription: Subscription | undefined;

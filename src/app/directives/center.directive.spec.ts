@@ -3,7 +3,8 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { CenterDirective } from './center.directive';
 
 @Component({
-    template: '<div appCenter></div>'
+    template: '<div appCenter></div>',
+    standalone: false
 })
 class CenteredComponent {}
 

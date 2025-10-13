@@ -20,7 +20,8 @@ type ValueExtractor<T extends [unknown, unknown, unknown][]> = {
 @Component({
     selector: 'app-concatenate-field',
     templateUrl: './concatenate-field.component.html',
-    styleUrls: ['./concatenate-field.component.sass']
+    styleUrls: ['./concatenate-field.component.sass'],
+    standalone: false
 })
 export class ConcatenateFieldComponent<T extends [unknown, unknown, unknown][], K, V>
     implements OnInit, FormField<K, V, V>

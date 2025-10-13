@@ -18,7 +18,8 @@ enum MoveOperation {
 @Component({
     selector: 'app-move-token-option-modal',
     templateUrl: './move-token-option-modal.component.html',
-    styleUrls: ['./move-token-option-modal.component.sass']
+    styleUrls: ['./move-token-option-modal.component.sass'],
+    standalone: false
 })
 export class MoveTokenOptionModalComponent {
     isProcessing = false;

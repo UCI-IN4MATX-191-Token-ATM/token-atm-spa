@@ -8,7 +8,8 @@ import type { BsModalRef } from 'ngx-bootstrap/modal';
 @Component({
     selector: 'app-optional-credential-management',
     templateUrl: './optional-credential-management.component.html',
-    styleUrls: ['./optional-credential-management.component.sass']
+    styleUrls: ['./optional-credential-management.component.sass'],
+    standalone: false
 })
 export class OptionalCredentialManagementComponent<K extends object> implements OnInit {
     @Input() handler?: CredentialHandler<K>;
