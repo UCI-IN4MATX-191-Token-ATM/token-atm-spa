@@ -1,8 +1,9 @@
-import { format, fromUnixTime, getUnixTime } from 'date-fns';
+import { fromUnixTime, getUnixTime } from 'date-fns';
 import * as t from 'io-ts';
 import { chain } from 'fp-ts/Either';
 import { DateDef } from './mixin-helper';
 import { unwrapValidation } from './validation-unwrapper';
+import { canvasReadableDate, type DateContext } from './readableDateFormat';
 
 export const DateOverrideDef = t.strict({
     sections: t.array(t.tuple([t.string, t.string])),
@@ -43,9 +44,17 @@ export class MultipleSectionDateMatcher implements MultipleSectionDateMatcherDat
         return this.defaultDate;
     }
 
-    public toHTML(): string {
+    /**
+     * @todo Find a way to make the context non-optional (optional needed for AG Grid mixins)
+     * @param context Context including timezone to print dates in
+     * @returns HTML content as a string
+     */
+    public toHTML(context?: DateContext): string {
+        if (context === undefined) {
+            context = { timezone: Intl.DateTimeFormat().resolvedOptions().timeZone };
+        }
         if (this._overrides.length == 0) {
-            return format(this.defaultDate, 'MMM dd, yyyy HH:mm:ss');
+            return canvasReadableDate(this.defaultDate, context.timezone);
         }
         return [
             '<table style="border-collapse: collapse; width: 100%;">',
@@ -54,18 +63,18 @@ export class MultipleSectionDateMatcher implements MultipleSectionDateMatcherDat
                 return [
                     `<tr>`,
                     `<td style="text-align: end; text-wrap: nowrap">${override.name}:</td>`,
-                    `<td style="text-align: start; text-wrap: nowrap">${format(
+                    `<td style="text-align: start; text-wrap: nowrap">${canvasReadableDate(
                         override.date,
-                        'MMM dd, yyyy HH:mm:ss'
+                        context.timezone
                     )}</td>`,
                     `</tr>`
                 ].join('');
             }),
             '<tr>',
             '<td style="text-align: end; text-wrap: nowrap">Default:</td>',
-            `<td style="text-align: start; text-wrap: nowrap">${format(
+            `<td style="text-align: start; text-wrap: nowrap">${canvasReadableDate(
                 this.defaultDate,
-                'MMM dd, yyyy HH:mm:ss'
+                context.timezone
             )}</td>`,
             '</tr>',
             '</tbody>',

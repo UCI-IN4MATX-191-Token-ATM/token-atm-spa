@@ -7,6 +7,7 @@ import {
     type TableCellData,
     type TableCellRenderOptions
 } from 'app/utils/table-cell-render-helper';
+import type { DateContext } from 'app/utils/readableDateFormat';
 
 function castStringToTableCellData(value: string | TableCellData): TableCellData {
     return typeof value == 'string'
@@ -20,13 +21,13 @@ export class HTMLTableGenerator extends TokenOptionInstructionGenerator {
     constructor(private transformers: TokenOptionInstructionTransformer<object>[]) {
         super();
     }
-    public process(tokenOptions: TokenOption[]): string {
+    public process(tokenOptions: TokenOption[], context: DateContext): string {
         const values: [TableCellData, TableCellData[]][] = [];
         for (const transformer of this.transformers) {
             if (!transformer.hasValidTokenOption(tokenOptions)) continue;
             values.push([
                 castStringToTableCellData(transformer.infoDescription),
-                transformer.process(tokenOptions).map(castStringToTableCellData)
+                transformer.process(tokenOptions, context).map(castStringToTableCellData)
             ]);
         }
         if (values.length == 0) return '';

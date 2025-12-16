@@ -5,7 +5,7 @@ import { ErrorSerializer } from 'app/utils/error-serializer';
 import type { ExtractDest, ExtractSrc, ExtractVP, FormField } from 'app/utils/form-field/form-field';
 import type { FormFieldWrapper } from 'app/utils/form-field/form-field-wrapper';
 import { ForwardFormField } from 'app/utils/form-field/forward-form-field';
-import { format } from 'date-fns';
+import { readableDate } from 'app/utils/readableDateFormat';
 
 @Component({
     selector: 'app-question-pro-validation-field',
@@ -36,14 +36,10 @@ export class QuestionProValidationFieldComponent<
         this.message = undefined;
         const result = await this.questionProService.validateCredential(await this.forwardedTo.destValue);
         if (result === undefined) {
-            this.message = `QuestionPro credential has been validated successfully at ${format(
-                new Date(),
-                'MMM dd, yyyy HH:mm:ss'
-            )}!`;
+            this.message = `QuestionPro credential has been validated successfully at ${readableDate(new Date())}!`;
         } else {
-            this.message = `QuestionPro credential validation failed at ${format(
-                new Date(),
-                'MMM dd, yyyy HH:mm:ss'
+            this.message = `QuestionPro credential validation failed at ${readableDate(
+                new Date()
             )}: ${ErrorSerializer.serialize(result)}`;
         }
         this.isProcessing = false;

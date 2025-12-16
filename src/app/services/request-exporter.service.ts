@@ -3,10 +3,10 @@ import { StudentRecordManagerService } from './student-record-manager.service';
 import type { ProcessedRequest } from 'app/data/processed-request';
 import type { Student } from 'app/data/student';
 import type { TokenATMConfiguration } from 'app/data/token-atm-configuration';
-import { format } from 'date-fns';
 import { countAndNoun } from 'app/utils/pluralize';
 import { CSVsService } from './csvs.service';
 import type { StudentRecord } from 'app/data/student-record';
+import { readableDate } from 'app/utils/readableDateFormat';
 
 export function parseProcessedRequest(processedRequest: ProcessedRequest): Record<string, string> {
     return {
@@ -14,8 +14,8 @@ export function parseProcessedRequest(processedRequest: ProcessedRequest): Recor
         'Student Name': processedRequest.student.name,
         'Student Email': processedRequest.student.email,
         'Is Approved': processedRequest.isApproved ? 'Yes' : 'No',
-        'Request Submitted At': format(processedRequest.submittedTime, 'MMM dd, yyyy HH:mm:ss'),
-        'Request Processed At': format(processedRequest.processedTime, 'MMM dd, yyyy HH:mm:ss'),
+        'Request Submitted At': readableDate(processedRequest.submittedTime),
+        'Request Processed At': readableDate(processedRequest.processedTime),
         'Token Balance Change': processedRequest.tokenBalanceChange.toString(),
         Message: processedRequest.message
     };

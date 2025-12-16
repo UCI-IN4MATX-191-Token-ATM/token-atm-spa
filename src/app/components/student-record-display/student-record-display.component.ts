@@ -7,9 +7,9 @@ import { ModalManagerService } from 'app/services/modal-manager.service';
 import { StudentRecordManagerService } from 'app/services/student-record-manager.service';
 import type { TokenOption } from 'app/token-options/token-option';
 import { TokenOptionRegistry } from 'app/token-options/token-option-registry';
-import { format } from 'date-fns';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { PickTokenOptionModalComponent } from '../pick-token-option-modal/pick-token-option-modal.component';
+import { readableDate } from 'app/utils/readableDateFormat';
 
 @Component({
     selector: 'app-student-record-display',
@@ -47,7 +47,7 @@ export class StudentRecordDisplayComponent {
     }
 
     formatDate(date: Date): string {
-        return format(date, 'MMM dd, yyyy HH:mm:ss');
+        return readableDate(date, this.configuration?.course?.timeZone);
     }
 
     async onAddManualChange(): Promise<void> {
