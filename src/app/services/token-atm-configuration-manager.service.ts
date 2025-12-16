@@ -124,7 +124,9 @@ export class TokenATMConfigurationManagerService {
             new NewDueTimeTransformer(),
             new TokenBalanceChangeTransformer(),
             new DescriptionTransformer()
-        ]).process(tokenOptionGroup.availableTokenOptions);
+        ]).process(tokenOptionGroup.availableTokenOptions, {
+            timezone: tokenOptionGroup.configuration.course.timeZone
+        });
     }
 
     private generateTokenOptionDataPage(configuration: TokenATMConfiguration): string {
