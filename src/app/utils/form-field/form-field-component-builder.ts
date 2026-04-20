@@ -10,6 +10,7 @@ import { type FormFieldWrapper, FormFieldWrapperApplier } from './form-field-wra
 import { FormFieldObservableSrcTransformer } from './form-field-observable-src-transformer';
 
 export type TupleAppend<A, B> = A extends unknown[] ? [...A, B] : [A, B];
+export type ExtractBuiltType<T> = T extends FormFieldComponentBuilder<infer U> ? U : never;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class FormFieldComponentBuilder<F extends FormField<any, any, any>> {

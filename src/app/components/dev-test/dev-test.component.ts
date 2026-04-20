@@ -11,6 +11,7 @@ import {
     type WithdrawAssignmentResubmissionTokenOptionData
 } from 'app/token-options/withdraw-assignment-resubmission/withdraw-assignment-resubmission-token-option';
 import { QualtricsService } from 'app/services/qualtrics.service';
+import { addHours, formatISO, isEqual, set } from 'date-fns';
 import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
 import { DataConversionHelper } from 'app/utils/data-conversion-helper';
 import type { Student } from 'app/data/student';
@@ -422,5 +423,53 @@ export class DevTestComponent {
         }
 
         console.log('Comparison Completed');
+    }
+
+    async checkForCanvasChangingDueTime(): Promise<void> {
+        if (!this.course) return;
+        console.log('Check for Due Time changed by Canvas...');
+        const assignmentId = await this.canvasService.getAssignmentIdByName(this.course.id, this.testAssignmentName);
+        const getAssignment = async (courseId: string) =>
+            await this.canvasService.getAssignment(courseId, assignmentId);
+        const originalDue = structuredClone((await getAssignment(this.course.id)).dueAt);
+        console.log('Saving Original Due Time');
+        const ShortISOFormat = (d: Date | null) => (d != null ? d.toISOString().slice(0, -5) + 'Z' : null);
+
+        let newTime = set(new Date(), { minutes: 0, seconds: 1, milliseconds: 0 });
+        for (let i = 0; i < 24; i++) {
+            const oldTime = newTime;
+            newTime = addHours(newTime, 1);
+
+            console.log('Set due time one hour ahead.');
+            await this.canvasService.setDueTime(this.course.id, assignmentId, formatISO(newTime));
+
+            const handleAsyncUpdating = async (equalDate: Date, courseId: string) => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                const due = async () => (await getAssignment(courseId)).dueAt!;
+                while (isEqual(equalDate, await due())) {
+                    // console.log('Waiting for Canvas to return updated due at...')
+                }
+                return await due();
+            };
+            if (originalDue != null) {
+                await handleAsyncUpdating(originalDue, this.course.id);
+            }
+            const returnedTime = await handleAsyncUpdating(oldTime, this.course.id);
+            if (!isEqual(returnedTime, newTime)) {
+                console.log(`Difference found!\n${ShortISOFormat(newTime)}\n${ShortISOFormat(returnedTime)}`);
+            } else {
+                // console.log('Equal!');
+            }
+        }
+
+        console.log('Testing Complete');
+        console.log('Resetting Original Due Time');
+        if (originalDue == null) {
+            // TODO: Actually remove unnecessary due at
+            console.log(`Assignment ${this.testAssignmentName} needs it's due date manually removed.`);
+        } else {
+            await this.canvasService.setDueTime(this.course.id, assignmentId, formatISO(originalDue));
+            console.log('Assignment Reset');
+        }
     }
 }
