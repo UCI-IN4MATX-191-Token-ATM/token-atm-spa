@@ -18,7 +18,8 @@ const stringArrayDataDef = t.array(t.string);
 @Component({
     selector: 'app-multiple-section-date-field',
     templateUrl: './multiple-section-date-field.component.html',
-    styleUrls: ['./multiple-section-date-field.component.sass']
+    styleUrls: ['./multiple-section-date-field.component.sass'],
+    standalone: false
 })
 export class MultipleSectionDateFieldComponent
     implements

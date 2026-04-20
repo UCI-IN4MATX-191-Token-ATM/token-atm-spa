@@ -6,7 +6,8 @@ import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
 @Component({
     selector: 'app-date-time-field',
     templateUrl: './date-time-field.component.html',
-    styleUrls: ['./date-time-field.component.sass']
+    styleUrls: ['./date-time-field.component.sass'],
+    standalone: false
 })
 export class DateTimeFieldComponent extends BaseFormField<
     Date | [Date, string],

@@ -29,7 +29,8 @@ import { OptionalFieldComponent } from '../form-fields/optional-field/optional-f
 @Component({
     selector: 'app-export-request-modal',
     templateUrl: './export-request-modal.component.html',
-    styleUrls: ['./export-request-modal.component.sass']
+    styleUrls: ['./export-request-modal.component.sass'],
+    standalone: false
 })
 export class ExportRequestModalComponent implements OnInit, OnDestroy {
     private static IS_TIME_RANGE_FILTER_ENABLED = false;

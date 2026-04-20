@@ -6,7 +6,8 @@ import type { Subscription } from 'rxjs';
 @Component({
     selector: 'app-grid-view-external-access',
     templateUrl: './grid-view-external-access.component.html',
-    styleUrls: ['./grid-view-external-access.component.sass']
+    styleUrls: ['./grid-view-external-access.component.sass'],
+    standalone: false
 })
 export class GridViewExternalAccessComponent implements OnDestroy {
     private isListenerActive = false;

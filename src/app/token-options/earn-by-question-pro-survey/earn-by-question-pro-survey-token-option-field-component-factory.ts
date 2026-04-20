@@ -52,7 +52,8 @@ type LazyQuestionProSurveyMixinData = {
 @Component({
     selector: 'app-earn-by-question-pro-survey-form-field',
     template:
-        '<div [hidden]="survey?.data === undefined"><ng-container #container></ng-container></div><p *ngIf="survey?.data === undefined">Please select a QuestionPro survey first.</p>'
+        '<div [hidden]="survey?.data === undefined"><ng-container #container></ng-container></div><p *ngIf="survey?.data === undefined">Please select a QuestionPro survey first.</p>',
+    standalone: false
 })
 export class EarnByQuestionProSurveyFormFieldComponent
     extends BaseFormField<QuestionProSurveyMixinData | undefined, LazyQuestionProSurveyMixinData, unknown>

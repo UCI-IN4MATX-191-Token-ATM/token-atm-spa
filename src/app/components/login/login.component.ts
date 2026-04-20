@@ -29,7 +29,8 @@ type CanvasCredentialFormItemInfoMap = {
 @Component({
     selector: 'app-login',
     templateUrl: './login.component.html',
-    styleUrls: ['./login.component.sass']
+    styleUrls: ['./login.component.sass'],
+    standalone: false
 })
 export class LoginComponent implements AfterViewInit {
     @ViewChild('retrieveCredentialModal') retrieveCredentialModalTemplate?: TemplateRef<unknown>;

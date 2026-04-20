@@ -10,7 +10,8 @@ import { v4 } from 'uuid';
 @Component({
     selector: 'app-single-selection-field',
     templateUrl: './single-selection-field.component.html',
-    styleUrls: ['./single-selection-field.component.sass']
+    styleUrls: ['./single-selection-field.component.sass'],
+    standalone: false
 })
 export class SingleSelectionFieldComponent<T>
     extends BaseFormField<

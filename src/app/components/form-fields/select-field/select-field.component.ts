@@ -4,7 +4,8 @@ import { BaseFormField } from 'app/utils/form-field/form-field';
 @Component({
     selector: 'app-select-field',
     templateUrl: './select-field.component.html',
-    styleUrls: ['./select-field.component.sass']
+    styleUrls: ['./select-field.component.sass'],
+    standalone: false
 })
 export class SelectFieldComponent<T> extends BaseFormField<
     [T | undefined, [string, T][]],

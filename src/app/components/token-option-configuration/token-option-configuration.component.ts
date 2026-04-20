@@ -24,7 +24,8 @@ import { filter, first, fromEvent } from 'rxjs';
                 zIndex: 10000
             }
         }
-    ]
+    ],
+    standalone: false
 })
 export class TokenOptionConfigurationComponent implements CourseConfigurable {
     course?: Course;

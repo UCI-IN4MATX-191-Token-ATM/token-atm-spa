@@ -12,7 +12,8 @@ import { v4 } from 'uuid';
 @Component({
     selector: 'app-multiple-selection-field',
     templateUrl: './multiple-selection-field.component.html',
-    styleUrls: ['./multiple-selection-field.component.sass']
+    styleUrls: ['./multiple-selection-field.component.sass'],
+    standalone: false
 })
 export class MultipleSelectionFieldComponent<T>
     extends BaseFormField<[T[], () => Promise<T[]>], T[], [T[], MultipleSelectionFieldComponent<T>]>
