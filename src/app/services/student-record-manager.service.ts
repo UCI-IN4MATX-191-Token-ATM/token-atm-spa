@@ -126,7 +126,7 @@ export class StudentRecordManagerService {
             }\nSubmitted at: ${format(processedRequest.submittedTime, 'MMM dd, yyyy HH:mm:ss')}\nProcessed at: ${format(
                 processedRequest.processedTime,
                 'MMM dd, yyyy HH:mm:ss'
-            )}\nToken Balance Change: ${oldTokenBalance} -> ${studentRecord.tokenBalance}${
+            )}\nToken Balance Change: ${oldTokenBalance} → ${studentRecord.tokenBalance}${
                 processedRequest.message != '' ? `\nMessage: ${processedRequest.message}` : ''
             }`
         );
