@@ -634,7 +634,7 @@ function testingUpdateMessage(params: testingUpdateMessageParams) {
     });
 }
 function testTemplate(a: string, b: string, orig: string, final: string) {
-    return `Added ${a} to ${b}\nChange: ${orig} => ${final}`;
+    return `Added ${a} to ${b}\nChange: ${orig} → ${final}`;
 }
 
 // Tests for checking the update message when adding to an assignment score.

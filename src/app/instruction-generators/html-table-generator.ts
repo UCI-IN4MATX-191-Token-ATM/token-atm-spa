@@ -47,11 +47,12 @@ export class HTMLTableGenerator extends TokenOptionInstructionGenerator {
         };
         return [
             '<table style="border: 1px solid black; border-collapse: collapse; overflow-x: auto">',
+            `<caption>${tokenOptions[0]?.group?.name} Request Details</caption>`,
             '<thead>',
             '<tr>',
             ...values.map(
                 (entry) =>
-                    `<th style="border: 1px solid black; ${convertTableCellRenderOptionsToCSS(
+                    `<th scope="col"; style="border: 1px solid black; ${convertTableCellRenderOptionsToCSS(
                         combineTableCellRenderOptions(defaultRenderOption, entry[0].options)
                     )}">${entry[0].value}</th>`
             ),
