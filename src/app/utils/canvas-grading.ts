@@ -424,7 +424,7 @@ function generatePostedGradeMessage(
     /** Displays the change provided by instructor, and grade display of assignment */
     const firstLine = `Added ${addText} to ${ofPoints(curGrade, target.pointsPossible)}`;
     /** Displays the actual change provided to Canvas via posted_grade */
-    const secondLine = `Change: ${postedGrade.includes('%') ? target.grade : target.score} => ${postedGrade}`;
+    const secondLine = `Change: ${postedGrade.includes('%') ? target.grade : target.score} → ${postedGrade}`;
     return firstLine + '\n' + secondLine;
 }
 
