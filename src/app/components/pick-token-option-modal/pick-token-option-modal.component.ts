@@ -6,7 +6,8 @@ import type { TokenOption } from 'app/token-options/token-option';
 @Component({
     selector: 'app-pick-token-option-modal',
     templateUrl: './pick-token-option-modal.component.html',
-    styleUrls: ['./pick-token-option-modal.component.sass']
+    styleUrls: ['./pick-token-option-modal.component.sass'],
+    standalone: false
 })
 export class PickTokenOptionModalComponent {
     @Input() configuration?: TokenATMConfiguration;

@@ -2,7 +2,8 @@ import { Component, type OnInit, ViewChild, ViewContainerRef } from '@angular/co
 
 @Component({
     selector: 'app-switch-field-item-wrapper',
-    templateUrl: './switch-field-item-wrapper.component.html'
+    templateUrl: './switch-field-item-wrapper.component.html',
+    standalone: false
 })
 export class SwitchFieldItemWrapperComponent implements OnInit {
     @ViewChild('container', { static: true, read: ViewContainerRef }) containerRef?: ViewContainerRef;

@@ -6,7 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 @Component({
     selector: 'app-form-item',
     templateUrl: './form-item.component.html',
-    styleUrls: ['./form-item.component.sass']
+    styleUrls: ['./form-item.component.sass'],
+    standalone: false
 })
 export class FormItemComponent implements OnInit {
     uuid = '';

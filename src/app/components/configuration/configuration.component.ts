@@ -17,7 +17,8 @@ import { Router } from '@angular/router';
 @Component({
     selector: 'app-configuration',
     templateUrl: './configuration.component.html',
-    styleUrls: ['./configuration.component.sass']
+    styleUrls: ['./configuration.component.sass'],
+    standalone: false
 })
 export class ConfigurationComponent implements CourseConfigurable {
     isProcessing = false;

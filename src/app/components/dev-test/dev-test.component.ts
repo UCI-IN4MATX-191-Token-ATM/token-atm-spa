@@ -18,7 +18,8 @@ import type { Student } from 'app/data/student';
 @Component({
     selector: 'app-dev-test',
     templateUrl: './dev-test.component.html',
-    styleUrls: ['./dev-test.component.sass']
+    styleUrls: ['./dev-test.component.sass'],
+    standalone: false
 })
 export class DevTestComponent {
     course?: Course;

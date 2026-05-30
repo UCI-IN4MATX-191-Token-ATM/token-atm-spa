@@ -14,7 +14,8 @@ import { PickTokenOptionModalComponent } from '../pick-token-option-modal/pick-t
 @Component({
     selector: 'app-student-record-display',
     templateUrl: './student-record-display.component.html',
-    styleUrls: ['./student-record-display.component.sass']
+    styleUrls: ['./student-record-display.component.sass'],
+    standalone: false
 })
 export class StudentRecordDisplayComponent {
     configuration?: TokenATMConfiguration;

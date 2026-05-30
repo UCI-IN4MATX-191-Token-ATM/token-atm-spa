@@ -6,7 +6,8 @@ import { firstValueFrom } from 'rxjs';
 @Component({
     selector: 'app-list-field',
     templateUrl: './list-field.component.html',
-    styleUrls: ['./list-field.component.sass']
+    styleUrls: ['./list-field.component.sass'],
+    standalone: false
 })
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class ListFieldComponent<F extends FormField<any, any, any>>

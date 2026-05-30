@@ -4,7 +4,8 @@ import type { Course } from 'app/data/course';
 @Component({
     selector: 'app-course-info-item',
     templateUrl: './course-info-item.component.html',
-    styleUrls: ['./course-info-item.component.sass']
+    styleUrls: ['./course-info-item.component.sass'],
+    standalone: false
 })
 export class CourseInfoItemComponent {
     @Input() course: Course | undefined;

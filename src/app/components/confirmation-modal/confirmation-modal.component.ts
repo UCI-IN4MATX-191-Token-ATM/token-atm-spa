@@ -3,7 +3,8 @@ import { Component, Input } from '@angular/core';
 @Component({
     selector: 'app-confirmation-modal',
     templateUrl: './confirmation-modal.component.html',
-    styleUrls: ['./confirmation-modal.component.sass']
+    styleUrls: ['./confirmation-modal.component.sass'],
+    standalone: false
 })
 export class ConfirmationModalComponent {
     @Input() message = '';

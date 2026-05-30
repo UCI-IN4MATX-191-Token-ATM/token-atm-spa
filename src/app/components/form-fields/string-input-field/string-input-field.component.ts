@@ -5,7 +5,8 @@ import { v4 } from 'uuid';
 @Component({
     selector: 'app-string-input-field',
     templateUrl: './string-input-field.component.html',
-    styleUrls: ['./string-input-field.component.sass']
+    styleUrls: ['./string-input-field.component.sass'],
+    standalone: false
 })
 export class StringInputFieldComponent extends BaseDirectFormField<string, [StringInputFieldComponent, string]> {
     fieldId = v4();

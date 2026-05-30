@@ -11,7 +11,8 @@ import { firstValueFrom } from 'rxjs';
 @Component({
     selector: 'app-create-token-option-modal',
     templateUrl: './create-token-option-modal.component.html',
-    styleUrls: ['./create-token-option-modal.component.sass']
+    styleUrls: ['./create-token-option-modal.component.sass'],
+    standalone: false
 })
 export class CreateTokenOptionModalComponent {
     @Input() group?: TokenOptionGroup;

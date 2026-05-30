@@ -16,7 +16,10 @@ import { Pipe, type PipeTransform } from '@angular/core';
  *   {{ 2 | noun:'student' }}
  *   formats to: 2 students
  */
-@Pipe({ name: 'countAndNoun' })
+@Pipe({
+    name: 'countAndNoun',
+    standalone: false
+})
 export class CountAndNounPipe implements PipeTransform {
     transform(count: number, noun: string): string {
         return countAndNoun(count, noun);
@@ -32,7 +35,10 @@ export class CountAndNounPipe implements PipeTransform {
  *   {{ 'request' | count:3 }}
  *   formats to: 'requests'
  */
-@Pipe({ name: 'pluralize' })
+@Pipe({
+    name: 'pluralize',
+    standalone: false
+})
 export class PluralizePipe implements PipeTransform {
     transform(word: string, count: number): string {
         return pluralize(word, count);

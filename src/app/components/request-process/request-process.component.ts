@@ -15,7 +15,8 @@ import { checkAndConfirmTokenATMLogPublished } from 'app/utils/reusable-modals';
 @Component({
     selector: 'app-request-process',
     templateUrl: './request-process.component.html',
-    styleUrls: ['./request-process.component.sass']
+    styleUrls: ['./request-process.component.sass'],
+    standalone: false
 })
 export class RequestProcessComponent implements CourseConfigurable {
     course?: Course;

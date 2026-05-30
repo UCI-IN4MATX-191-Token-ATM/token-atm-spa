@@ -10,7 +10,8 @@ import { SwitchFieldItemWrapperComponent } from './switch-field-item-wrapper.com
 @Component({
     selector: 'app-switch-field',
     templateUrl: './switch-field.component.html',
-    styleUrls: ['./switch-field.component.sass']
+    styleUrls: ['./switch-field.component.sass'],
+    standalone: false
 })
 export class SwitchFieldComponent<
         K extends string | number | symbol,

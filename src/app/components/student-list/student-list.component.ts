@@ -17,7 +17,8 @@ import { checkAndConfirmTokenATMLogPublished } from 'app/utils/reusable-modals';
 @Component({
     selector: 'app-student-list',
     templateUrl: './student-list.component.html',
-    styleUrls: ['./student-list.component.sass']
+    styleUrls: ['./student-list.component.sass'],
+    standalone: false
 })
 export class StudentListComponent implements CourseConfigurable {
     // Possible values for the number of students displayed per page in the student list

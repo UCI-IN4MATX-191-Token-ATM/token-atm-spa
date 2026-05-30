@@ -5,7 +5,8 @@ import { v4 } from 'uuid';
 @Component({
     selector: 'app-string-textarea-field',
     templateUrl: './string-textarea-field.component.html',
-    styleUrls: ['./string-textarea-field.component.sass']
+    styleUrls: ['./string-textarea-field.component.sass'],
+    standalone: false
 })
 export class StringTextareaFieldComponent extends BaseDirectFormField<string, [StringTextareaFieldComponent, string]> {
     fieldId = v4();

@@ -10,7 +10,8 @@ import type { FormField } from 'app/utils/form-field/form-field';
 @Component({
     selector: 'app-edit-configuration-modal',
     templateUrl: './edit-configuration-modal.component.html',
-    styleUrls: ['./edit-configuration-modal.component.sass']
+    styleUrls: ['./edit-configuration-modal.component.sass'],
+    standalone: false
 })
 export class EditConfigurationModalComponent implements OnInit {
     _isProcessing = false;

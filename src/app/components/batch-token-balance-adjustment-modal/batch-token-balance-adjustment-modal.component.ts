@@ -23,7 +23,8 @@ type MandatoryColumns = {
 @Component({
     selector: 'app-batch-token-balance-adjustment-modal',
     templateUrl: './batch-token-balance-adjustment-modal.component.html',
-    styleUrls: ['./batch-token-balance-adjustment-modal.component.sass']
+    styleUrls: ['./batch-token-balance-adjustment-modal.component.sass'],
+    standalone: false
 })
 export class BatchTokenBalanceAdjustmentModalComponent implements OnDestroy {
     isProcessing = false;

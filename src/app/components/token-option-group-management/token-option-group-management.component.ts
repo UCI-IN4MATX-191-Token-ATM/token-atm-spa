@@ -12,7 +12,8 @@ import type { FormField } from 'app/utils/form-field/form-field';
 @Component({
     selector: 'app-token-option-group-management',
     templateUrl: './token-option-group-management.component.html',
-    styleUrls: ['./token-option-group-management.component.sass']
+    styleUrls: ['./token-option-group-management.component.sass'],
+    standalone: false
 })
 export class TokenOptionGroupManagementComponent implements OnInit {
     @Input() value?: TokenATMConfiguration | TokenOptionGroup;
