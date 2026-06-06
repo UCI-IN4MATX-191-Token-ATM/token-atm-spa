@@ -24,6 +24,7 @@ export const AssignmentOverrideDataDef = t.intersection([
 ]);
 
 export type AssignmentOverrideData = t.TypeOf<typeof AssignmentOverrideDataDef>;
+export type RawAssignmentOverrideData = t.OutputOf<typeof AssignmentOverrideDataDef>;
 
 export class AssignmentOverride {
     public id = '';

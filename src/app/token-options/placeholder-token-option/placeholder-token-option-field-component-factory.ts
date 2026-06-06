@@ -8,17 +8,17 @@ import {
     createExcludeTokenOptionsComponentBuilder,
     createFieldComponentWithLabel,
     createMultipleSectionDateComponentBuilder,
+    createOptionalAllowMultipleApprovedRequestsComponentBuilder,
     tokenOptionFieldComponentBuilder,
     tokenOptionValidationWrapper
 } from '../token-option-field-component-factory';
-import { type EnvironmentInjector, type ViewContainerRef, Injectable } from '@angular/core';
+import { type ViewContainerRef, type EnvironmentInjector, Injectable } from '@angular/core';
 import { TokenOptionGroup } from 'app/data/token-option-group';
 import type { FormField } from 'app/utils/form-field/form-field';
 import { set } from 'date-fns';
 import { DateTimeFieldComponent } from 'app/components/form-fields/date-time-field/date-time-field.component';
 import { OptionalFieldComponent } from 'app/components/form-fields/optional-field/optional-field.component';
 import type { MultipleSectionDateFieldComponent } from 'app/components/form-fields/multiple-section-date-field/multiple-section-date-field.component';
-import { NumberInputFieldComponent } from 'app/components/form-fields/number-input-field/number-input-field.component';
 
 @Injectable()
 export class PlaceholderTokenOptionFieldComponentFactory extends TokenOptionFieldComponentFactory<PlaceholderTokenOption> {
@@ -86,32 +86,7 @@ export class PlaceholderTokenOptionFieldComponentFactory extends TokenOptionFiel
                         );
                     })
                 )
-                .appendBuilder(
-                    createFieldComponentWithLabel(
-                        OptionalFieldComponent<NumberInputFieldComponent>,
-                        'Allow multiple approved requests',
-                        environmentInjector
-                    ).editField((field) => {
-                        field.fieldBuilder = createFieldComponentWithLabel(
-                            NumberInputFieldComponent,
-                            'Allowed maximum number of approved requests (-1 for unlimited)',
-                            environmentInjector
-                        ).editField((field) => {
-                            field.validator = async ([x, v]: [NumberInputFieldComponent, number]) => {
-                                x.errorMessage = undefined;
-                                if (!Number.isInteger(v)) {
-                                    x.errorMessage = 'Should be an integer (floating number is not allowed)';
-                                    return false;
-                                }
-                                if (v != -1 && v < 0) {
-                                    x.errorMessage = 'Negative number is not allowed (except for -1)';
-                                    return false;
-                                }
-                                return true;
-                            };
-                        });
-                    })
-                )
+                .appendBuilder(createOptionalAllowMultipleApprovedRequestsComponentBuilder(environmentInjector))
                 .appendBuilder(createExcludeTokenOptionsComponentBuilder(environmentInjector))
                 .transformSrc((value: PlaceholderTokenOption | TokenOptionGroup) => {
                     if (value instanceof TokenOptionGroup) {
@@ -189,7 +164,7 @@ export class PlaceholderTokenOptionFieldComponentFactory extends TokenOptionFiel
                             type: 'placeholder-token-option',
                             startTime: startTime ?? null,
                             endTime: endTime ?? null,
-                            allowedRequestCnt: allowedRequestCnt ?? 1,
+                            allowedRequestCnt,
                             excludeTokenOptionIds
                         };
                     }

@@ -13,6 +13,7 @@ export const AssignmentDataDef = t.strict({
 });
 
 export type AssignmentData = t.TypeOf<typeof AssignmentDataDef>;
+export type RawAssignmentData = t.OutputOf<typeof AssignmentDataDef>;
 
 export class Assignment implements AssignmentData {
     public id = '';
